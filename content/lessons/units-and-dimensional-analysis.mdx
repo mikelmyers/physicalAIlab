@@ -1,73 +1,572 @@
 # Units and Dimensional Analysis
 
+## Re-entry Promise
+
+This lesson assumes you may have seen unit conversions before but never learned to treat units as a serious engineering tool. We will build that habit now.
+
+The goal is not to memorize every conversion. The goal is to use units to think clearly, catch mistakes, and make formulas auditable.
+
 ## Objective
 
-Use units to check formulas, convert measurements, and catch calculation errors before they become engineering errors.
+By the end, you should be able to:
+
+- Explain the difference between a quantity, a unit, and a dimension.
+- Identify common SI base and derived units.
+- Use conversion factors as ratios equal to one.
+- Convert compound units such as `km/h` to `m/s`.
+- Check whether formulas are dimensionally consistent.
+- Use units to debug calculations in circuits, robotics, drones, telemetry, and physics.
 
 ## Why It Matters
 
-Units are one of the best debugging tools in engineering. If the units do not work, the formula or calculation is wrong.
+Dimensional analysis is one of the most useful error checks in all of engineering.
 
-## Concept
+It can catch:
 
-Dimensional analysis means tracking the kind of quantity each number represents.
+- adding incompatible quantities,
+- using the wrong formula,
+- dividing when you should multiply,
+- forgetting a time conversion,
+- mixing metric prefixes,
+- passing the wrong units into code,
+- trusting a simulation output with impossible units.
 
-Speed has units of distance divided by time:
+If the units do not work, the calculation does not work.
 
-$$speed = \frac{distance}{time}$$
+## Why This Idea Exists
 
-So:
+Science and engineering depend on measurements that other people can understand and reproduce. A measurement is not just a number. It is a number tied to a unit, and that unit represents a kind of physical quantity.
 
-$$m/s = \frac{m}{s}$$
+The International System of Units, or SI, exists to make measurement consistent across science, technology, commerce, and engineering. It defines base units such as meters, kilograms, seconds, amperes, kelvin, moles, and candelas. Other units are derived from combinations of these.
 
-If you multiply speed by time:
+Dimensional analysis exists because physical equations must respect the kinds of quantities involved. You cannot add length to time. You cannot get speed from multiplying distance by time. The dimensions have to make sense.
 
-$$\frac{m}{s} \times s = m$$
+## Plain-Language Intuition
+
+A unit is a label for what kind of measurement you have.
+
+A dimension is the deeper category behind the unit.
+
+For example:
+
+- meters, centimeters, kilometers, inches, and feet are different units,
+- but they all measure the dimension of length.
+
+Seconds, minutes, and hours are different units, but they all measure time.
+
+Dimensional analysis asks: "Are the kinds of quantities in this calculation compatible?"
+
+Unit conversion asks: "How do I express the same quantity using a different unit?"
+
+## Core Theory
+
+### Quantity
+
+A quantity combines a number and a unit:
+
+$$quantity = number \times unit$$
+
+Example:
+
+$$12m$$
+
+The number is `12`. The unit is meters.
+
+### Unit
+
+A unit is a standard amount used to measure a quantity.
+
+Examples:
+
+- meter for length,
+- second for time,
+- ampere for electric current,
+- kelvin for temperature,
+- kilogram for mass.
+
+### Dimension
+
+A dimension is the physical type of a quantity.
+
+Common dimensions:
+
+| Dimension | Meaning | Example Units |
+| --- | --- | --- |
+| Length | distance or size | m, cm, km |
+| Time | duration | s, min, h |
+| Mass | amount of matter | kg, g |
+| Electric current | flow of charge | A, mA |
+| Temperature | thermal state | K, C |
+
+Different units can represent the same dimension.
+
+### SI Base Units
+
+The SI base units are foundational measurement units:
+
+| Quantity | Unit | Symbol |
+| --- | --- | --- |
+| length | meter | m |
+| mass | kilogram | kg |
+| time | second | s |
+| electric current | ampere | A |
+| thermodynamic temperature | kelvin | K |
+| amount of substance | mole | mol |
+| luminous intensity | candela | cd |
+
+You will not use all of these immediately, but knowing the structure matters.
+
+### Derived Units
+
+Derived units are built from base units.
+
+Speed:
+
+$$\frac{m}{s}$$
+
+Acceleration:
+
+$$\frac{m}{s^2}$$
+
+Force:
+
+$$N = kg\frac{m}{s^2}$$
+
+Voltage, resistance, energy, pressure, and power are also derived units.
+
+### Conversion Factors
+
+A conversion factor is a ratio equal to one.
+
+Because:
+
+$$1km = 1000m$$
+
+you can write:
+
+$$\frac{1000m}{1km} = 1$$
+
+and:
+
+$$\frac{1km}{1000m} = 1$$
+
+Multiplying by one does not change the physical quantity. It only changes how the quantity is expressed.
+
+### Unit Cancellation
+
+Units behave like algebraic factors in multiplication and division.
+
+Example:
+
+$$5km \times \frac{1000m}{1km} = 5000m$$
+
+The `km` cancels:
+
+$$km \times \frac{m}{km} = m$$
+
+### Dimensional Consistency
+
+Every term added or subtracted in an equation must have the same dimension.
+
+This is meaningful:
+
+$$3m + 4m = 7m$$
+
+This is not:
+
+$$3m + 4s$$
+
+Both sides of a physical equation must also have the same dimensions.
+
+If:
+
+$$d = vt$$
+
+then:
+
+$$m = \frac{m}{s} \times s$$
 
 The seconds cancel, leaving meters.
 
-## Worked Example
+### Dimensions Do Not Prove A Formula Is Right
 
-A robot travels at `1.5 m/s` for `12 s`.
+Dimensional consistency can catch many wrong formulas, but it does not prove a formula is correct.
+
+For example, both of these have units of distance:
+
+$$d = vt$$
+
+$$d = 2vt$$
+
+Dimensional analysis cannot tell you whether the factor `2` belongs there. It can tell you whether the dimensions are possible.
+
+## Mental Models
+
+### Units As Type Checking
+
+In programming, a type checker can warn when a function expects a number but receives a string.
+
+Units are like type checking for physical calculations.
+
+If a formula expects seconds but you pass minutes, the number may be wrong even if the code runs.
+
+### Conversion Factors As Bridges
+
+A conversion factor is a bridge between two unit languages.
+
+`1 hour = 3600 seconds` lets you move between hours and seconds without changing the actual duration.
+
+### Dimensional Analysis As Debugging
+
+When an answer feels wrong, inspect the units:
+
+1. What units did I start with?
+2. What units should I end with?
+3. Did the unwanted units cancel?
+4. Did the wanted units remain?
+
+## Worked Example 1: Minutes To Seconds
+
+Convert `12 minutes` to seconds.
+
+Use:
+
+$$1min = 60s$$
+
+Set up the conversion so minutes cancel:
+
+$$12min \times \frac{60s}{1min}$$
+
+Cancel `min`:
+
+$$12 \times 60s = 720s$$
+
+So:
+
+$$12min = 720s$$
+
+## Worked Example 2: Kilometers Per Hour To Meters Per Second
+
+Convert:
+
+$$72\frac{km}{h}$$
+
+to meters per second.
+
+Use:
+
+$$1km = 1000m$$
+
+$$1h = 3600s$$
+
+Set it up:
+
+$$72\frac{km}{h} \times \frac{1000m}{1km} \times \frac{1h}{3600s}$$
+
+Cancel `km` and `h`:
+
+$$72 \times \frac{1000}{3600}\frac{m}{s}$$
+
+$$72 \div 3.6 = 20$$
+
+So:
+
+$$72\frac{km}{h} = 20\frac{m}{s}$$
+
+## Worked Example 3: Battery Runtime
+
+A battery has capacity `5 Ah`. A device draws `250 mA`. Estimate runtime.
+
+Convert milliamps to amps:
+
+$$250mA = 0.250A$$
+
+Runtime:
+
+$$runtime = \frac{capacity}{current}$$
+
+$$runtime = \frac{5Ah}{0.250A}$$
+
+Cancel amps:
+
+$$runtime = 20h$$
+
+The unit check works:
+
+$$\frac{Ah}{A} = h$$
+
+## Worked Example 4: Wrong Formula Detection
+
+Suppose someone claims:
+
+$$distance = speed + time$$
+
+Check dimensions:
+
+$$m = \frac{m}{s} + s$$
+
+You cannot add `m/s` and `s`. The formula fails dimensional analysis.
+
+Correct relationship for constant speed:
 
 $$distance = speed \times time$$
 
-$$distance = 1.5\frac{m}{s} \times 12s$$
+$$m = \frac{m}{s} \times s$$
 
-$$distance = 18m$$
+This passes the unit check.
 
-The unit check confirms the result is a distance.
+## Worked Example 5: Force Units
+
+Newton's second law:
+
+$$F = ma$$
+
+Mass has units:
+
+$$kg$$
+
+Acceleration has units:
+
+$$\frac{m}{s^2}$$
+
+So force has units:
+
+$$kg\frac{m}{s^2}$$
+
+That derived unit is called a newton:
+
+$$1N = 1kg\frac{m}{s^2}$$
+
+## Worked Example 6: Drone Ground Speed
+
+A drone travels `900 m` in `75 s`. Find speed in `m/s` and `km/h`.
+
+Speed:
+
+$$v = \frac{d}{t}$$
+
+$$v = \frac{900m}{75s} = 12\frac{m}{s}$$
+
+Convert to `km/h`:
+
+$$12\frac{m}{s} \times \frac{1km}{1000m} \times \frac{3600s}{1h}$$
+
+Cancel:
+
+$$12 \times 3.6 = 43.2\frac{km}{h}$$
+
+## Common Failure Modes
+
+### Failure Mode 1: Using A Conversion Factor Backward
+
+To convert `5 km` to meters:
+
+Correct:
+
+$$5km \times \frac{1000m}{1km} = 5000m$$
+
+Wrong:
+
+$$5km \times \frac{1km}{1000m}$$
+
+This leaves `km^2/m`, not meters.
+
+Fix: choose the conversion factor orientation that cancels the old unit.
+
+### Failure Mode 2: Adding Different Dimensions
+
+You cannot add meters and seconds.
+
+Fix: addition and subtraction require compatible dimensions.
+
+### Failure Mode 3: Prefix Mistakes
+
+`mA` means milliamp, not megaamp.
+
+Fix: learn common prefixes and write conversions explicitly.
+
+### Failure Mode 4: Hidden Units In Code
+
+A function may accept a number called `speed`, but the code may not know whether it is `m/s`, `km/h`, or `mph`.
+
+Fix: include units in variable names, labels, comments, or types.
+
+### Failure Mode 5: Treating Unit Check As Final Proof
+
+Dimensional consistency is necessary but not sufficient.
+
+Fix: combine unit checks with theory, examples, tests, and physical reasoning.
+
+## Engineering Connections
+
+### Circuits
+
+Ohm's Law:
+
+$$V = IR$$
+
+Power:
+
+$$P = IV$$
+
+Battery runtime:
+
+$$h = \frac{Ah}{A}$$
+
+All depend on unit consistency.
+
+### Robotics
+
+Encoder counts become rotations, rotations become distance, distance over time becomes speed.
+
+Each conversion must preserve units.
+
+### Drones
+
+Flight planning mixes meters, seconds, kilometers per hour, battery capacity, camera pixels, ground sample distance, and map units.
+
+### Computer Vision
+
+Pixel measurements need calibration to become real-world measurements:
+
+$$real\ length = pixels \times \frac{meters}{pixel}$$
+
+### Physics
+
+Dimensional analysis helps check derived equations and sometimes suggests what form an equation could take.
+
+## Practice Set
+
+### Warmups
+
+1. Convert `5 km` to meters.
+2. Convert `750 mA` to amps.
+3. Convert `2.5 h` to seconds.
+4. Convert `4500 g` to kilograms.
+5. Convert `12 cm` to meters.
+6. Convert `3.2 m` to centimeters.
+
+### Compound Unit Practice
+
+1. Convert `36 km/h` to `m/s`.
+2. Convert `10 m/s` to `km/h`.
+3. Convert `120 RPM` to rotations per second.
+4. A wheel circumference is `0.4 m`; it spins at `5 rotations/s`. Find speed in `m/s`.
+5. A camera scale is `0.03 m/pixel`; a feature is `200 pixels`. Find real length.
+
+### Dimensional Checks
+
+Decide whether each formula is dimensionally consistent.
+
+1. `d = vt`
+2. `v = d/t`
+3. `d = v + t`
+4. `F = ma`
+5. `P = IV`
+6. `runtime = Ah / A`
+7. `area = length + width`
+8. `area = length * width`
+
+### Error-Spotting
+
+1. Someone converts `2 h` to seconds by dividing by `3600`. Explain the mistake.
+2. Someone writes `distance = speed / time`. Use units to show the problem.
+3. Someone sends `72` into a function expecting `m/s`, but the value is really `km/h`. What should happen?
+4. Someone adds `5 V + 2 A`. Explain why that is not valid.
+
+### Challenge
+
+A rover wheel has diameter `12 cm`. The wheel rotates at `180 RPM`.
+
+1. Convert diameter to meters.
+2. Compute circumference using `C = pi d`.
+3. Convert RPM to rotations per second.
+4. Compute linear speed in `m/s`.
+5. Convert speed to `km/h`.
+6. List two real-world effects that could make actual speed different.
 
 ## Exercise
 
-Use units to check each calculation:
+Choose one technical calculation from a real or planned Physical AI Lab project.
 
-1. `runtime = capacity / current`
-2. `distance = speed * time`
-3. `power = voltage * current`
-4. `speed = wheel circumference * rotations per second`
+Write:
+
+- the formula,
+- every variable with units,
+- expected output unit,
+- conversion factors needed,
+- final unit cancellation,
+- one reasonableness check.
+
+Examples:
+
+- battery runtime,
+- drone flight distance,
+- camera pixel-to-meter scale,
+- wheel RPM to speed,
+- circuit power draw.
 
 ## Build Task
 
-Create a unit-conversion table for your lab notebook:
+Build a unit conversion and dimensional-analysis helper in Python or TypeScript.
 
-- meters to centimeters
-- hours to seconds
-- milliamps to amps
-- watts to volts times amps
-- kilometers per hour to meters per second
+Minimum functions:
+
+- `minutesToSeconds`
+- `hoursToSeconds`
+- `kmToMeters`
+- `metersPerSecondToKmPerHour`
+- `kmPerHourToMetersPerSecond`
+- `milliampsToAmps`
+- `batteryRuntimeHours`
+- `wheelRpmToMetersPerSecond`
+
+For each function:
+
+- use clear unit-bearing names,
+- include at least one known-answer test,
+- reject impossible inputs where appropriate,
+- document the unit cancellation.
+
+Stretch goal:
+
+Create a tiny `Quantity` object with `value` and `unit` fields so calculations cannot hide units.
 
 ## Quiz
 
-1. What does dimensional analysis track?
-2. Why do seconds cancel in `m/s * s`?
-3. What unit should `V * A` produce?
-4. How can unit checks catch formula mistakes?
+1. What is the difference between a unit and a dimension?
+2. Name three SI base units.
+3. What is a derived unit?
+4. Why is a conversion factor equal to one?
+5. How do you choose the correct orientation of a conversion factor?
+6. Why can you not add meters and seconds?
+7. What unit should `m/s * s` produce?
+8. What unit should `Ah / A` produce?
+9. Why does dimensional consistency not prove a formula is fully correct?
+10. Give one example of a unit mismatch that could break software or hardware.
 
 ## Proof of Completion
 
-Submit the conversion table, four checked formulas, and one example where units reveal a wrong equation.
+Submit:
+
+- completed warmups,
+- completed compound-unit practice,
+- completed dimensional checks,
+- corrections for error-spotting,
+- completed challenge,
+- unit helper code with tests,
+- one build-log entry explaining how units will be handled in your future project code.
+
+## Sources And Further Study
+
+- NIST SI units and SI prefixes.
+- NIST Guide to the SI: base units, derived units, and rules for expressing quantities.
+- OpenStax University Physics: unit conversion and dimensional analysis.
+- OpenStax College Physics: physical quantities and units.
+- OpenStax Chemistry: conversion factors and dimensional analysis.
 
 ## Next Lesson
 
 Graphing Functions for Builders.
+
+You are ready for it when you can set up conversions so unwanted units cancel and use dimensions to reject an invalid formula.

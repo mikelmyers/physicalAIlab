@@ -76,3 +76,19 @@ Curriculum intent:
 - Emphasize inverse operations and checking by substitution.
 - Connect algebra immediately to formulas used in circuits, motion, force, power, and control error.
 - Require a formula-solver build task so algebra becomes a tool the learner can run and test.
+
+### Units and Dimensional Analysis
+
+Primary anchors:
+
+- NIST SI Units pages and NIST Guide to the SI for base units, derived units, prefixes, and quantity-expression conventions.
+- OpenStax University Physics sections on unit conversion and dimensional analysis.
+- OpenStax College Physics sections on physical quantities and units.
+- OpenStax Chemistry sections on conversion factors and dimensional analysis.
+
+Curriculum intent:
+
+- Teach units as physical type checking and dimensional analysis as a debugging tool.
+- Distinguish quantity, unit, and dimension early.
+- Use conversion factors as ratios equal to one, with explicit unit cancellation.
+- Connect unit correctness to circuits, robotics, drones, computer vision, telemetry, physics, and code APIs.
