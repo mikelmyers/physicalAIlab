@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Atom, BookOpen, Flame, GraduationCap, Hammer, Map, NotebookTabs, ShieldCheck } from "lucide-react";
+import { Atom, BookOpen, Flame, GraduationCap, Hammer, LineChart, Map, NotebookTabs, ShieldCheck } from "lucide-react";
 import { ThemeToggle } from "../ThemeToggle";
 
 const navItems = [
@@ -7,6 +7,7 @@ const navItems = [
   { href: "/curriculum", label: "Curriculum", icon: BookOpen },
   { href: "/practice", label: "Practice", icon: Flame },
   { href: "/exams", label: "Exams", icon: ShieldCheck },
+  { href: "/progress", label: "Progress", icon: LineChart },
   { href: "/projects", label: "Projects", icon: Hammer },
   { href: "/build-log", label: "Build Log", icon: NotebookTabs },
   { href: "/portfolio", label: "Portfolio", icon: Atom },
