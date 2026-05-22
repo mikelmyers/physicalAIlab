@@ -1,73 +1,427 @@
 # Arithmetic, Units, and Estimation
 
+## Re-entry Promise
+
+This lesson assumes you may not remember school math fluently. That is fine. We are going to rebuild number sense from the ground up because every later topic depends on it: algebra, circuits, code, robotics, drones, physics, simulations, and research.
+
+You do not need to be fast yet. You need to become careful, honest, and repeatable.
+
 ## Objective
 
-Rebuild practical number sense: add, subtract, multiply, divide, track units, and estimate whether an answer is reasonable.
+By the end, you should be able to:
+
+- Treat numbers as measured quantities, not just symbols.
+- Track units through simple calculations.
+- Estimate the expected size of an answer before calculating.
+- Catch obvious mistakes with reasonableness checks.
+- Explain why arithmetic is part of engineering thinking, not just schoolwork.
 
 ## Why It Matters
 
-Engineering errors often start before the advanced math. A misplaced decimal, missing unit, or unreasonable estimate can break a circuit, crash a drone, or make a simulation meaningless.
+A person can understand advanced ideas and still make beginner mistakes if their arithmetic, unit handling, and estimation are weak. In real technical work, those mistakes are not harmless.
 
-## Concept
+A misplaced decimal can make:
 
-Arithmetic is not just calculation. It is controlled thinking about quantities.
+- a resistor run too hot,
+- a battery estimate wrong by hours,
+- a drone flight plan unsafe,
+- a telemetry chart misleading,
+- a physics simulation meaningless.
 
-A quantity has two parts:
+Arithmetic is the first layer of trust. If the small calculations are sloppy, the advanced work has no foundation.
+
+## Why This Idea Exists
+
+Humans invented number systems because counting objects was not enough. Builders, traders, astronomers, navigators, engineers, and scientists needed ways to compare quantities, measure the world, predict outcomes, and communicate results.
+
+Units exist because a bare number is incomplete. The number `12` could mean `12 volts`, `12 meters`, `12 seconds`, `12 grams`, or `12 dollars`. In technical work, those are completely different things.
+
+Standard units exist because people need measurements to be portable. A circuit calculation, a machine drawing, a physics paper, or a drone mission plan should not depend on one person's private measuring system.
+
+Estimation exists because exact calculation is not enough. A calculator can produce a precise-looking wrong answer. Estimation gives you a way to ask: "Does this answer live in the right neighborhood?"
+
+## Plain-Language Intuition
+
+Think of every technical number as a label on something real.
+
+`5` by itself is just a number.
+
+`5 meters` is a length.
+
+`5 seconds` is a time.
+
+`5 amps` is electrical current.
+
+`5 volts` is electrical potential difference.
+
+The unit changes what the number means.
+
+Arithmetic combines quantities. When you combine them, the units should tell a story that makes sense.
+
+If you multiply speed by time, you should get distance:
+
+$$\frac{meters}{second} \times seconds = meters$$
+
+If your result has the wrong kind of unit, your formula is probably wrong.
+
+## Core Theory
+
+### Quantities
+
+A measured quantity has a number and a unit:
 
 $$quantity = number \times unit$$
 
-For example, `12 V`, `3.5 A`, `40 m`, and `2 hours` all combine a number with a unit. The unit tells you what kind of thing the number measures.
+Examples:
 
-Estimation is the habit of asking: "What size should this answer be?"
+- `12 V`
+- `3.5 A`
+- `40 m`
+- `2 h`
+- `250 g`
 
-If a drone flies `10 m/s` for `6 s`, the distance should be around:
+The number tells "how much." The unit tells "of what."
 
-$$10 \times 6 = 60m$$
+### Basic Operations
 
-If a calculator says `6000 m`, something went wrong.
+Addition and subtraction require compatible units:
 
-## Worked Example
+$$3m + 2m = 5m$$
 
-A small robot uses `0.8 A` while driving. It drives for `15 minutes`. How much charge does it use in amp-hours?
+But this is not meaningful:
 
-First convert minutes to hours:
+$$3m + 2s$$
 
-$$15 min = \frac{15}{60} hr = 0.25 hr$$
+Meters and seconds measure different kinds of things.
 
-Then multiply current by time:
+Multiplication and division create new unit combinations:
 
-$$charge = 0.8A \times 0.25hr = 0.2Ah$$
+$$speed = \frac{distance}{time}$$
 
-The answer is `0.2 Ah`.
+$$power = voltage \times current$$
+
+$$area = length \times width$$
+
+### Place Value
+
+Place value is how our decimal number system stores size.
+
+In `4,582.63`:
+
+- `4` means four thousands.
+- `5` means five hundreds.
+- `8` means eight tens.
+- `2` means two ones.
+- `6` means six tenths.
+- `3` means three hundredths.
+
+Place value is why moving a decimal point changes magnitude by powers of ten.
+
+### Powers of Ten
+
+Technical work often moves between very small and very large quantities.
+
+$$10^3 = 1000$$
+
+$$10^{-3} = 0.001$$
+
+That matters because metric prefixes are powers of ten.
+
+Common prefixes:
+
+| Prefix | Symbol | Multiplier | Example |
+| --- | --- | ---: | --- |
+| kilo | k | 1,000 | `1 km = 1000 m` |
+| centi | c | 0.01 | `1 cm = 0.01 m` |
+| milli | m | 0.001 | `1 mA = 0.001 A` |
+| micro | u | 0.000001 | `1 us = 0.000001 s` |
+
+Note: the official micro symbol is the Greek letter mu. This repo uses `u` in plain text when ASCII is safer.
+
+### Scientific Notation
+
+Scientific notation writes a number as:
+
+$$a \times 10^n$$
+
+where `a` is at least `1` and less than `10`.
+
+Examples:
+
+$$4500 = 4.5 \times 10^3$$
+
+$$0.0032 = 3.2 \times 10^{-3}$$
+
+Scientific notation makes very large and very small values easier to compare.
+
+### Estimation
+
+Estimation is not guessing randomly. It is controlled simplification.
+
+You might round numbers to nearby values:
+
+$$19.8 \approx 20$$
+
+$$4.9 \approx 5$$
+
+Then:
+
+$$19.8 \times 4.9 \approx 20 \times 5 = 100$$
+
+If the exact calculation returns `970.2`, you know something is wrong.
+
+### Accuracy, Precision, And Uncertainty
+
+Accuracy means closeness to the true value.
+
+Precision means how repeatable or finely resolved a measurement is.
+
+Uncertainty describes the range where the true value may reasonably be.
+
+For example:
+
+$$L = 12.4cm \pm 0.1cm$$
+
+This means the measured length is about `12.4 cm`, with uncertainty of `0.1 cm`.
+
+This matters because measured numbers are not magic. A sensor, ruler, multimeter, GPS receiver, or camera calibration has limits.
+
+## Mental Model
+
+Use a four-question check every time you calculate:
+
+1. What kind of thing am I calculating?
+2. What units should the answer have?
+3. What size should the answer roughly be?
+4. Does the final answer make physical sense?
+
+If you cannot answer those questions, slow down. The calculation is not ready.
+
+## Worked Example 1: Robot Distance
+
+A rover moves at `0.6 m/s` for `20 s`. How far does it travel?
+
+Estimate:
+
+`0.6` is a little more than half a meter per second. For `20 seconds`, the distance should be a little more than `10 m`.
+
+Formula:
+
+$$distance = speed \times time$$
+
+Substitute:
+
+$$distance = 0.6\frac{m}{s} \times 20s$$
+
+Cancel seconds:
+
+$$distance = 12m$$
+
+Reasonableness check: `12 m` is a little more than `10 m`, so the answer makes sense.
+
+## Worked Example 2: Sensor Battery Use
+
+A sensor draws `50 mA` for `4 hours`. How many amp-hours does it use?
+
+Convert milliamps to amps:
+
+$$50mA = 50 \times 0.001A = 0.05A$$
+
+Charge use:
+
+$$charge = current \times time$$
+
+$$charge = 0.05A \times 4h = 0.20Ah$$
+
+The sensor uses `0.20 Ah`.
+
+Reasonableness check: `50 mA` is a small current. Over `4 hours`, the result should still be much less than `1 Ah`. `0.20 Ah` makes sense.
+
+## Worked Example 3: Catching A Bad Decimal
+
+A motor draws `1.2 A` for `30 minutes`. Someone calculates:
+
+$$1.2 \times 30 = 36Ah$$
+
+This is wrong because `30 minutes` was not converted to hours.
+
+Correct conversion:
+
+$$30min = 0.5h$$
+
+Correct calculation:
+
+$$1.2A \times 0.5h = 0.6Ah$$
+
+The bad answer was larger by a factor of `60`.
+
+## Worked Example 4: Unit Mismatch
+
+Can you add `3 meters + 4 seconds`?
+
+No. The units measure different dimensions. You can write the expression, but it does not represent a meaningful physical quantity.
+
+You can add:
+
+$$3m + 4m = 7m$$
+
+You can divide:
+
+$$\frac{3m}{4s} = 0.75m/s$$
+
+Division creates speed. Addition does not.
+
+## Engineering Connections
+
+### Circuits
+
+Current, voltage, resistance, power, and energy all depend on arithmetic with units.
+
+$$P = IV$$
+
+If current is in amps and voltage is in volts, power is in watts.
+
+### Drones
+
+Flight time, ground speed, camera footprint, battery capacity, and GPS distance require unit conversions and sanity checks.
+
+### Robotics
+
+Robot motion uses distance, time, speed, acceleration, encoder counts, gear ratios, and coordinate changes.
+
+### Computer Vision
+
+Pixel measurements become real-world measurements only when scale and units are handled correctly.
+
+### Physics
+
+Physics is full of quantities with units. Unit mistakes are often the first sign that a derivation or simulation is wrong.
+
+## Common Failure Modes
+
+### Failure Mode 1: Bare Numbers
+
+Writing `12` instead of `12 V` hides meaning.
+
+Fix: attach units to every measured quantity.
+
+### Failure Mode 2: Minute-Hour Confusion
+
+Battery capacity is often in amp-hours, but time may be given in minutes.
+
+Fix:
+
+$$minutes \div 60 = hours$$
+
+### Failure Mode 3: Milli-Confusion
+
+`mA` and `A` differ by `1000`.
+
+Fix:
+
+$$1mA = 0.001A$$
+
+### Failure Mode 4: Trusting Calculator Output
+
+A calculator does not know your physical system.
+
+Fix: estimate before and after.
+
+## Practice Set
+
+### Warmups
+
+1. Convert `30 minutes` to hours.
+2. Convert `250 mA` to amps.
+3. Convert `3.2 km` to meters.
+4. Convert `0.004 A` to milliamps.
+5. Write `6200` in scientific notation.
+6. Write `0.00045` in scientific notation.
+
+### Applied Problems
+
+1. A robot drives at `0.8 m/s` for `15 s`. Estimate first, then calculate distance.
+2. A camera draws `0.35 A` for `2.5 h`. How much charge does it use?
+3. A drone flies `12 m/s` for `8 minutes`. How far does it fly in meters?
+4. A microcontroller draws `80 mA`. How many amps is that?
+5. A test bench records `4.8 V`, `4.9 V`, and `5.1 V`. What is the average voltage?
+
+### Error-Spotting
+
+1. Someone says `2m + 3s = 5`. Explain the problem.
+2. Someone computes `100mA = 100A`. Explain the mistake.
+3. Someone calculates `10m/s * 5s = 50s`. Explain the unit error.
+4. Someone estimates a `5 V` USB supply as `500 V`. Explain why the estimate is unreasonable.
+
+### Challenge
+
+A rover has a `6 Ah` battery. Its electronics draw `0.4 A`, and its motors draw `1.6 A` while driving.
+
+1. What is the total current while driving?
+2. Estimate runtime while driving.
+3. If it only drives half the time and uses electronics only the other half, will runtime increase or decrease? Explain before calculating.
 
 ## Exercise
 
-Estimate first, then calculate:
+Pick one real device you own or plan to build around. Find or estimate:
 
-1. A rover moves at `0.6 m/s` for `20 s`. How far does it travel?
-2. A sensor draws `50 mA` for `4 hours`. How many amp-hours does it use?
-3. A board costs `$18`. You need `7` boards. About how much should the total be before tax?
+- voltage,
+- current,
+- power,
+- runtime,
+- one important length or distance.
+
+Write each as a quantity with units. Then write one sentence explaining why each quantity matters.
 
 ## Build Task
 
-Create a small "estimate then calculate" notebook page. For each problem, write:
+Create an "engineering arithmetic checker" in Python or TypeScript.
 
-- Expected size of the answer.
-- Exact calculation.
-- Unit check.
-- Whether the answer is reasonable.
+It should include functions for:
+
+- minutes to hours,
+- milliamps to amps,
+- kilometers to meters,
+- speed times time to distance,
+- current times time to amp-hours.
+
+For each function, include:
+
+- one normal example,
+- one edge case,
+- one reasonableness check written in a comment or note.
 
 ## Quiz
 
 1. What two parts does a measured quantity have?
-2. Why should you estimate before calculating?
-3. How many hours is `30 minutes`?
-4. If speed is multiplied by time, what unit should the result have?
+2. Why is `3m + 2s` not meaningful?
+3. Why does `m/s * s` become meters?
+4. What is the difference between accuracy and precision?
+5. What does uncertainty tell you about a measurement?
+6. Why should you estimate before using a calculator?
+7. Convert `75 mA` to amps.
+8. Convert `2.5 hours` to minutes.
+9. Write `0.0068` in scientific notation.
+10. Give one example where a unit mistake could damage a real build.
 
 ## Proof of Completion
 
-Submit the notebook page with at least five calculations, including one mistake you caught with estimation.
+Submit:
+
+- completed warmups,
+- completed applied problems,
+- corrections for the error-spotting section,
+- your engineering arithmetic checker,
+- one build-log entry explaining what felt rusty and what improved.
+
+## Sources And Further Study
+
+- NIST: SI units and metric prefixes.
+- OpenStax College Physics: accuracy, precision, uncertainty, and significant figures.
+- OpenStax Prealgebra: decimal operations, exponents, and scientific notation.
 
 ## Next Lesson
 
 Fractions, Ratios, and Proportions.
+
+You are ready for it when you can treat units as part of the calculation and catch at least one mistake before a calculator does.

@@ -73,6 +73,12 @@ The `/learning-path` page defines the mastery spine:
 
 It also includes diagnostic prompts for math, coding, electronics, and technical reading. These are not gatekeeping tests. They identify what needs rebuilding so the curriculum can stay honest and complete.
 
+## Lesson Depth Standard
+
+The project now tracks a full-depth lesson standard in `docs/curriculum/LESSON_DEPTH_STANDARD.md`. The standard treats lessons as study chapters, not short notes. Mature lessons should include intuition, why the idea exists, theory, examples, engineering applications, practice, build tasks, quizzes, proof of completion, and sources.
+
+Source anchors for curriculum expansion are tracked in `docs/curriculum/SOURCE_NOTES.md`.
+
 ## Add A New Track
 
 1. Add a `Track` object to `content/tracks/tracks.ts`.
