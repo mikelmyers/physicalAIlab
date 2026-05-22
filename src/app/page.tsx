@@ -37,9 +37,9 @@ export default function Home() {
               </Link>
               <Link
                 className="inline-flex items-center gap-2 rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 dark:border-zinc-700 dark:text-zinc-100"
-                href="/projects"
+                href="/learning-path"
               >
-                View projects
+                Start from zero
               </Link>
             </div>
           </div>

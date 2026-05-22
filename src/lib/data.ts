@@ -1,11 +1,13 @@
 import { seedBuildLogs } from "../../content/build-logs/buildLogs";
 import { projects } from "../../content/projects/projects";
+import { diagnosticPrompts, masteryLevels, studyPhases } from "../../content/tracks/mastery";
 import { lessons } from "../../content/tracks/lessons";
 import { modules } from "../../content/tracks/modules";
 import { tracks } from "../../content/tracks/tracks";
 import type { BuildLog, Lesson, Module, Project, RoadmapPhase, Track } from "./types";
 
 export { lessons, modules, projects, seedBuildLogs, tracks };
+export { diagnosticPrompts, masteryLevels, studyPhases };
 
 export const roadmap: RoadmapPhase[] = [
   {

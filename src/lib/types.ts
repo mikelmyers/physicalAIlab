@@ -64,3 +64,27 @@ export type RoadmapPhase = {
   status: "now" | "next" | "later";
   items: string[];
 };
+
+export type MasteryLevel = {
+  level: number;
+  title: string;
+  summary: string;
+  proof: string[];
+};
+
+export type DiagnosticPrompt = {
+  slug: string;
+  area: string;
+  title: string;
+  prompt: string;
+  checks: string[];
+};
+
+export type StudyPhase = {
+  slug: string;
+  title: string;
+  timeframe: string;
+  summary: string;
+  outcomes: string[];
+  trackSlugs: string[];
+};
