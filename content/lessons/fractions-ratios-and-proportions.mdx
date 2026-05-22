@@ -1,62 +1,488 @@
 # Fractions, Ratios, and Proportions
 
+## Re-entry Promise
+
+This lesson assumes fractions may feel rusty. We will not treat that as a weakness. Fractions, ratios, rates, and proportions are some of the most practical ideas in all of technical work, so we are going to rebuild them carefully.
+
+You do not need to memorize tricks. You need to understand what is being compared.
+
 ## Objective
 
-Use fractions, ratios, and proportions to compare quantities, scale designs, and solve practical technical problems.
+By the end, you should be able to:
+
+- Explain fractions as part-whole relationships and division.
+- Explain ratios as comparisons between quantities.
+- Explain rates as ratios with different units.
+- Use proportions to scale measurements and solve unknowns.
+- Recognize proportional relationships in tables, graphs, formulas, and real systems.
+- Apply ratios to engineering, circuits, robotics, drones, calibration, and maps.
 
 ## Why It Matters
 
-Ratios show up everywhere: gear ratios, voltage dividers, map scale, image aspect ratio, battery capacity, sensor calibration, and drone field measurements.
+Ratios are everywhere in the physical world:
 
-## Concept
+- gear ratios,
+- voltage dividers,
+- map scale,
+- drone image scale,
+- camera aspect ratio,
+- motor speed reduction,
+- battery runtime,
+- sensor calibration,
+- unit conversion,
+- mixture concentration,
+- probability,
+- slopes and rates of change.
 
-A fraction compares a part to a whole:
+If arithmetic is the language of quantity, ratios are the language of comparison.
 
-$$\frac{part}{whole}$$
+## Why This Idea Exists
 
-A ratio compares one quantity to another:
+Humans needed ratios because raw counts were not enough.
 
-$$ratio = \frac{quantity A}{quantity B}$$
+If one machine uses `2 A` and another uses `4 A`, the second uses twice the current. That "twice" is a ratio.
 
-A proportion says two ratios are equal:
+If a map distance is `1 cm` and the real distance is `10 m`, the map is useful only because there is a stable relationship between drawing and reality.
+
+If a gear turns three times for every one turn of an output shaft, the machine changes speed and torque through a ratio.
+
+Fractions and ratios exist because builders, scientists, navigators, cooks, merchants, and engineers needed to compare parts, wholes, rates, and scales.
+
+## Plain-Language Intuition
+
+A fraction answers: "How many parts of a whole?"
+
+$$\frac{3}{4}$$
+
+means three out of four equal parts.
+
+A ratio answers: "How does one quantity compare to another?"
+
+$$3:4$$
+
+means 3 of one thing for every 4 of another thing.
+
+A rate answers: "How much of one kind of quantity happens per one unit of another?"
+
+$$12\frac{meters}{second}$$
+
+means 12 meters for every 1 second.
+
+A proportion says two comparisons are equivalent:
 
 $$\frac{a}{b} = \frac{c}{d}$$
 
-That equality lets you solve for an unknown scale.
+That is what makes scaling possible.
 
-## Worked Example
+## Core Theory
 
-A map says `1 cm` represents `5 m`. A path measures `8 cm` on the map. How long is the real path?
+### Fractions As Part Of A Whole
 
-Set up a proportion:
+A fraction has a numerator and denominator:
+
+$$\frac{numerator}{denominator}$$
+
+The denominator says how many equal parts the whole is divided into.
+
+The numerator says how many of those parts are being counted.
+
+For example:
+
+$$\frac{3}{8}$$
+
+means 3 parts out of 8 equal parts.
+
+### Fractions As Division
+
+A fraction can also mean division:
+
+$$\frac{3}{8} = 3 \div 8$$
+
+This is why fractions can be converted to decimals:
+
+$$\frac{3}{8} = 0.375$$
+
+### Equivalent Fractions
+
+Fractions can look different while representing the same value:
+
+$$\frac{1}{2} = \frac{2}{4} = \frac{3}{6}$$
+
+You can multiply or divide the numerator and denominator by the same nonzero number without changing the value.
+
+$$\frac{1 \times 3}{2 \times 3} = \frac{3}{6}$$
+
+### Ratios
+
+A ratio compares quantities.
+
+If a robot gearbox has a `3:1` reduction, that can mean the motor turns 3 times for every 1 output turn.
+
+Written as a fraction:
+
+$$\frac{motor\ turns}{output\ turns} = \frac{3}{1}$$
+
+Order matters. `3:1` is not the same statement as `1:3`.
+
+### Part-Part And Part-Whole Ratios
+
+A part-part ratio compares two parts:
+
+`2 red wires : 3 black wires`
+
+A part-whole ratio compares one part to the total:
+
+$$\frac{2 red wires}{5 total wires}$$
+
+Confusing these is a common mistake.
+
+### Rates
+
+A rate is a ratio comparing different units:
+
+$$speed = \frac{distance}{time}$$
+
+$$12\frac{m}{s}$$
+
+means 12 meters per second.
+
+Other rates:
+
+- dollars per part,
+- samples per second,
+- rotations per minute,
+- meters per pixel,
+- amps per hour is usually a warning because battery capacity is normally amp-hours, not amps per hour.
+
+### Unit Rates
+
+A unit rate tells the amount per one unit.
+
+If a robot travels `24 m` in `6 s`:
+
+$$unit\ rate = \frac{24m}{6s} = 4\frac{m}{s}$$
+
+That means 4 meters per 1 second.
+
+### Proportions
+
+A proportion is an equation that states two ratios are equal:
+
+$$\frac{a}{b} = \frac{c}{d}$$
+
+If three values are known, the fourth can often be solved.
+
+Example:
 
 $$\frac{1cm}{5m} = \frac{8cm}{x}$$
 
-Since `8 cm` is eight times larger than `1 cm`, the real distance is:
+This says 1 cm on a map corresponds to 5 m in reality, and 8 cm corresponds to an unknown real distance.
 
-$$x = 8 \times 5m = 40m$$
+### Cross Products
+
+For:
+
+$$\frac{a}{b} = \frac{c}{d}$$
+
+the cross products are equal:
+
+$$a \times d = b \times c$$
+
+This works because multiplying both sides by `bd` clears the denominators.
+
+But cross multiplication is not magic. It is just equation solving.
+
+### Proportional Relationships
+
+A proportional relationship has a constant multiplier:
+
+$$y = kx$$
+
+`k` is the constant of proportionality.
+
+If `x` doubles, `y` doubles. If `x` is cut in half, `y` is cut in half.
+
+On a graph, a directly proportional relationship is a straight line through the origin.
+
+## Mental Models
+
+### Double Number Line
+
+For a map scale:
+
+| Map distance | 1 cm | 2 cm | 4 cm | 8 cm |
+| --- | ---: | ---: | ---: | ---: |
+| Real distance | 5 m | 10 m | 20 m | 40 m |
+
+Each column preserves the same ratio.
+
+### Ratio Table
+
+For speed:
+
+| Time | 1 s | 2 s | 3 s | 4 s |
+| --- | ---: | ---: | ---: | ---: |
+| Distance | 4 m | 8 m | 12 m | 16 m |
+
+The unit rate is `4 m/s`.
+
+### Scaling
+
+Scaling means multiplying every relevant measurement by the same factor.
+
+If a drawing is doubled, a `3 cm` line becomes `6 cm`.
+
+But be careful: area and volume scale differently than length.
+
+If length doubles, area becomes four times larger:
+
+$$2^2 = 4$$
+
+If length doubles, volume becomes eight times larger:
+
+$$2^3 = 8$$
+
+This matters in mechanical design.
+
+## Worked Example 1: Map Scale
+
+A map uses:
+
+$$1cm = 5m$$
+
+A path is `8 cm` on the map. Find the real distance.
+
+Set up the proportion:
+
+$$\frac{1cm}{5m} = \frac{8cm}{x}$$
+
+Use the scale factor:
+
+$$8 \times 5m = 40m$$
+
+The real path is `40 m`.
+
+Reasonableness check: `8 cm` is 8 times the map unit, so the real distance should be 8 times `5 m`.
+
+## Worked Example 2: Gear Ratio
+
+A gearbox has a `4:1` reduction. The motor spins at `1200 RPM`. What is the output speed?
+
+Interpretation:
+
+The motor turns 4 times for every 1 output turn.
+
+$$output = \frac{motor}{4}$$
+
+$$output = \frac{1200RPM}{4} = 300RPM$$
+
+The output shaft spins at `300 RPM`.
+
+Engineering note: speed decreases, but torque often increases, ignoring losses.
+
+## Worked Example 3: Voltage Divider Ratio
+
+A voltage divider uses two resistors in series. The output ratio is:
+
+$$\frac{V_{out}}{V_{in}} = \frac{R_2}{R_1 + R_2}$$
+
+If `R1 = 1000 ohms` and `R2 = 1000 ohms`:
+
+$$\frac{V_{out}}{V_{in}} = \frac{1000}{1000 + 1000}$$
+
+$$\frac{V_{out}}{V_{in}} = \frac{1}{2}$$
+
+If input is `5 V`, output is:
+
+$$V_{out} = 2.5V$$
+
+This is a ratio doing real electrical work.
+
+## Worked Example 4: Drone Image Ground Scale
+
+A drone image has a ground scale of `4 cm/pixel`. A feature is `250 pixels` long. Estimate its real length.
+
+Convert:
+
+$$4cm/pixel \times 250pixels = 1000cm$$
+
+Convert centimeters to meters:
+
+$$1000cm = 10m$$
+
+The feature is about `10 m` long.
+
+The pixels cancel, leaving distance.
+
+## Worked Example 5: Part-Part vs Part-Whole
+
+A kit has `2 motors` and `6 propellers`.
+
+Part-part ratio:
+
+$$motors:propellers = 2:6 = 1:3$$
+
+There is 1 motor for every 3 propellers.
+
+Part-whole fraction of motors:
+
+$$\frac{2 motors}{8 total parts} = \frac{1}{4}$$
+
+The ratio `1:3` and fraction `1/4` are both true, but they answer different questions.
+
+## Common Failure Modes
+
+### Failure Mode 1: Reversing The Ratio
+
+`3 motor turns : 1 output turn` is not the same as `1 motor turn : 3 output turns`.
+
+Fix: write labels on both parts of the ratio.
+
+### Failure Mode 2: Mixing Part-Part And Part-Whole
+
+If a kit has `2 motors` and `6 propellers`, the motor-to-propeller ratio is `1:3`, but motors are `1/4` of the total parts.
+
+Fix: ask whether you are comparing part to part or part to whole.
+
+### Failure Mode 3: Ignoring Units In Rates
+
+`10 meters per second` and `10 seconds per meter` are completely different.
+
+Fix: keep units in the fraction.
+
+### Failure Mode 4: Assuming Everything Scales Linearly
+
+Length, area, volume, mass, strength, heat, and power may scale differently.
+
+Fix: identify what kind of quantity you are scaling.
+
+## Engineering Connections
+
+### Robotics
+
+Gear ratios connect motor speed to output shaft speed. Wheel circumference converts rotations into distance.
+
+### Electronics
+
+Voltage dividers, resistor tolerances, duty cycles, and sensor calibration all use ratios.
+
+### Drones And GIS
+
+Map scale, camera field of view, pixel ground sample distance, and flight speed all depend on ratios and rates.
+
+### Computer Vision
+
+Camera images use aspect ratios, pixel coordinates, and scale factors to connect image measurements to real-world measurements.
+
+### Physics
+
+Rates such as velocity, acceleration, power, density, and frequency are ratio ideas. Calculus later studies changing ratios at a deeper level.
+
+## Practice Set
+
+### Warmups
+
+1. Simplify `6/9`.
+2. Simplify `12:18`.
+3. Convert `3/4` to a decimal.
+4. Convert `0.25` to a fraction.
+5. Write `2 motors : 8 wheels` in simplest form.
+6. A robot travels `15 m` in `3 s`. Find its unit rate.
+
+### Applied Problems
+
+1. A map scale is `1 cm = 2.5 m`. A line is `12 cm`. What real distance does it represent?
+2. A motor spins at `1800 RPM` through a `6:1` reduction. What is output RPM?
+3. A wheel has circumference `0.5 m`. It rotates `20` times. How far does it travel?
+4. A sensor outputs `0.2 V/cm`. What voltage change should you expect for `15 cm`?
+5. A camera scale is `3 cm/pixel`. A crack is `80 pixels`. How long is the crack in meters?
+
+### Error-Spotting
+
+1. A student says `2:3` means the same thing as `2/5` in every situation. Explain the missing context.
+2. A gearbox is `5:1`; someone multiplies motor RPM by 5 to get output RPM. What assumption might be wrong?
+3. A map scale is `1 cm = 10 m`; someone says `7 cm = 17 m`. Explain why that fails a ratio check.
+4. A drone image scale is `5 cm/pixel`; someone divides pixels by centimeters per pixel instead of multiplying. What unit clue reveals the mistake?
+
+### Challenge
+
+A small rover has wheels with diameter `10 cm`. The motor spins at `600 RPM`, and the gearbox reduction is `3:1`.
+
+1. What is the wheel RPM?
+2. What is the wheel circumference?
+3. How far does the rover travel per wheel rotation?
+4. Estimate rover speed in meters per second, ignoring slip.
+5. Write down one real-world reason the actual speed might be lower.
 
 ## Exercise
 
-1. A gear ratio is `3:1`. If the motor turns `900 RPM`, what is the output RPM?
-2. A drawing uses `1 cm = 2.5 m`. How far is `12 cm`?
-3. A battery is used from `100%` to `35%`. What fraction of the battery was used?
+Find three ratio-based specifications from real products or systems. Examples:
+
+- gear ratio,
+- screen aspect ratio,
+- sensor sensitivity,
+- map scale,
+- battery C-rating,
+- camera ground sample distance,
+- pulley ratio.
+
+For each one, explain:
+
+- what is being compared,
+- what the units are,
+- whether it is part-part, part-whole, or a rate,
+- why it matters.
 
 ## Build Task
 
-Write a scale calculator that converts between drawing distance and real distance. Include at least three examples.
+Create a ratio and proportion toolkit in Python or TypeScript.
+
+It should include functions for:
+
+- simplifying a ratio,
+- converting a fraction to a decimal,
+- computing a unit rate,
+- solving a proportion,
+- converting map distance to real distance,
+- converting gear ratio and motor RPM to output RPM.
+
+For each function, include:
+
+- one normal example,
+- one labeled-unit example,
+- one error or edge case to avoid.
 
 ## Quiz
 
-1. What is the difference between a fraction and a ratio?
-2. What does a proportion state?
-3. Why are ratios important for maps and gears?
-4. How can you check whether a proportion answer is too large or too small?
+1. What does the denominator of a fraction tell you?
+2. How is a fraction related to division?
+3. What is the difference between a ratio and a rate?
+4. Why does order matter in a ratio?
+5. What is a unit rate?
+6. What is a proportion?
+7. What does `y = kx` mean in a proportional relationship?
+8. Why does a directly proportional graph pass through the origin?
+9. What is the difference between part-part and part-whole comparisons?
+10. Give one engineering example where using the ratio backward would create a wrong design.
 
 ## Proof of Completion
 
-Submit the scale calculator, examples, and one paragraph explaining a real system where ratios matter.
+Submit:
+
+- completed warmups,
+- completed applied problems,
+- corrections for the error-spotting section,
+- the rover challenge,
+- your ratio/proportion toolkit,
+- one build-log entry explaining where ratios appear in your future Physical AI Lab projects.
+
+## Sources And Further Study
+
+- OpenStax Prealgebra: ratios, rates, unit rates, proportions, and proportion applications.
+- Khan Academy Pre-algebra: ratios, rates, percentages, constants of proportionality, and proportional relationships.
 
 ## Next Lesson
 
 Signed Numbers and Order of Operations.
+
+You are ready for it when you can label both sides of a ratio and explain whether you are comparing part-to-part, part-to-whole, or one unit to another unit.

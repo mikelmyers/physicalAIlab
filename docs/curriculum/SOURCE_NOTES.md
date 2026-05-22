@@ -33,3 +33,17 @@ The next Mathematical Foundations lessons should mature in this order:
 8. Trigonometry for Drones and Robotics
 
 Each should be upgraded to match `LESSON_DEPTH_STANDARD.md`.
+
+### Fractions, Ratios, and Proportions
+
+Primary anchors:
+
+- OpenStax Prealgebra sections on ratios, rates, unit rates, proportions, and applications.
+- Khan Academy Pre-algebra ratio/rate/proportion sequence, especially ratio tables, double number lines, unit rates, proportional relationships, and constants of proportionality.
+
+Curriculum intent:
+
+- Treat fractions as both part-whole relationships and division.
+- Distinguish ratios, rates, unit rates, proportions, and proportional relationships.
+- Connect ratios to gear reductions, voltage dividers, map scale, drone image scale, and physical scaling.
+- Warn early that not all scaling is linear.

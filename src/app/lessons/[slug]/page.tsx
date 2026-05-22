@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { LessonViewer } from "@/components/lesson/LessonViewer";
-import { getLesson, getModule, getTrack, lessons } from "@/lib/data";
+import { getLesson, getModule, getTrack, getTrackLessons, lessons } from "@/lib/data";
 import { renderLessonMdx } from "@/lib/mdx";
 
 type LessonPageProps = {
@@ -36,9 +36,19 @@ export default async function LessonPage({ params }: LessonPageProps) {
   }
 
   const { content } = await renderLessonMdx(lesson.mdxPath);
+  const trackLessons = getTrackLessons(lesson.trackSlug);
+  const lessonIndex = trackLessons.findIndex((candidate) => candidate.slug === lesson.slug);
+  const previousLesson = lessonIndex > 0 ? trackLessons[lessonIndex - 1] : undefined;
+  const nextLesson = lessonIndex >= 0 ? trackLessons[lessonIndex + 1] : undefined;
 
   return (
-    <LessonViewer lesson={lesson} moduleTitle={moduleItem.title} trackTitle={track.title}>
+    <LessonViewer
+      lesson={lesson}
+      moduleTitle={moduleItem.title}
+      nextLesson={nextLesson}
+      previousLesson={previousLesson}
+      trackTitle={track.title}
+    >
       {content}
     </LessonViewer>
   );
