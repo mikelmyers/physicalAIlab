@@ -1,0 +1,545 @@
+# Place Value and Whole-Number Arithmetic
+
+## Re-entry Promise
+
+If the words *place value* take you back to a third-grade classroom with worksheets and grids of empty boxes, that is fine. You will leave this lesson with a much more useful understanding: place value is the most important mathematical invention in human history, and it is the operating system that runs every numerical calculation you will ever do — by hand, by calculator, by computer, in floating-point arithmetic in a deep-learning training loop. Getting place value right at a deep, intuitive level is the cleanest way to repair the foundation under everything else.
+
+This lesson assumes nothing other than that you can count and read written digits. We will not rush. If you were ever told you were "bad at math," it almost always traces back to a shaky place-value foundation: numbers became opaque symbols whose behavior had to be memorized rather than understood. We are going to fix that.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Explain what *place value* means in your own words, and why a positional numeral system is so much better than a non-positional one (like Roman numerals).
+- Read any whole number aloud correctly, including numbers in the trillions.
+- Write any whole number from words, and convert between word form and digit form fluently.
+- Decompose any whole number into expanded form, showing each digit times its place value.
+- Add and subtract multi-digit numbers using the standard algorithms, with full understanding of *why* the carrying and borrowing steps work — not just *that* they work.
+- Multiply two-digit by two-digit and three-digit by two-digit numbers by hand using the standard algorithm, again understanding why.
+- Estimate any arithmetic result before computing it, to within an order of magnitude, so you can catch wildly wrong answers before they propagate.
+- Recognize that the same place-value idea works in any base (you will see binary, octal, and hexadecimal in later lessons), and understand intuitively why computers use binary.
+- Use place value to spot the most common arithmetic mistakes in your own work.
+
+## Why It Matters
+
+Almost no piece of engineering work is free of arithmetic. You will be reading and writing voltages, currents, masses, distances, frequencies, sample counts, byte counts, memory addresses, and dollar amounts constantly. Most of these numbers will have many digits. If your relationship with multi-digit numbers is anxious and approximate, three categories of mistake will happen to you over and over:
+
+1. **Decimal-shift errors**: you mean 3.3 kΩ and write 33 kΩ. The circuit current is off by a factor of 10. The motor draws ten times more than expected. The fuse blows.
+2. **Unit-prefix errors**: you read "12 MHz" and store it as 12,000 in code instead of 12,000,000. Your timing calculations are off by a factor of 1,000.
+3. **Order-of-magnitude blindness**: you compute that a drone needs a 50,000 mAh battery to fly 30 minutes and don't notice that this would weigh more than the drone. The number is technically a result of your arithmetic but is nowhere near physical possibility.
+
+A solid grip on place value prevents all three. You learn to *look at* a number and feel its size in your gut. You learn to expect the rough magnitude of the answer before you compute it, so when the computed value disagrees with your expectation, you notice immediately and check your work.
+
+Place value also matters because everything later in the curriculum is built on it: scientific notation, significant figures, dimensional analysis, programming with integer types, floating-point arithmetic, binary representation in microcontrollers, signal sampling theory, address spaces in computer architecture, and even the way deep-learning models represent parameters in memory. Build the foundation now and the rest of the curriculum has somewhere stable to stand.
+
+## Why This Idea Exists
+
+For most of human history, people did *not* have positional notation. They had tally marks. Then they had symbols (like Roman numerals: I, V, X, L, C, D, M) where each symbol represented a fixed amount and you added them up.
+
+In Roman numerals, the number we now call 1,776 is written as **MDCCLXXVI**:
+
+$$\text{M} = 1000, \quad \text{D} = 500, \quad \text{CC} = 200, \quad \text{L} = 50, \quad \text{XX} = 20, \quad \text{VI} = 6$$
+
+Now imagine trying to multiply MDCCLXXVI × XLVII (1,776 × 47) using Roman numerals alone. You cannot. Roman arithmetic was done on counting boards or abacuses; the symbols themselves are too clumsy to manipulate symbolically. For a thousand years, European mathematicians had access to long, complicated computational methods that we, today, would consider very basic.
+
+Around the 7th century in India, mathematicians (notably Brahmagupta) developed the **positional decimal system** we still use, including the symbol **0** as a placeholder. Arab scholars (notably Al-Khwarizmi, whose name gives us the word *algorithm*) refined and transmitted these methods. By the 13th century, this system was beginning to reach Europe through translators and merchants. In 1202, Leonardo of Pisa (Fibonacci) published *Liber Abaci*, presenting "Hindu numerals" to a Latin-reading audience.
+
+The fact that you can multiply 1,776 × 47 in your head (or on paper in under a minute), while the Romans could not, is not because you are smarter than the Romans. It is because you inherited a vastly superior representation of numbers. The representation does the work for you.
+
+A positional numeral system has three pieces:
+
+1. A **base** (we use base 10, but base 2, base 8, base 16, and base 60 have all been used).
+2. A finite set of **digit symbols** (we use 0 through 9).
+3. A rule: a digit's *position* in the number tells you what it is multiplied by.
+
+Once you understand this, you understand all of computer arithmetic for free. Binary uses base 2 (digits 0 and 1), hexadecimal uses base 16 (digits 0–9, A–F). The arithmetic is the same; only the base changes. We will return to that.
+
+## Plain-Language Intuition
+
+Stand at a hardware store counter looking at a price tag: **1,776**.
+
+That is not the digit 1, then 7, then 7, then 6. That is:
+
+> *One* thousand, *seven* hundred, *seven* tens, and *six* ones.
+
+Read it again with that mental emphasis:
+
+| Position | Value | Digit |
+| --- | --- | --- |
+| Thousands | 1000 | **1** |
+| Hundreds | 100 | **7** |
+| Tens | 10 | **7** |
+| Ones | 1 | **6** |
+
+The number is the sum:
+
+$$1 \times 1000 + 7 \times 100 + 7 \times 10 + 6 \times 1 = 1{,}776$$
+
+That sum, with each digit multiplied by its place value, is called the **expanded form** of the number. Every positional number works this way. The number 9,283,054 means
+
+$$9{,}283{,}054 = 9 \times 10^6 + 2 \times 10^5 + 8 \times 10^4 + 3 \times 10^3 + 0 \times 10^2 + 5 \times 10^1 + 4 \times 10^0$$
+
+That zero is doing real work: it is the placeholder for the hundreds place. Without it, $9{,}283{,}054$ would collapse into $928{,}354$ — an entirely different number. *Zero earns its keep by holding an empty position*.
+
+## Core Theory
+
+### The Place-Value Table
+
+Memorize this table. It is the operating system for arithmetic.
+
+| Place | Power of 10 | Value |
+| --- | --- | --- |
+| ones | $10^0$ | 1 |
+| tens | $10^1$ | 10 |
+| hundreds | $10^2$ | 100 |
+| thousands | $10^3$ | 1,000 |
+| ten thousands | $10^4$ | 10,000 |
+| hundred thousands | $10^5$ | 100,000 |
+| millions | $10^6$ | 1,000,000 |
+| ten millions | $10^7$ | 10,000,000 |
+| hundred millions | $10^8$ | 100,000,000 |
+| billions | $10^9$ | 1,000,000,000 |
+| trillions | $10^{12}$ | 1,000,000,000,000 |
+| quadrillions | $10^{15}$ | 1,000,000,000,000,000 |
+
+We group digits in threes (1,776,000) precisely because of this structure: each comma marks a power of 1,000.
+
+### Reading Large Numbers Aloud
+
+Take **34,068,217**. Split at the commas:
+
+$$\underbrace{34}_{\text{millions}}, \underbrace{068}_{\text{thousands}}, \underbrace{217}_{\text{ones}}$$
+
+Read it as: *thirty-four million, sixty-eight thousand, two hundred seventeen*. Each three-digit group has its own name (the comma's name), and within each group you read it like an ordinary three-digit number. The leading 0 in 068 is silent — you just say "sixty-eight thousand."
+
+Practice: **1,200,030,005,012** is *one trillion, two hundred billion, thirty million, five thousand, twelve*.
+
+### Expanded Form
+
+Any whole number can be written as a sum of digits times their place values. For **47,308**:
+
+$$47{,}308 = 4 \times 10{,}000 + 7 \times 1{,}000 + 3 \times 100 + 0 \times 10 + 8 \times 1$$
+
+You can also write it more compactly:
+
+$$47{,}308 = 4 \cdot 10^4 + 7 \cdot 10^3 + 3 \cdot 10^2 + 0 \cdot 10^1 + 8 \cdot 10^0$$
+
+This is more than a curiosity. It is the **definition** of the number in our notation. Once you see it this way, you will never again think of digits as opaque symbols. They are coefficients in a polynomial of powers of 10.
+
+### Addition
+
+Adding multi-digit numbers reduces to two ideas:
+
+1. Add corresponding place values (ones with ones, tens with tens, etc.).
+2. When a column sum exceeds 9, **carry** the excess into the next place because *10 ones = 1 ten*, *10 tens = 1 hundred*, and so on.
+
+Example: $387 + 254$.
+
+```
+   1 1    ← carries
+   3 8 7
+ + 2 5 4
+ -------
+   6 4 1
+```
+
+Column by column, right to left:
+
+- Ones: $7 + 4 = 11$. That is 1 ten + 1 one. Write 1 in the ones column; carry 1 into the tens.
+- Tens: $8 + 5 + 1 = 14$. That is 1 hundred + 4 tens. Write 4 in the tens column; carry 1 into the hundreds.
+- Hundreds: $3 + 2 + 1 = 6$. Write 6 in the hundreds column.
+
+Sum: **641**. The "carry" is not magic. It is the rule "10 of any place = 1 of the next place" applied as bookkeeping.
+
+### Subtraction
+
+Subtraction reduces to:
+
+1. Subtract corresponding place values (ones from ones, etc.).
+2. When the digit on top is smaller than the digit being subtracted, **borrow** from the next place because *1 of the next place = 10 of the current place*.
+
+Example: $703 - 268$.
+
+```
+   6 9 13   ← after borrowing
+   7 0 3
+ - 2 6 8
+ -------
+   4 3 5
+```
+
+- Ones: $3 - 8$. Cannot do it without going negative. Borrow 1 from the tens. But the tens column has 0, so we first borrow from the hundreds: $7 \to 6$ in the hundreds, $0 \to 10$ in the tens. Now borrow from the tens: $10 \to 9$ in the tens, $3 \to 13$ in the ones.
+- Ones: $13 - 8 = 5$.
+- Tens: $9 - 6 = 3$.
+- Hundreds: $6 - 2 = 4$.
+
+Difference: **435**. Again, "borrowing" is just the rule "1 of any place = 10 of the previous place" run in reverse.
+
+### Multiplication
+
+Multiplying multi-digit numbers is a structured application of the distributive law: $(a + b)(c + d) = ac + ad + bc + bd$.
+
+Example: $43 \times 27$. Decompose:
+
+$$43 \times 27 = (40 + 3)(20 + 7)$$
+$$= 40 \cdot 20 + 40 \cdot 7 + 3 \cdot 20 + 3 \cdot 7$$
+$$= 800 + 280 + 60 + 21$$
+$$= 1{,}161$$
+
+The standard "long multiplication" algorithm is a layout that performs exactly this distribution, columnwise:
+
+```
+       4 3
+     × 2 7
+     -----
+     3 0 1    ← 43 × 7   (= 280 + 21)
+   8 6 0      ← 43 × 20  (= 800 + 60)
+   -----
+   1 1 6 1
+```
+
+Each row is one digit of the multiplier (27) times the entire multiplicand (43), shifted by one place to account for the digit's place value. Then you add the rows.
+
+Notice the **place-value shift** in the second row: 86 is really 860, because the "2" in 27 means 2 tens, so we multiplied by 20, not 2. The trailing zero (or the leftward shift) keeps the place values aligned.
+
+### Division (Preview)
+
+Whole-number division is the subject of the *Long Division and Divisibility* lesson coming next, where we go through the algorithm in detail. For now, treat division as the reverse of multiplication: $\frac{a}{b} = c$ means $b \cdot c = a$ (when there is no remainder). For example, $\frac{156}{12} = 13$ because $12 \times 13 = 156$.
+
+### Estimation: Round to the Lead Digit
+
+Before computing any arithmetic, estimate the answer. The simplest method: round each number to its leading digit and a power of 10, then compute the estimate mentally.
+
+- $387 + 254 \approx 400 + 300 = 700$. Actual answer 641 — same neighborhood. ✓
+- $43 \times 27 \approx 40 \times 30 = 1{,}200$. Actual answer 1,161 — same neighborhood. ✓
+- $9{,}183 \times 421 \approx 9{,}000 \times 400 = 3{,}600{,}000$. If you compute by hand and get 38,762, you instantly know something is catastrophically wrong.
+
+**Always estimate first.** This habit catches more arithmetic errors than any other single technique.
+
+### Bases Other Than 10 (A Glimpse)
+
+The same positional idea works in any base $b > 1$. In binary (base 2), digits are 0 and 1. The number $1011_2$ means:
+
+$$1 \cdot 2^3 + 0 \cdot 2^2 + 1 \cdot 2^1 + 1 \cdot 2^0 = 8 + 0 + 2 + 1 = 11_{10}$$
+
+In hexadecimal (base 16), digits are 0–9 and A (=10), B (=11), C (=12), D (=13), E (=14), F (=15). The number $\text{1A3}_{16}$ means:
+
+$$1 \cdot 16^2 + 10 \cdot 16^1 + 3 \cdot 16^0 = 256 + 160 + 3 = 419_{10}$$
+
+You will use binary constantly when working with microcontrollers, networking, and low-level code. You will use hexadecimal when reading memory addresses, color codes (#FF6A00), and byte representations. The algorithms — adding, multiplying, carrying, borrowing — work identically. Only the threshold for "carry" changes: in base 10 it is 10, in base 2 it is 2, in base 16 it is 16.
+
+## Visual or Mental Model
+
+Imagine a row of buckets along a shelf, each bucket labeled with its place value:
+
+```
+[ M ] [ HTh ] [ TTh ] [ Th ] [ H ] [ T ] [ O ]
+million h-thou  t-thou thou hund tens ones
+```
+
+A whole number is a list of pebbles distributed across these buckets. The digit *in* a bucket is *how many* pebbles are in it. As soon as a bucket reaches 10 pebbles, you trade them in at the cashier's window for 1 pebble in the bucket immediately to its left. That trade is "carrying."
+
+Going the other way: if you need to subtract more pebbles than are in your bucket, you walk to the bucket on the left, take 1 pebble out, and trade it for 10 pebbles in the current bucket. That is "borrowing."
+
+The whole game of arithmetic with positional numerals is just this trading. Once you see it as pebble trading, you will never forget what carry and borrow mean. They are not steps in an algorithm to memorize; they are the consequences of the rule *10 of one place = 1 of the next*.
+
+## Worked Examples
+
+### Example 1 — Read a Large Number
+
+Read $5{,}027{,}310{,}486$ aloud.
+
+Split at commas: $5 \mid 027 \mid 310 \mid 486$. The comma names from left to right (for a 10-digit number) are *billion, million, thousand, ones*.
+
+Result: **five billion, twenty-seven million, three hundred ten thousand, four hundred eighty-six**.
+
+### Example 2 — Expanded Form
+
+Write $602{,}845$ in expanded form.
+
+$$602{,}845 = 6 \cdot 10^5 + 0 \cdot 10^4 + 2 \cdot 10^3 + 8 \cdot 10^2 + 4 \cdot 10^1 + 5 \cdot 10^0$$
+
+Notice the $0 \cdot 10^4$ is required: the 0 holds the ten-thousands place. Without it, 602,845 would collapse to 62,845.
+
+### Example 3 — Addition with Carries
+
+Compute $4{,}867 + 2{,}586$.
+
+```
+   1 1 1 1   ← carries
+   4 8 6 7
+ + 2 5 8 6
+ ---------
+   7 4 5 3
+```
+
+Estimate first: $5{,}000 + 2{,}500 = 7{,}500$. The exact answer 7,453 is in the right neighborhood. ✓
+
+### Example 4 — Subtraction with Multiple Borrows
+
+Compute $5{,}001 - 3{,}478$.
+
+The top has zeros and ones — borrowing chains through several columns:
+
+```
+   4 9 9 11  ← after cascading borrows
+   5 0 0  1
+ - 3 4 7  8
+ ---------
+   1 5 2  3
+```
+
+To get 11 in the ones, we had to borrow from the hundreds (which was 0, so it borrowed from the thousands, which became 4). The thousands dropped from 5 to 4. The hundreds borrowed from the thousands' "carry", becoming 9. Then 9 borrowed from itself for the tens, becoming 9 then turning the tens column's 0 into 10, which then dropped to 9 to lend a 10 to the ones (making 11).
+
+Estimate: $5{,}000 - 3{,}500 = 1{,}500$. Exact answer 1,523. ✓ The estimate caught any wild error.
+
+### Example 5 — Multiplication
+
+Compute $324 \times 56$.
+
+Decompose: $324 \times 56 = 324 \times 50 + 324 \times 6$.
+
+$$324 \times 6 = 1{,}944$$
+$$324 \times 50 = 16{,}200$$
+$$1{,}944 + 16{,}200 = 18{,}144$$
+
+Or the long-multiplication layout:
+
+```
+       3 2 4
+     ×   5 6
+     -------
+   1 9 4 4       ← 324 × 6
+   1 6 2 0 0     ← 324 × 50
+   -----------
+   1 8 1 4 4
+```
+
+Estimate: $300 \times 60 = 18{,}000$. Exact answer 18,144. ✓
+
+### Example 6 — Failure Mode: Forgetting the Carry
+
+Suppose a student computes $87 + 56$:
+
+```
+   8 7
+ + 5 6
+ -----
+   3 3   ← wrong: forgot the carry
+```
+
+They got $7 + 6 = 13$ and wrote "3" without carrying the 1. Then $8 + 5 = 13$ and they wrote "3" instead of "13." Result: 33. Real answer: 143.
+
+The estimate would have caught this: $90 + 60 = 150 \neq 33$. The size of the error (off by ~100) tips you off to a missed carry.
+
+### Example 7 — Failure Mode: Place-Value Slip in Multiplication
+
+A common error: when computing $43 \times 27$ with long multiplication, the student does $43 \times 7 = 301$ correctly, then does $43 \times 2 = 86$ but writes it directly under the 301 instead of shifting one place left:
+
+```
+   4 3
+ × 2 7
+ -----
+ 3 0 1
+ 8 6        ← wrong: not shifted!
+ ----
+ 3 8 7      ← wrong
+```
+
+The shift exists because the 2 in 27 is a "2 tens," not a "2 ones." It represents multiplication by 20, not by 2. Skipping the shift loses a factor of 10 and gives a wildly wrong answer.
+
+Estimate: $40 \times 30 = 1{,}200$. Computed: 387. Off by a factor of more than 3 — something is wrong.
+
+## Engineering Connections
+
+### Voltage and Current Magnitudes
+
+Engineers constantly read values like 3.3 V (a logic supply rail), 5 V (USB voltage), 12 V (automotive), 120 V (US mains), 1.2 V (some processor cores), 5,000 V (a high-voltage probe). The *order of magnitude* matters more than the exact digit. Place-value fluency means you instantly know that 3.3 V and 33 V are not the same thing — they differ by a factor of 10 — and that confusing them is a transducer-destroying mistake.
+
+### Sample Rates and Frequencies
+
+Audio sample rates are quoted in samples per second: 44,100 Hz (CD quality), 48,000 Hz (video), 96,000 Hz (high-resolution audio), 384,000 Hz (esoteric). Microcontroller clock rates are 8 MHz, 72 MHz, 480 MHz. RF carrier frequencies are 2.4 GHz (Wi-Fi), 5 GHz (Wi-Fi), 60 GHz (millimeter-wave). Read those numbers aloud the right way and *feel* their relative magnitudes.
+
+### Memory Sizes
+
+A microcontroller has 256 KB of flash, 64 KB of RAM. A laptop has 32 GB of RAM. A robot's lidar can produce 30 MB of point-cloud data per second. A trained transformer model is 7 GB. A foundation model can be 70 GB or even 700 GB. Knowing instantly whether something fits in memory, on disk, or only in distributed storage is a place-value skill: $10^4$ bytes (10 KB) and $10^{11}$ bytes (100 GB) are seven orders of magnitude apart.
+
+### Byte Counts and Network Speeds
+
+Network speeds: 1 Mbps (slow ADSL), 100 Mbps (Fast Ethernet), 1 Gbps (Gigabit Ethernet), 10 Gbps (datacenter), 400 Gbps (modern backbone). File sizes: 1 KB (a JSON message), 1 MB (a JPEG), 1 GB (a video), 1 TB (a hard drive). Place-value fluency makes "1 GB at 10 Mbps takes how long?" trivial: roughly $\frac{10^9}{10^7} = 100$ seconds, ignoring overhead. (The real answer involves bits versus bytes — that is a units lesson — but the order of magnitude comes from place value.)
+
+### Why Computers Use Binary (Base 2)
+
+A transistor in a microcontroller can be reliably *on* or *off*. It cannot easily hold 10 distinguishable voltage levels for base-10 storage. So computers use base 2 (binary): two distinguishable states per digit. The same place-value rules apply, just with a base of 2.
+
+In binary, $1011_2$ means $1 \cdot 8 + 0 \cdot 4 + 1 \cdot 2 + 1 \cdot 1 = 11_{10}$. Adding two binary numbers uses exactly the carry logic you just learned, except you carry whenever a column sum reaches 2 instead of 10. You will revisit this in *Digital Logic and Computer Architecture*, where the carry signal between adders is the literal wire in a CPU's arithmetic unit.
+
+## Practice Set
+
+Work each set without skipping ahead. Answers follow at the bottom.
+
+### Warm-ups (Reading and Writing)
+
+1. Read aloud: **3,047,000**.
+2. Write in expanded form: **52,083**.
+3. Write in expanded form: **400,007**.
+4. Write the number that has 6 in the millions place, 0 in the hundred thousands, 4 in the ten thousands, 8 in the thousands, 0 in the hundreds, 3 in the tens, and 1 in the ones.
+5. Read aloud: **1,000,000,000,007** (twelve zeros are in there somewhere).
+
+### Addition
+
+6. $345 + 178$
+7. $902 + 4{,}079$
+8. $50{,}061 + 8{,}294$
+9. $999 + 1$
+10. $1{,}234 + 5{,}678 + 9{,}012$
+
+### Subtraction
+
+11. $812 - 369$
+12. $1{,}000 - 1$
+13. $5{,}030 - 1{,}278$
+14. $10{,}000 - 9{,}999$
+15. $700{,}050 - 268{,}731$
+
+### Multiplication
+
+16. $25 \times 17$
+17. $43 \times 56$
+18. $128 \times 9$
+19. $204 \times 31$
+20. $999 \times 11$
+
+### Mixed / Applied
+
+21. A drone has a battery of capacity 5,200 mAh and draws an average current of 1,300 mA in flight. About how many hours can it fly? Estimate first.
+22. A robot moves 1,250 mm in 8 seconds. Estimate its speed in mm/s.
+23. A microcontroller has 256,000 bytes of flash. If each program instruction takes 4 bytes, about how many instructions fit?
+24. A 3D printer takes 6 minutes per cm³ of plastic to extrude. About how long would it take to print a 240 cm³ part?
+25. Add the populations of three cities: 832,000 + 1,415,000 + 297,000. Estimate first.
+
+### Challenge
+
+26. Without writing anything down, compute $999 + 999 + 999$. (Hint: $999 = 1000 - 1$.)
+27. Without writing anything down, compute $25 \times 16$. (Hint: $25 \times 4 = 100$.)
+28. The number $1{,}000{,}000$ is how many times larger than $1{,}000$?
+29. The product $5{,}000 \times 200{,}000$ has how many digits? (Just count digits in the answer, do not compute exactly.)
+30. If you wrote out the number $10^{12}$ in standard form (i.e. with commas), how many digits would it have? What is its name in English?
+
+### Error Spotting
+
+31. A student computes $487 + 296$ as $783$. Is it correct? If not, find their mistake.
+32. A student computes $24 \times 13$ as $128$. Is it correct? If not, find their mistake.
+33. A student claims that $50{,}000$ is 100 times larger than $500$. Is the claim correct?
+34. A student computes $1{,}000{,}000 - 999$ as $999{,}001$. Is it correct?
+
+### Answers and Brief Explanations
+
+1. Three million, forty-seven thousand.
+2. $52{,}083 = 5 \cdot 10^4 + 2 \cdot 10^3 + 0 \cdot 10^2 + 8 \cdot 10 + 3$.
+3. $400{,}007 = 4 \cdot 10^5 + 0 \cdot 10^4 + 0 \cdot 10^3 + 0 \cdot 10^2 + 0 \cdot 10 + 7$.
+4. $6{,}048{,}031$.
+5. One trillion, seven. (The number is $10^{12} + 7$.)
+6. $523$.
+7. $4{,}981$.
+8. $58{,}355$.
+9. $1{,}000$.
+10. $15{,}924$.
+11. $443$.
+12. $999$.
+13. $3{,}752$.
+14. $1$.
+15. $431{,}319$.
+16. $425$.
+17. $2{,}408$.
+18. $1{,}152$.
+19. $6{,}324$.
+20. $10{,}989$. (Nice pattern.)
+21. Estimate $\frac{5{,}200}{1{,}300} \approx \frac{5{,}000}{1{,}000} = 5$, then adjust. Actual $\approx 4$ hours. (The exact value is $5200/1300 = 4$ hours; real-world losses reduce this somewhat.)
+22. $1{,}250 / 8 \approx 1{,}200 / 8 = 150$ mm/s. Exact 156.25 mm/s.
+23. $\frac{256{,}000}{4} = 64{,}000$ instructions.
+24. $240 \times 6 = 1{,}440$ minutes = 24 hours. Estimate before computing: $200 \times 6 = 1{,}200$ minutes ≈ 20 hours.
+25. Estimate: $800 + 1{,}400 + 300 = 2{,}500$ thousand = 2.5 million. Exact: $2{,}544{,}000$.
+26. $999 + 999 + 999 = 3 \times (1{,}000 - 1) = 3{,}000 - 3 = 2{,}997$.
+27. $25 \times 16 = (25 \times 4) \times 4 = 100 \times 4 = 400$.
+28. $10^6 / 10^3 = 10^3 = 1{,}000$ times.
+29. $5{,}000 \times 200{,}000 = 5 \times 2 \times 10^3 \times 10^5 = 10 \times 10^8 = 10^9 = 1{,}000{,}000{,}000$. Ten digits.
+30. $10^{12}$ has 13 digits: a 1 followed by 12 zeros. Its English name is one trillion.
+31. $487 + 296 = 783$. ✓ Correct.
+32. $24 \times 13$ should be $312$. The student got $128$ — likely they wrote $24 \times 3 = 72$ but then $24 \times 1 = 24$ without shifting, and added $72 + 24 = 96$ (and then made another error, since the right unshifted-bad result would be 96, not 128). Either way, the estimate $25 \times 13 \approx 300$ catches it.
+33. Yes. $50{,}000 / 500 = 100$. ✓
+34. $1{,}000{,}000 - 999 = 999{,}001$. ✓ Correct.
+
+## Build Task
+
+Write a small Python program called `place_value.py` that does the following without using any built-in conversion shortcuts (like `format()` for thousand separators).
+
+Required functions:
+
+1. `digits(n)` — return the list of decimal digits of a non-negative integer `n`, ones-place first. For example, `digits(1776)` should return `[6, 7, 7, 1]`.
+2. `from_digits(ds)` — the inverse: given a list like `[6, 7, 7, 1]`, return the integer `1776`.
+3. `to_expanded_form(n)` — return a human-readable string showing the number in expanded form. For example, `to_expanded_form(1776)` should return something like `"1*1000 + 7*100 + 7*10 + 6"`.
+4. `to_words(n)` — return the English word form of `n` for $0 \le n < 10^{12}$. For example, `to_words(1776)` should return `"one thousand seven hundred seventy-six"`.
+5. `to_base(n, b)` — convert a non-negative integer `n` to base `b` (with `2 <= b <= 16`), returning the result as a string (use letters A–F for 10–15). For example, `to_base(11, 2)` should return `"1011"` and `to_base(419, 16)` should return `"1A3"`.
+
+Tests to include (use `assert` or `pytest`):
+
+- `assert digits(0) == [0]`
+- `assert digits(1776) == [6, 7, 7, 1]`
+- `assert from_digits([6, 7, 7, 1]) == 1776`
+- `assert to_expanded_form(305) == "3*100 + 0*10 + 5"` (your formatting may differ)
+- `assert to_words(0) == "zero"`
+- `assert to_words(101) == "one hundred one"`
+- `assert to_base(255, 16) == "FF"`
+- `assert to_base(8, 2) == "1000"`
+- `assert to_base(0, 2) == "0"`
+
+Stretch goals (pick any one):
+
+- Add `from_base(s, b)` that converts the string `s` in base `b` back to an integer, validating that only legal digits appear.
+- Add a CLI that takes a number and prints its expanded form, English words, and binary and hex representations.
+- Render a small ASCII art place-value chart for any number up to a billion.
+
+Save your code and the test output in `lessons/place-value-and-whole-number-arithmetic/` under your build log so you can return to it later.
+
+## Quiz
+
+These probe concept understanding. Try to answer before checking.
+
+1. In your own words, what is the difference between a *digit* and a *number*?
+2. What role does the digit 0 play in $5{,}023$? What would change if you removed it?
+3. Why do we group digits in threes with commas (e.g. 1,234,567)? What is the structural meaning?
+4. Why does the "carry" step exist when adding multi-digit numbers? Justify it in terms of place value, not in terms of "the rule says so."
+5. Why does the second row in long multiplication get shifted one place to the left? What would go wrong if you forgot the shift?
+6. Convert the binary number $1101_2$ to base 10 by hand.
+7. Convert the hex number $\text{2F}_{16}$ to base 10 by hand.
+8. Convert the decimal number $25_{10}$ to binary by hand.
+9. About how many seconds are in a million (one million)? Estimate to the nearest power of 10 in terms of human time scales (seconds, minutes, hours, days, weeks). Why does this matter?
+10. A circuit has $V = 3.3$ V and $R = 1{,}000{,}000$ Ω (one megohm). About what is the current $I = V/R$ in microamps? Why does place-value fluency make this fast?
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Pass the inline lesson check below at 100% on the first try.
+- Pass the Math Re-entry Toolkit module exam at $\ge 95\%$ (the lessons in this module cumulatively prepare you for it).
+- Submit your `place_value.py` module with all required tests passing.
+- Read a 10-digit number aloud in under 5 seconds, without hesitating.
+- Estimate the result of any one-step arithmetic operation (sum, difference, product, quotient) on numbers up to six digits to within an order of magnitude, in your head, in under 3 seconds.
+
+## Sources and Further Study
+
+If you want a second voice on this material:
+
+- **Khan Academy** — *Arithmetic* and *Pre-algebra: factors and multiples* units. Free, high-quality, visual. Use these to drill any specific sub-skill where you feel slow.
+- **Saxon Math 7/6 (and Saxon Math 8/7)** — relentlessly incremental textbook series that builds place-value fluency through hundreds of small exercises. The pedagogy is dated but extremely effective.
+- **Knuth, *The Art of Computer Programming, Volume 2: Seminumerical Algorithms***. Section 4.1 covers positional number systems and number-system design with characteristic depth. Read it later in your curriculum; it is graduate-level but the first few pages are accessible.
+- **Lockhart, *Measurement***. Not specifically about place value, but the best contemporary book on what mathematics actually is and how to do it.
+- **Ifrah, *The Universal History of Numbers***. Comprehensive (and long) history of how humans across cultures developed numeral systems. Read for pleasure once the foundation is solid.
+
+## Next Lesson Bridge
+
+You now have place value, addition, subtraction, multiplication, and estimation under your belt. The next lesson, *Multiplication Tables and Factor Fluency*, builds **fluency** with the basic multiplication facts up to $12 \times 12$ — not because they are mathematically deep, but because every higher-level lesson (long division, factoring, simplifying fractions, working with units, reading prime factorizations, even computing inverses in modular arithmetic) will be slower than it needs to be if you have to compute basic products from scratch each time. The point of memorizing the times tables is not to "know them" — it is to free your working memory for the actually-hard step of whatever problem you are solving.
+
+After that comes long division, then GCD/LCM and prime factorization, then the fractions sequence. Each lesson assumes you can do the previous lesson's content fluidly. Build fluency now and the entire stack stays light.
+

@@ -58,33 +58,37 @@ const mathReentryToolkit: Lesson[] = [
     "Rebuild number sense, unit awareness, and quick reasonableness checks for technical work.",
     { estimatedMinutes: 35, checkId: "arithmetic-units-core-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     2,
     "place-value-and-whole-number-arithmetic",
     "Place Value and Whole-Number Arithmetic",
     "Place value, mental addition and subtraction, multiplication and division of whole numbers, and reading large numbers without losing track.",
+    { estimatedMinutes: 75, checkId: "place-value-and-whole-number-arithmetic-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     3,
     "multiplication-tables-and-factor-fluency",
     "Multiplication Tables and Factor Fluency",
     "Mastery of multiplication facts to 12 by 12, recognizing factors, and using divisibility tests for fast mental math.",
+    { estimatedMinutes: 90, checkId: "multiplication-tables-and-factor-fluency-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     4,
     "long-division-and-divisibility",
     "Long Division and Divisibility",
     "The long-division algorithm, quotient and remainder, and using divisibility rules to spot factors quickly.",
+    { estimatedMinutes: 90, checkId: "long-division-and-divisibility-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     5,
     "gcd-lcm-and-prime-factorization",
     "GCD, LCM, and Prime Factorization",
     "Prime numbers, factor trees, the greatest common divisor and least common multiple, and how prime factorization underwrites cryptography.",
+    { estimatedMinutes: 105, checkId: "gcd-lcm-and-prime-factorization-check" },
   ),
   future(
     "math-reentry-toolkit",

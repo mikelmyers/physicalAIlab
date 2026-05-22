@@ -1,0 +1,578 @@
+# Long Division and Divisibility
+
+## Re-entry Promise
+
+Long division has a bad reputation. It is the one elementary-school algorithm that adults frequently say they "never use" — and that gives them permission to feel they cannot do. Both halves of that sentiment are wrong. You will use long division (or its mental shortcut) regularly in engineering: estimating battery life, working out gear ratios, sizing batches, reasoning about packet sizes that do not divide evenly. And it is not hard. It is a structured sequence of *guess-multiply-subtract-bring-down-repeat* moves, each step controlled by place value.
+
+If long division currently feels like an arbitrary ritual, this lesson rebuilds it as something you actually understand. By the end, the algorithm should feel like the obvious consequence of place value rather than a memorized procedure.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Divide any whole number by a one-digit or two-digit divisor, by hand, using the long-division algorithm, in under two minutes.
+- Explain why every step of the long-division algorithm works in terms of place value (no "the rule says so" allowed).
+- Distinguish quotient from remainder, and write any whole-number division result in the form $a = b \cdot q + r$ with $0 \le r < b$.
+- Convert any whole-number division result to a decimal (using long division extended past the decimal point), recognizing when the decimal terminates, repeats, or runs forever without repeating.
+- State and *prove* the divisibility rules for 2, 3, 4, 5, 8, 9, 10, and 11 using place value and modular arithmetic.
+- Use modular arithmetic intuitively to predict remainders without performing the full division.
+- Use long division as a stepping stone toward dividing polynomials (you will encounter this in pre-calculus) and toward binary division in CPUs.
+
+## Why It Matters
+
+Specific engineering scenarios where division matters:
+
+1. **Battery life estimation.** A 5,200 mAh battery powers a load of 1,300 mA. Flight time = capacity / current. You need to divide. Either you mentally compute $5200 / 1300 = 4$ hours, or you reach for a calculator. If your number sense is solid, you do not need the calculator at all.
+
+2. **Frame and sample rate matching.** A camera shoots at 60 fps, your downstream pipeline runs at 30 fps. The ratio is 60 / 30 = 2, so you drop every other frame. But what if the camera is 47 fps and the pipeline is 24 fps? Now $\frac{47}{24} \approx 1.958$, which means you cannot drop every-other-frame cleanly; you need a more careful resampling scheme. Recognizing when ratios are "nice" (small integer ratios) versus "ugly" (irrational-looking or large-denominator) is a core engineering skill that depends on quick mental division.
+
+3. **Packet and chunk sizing.** A 2,560-byte payload needs to be split into 512-byte packets. $2560 / 512 = 5$. The division is clean and the answer is small; no fragmentation problems. If the same payload were 2,600 bytes, the division would be $2600 / 512 = 5$ remainder $40$, meaning the last packet is mostly empty padding. The remainder matters; it is the engineering content of the calculation.
+
+4. **Gear ratios.** A motor spins at 4,800 RPM and drives a wheel through a planetary gearbox with a 25:1 reduction. The wheel speed is $4800 / 25 = 192$ RPM. If the reduction were 26:1, you would get $4800 / 26 \approx 184.6$ RPM — an ugly number that suggests an unusual gear set.
+
+The deeper reason: division is the inverse of multiplication, and you cannot reason cleanly about systems without thinking in inverses. Force = mass × acceleration. To go from force and mass to acceleration, you divide. Distance = rate × time; rate = distance / time; time = distance / rate. Almost every engineering formula has a division in it somewhere.
+
+## Why This Idea Exists
+
+Just like multiplication is repeated addition, division is repeated subtraction. To compute $156 / 12$, you could ask: how many times can I subtract 12 from 156 before I reach 0 (or a number less than 12)? Twelve, eleven, ten... thirteen subtractions later, you reach 0, so $156 / 12 = 13$.
+
+Repeated subtraction is slow for large numbers. The long-division algorithm is an optimization: instead of subtracting one $12$ at a time, you ask "how many 12s fit in this part of the dividend?" and you subtract that many 12s at once. The place-value structure tells you the natural "parts" to consider: the leading digit (or pair of digits), then the next digit brought down, etc.
+
+The algorithm has been refined for thousands of years. The version we use now in the Western tradition stabilized around the 15th–16th century after the spread of Hindu-Arabic numerals. Earlier methods (the "galley" method, used in Renaissance Italy, and the "scratch" method) were even more visual but harder to teach. The columnar long-division layout we still use is the descendant of those methods, plus a few centuries of refinement.
+
+## Plain-Language Intuition
+
+Imagine you have 156 candies and you want to share them equally among 12 children. How many does each child get?
+
+You walk up to each kid and hand them one candy. After one pass around the room, each kid has 1 candy and you have 144 left. After another pass: each kid has 2 and you have 132 left. And so on. After 13 passes, each kid has 13 candies and you have 0 left. So $156 / 12 = 13$ candies per child, with no leftover.
+
+Long division does the same thing, but instead of one candy at a time, you hand out *as many as you can per pass*. You ask: "how many candies could I give each kid right now?" If you peek at the leading digit (1 in 156), it is not enough — you cannot give every kid even 1 candy from a single piece. You expand to 15 candies (the first two digits). You can give each kid 1 candy from those — 12 candies handed out, 3 remain in the original pile, and you have 6 candies yet to fold in. You combine: 3 + 6 = ... no wait. The right mental model is:
+
+- After handing out 12 candies (1 per kid), you have $156 - 120 = 36$ candies remaining. (You handed out 12 candies, but each "1 per kid" really means 10 candies per kid in disguise, because the "1" is in the tens place of the quotient. We will see this in the layout.)
+- 36 / 12 = 3 candies per kid (a second pass of 3 each, or 36 candies total handed out).
+- Now you have 0 left.
+
+The quotient is "1 in the tens place of the answer, 3 in the ones place of the answer" = **13**.
+
+That is exactly what the long-division layout records.
+
+## Core Theory
+
+### The Quotient and Remainder
+
+Given a dividend $a$ and a divisor $b$ (with $b > 0$), there exist unique whole numbers $q$ (quotient) and $r$ (remainder) such that:
+
+$$a = b \cdot q + r, \quad 0 \le r < b$$
+
+This is the **division algorithm theorem** (sometimes called the *Euclidean division* statement). The constraint $0 \le r < b$ is what makes $q$ and $r$ unique.
+
+Examples:
+
+- $156 / 12$: $q = 13, r = 0$. Check: $12 \cdot 13 + 0 = 156$. ✓
+- $158 / 12$: $q = 13, r = 2$. Check: $12 \cdot 13 + 2 = 158$. ✓
+- $7 / 12$: $q = 0, r = 7$. (When the dividend is smaller than the divisor, the quotient is 0 and the remainder is the whole dividend.)
+
+The "remainder" is the unfinished part — what you cannot fit into a complete quotient. In code, $a \% b$ gives the remainder.
+
+### The Long-Division Algorithm
+
+Layout: write the divisor outside a tableau, the dividend inside. The quotient is built digit by digit on top.
+
+```
+        q q q
+       _______
+    b ) a a a a
+        ...
+```
+
+Steps (with example $387 / 12$):
+
+```
+         3 2 r 3
+       _________
+    12 ) 3 8 7
+         3 6
+         ---
+           2 7
+           2 4
+           ---
+             3
+```
+
+1. Look at the leftmost digit of the dividend (3). Can the divisor (12) fit into 3? No (12 > 3). So expand to the first two digits (38).
+2. How many times does 12 fit into 38? $12 \cdot 3 = 36, 12 \cdot 4 = 48$. So 3 times. Write 3 on top above the 8 (the place we are "filling"). Multiply $12 \cdot 3 = 36$; write this under the 38; subtract: $38 - 36 = 2$.
+3. Bring down the next digit (7). The remainder so far is 27.
+4. How many times does 12 fit into 27? $12 \cdot 2 = 24, 12 \cdot 3 = 36$. So 2 times. Write 2 on top above the 7. Multiply $12 \cdot 2 = 24$; subtract $27 - 24 = 3$.
+5. There are no more digits to bring down. We have a quotient of 32 and a remainder of 3.
+
+Check: $12 \cdot 32 + 3 = 384 + 3 = 387$. ✓
+
+Why does this work? At each step we are subtracting *the largest multiple of the divisor that fits in the current partial dividend*. The "current partial dividend" is the result of the previous step plus the next brought-down digit. The bookkeeping aligns place values: when we write a 3 above the 8 (which is in the tens place of 387), we are saying "the quotient has 3 in its tens place" — equivalently, "I am subtracting $3 \cdot 12 \cdot 10 = 360$ from the original 387 in this step." The leftover ($387 - 360 = 27$) is what we work with next. Place value runs the whole algorithm.
+
+### Long Division Going Past the Decimal Point
+
+If the divisor does not divide the dividend evenly, we can keep going past the decimal point by appending zeros.
+
+Example: $7 / 4$.
+
+```
+         1 . 7 5
+        _______
+    4 ) 7 . 0 0
+        4
+        ---
+        3 0
+        2 8
+        ---
+          2 0
+          2 0
+          ---
+            0
+```
+
+1. 4 into 7: once (4·1 = 4); $7 - 4 = 3$. Write 1 above the 7 in the ones place.
+2. There are no more whole-number digits. Write a decimal point in the quotient (above the dividend's decimal point) and bring down a 0 (treating $7.0$ as $7.00$ etc.). Now we have 30.
+3. 4 into 30: seven times (4·7 = 28); $30 - 28 = 2$. Write 7 in the tenths place of the quotient.
+4. Bring down another 0 (treating the dividend as $7.000$). Now we have 20.
+5. 4 into 20: five times (4·5 = 20); $20 - 20 = 0$. Write 5 in the hundredths place. The remainder is 0, so the decimal terminates.
+
+Result: $7 / 4 = 1.75$. Check: $4 \cdot 1.75 = 7$. ✓
+
+### When Decimals Repeat
+
+Sometimes the long division never reaches a remainder of 0. Then the decimal *repeats*.
+
+Example: $1 / 3$.
+
+```
+          0 . 3 3 3 ...
+         _________
+      3 ) 1 . 0 0 0
+          0
+          --
+          1 0
+            9
+          ---
+            1 0
+              9
+            ---
+              1 0
+                9
+              ---
+                ... never ends
+```
+
+The remainder keeps being 1, and bringing down a 0 always gives 10, and 10 / 3 always gives quotient 3 remainder 1. The decimal is $0.333\ldots = 0.\overline{3}$ (the overline denotes the repeating part).
+
+Why must some decimals repeat? After each long-division step, the remainder is a whole number between 0 and $b-1$ (where $b$ is the divisor). There are only finitely many possible remainders. By the pigeonhole principle, some remainder must repeat eventually, and once a remainder repeats, the next steps are identical to the previous time we saw that remainder. So the decimal pattern repeats.
+
+A decimal terminates if and only if the divisor (in lowest terms) has only 2s and 5s as prime factors. Otherwise it repeats. Examples:
+
+- $1 / 2 = 0.5$ (terminates; denominator factors are just 2).
+- $1 / 4 = 0.25$ (terminates).
+- $1 / 5 = 0.2$.
+- $1 / 8 = 0.125$.
+- $1 / 10 = 0.1$.
+- $1 / 3 = 0.\overline{3}$ (repeats; denominator factor 3).
+- $1 / 6 = 0.1\overline{6}$ (repeats; denominator factor 3).
+- $1 / 7 = 0.\overline{142857}$ (six-digit repeat; denominator factor 7).
+
+### Modular Arithmetic and Divisibility
+
+Working with remainders is **modular arithmetic**. We write $a \equiv b \pmod n$ ("$a$ is congruent to $b$ modulo $n$") to mean $a$ and $b$ have the same remainder when divided by $n$, or equivalently, $n$ divides $a - b$.
+
+Some useful facts:
+
+- $a \equiv a \pmod n$ always (reflexivity).
+- If $a \equiv b \pmod n$, then $a + c \equiv b + c \pmod n$.
+- If $a \equiv b \pmod n$, then $a \cdot c \equiv b \cdot c \pmod n$.
+- If $a \equiv b \pmod n$ and $c \equiv d \pmod n$, then $a + c \equiv b + d \pmod n$ and $a \cdot c \equiv b \cdot d \pmod n$.
+
+These let us simplify remainder calculations dramatically.
+
+### Proving the Divisibility Rules
+
+We now prove the rules from the previous lesson rigorously.
+
+**Divisibility by 9.** *Claim*: $n$ is divisible by 9 iff the sum of its digits is divisible by 9.
+
+*Proof*: Write $n$ in expanded form: $n = d_k \cdot 10^k + d_{k-1} \cdot 10^{k-1} + \cdots + d_1 \cdot 10 + d_0$.
+
+Note that $10 \equiv 1 \pmod 9$ (since $10 = 1 \cdot 9 + 1$). Therefore $10^j \equiv 1^j = 1 \pmod 9$ for every $j \ge 0$. Substituting:
+
+$$n \equiv d_k \cdot 1 + d_{k-1} \cdot 1 + \cdots + d_1 \cdot 1 + d_0 = d_k + d_{k-1} + \cdots + d_0 \pmod 9$$
+
+So $n$ and (sum of digits of $n$) have the same remainder mod 9. In particular, $n \equiv 0 \pmod 9$ iff (sum of digits) $\equiv 0 \pmod 9$. ∎
+
+**Divisibility by 3.** Same proof but mod 3. $10 \equiv 1 \pmod 3$, so $10^j \equiv 1 \pmod 3$, so $n \equiv \sum d_i \pmod 3$.
+
+**Divisibility by 11.** *Claim*: $n$ is divisible by 11 iff the alternating sum of its digits is divisible by 11.
+
+*Proof*: $10 \equiv -1 \pmod{11}$ (since $10 = 11 - 1$). Therefore $10^j \equiv (-1)^j \pmod{11}$. Substituting:
+
+$$n \equiv d_k \cdot (-1)^k + d_{k-1} \cdot (-1)^{k-1} + \cdots + d_1 \cdot (-1) + d_0 \pmod{11}$$
+
+$$= d_0 - d_1 + d_2 - d_3 + \cdots \pmod{11}$$
+
+So $n$ is divisible by 11 iff this alternating sum is divisible by 11. ∎
+
+**Divisibility by 4.** *Claim*: $n$ is divisible by 4 iff the last two digits form a number divisible by 4.
+
+*Proof*: $100 \equiv 0 \pmod 4$, and therefore $10^j \equiv 0 \pmod 4$ for all $j \ge 2$. So $n \equiv 10 \cdot d_1 + d_0 \pmod 4$, which is the number formed by the last two digits. ∎
+
+**Divisibility by 8.** Same idea: $1000 \equiv 0 \pmod 8$, so $n \equiv$ (last three digits) $\pmod 8$.
+
+The other rules (by 2, 5, 6, 10) follow trivially from related modular facts.
+
+The pattern: divisibility rules work because $10$ has a specific behavior modulo each small divisor (1 for 3 and 9, $-1$ for 11, 0 for 2 and 5 and their powers).
+
+## Visual or Mental Model
+
+The long-division layout is itself a visual model. As you progress, the dividend gets "consumed" left to right; the quotient grows above; partial remainders appear below.
+
+A second mental model: think of long division as **decomposing into place-value chunks**. Computing $4{,}356 / 12$ means computing how many 12s are in $4000 + 300 + 50 + 6$:
+
+- 12s in 4000? Roughly $4000 / 12 \approx 333$, but the algorithm builds this digit by digit from the top.
+- Look at the thousands: $12$ does not fit in $4$ (the thousands digit alone), so combine with the hundreds: $43$. Twelve fits in 43 three times ($36$); remainder 7. Quotient so far: 3 in the hundreds place.
+- Combine the 7 (remaining hundreds) with the next digit (5 tens): we have 75. Twelve fits in 75 six times ($72$); remainder 3. Quotient: 36 in the hundreds-and-tens.
+- Combine the 3 (remaining tens) with the 6 (ones): 36. Twelve fits in 36 three times exactly; remainder 0. Quotient: 363.
+
+Result: $4356 / 12 = 363$. The "bring down" step is just "combine the leftover with the next place's digit." Place value is doing the work.
+
+## Worked Examples
+
+### Example 1 — Simple Long Division
+
+Compute $792 / 6$.
+
+```
+        1 3 2
+       _______
+    6 ) 7 9 2
+        6
+        --
+        1 9
+        1 8
+        ---
+          1 2
+          1 2
+          ---
+            0
+```
+
+- 6 into 7: once. $7 - 6 = 1$. Bring down 9 → 19.
+- 6 into 19: three times (6·3=18). $19 - 18 = 1$. Bring down 2 → 12.
+- 6 into 12: two times. Remainder 0.
+
+Quotient 132, remainder 0. Check: $6 \cdot 132 = 792$. ✓
+
+### Example 2 — Quotient with Remainder
+
+Compute $785 / 23$.
+
+```
+         3 4 r 3
+        ________
+    23 ) 7 8 5
+         6 9
+         ---
+         9 5
+         9 2
+         ---
+            3
+```
+
+- 23 into 7? No. 23 into 78? Three times (23·3 = 69). $78 - 69 = 9$. Bring down 5 → 95.
+- 23 into 95? Four times (23·4 = 92). $95 - 92 = 3$. No more digits.
+
+Quotient 34, remainder 3. Check: $23 \cdot 34 + 3 = 782 + 3 = 785$. ✓
+
+### Example 3 — Division That Produces a Decimal
+
+Compute $13 / 8$ as a decimal.
+
+```
+          1 . 6 2 5
+         _________
+      8 ) 1 3 . 0 0 0
+          8
+          --
+          5 0
+          4 8
+          ---
+            2 0
+            1 6
+            ---
+              4 0
+              4 0
+              ---
+                0
+```
+
+Result: 1.625. Check: $8 \cdot 1.625 = 13$. ✓ The decimal terminates because $8 = 2^3$ contains only the prime factor 2.
+
+### Example 4 — Repeating Decimal
+
+Compute $5 / 6$ as a decimal.
+
+```
+          0 . 8 3 3 3 ...
+         _________
+      6 ) 5 . 0 0 0
+          0
+          --
+          5 0
+          4 8
+          ---
+            2 0
+            1 8
+            ---
+              2 0
+              1 8
+              ---
+                ... 2 forever
+```
+
+The remainder is 2 forever after the first iteration. Result: $0.8\overline{3}$. The factor of 3 in the denominator (6 = 2·3) forces a repeating decimal.
+
+### Example 5 — Apply a Divisibility Rule Before Dividing
+
+Is $12{,}345{,}678$ divisible by 9? Sum of digits: $1+2+3+4+5+6+7+8 = 36$. Yes — 36 is divisible by 9.
+
+Now divide: $12{,}345{,}678 / 9 = ?$ Without computing exactly, by digit-summing again: any further division questions can leverage this.
+
+Actually $12{,}345{,}678 / 9 = 1{,}371{,}742$. Use long division to verify if you like.
+
+### Example 6 — Modular Arithmetic Shortcut
+
+What is $1000 \mod 7$?
+
+We could long-divide: $1000 / 7 = 142$ remainder $6$. So $1000 \equiv 6 \pmod 7$.
+
+But we could also reason mod 7: $10 \equiv 3 \pmod 7$, so $1000 = 10^3 \equiv 3^3 = 27 \equiv 6 \pmod 7$ (since $27 = 3 \cdot 7 + 6$).
+
+Same answer; no division performed. This trick is the foundation of fast modular exponentiation used in cryptography.
+
+### Example 7 — Failure Mode: Off-By-Place in Long Division
+
+A student computes $156 / 12$ as follows:
+
+```
+         1
+        ___
+    12 ) 1 5 6
+         1 2
+         ---
+         0 3 6   ← wrong placement
+```
+
+The student wrote the 1 from "12 into 15 = 1" in the ones place of the quotient instead of the tens place. They then have 36 left and would write 3, giving quotient 4 (wrong; should be 13).
+
+The fix: when 12 goes into 15 (the first two digits of 156), the 1 goes above the 5 (the tens digit), not above some other column. The quotient digit always sits above the last digit of the partial dividend you used.
+
+### Example 8 — Failure Mode: Forgetting the Remainder
+
+A student computes $785 / 23$ as 34 and writes "answer: 34." But the dividend is 785 and $23 \cdot 34 = 782 \neq 785$. The student forgot the remainder 3.
+
+In code, this is the difference between integer division (`a // b` in Python) and modulo (`a % b`). You almost always need both pieces, especially in real engineering problems involving packets, gears, and time conversions.
+
+## Engineering Connections
+
+### Time Conversions
+
+Convert 10,000 seconds to hours, minutes, and seconds.
+
+10,000 / 3600 = 2 remainder 2,800. So 2 hours plus 2,800 seconds.
+2800 / 60 = 46 remainder 40. So 46 minutes plus 40 seconds.
+
+Result: 2 hours, 46 minutes, 40 seconds.
+
+This is two successive divisions with remainder. Every time conversion works this way.
+
+### Packetization
+
+A file of 1,000,000 bytes needs to be sent in packets of 1,500 bytes each (a typical Ethernet MTU). How many packets?
+
+$1{,}000{,}000 / 1{,}500 = 666$ remainder $1{,}000$.
+
+So 666 full packets plus one partial packet of 1,000 bytes (or padded out). Total packets: 667.
+
+### Frequency Dividers in Digital Logic
+
+A microcontroller has a 16 MHz crystal. You need a 1 Hz tick (one per second) for a real-time clock. The hardware uses a counter that increments every clock cycle and triggers an interrupt when it overflows. To get 1 Hz from 16 MHz, you need to divide by 16,000,000. If your counter is 16 bits (max value $2^{16} - 1 = 65{,}535$), you cannot do this in a single counter — you need a chain.
+
+$16{,}000{,}000 = 16 \cdot 10^6 = 2^4 \cdot 10^6$. Choose a prescaler to give you a manageable count. Hardware engineers do this division mentally constantly.
+
+### Resolution and Step Size
+
+A 10-bit ADC produces values from 0 to 1023 (that is $2^{10} - 1$). You map this to a voltage range 0 to 5 V. The step size (volts per ADC unit) is $5 / 1023 \approx 0.00489$ V $\approx 4.89$ mV. That is the smallest voltage difference the ADC can distinguish. Without long division (or its mental equivalent), you cannot reason about resolution in real circuits.
+
+### Floor Division and Modulo in Code
+
+Most programming languages distinguish floor division (`//` in Python, integer division in C) from true division. The result of $a / b$ in Python 3 is a float; the result of `a // b` is a floor-divided integer. The remainder is `a % b`.
+
+```python
+hours, rem = divmod(10_000, 3600)  # hours = 2, rem = 2800
+minutes, seconds = divmod(rem, 60)  # minutes = 46, seconds = 40
+```
+
+The `divmod` function returns both quotient and remainder in a single call. Useful enough that it has its own function name.
+
+## Practice Set
+
+### Whole-Number Division (No Decimal)
+
+For each, give quotient and remainder.
+
+1. $84 / 6$
+2. $735 / 5$
+3. $1{,}001 / 7$
+4. $387 / 12$
+5. $5{,}000 / 17$
+6. $999 / 11$
+7. $12{,}345 / 9$
+8. $100{,}000 / 41$
+
+### Long Division to Decimals
+
+For each, give the exact decimal (terminating or with bar over repeating part).
+
+9. $3 / 4$
+10. $5 / 8$
+11. $1 / 6$
+12. $1 / 7$
+13. $7 / 25$
+
+### Divisibility Battery
+
+For each, decide whether it is divisible by 11 (use the alternating-sum rule).
+
+14. $209$
+15. $1{,}331$
+16. $12{,}221$
+17. $5{,}555{,}555$
+
+### Modular Arithmetic
+
+18. What is $123 \mod 7$?
+19. What is $2^{10} \mod 11$? (Hint: $2^{10} = 1024$.)
+20. What is $1000 \mod 13$? (Use the trick: $1000 \equiv 1000 - 13 \cdot 76 = 1000 - 988 = 12 \pmod{13}$.)
+21. Compute $7^4 \mod 10$ without computing $7^4$ directly. (Hint: 10 mod 10 = 0; look at the cycle of powers of 7 mod 10.)
+22. What is the last digit of $3^{100}$? (Hint: this is asking for $3^{100} \mod 10$.)
+
+### Applied / Engineering
+
+23. A 5,200 mAh battery powers a 1,300 mA load. How many hours of operation?
+24. A factory line produces 47 units per hour. Working a 10-hour shift, how many units are produced? How many full units could be packed into boxes of 12, and what is the leftover count?
+25. A robot's drive motor spins at 6,000 RPM through a 25:1 gearbox. What is the output RPM?
+26. A 4 GB USB drive (assume $4 \cdot 10^9$ bytes exactly) can hold how many 16 MB files (assume $16 \cdot 10^6$ bytes each)?
+27. A camera sensor has 1920×1080 pixels. The image is stored as 8 bits per pixel per channel, three channels. How many bytes per image? How many such images fit in 1 GB ($10^9$ bytes)?
+
+### Challenge
+
+28. Show that the digit sum of the digit sum of $123{,}456{,}789$ is divisible by 9 without computing 123,456,789 / 9 directly.
+29. Prove that $999 \cdot 999 = 998{,}001$ using place-value reasoning and the identity $999 = 1000 - 1$.
+30. Without long division, decide whether $111{,}111$ is divisible by 7. (Hint: $111{,}111 = 111 \cdot 1001$.)
+31. A repeating decimal $0.\overline{142857}$ comes from $1/7$. Use long division to verify the first three digits.
+
+### Error Spotting
+
+32. A student computes $1000 / 7$ and writes "quotient 143, remainder 0." Find the error.
+33. A student claims that $5{,}555{,}555$ is divisible by 11 because all digits are the same. Is the conclusion right? Is the reasoning right?
+34. A student writes "$3 / 4 = 0.75$, $4 / 3 = 1.25$." Find the error.
+
+### Answers and Brief Explanations
+
+1. 14 r 0.
+2. 147 r 0.
+3. 143 r 0 (because $7 \cdot 143 = 1001$).
+4. 32 r 3.
+5. 294 r 2 ($17 \cdot 294 = 4998$, plus 2 = 5000).
+6. 90 r 9.
+7. 1,371 r 6 ($9 \cdot 1371 = 12339$, plus 6 = 12345).
+8. 2,439 r 1 ($41 \cdot 2439 = 99{,}999$, plus 1 = 100,000).
+
+9. 0.75. 10. 0.625. 11. $0.1\overline{6}$. 12. $0.\overline{142857}$. 13. 0.28.
+
+14. $9 - 0 + 2 = 11$. Divisible by 11. ✓ ($209 = 11 \cdot 19$.)
+15. $1 - 3 + 3 - 1 = 0$. Divisible by 11. ✓ ($1331 = 11^3$.)
+16. $1 - 2 + 2 - 2 + 1 = 0$. Divisible. ✓
+17. $5 - 5 + 5 - 5 + 5 - 5 + 5 = 5$. Not divisible.
+
+18. $123 / 7 = 17$ r $4$. So $123 \mod 7 = 4$.
+19. $1024 / 11 = 93$ r $1$ (since $93 \cdot 11 = 1023$). So $2^{10} \equiv 1 \pmod{11}$. (This is a clue that $2$ is a primitive root mod 11.)
+20. $1000 - 988 = 12$, so $1000 \equiv 12 \pmod{13}$.
+21. Powers of 7 mod 10: $7^1 \equiv 7, 7^2 \equiv 9, 7^3 \equiv 3, 7^4 \equiv 1$. Cycle length 4. So $7^4 \equiv 1 \pmod{10}$.
+22. Powers of 3 mod 10 cycle: $3, 9, 7, 1, 3, 9, 7, 1, \ldots$. Cycle length 4. $100 \mod 4 = 0$, so $3^{100} \equiv 3^4 \equiv 1 \pmod{10}$. The last digit is 1.
+
+23. 4 hours exactly.
+24. 470 units total. $470 / 12 = 39$ r $2$. So 39 full boxes, 2 units left over.
+25. $6000 / 25 = 240$ RPM.
+26. $4 \cdot 10^9 / (16 \cdot 10^6) = 4000 / 16 = 250$ files.
+27. Bytes per image: $1920 \cdot 1080 \cdot 3 = 6{,}220{,}800 \approx 6.22$ MB. Images per GB: $10^9 / 6.22 \cdot 10^6 \approx 160$.
+
+28. Sum of digits of 123,456,789 is $1+2+3+4+5+6+7+8+9 = 45$. Sum of digits of 45 is $4 + 5 = 9$. Divisible by 9.
+29. $999 \cdot 999 = (1000-1)^2 = 1{,}000{,}000 - 2000 + 1 = 998{,}001$. ✓
+30. $111 \cdot 1001 = 111 \cdot (7 \cdot 11 \cdot 13)$. So 111,111 is divisible by 7. ✓
+31. $1 / 7$: $1.000000 / 7$. First step: 7 into 10 is 1 (r 3). Bring down 0: 30. 7 into 30 is 4 (r 2). Bring down 0: 20. 7 into 20 is 2 (r 6). So 0.142..., matching $0.\overline{142857}$.
+
+32. $7 \cdot 143 = 1001 \ne 1000$. Correct answer: $1000 / 7 = 142$ r $6$.
+33. Conclusion is wrong; reasoning is doubly wrong. Same-digit numbers aren't automatically divisible by 11. The alternating-sum rule is the actual test, and for 5,555,555 it gives 5 (not divisible by 11).
+34. $4 / 3 \ne 1.25$. $4 / 3 = 1.\overline{3}$. The student may have confused inversion with simple subtraction.
+
+## Build Task
+
+Write a small program (Python or your language of choice) called `division_tools`. Required functions:
+
+1. `divmod_long(a, b)` — given non-negative integers `a` and `b > 0`, return `(quotient, remainder)`. Do not use the language's built-in `divmod` or `//`/`%`. Implement long division yourself using only addition, subtraction, comparison, and bit/digit manipulation.
+2. `to_decimal(a, b, max_digits=50)` — given `a, b` non-negative integers with `b > 0`, return the decimal expansion as a string, marking the repeating part with a bar (e.g. `"0.1[6]"` for $0.1\overline{6}$). Truncate at `max_digits` if the decimal does not repeat within that range.
+3. `digit_sum(n)` — return the sum of the decimal digits of `n`.
+4. `is_divisible(n, d)` — return True iff `d` divides `n` evenly, using only your `divmod_long`.
+5. `time_breakdown(seconds)` — given a number of seconds, return a tuple `(days, hours, minutes, seconds)` using successive divisions. For example, `time_breakdown(100_000)` should return `(1, 3, 46, 40)`.
+
+Tests:
+
+- `divmod_long(156, 12) == (13, 0)`
+- `divmod_long(785, 23) == (34, 3)`
+- `divmod_long(7, 12) == (0, 7)`
+- `to_decimal(7, 4) == "1.75"`
+- `to_decimal(1, 6) == "0.1[6]"` (terminating then repeating)
+- `digit_sum(12345) == 15`
+- `is_divisible(1001, 7) == True`
+- `time_breakdown(100_000) == (1, 3, 46, 40)`
+
+Stretch goal: extend `to_decimal` to handle terminating decimals after a prefix (like $1/12 = 0.08\overline{3}$).
+
+## Quiz
+
+1. State the division algorithm theorem ($a = b q + r$ with $0 \le r < b$). What two things does the theorem guarantee?
+2. Why does the long-division algorithm work? Justify in terms of place value.
+3. Why does some division produce a terminating decimal and other division produce a repeating decimal? Give the rule.
+4. Why is the divisibility rule for 9 just "digit sum is divisible by 9"? Justify via modular arithmetic.
+5. Compute $387 / 12$ giving both quotient and remainder.
+6. Convert $7 / 8$ to a decimal.
+7. Is $1{,}234{,}567$ divisible by 9?
+8. What is $2^{20} \mod 11$? (Use $2^{10} \equiv 1 \pmod{11}$.)
+9. A 24 GB SSD ($24 \cdot 10^9$ bytes) is filled with files averaging 8 MB ($8 \cdot 10^6$ bytes). How many files fit?
+10. Why does the modulo operation in code (`a % b`) often appear together with floor division (`a // b`)?
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Pass the inline lesson check at 100% on first attempt.
+- Perform long division by a one- or two-digit divisor in under two minutes on a four-digit dividend, both for whole-number results and for decimal expansions.
+- State and justify (informally) the divisibility rules for 2, 3, 4, 5, 8, 9, 10, 11.
+- Run your `division_tools` module with all listed tests passing.
+
+## Sources and Further Study
+
+- **Khan Academy** — *Multi-digit division* and *Modular arithmetic* tracks (free).
+- **MIT OCW 6.042J — Mathematics for Computer Science**. Section on modular arithmetic and number theory provides rigorous proofs of divisibility rules and applications to cryptography.
+- **Gauss, *Disquisitiones Arithmeticae* (1801)**. The original, foundational text on modular arithmetic, written when Gauss was in his early 20s. Read in translation; the historical impact is worth the difficulty.
+- **Burton, *Elementary Number Theory***. A standard undergraduate textbook covering everything in this lesson and far beyond. Used in early number-theory courses worldwide.
+
+## Next Lesson Bridge
+
+Long division and divisibility are the gateway to *GCD, LCM, and Prime Factorization*, where we use repeated division (the Euclidean algorithm) to compute greatest common divisors and least common multiples. The GCD and LCM operations are the foundation of fraction arithmetic (which is the next lesson sequence), modular inverses (used in cryptography), and signal-sample-rate matching (used in audio and image processing). After that, the entire fraction and ratio sequence becomes natural because you can spot common factors at a glance.
+
