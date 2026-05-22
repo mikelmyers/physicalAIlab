@@ -1,7 +1,20 @@
 import type { Lesson } from "../../src/lib/types";
+import { cloudNetworkingTelemetryLessons } from "./lessons/cloud-networking-telemetry.ts";
+import { codingFoundationsLessons } from "./lessons/coding-foundations.ts";
+import { computerVisionLessons } from "./lessons/computer-vision.ts";
+import { dronesGisRemoteSensingLessons } from "./lessons/drones-gis-remote-sensing.ts";
+import { electronicsAndCircuitsLessons } from "./lessons/electronics-and-circuits.ts";
+import { machineLearningAndAiLessons } from "./lessons/machine-learning-and-ai.ts";
 import { mathematicalFoundationsLessons } from "./lessons/mathematical-foundations.ts";
+import { mechanicalEngineeringLessons } from "./lessons/mechanical-engineering.ts";
+import { mechatronicsLessons } from "./lessons/mechatronics.ts";
+import { numericalMethodsLessons } from "./lessons/numerical-methods.ts";
+import { optimizationLessons } from "./lessons/optimization.ts";
+import { researchMethodsLessons } from "./lessons/research-methods.ts";
+import { roboticsLessons } from "./lessons/robotics.ts";
+import { theoreticalPhysicsLessons } from "./lessons/theoretical-physics.ts";
 
-const otherTrackLessons: Lesson[] = [
+const existingAvailableLessons: Lesson[] = [
   {
     slug: "python-functions-for-technical-tools",
     trackSlug: "coding-foundations",
@@ -66,5 +79,18 @@ const otherTrackLessons: Lesson[] = [
 
 export const lessons: Lesson[] = [
   ...mathematicalFoundationsLessons,
-  ...otherTrackLessons,
+  ...codingFoundationsLessons,
+  ...electronicsAndCircuitsLessons,
+  ...mechatronicsLessons,
+  ...roboticsLessons,
+  ...dronesGisRemoteSensingLessons,
+  ...computerVisionLessons,
+  ...cloudNetworkingTelemetryLessons,
+  ...machineLearningAndAiLessons,
+  ...optimizationLessons,
+  ...numericalMethodsLessons,
+  ...mechanicalEngineeringLessons,
+  ...researchMethodsLessons,
+  ...theoreticalPhysicsLessons,
+  ...existingAvailableLessons,
 ];

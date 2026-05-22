@@ -601,8 +601,8 @@ const gisAndPhotogrammetryLessons: Lesson[] = [
   future(
     "gis-and-photogrammetry",
     11,
-    "bundle-adjustment",
-    "Bundle Adjustment",
+    "photogrammetry-bundle-adjustment",
+    "Bundle Adjustment for Photogrammetry",
     "The nonlinear least-squares optimization that refines camera poses and 3D points jointly, and the sparse structure that makes it tractable.",
   ),
   future(

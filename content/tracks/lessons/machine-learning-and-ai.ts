@@ -129,7 +129,7 @@ const reinforcementLearning: Lesson[] = [
   future("reinforcement-learning", 4, "value-iteration", "Value Iteration", "Iterative application of the Bellman optimality operator, convergence to the optimal value function, and contraction arguments."),
   future("reinforcement-learning", 5, "policy-iteration", "Policy Iteration", "Alternating policy evaluation and policy improvement, why it converges in finite steps for finite MDPs."),
   future("reinforcement-learning", 6, "model-free-versus-model-based-rl", "Model-Free Versus Model-Based RL", "When to learn a model of the environment and when to learn values or policies directly, with sample complexity implications."),
-  future("reinforcement-learning", 7, "monte-carlo-methods", "Monte Carlo Methods", "Learning from sampled returns of complete episodes, first-visit and every-visit estimators, and exploration via exploring starts."),
+  future("reinforcement-learning", 7, "monte-carlo-methods-in-rl", "Monte Carlo Methods in RL", "Learning from sampled returns of complete episodes, first-visit and every-visit estimators, and exploration via exploring starts."),
   future("reinforcement-learning", 8, "temporal-difference-learning", "Temporal Difference Learning", "Bootstrapping on the next state's estimate, the TD error, and TD(0) as the simplest TD algorithm."),
   future("reinforcement-learning", 9, "sarsa", "SARSA", "On-policy TD control with the SARSA update, epsilon-greedy exploration, and on-policy versus off-policy distinctions."),
   future("reinforcement-learning", 10, "q-learning-tabular", "Q-Learning (Tabular)", "Off-policy TD control via the Q-learning update, convergence guarantees in the tabular case, and exploration policies."),
