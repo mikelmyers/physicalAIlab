@@ -1,84 +1,584 @@
 # Solving Equations from Zero
 
+## Re-entry Promise
+
+This lesson assumes algebra may feel distant or intimidating. We will rebuild it as a practical tool, not a symbol game. An equation is a statement of balance. Solving an equation means finding the value that makes the statement true.
+
+If you can keep both sides balanced, you can solve engineering formulas.
+
 ## Objective
 
-Understand equations as balance statements and solve for unknowns using reversible steps.
+By the end, you should be able to:
+
+- Explain an equation as a balance statement.
+- Identify variables, constants, coefficients, and operations.
+- Use inverse operations to isolate an unknown.
+- Solve one-step, two-step, and basic multi-step equations.
+- Check a solution by substituting it back into the original equation.
+- Rearrange engineering formulas such as `V = IR`, `d = vt`, `P = IV`, and `F = ma`.
 
 ## Why It Matters
 
-Engineering formulas are rarely handed to you in exactly the form you need. You must rearrange formulas for voltage, current, distance, speed, time, resistance, force, and power.
+Engineering formulas rarely arrive in the form you need.
 
-## Concept
+You may know:
 
-An equation says two expressions are equal:
+$$V = IR$$
 
-$$left = right$$
+but need current:
 
-To keep the equation true, do the same operation to both sides.
+$$I = \frac{V}{R}$$
 
-If:
+You may know:
+
+$$d = vt$$
+
+but need time:
+
+$$t = \frac{d}{v}$$
+
+You may know a target output and need to solve backward for a design input. That is equation solving.
+
+## Why This Idea Exists
+
+Equations exist because people needed a compact way to describe relationships that stay true.
+
+Ancient surveying, trade, astronomy, mechanics, and later physics all required unknown quantities. Algebra developed as a way to reason about those unknowns without guessing.
+
+The core idea is powerful: if two things are equal, and you do the same valid operation to both sides, they remain equal.
+
+That is the foundation under solving equations, rearranging formulas, deriving physics relationships, and writing technical software.
+
+## Plain-Language Intuition
+
+Imagine an equation as a balanced scale:
+
+$$left\ side = right\ side$$
+
+If you add weight to one side, the scale tips. To keep it balanced, you must add the same weight to the other side.
+
+If you remove something from one side, remove the same thing from the other.
+
+Solving means carefully undoing what has been done to the unknown until the unknown is alone.
+
+## Core Theory
+
+### Equation
+
+An equation states that two expressions are equal:
+
+$$expression = expression$$
+
+Example:
 
 $$x + 5 = 12$$
 
-Subtract `5` from both sides:
+This says `x + 5` has the same value as `12`.
 
-$$x + 5 - 5 = 12 - 5$$
+### Variable
 
-So:
+A variable is a symbol that represents an unknown or changing quantity.
+
+Examples:
+
+- `x` for position,
+- `t` for time,
+- `V` for voltage,
+- `I` for current,
+- `R` for resistance.
+
+### Constant
+
+A constant is a fixed value.
+
+In:
+
+$$x + 5 = 12$$
+
+`5` and `12` are constants.
+
+### Coefficient
+
+A coefficient multiplies a variable.
+
+In:
+
+$$3x = 18$$
+
+`3` is the coefficient of `x`.
+
+### Solution
+
+A solution is a value that makes the equation true.
+
+For:
+
+$$x + 5 = 12$$
+
+the solution is:
 
 $$x = 7$$
 
-The goal is to isolate the unknown.
+because:
 
-## Worked Example
+$$7 + 5 = 12$$
 
-Solve for current:
+### Inverse Operations
+
+Inverse operations undo each other.
+
+| Operation | Inverse |
+| --- | --- |
+| add | subtract |
+| subtract | add |
+| multiply | divide |
+| divide | multiply |
+| square | square root |
+
+Solving equations mostly means applying inverse operations in a careful order.
+
+### Properties Of Equality
+
+If:
+
+$$a = b$$
+
+then:
+
+$$a + c = b + c$$
+
+$$a - c = b - c$$
+
+$$ac = bc$$
+
+$$\frac{a}{c} = \frac{b}{c}$$
+
+as long as `c` is not zero for division.
+
+These rules are why "do the same thing to both sides" works.
+
+### Checking A Solution
+
+A solution is not proven by confidence. It is checked by substitution.
+
+If you solve:
+
+$$2x + 3 = 11$$
+
+and get:
+
+$$x = 4$$
+
+check:
+
+$$2(4) + 3 = 11$$
+
+$$8 + 3 = 11$$
+
+$$11 = 11$$
+
+The solution works.
+
+## Mental Models
+
+### Balance Scale
+
+Every operation must preserve balance.
+
+This prevents random symbol moving. You are not "moving a number to the other side." You are applying an operation to both sides.
+
+### Undo Stack
+
+Think of an expression as operations stacked on the variable.
+
+In:
+
+$$2x + 3 = 11$$
+
+`x` is multiplied by `2`, then `3` is added.
+
+To solve, undo in reverse order:
+
+1. subtract `3`,
+2. divide by `2`.
+
+### Formula Machine
+
+A formula takes inputs and produces an output.
+
+Equation solving lets you run the machine backward.
+
+If:
+
+$$distance = speed \times time$$
+
+and you know distance and speed, solve backward for time.
+
+## Worked Example 1: One-Step Addition
+
+Solve:
+
+$$x + 9 = 21$$
+
+Undo addition by subtracting `9` from both sides:
+
+$$x + 9 - 9 = 21 - 9$$
+
+$$x = 12$$
+
+Check:
+
+$$12 + 9 = 21$$
+
+## Worked Example 2: One-Step Multiplication
+
+Solve:
+
+$$4x = 28$$
+
+Undo multiplication by dividing both sides by `4`:
+
+$$\frac{4x}{4} = \frac{28}{4}$$
+
+$$x = 7$$
+
+Check:
+
+$$4(7) = 28$$
+
+## Worked Example 3: Two-Step Equation
+
+Solve:
+
+$$3x + 5 = 20$$
+
+Undo addition:
+
+$$3x + 5 - 5 = 20 - 5$$
+
+$$3x = 15$$
+
+Undo multiplication:
+
+$$\frac{3x}{3} = \frac{15}{3}$$
+
+$$x = 5$$
+
+Check:
+
+$$3(5) + 5 = 20$$
+
+$$15 + 5 = 20$$
+
+## Worked Example 4: Signed Equation
+
+Solve:
+
+$$-2x + 4 = 18$$
+
+Subtract `4` from both sides:
+
+$$-2x = 14$$
+
+Divide by `-2`:
+
+$$x = -7$$
+
+Check:
+
+$$-2(-7) + 4 = 18$$
+
+$$14 + 4 = 18$$
+
+## Worked Example 5: Solve Ohm's Law For Current
+
+Start:
 
 $$V = IR$$
+
+Goal: isolate `I`.
 
 Divide both sides by `R`:
 
 $$\frac{V}{R} = \frac{IR}{R}$$
 
-So:
+Cancel `R`:
 
 $$I = \frac{V}{R}$$
 
 If `V = 12 V` and `R = 6 ohms`:
 
-$$I = \frac{12}{6} = 2A$$
+$$I = \frac{12V}{6ohms} = 2A$$
+
+The unit relationship works because volts divided by ohms gives amps.
+
+## Worked Example 6: Solve Distance Formula For Time
+
+Start:
+
+$$d = vt$$
+
+Goal: isolate `t`.
+
+Divide by `v`:
+
+$$\frac{d}{v} = \frac{vt}{v}$$
+
+So:
+
+$$t = \frac{d}{v}$$
+
+If a rover travels `60 m` at `1.5 m/s`:
+
+$$t = \frac{60m}{1.5m/s} = 40s$$
+
+Units:
+
+$$\frac{m}{m/s} = s$$
+
+## Worked Example 7: Solve Power Formula For Current
+
+Start:
+
+$$P = IV$$
+
+Goal: isolate `I`.
+
+Divide by `V`:
+
+$$I = \frac{P}{V}$$
+
+If a device uses `24 W` from a `12 V` supply:
+
+$$I = \frac{24W}{12V} = 2A$$
+
+This matters for selecting power supplies, fuses, batteries, and wire sizes.
+
+## Worked Example 8: Variable On Both Sides
+
+Solve:
+
+$$5x + 3 = 2x + 18$$
+
+Subtract `2x` from both sides:
+
+$$3x + 3 = 18$$
+
+Subtract `3`:
+
+$$3x = 15$$
+
+Divide by `3`:
+
+$$x = 5$$
+
+Check:
+
+Left:
+
+$$5(5) + 3 = 28$$
+
+Right:
+
+$$2(5) + 18 = 28$$
+
+Both sides match.
+
+## Common Failure Modes
+
+### Failure Mode 1: Moving Symbols Without Operations
+
+People say "move the 5 to the other side." That shortcut hides the real operation.
+
+Fix: say the operation out loud. "Subtract 5 from both sides."
+
+### Failure Mode 2: Forgetting To Apply The Operation To Every Term
+
+If you divide:
+
+$$2x + 6 = 10$$
+
+by `2`, you must divide every term if you divide the whole side.
+
+Fix: use clear steps and parentheses.
+
+### Failure Mode 3: Dividing By Zero
+
+Division by zero is undefined.
+
+Fix: when solving formulas, note restrictions such as `R != 0` or `v != 0`.
+
+### Failure Mode 4: Not Checking The Solution
+
+A small sign error can survive until the final answer.
+
+Fix: substitute the answer into the original equation.
+
+### Failure Mode 5: Ignoring Units
+
+If solving produces a time but the units do not reduce to seconds, the formula or substitution is wrong.
+
+Fix: carry units through formula problems.
+
+## Engineering Connections
+
+### Circuits
+
+Ohm's Law and power equations require rearranging:
+
+$$V = IR$$
+
+$$P = IV$$
+
+### Robotics
+
+Motion formulas require solving for distance, speed, or time:
+
+$$d = vt$$
+
+Control equations often solve for error:
+
+$$error = target - measured$$
+
+### Drones
+
+Flight planning uses speed, time, distance, battery use, image scale, and altitude relationships.
+
+### Mechatronics
+
+Force, mass, acceleration, torque, gear ratio, and motor speed relationships all require solving for unknowns.
+
+### Physics
+
+Physics is equation-heavy because it describes relationships. Solving equations is the grammar of using those relationships.
+
+## Practice Set
+
+### Warmups
+
+Solve and check:
+
+1. `x + 7 = 19`
+2. `x - 4 = 11`
+3. `5x = 45`
+4. `x / 3 = 8`
+5. `2x + 3 = 17`
+6. `4x - 9 = 23`
+7. `-3x = 21`
+8. `-2x + 5 = 15`
+
+### Formula Rearrangement
+
+Solve each formula for the requested variable:
+
+1. `V = IR` for `I`
+2. `V = IR` for `R`
+3. `d = vt` for `t`
+4. `d = vt` for `v`
+5. `P = IV` for `I`
+6. `P = IV` for `V`
+7. `F = ma` for `a`
+8. `F = ma` for `m`
+
+### Applied Problems
+
+1. A circuit has `V = 9 V` and `R = 3 ohms`. Solve for current.
+2. A robot travels `24 m` in `6 s`. Solve for speed.
+3. A device uses `18 W` at `9 V`. Solve for current.
+4. A force of `30 N` accelerates a `5 kg` mass. Solve for acceleration.
+5. A rover must travel `120 m` at `2 m/s`. Solve for travel time.
+
+### Error-Spotting
+
+1. Someone solves `x + 8 = 20` and gets `x = 28`. Explain the error.
+2. Someone solves `3x = 12` by subtracting `3`. Explain the error.
+3. Someone rearranges `V = IR` as `I = VR`. Explain the missing operation.
+4. Someone solves `d = vt` for `t` as `t = dv`. Explain the unit problem.
+5. Someone gives an answer but never checks it. Explain why that is risky.
+
+### Challenge
+
+A drone flies a mapping line of `900 m`. Its ground speed is `12 m/s`, but it spends `15 s` turning around before the next line.
+
+1. Solve `d = vt` for flight time along the line.
+2. Add the turn time.
+3. If it flies 8 lines, estimate total mission time.
+4. Write the formulas you used.
+5. List one real-world factor that could make the mission longer.
 
 ## Exercise
 
-Solve each equation:
+Create a formula card for your notebook.
 
-1. `x + 9 = 21`
-2. `4x = 28`
-3. `d = vt` for `t`
-4. `P = IV` for `I`
+For each formula:
+
+- write the original formula,
+- define each variable,
+- solve for every variable,
+- include units,
+- include one numeric example,
+- check the result.
+
+Use:
+
+- `V = IR`
+- `P = IV`
+- `d = vt`
+- `F = ma`
+- `error = target - measured`
 
 ## Build Task
 
-Create a formula rearrangement sheet for:
+Build a formula solver toolkit in Python or TypeScript.
 
-- `V = IR`
-- `d = vt`
-- `P = IV`
-- `F = ma`
+Include functions for:
 
-For each formula, solve for every variable.
+- Ohm's Law current from voltage and resistance,
+- resistance from voltage and current,
+- travel time from distance and speed,
+- speed from distance and time,
+- current from power and voltage,
+- acceleration from force and mass.
+
+Each function should:
+
+- reject invalid zero divisors,
+- include units in comments or output labels,
+- include at least one test case with a known answer.
 
 ## Quiz
 
-1. What does it mean to isolate a variable?
-2. Why must you do the same operation to both sides?
-3. How do you undo multiplication?
-4. Why is formula rearrangement important for technical work?
+1. What is an equation?
+2. What is a variable?
+3. What is a coefficient?
+4. Why must you do the same valid operation to both sides?
+5. What operation undoes addition?
+6. What operation undoes multiplication?
+7. Why is checking by substitution important?
+8. Why is division by zero not allowed?
+9. Rearrange `V = IR` for `R`.
+10. Rearrange `d = vt` for `v`.
 
 ## Proof of Completion
 
-Submit the formula sheet, four numeric examples, and one explanation written in plain language.
+Submit:
+
+- completed warmups,
+- completed formula rearrangements,
+- completed applied problems,
+- corrections for the error-spotting section,
+- completed formula card,
+- formula solver toolkit,
+- one build-log entry explaining how equations show up in a real system you want to build.
+
+## Sources And Further Study
+
+- OpenStax Prealgebra: addition, subtraction, multiplication, and division properties of equality.
+- OpenStax Elementary Algebra: general strategies for solving linear equations and solving formulas for a specific variable.
+- Khan Academy Algebra Basics: same thing to both sides, two-step equations, variables on both sides, and equation word problems.
 
 ## Next Lesson
 
 Units and Dimensional Analysis.
+
+You are ready for it when you can solve a formula for a target variable and check the answer by substitution and units.

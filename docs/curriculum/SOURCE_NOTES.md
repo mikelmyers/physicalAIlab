@@ -61,3 +61,18 @@ Curriculum intent:
 - Connect order of operations to calculators, code, spreadsheets, firmware, and simulations.
 - Emphasize parentheses around negative bases and left-to-right evaluation for shared-precedence operations.
 - Bridge directly into control error, coordinate systems, voltage polarity, and signed movement simulation.
+
+### Solving Equations from Zero
+
+Primary anchors:
+
+- OpenStax Prealgebra sections on addition, subtraction, multiplication, and division properties of equality.
+- OpenStax Elementary Algebra sections on general linear-equation strategy and solving formulas for a specified variable.
+- Khan Academy Algebra Basics materials on doing the same thing to both sides, two-step equations, variables on both sides, and equation word problems.
+
+Curriculum intent:
+
+- Teach equations as balance statements instead of symbol-shuffling.
+- Emphasize inverse operations and checking by substitution.
+- Connect algebra immediately to formulas used in circuits, motion, force, power, and control error.
+- Require a formula-solver build task so algebra becomes a tool the learner can run and test.
