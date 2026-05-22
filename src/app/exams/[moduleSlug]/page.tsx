@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Clock, ListChecks, ShieldCheck, Sparkles } from "lucide-react";
+import { Clock, ListChecks, ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ExamHistory } from "@/components/exam/ExamHistory";
+import { UnlockGate } from "@/components/exam/UnlockGate";
 import { getModuleExam, moduleExams } from "../../../../content/exams";
 import { getModule, getModuleLessons, getTrack } from "@/lib/data";
 
@@ -96,19 +97,8 @@ export default async function ExamLandingPage({ params }: ExamPageProps) {
               </>
             ) : null}
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href={`/exams/${exam.moduleSlug}/attempt`}
-                className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-5 py-3 text-sm font-medium text-white"
-              >
-                <Sparkles size={16} /> Start new attempt
-              </Link>
-              <Link
-                href={`/exams/${exam.moduleSlug}/attempt?resume=1`}
-                className="inline-flex items-center gap-2 rounded-md border border-zinc-300 px-5 py-3 text-sm font-medium text-zinc-800 dark:border-zinc-700 dark:text-zinc-100"
-              >
-                Resume in-progress <ArrowRight size={16} />
-              </Link>
+            <div className="mt-8">
+              <UnlockGate moduleSlug={exam.moduleSlug} />
             </div>
           </article>
 

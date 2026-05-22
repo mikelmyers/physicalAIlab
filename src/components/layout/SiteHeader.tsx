@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { Atom, BookOpen, GraduationCap, Hammer, Map, NotebookTabs, ShieldCheck } from "lucide-react";
+import { Atom, BookOpen, Flame, GraduationCap, Hammer, Map, NotebookTabs, ShieldCheck } from "lucide-react";
 import { ThemeToggle } from "../ThemeToggle";
 
 const navItems = [
   { href: "/learning-path", label: "Path", icon: GraduationCap },
   { href: "/curriculum", label: "Curriculum", icon: BookOpen },
+  { href: "/practice", label: "Practice", icon: Flame },
   { href: "/exams", label: "Exams", icon: ShieldCheck },
   { href: "/projects", label: "Projects", icon: Hammer },
   { href: "/build-log", label: "Build Log", icon: NotebookTabs },

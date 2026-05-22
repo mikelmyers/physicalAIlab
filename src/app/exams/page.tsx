@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { ExamStatusBadge } from "@/components/exam/ExamStatusBadge";
 import { getModule, getTrack, modules, tracks } from "@/lib/data";
 import { moduleExams } from "../../../content/exams";
 
@@ -39,9 +40,12 @@ export default function ExamsPage() {
                 key={exam.moduleSlug}
                 className="group rounded-lg border border-zinc-200 bg-white p-5 transition hover:border-cyan-600 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-cyan-400"
               >
-                <p className="text-xs font-medium uppercase tracking-wider text-cyan-700 dark:text-cyan-300">
-                  {track?.title}
-                </p>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-medium uppercase tracking-wider text-cyan-700 dark:text-cyan-300">
+                    {track?.title}
+                  </p>
+                  <ExamStatusBadge moduleSlug={exam.moduleSlug} />
+                </div>
                 <h2 className="mt-1 text-lg font-semibold text-zinc-950 dark:text-white">
                   {module?.title}
                 </h2>

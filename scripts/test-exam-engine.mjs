@@ -10,6 +10,9 @@ const { generateExam, gradeExam, isResponseCorrect } = await import(
 const { mathReentryExam } = await import(
   pathToFileURL(path.join(root, "content/exams/math-reentry-toolkit.ts"))
 );
+const { moduleExams } = await import(
+  pathToFileURL(path.join(root, "content/exams/index.ts"))
+);
 
 function header(label) {
   console.log(`\n=== ${label} ===`);
@@ -179,6 +182,33 @@ for (const [conceptId, weight] of Object.entries(mathReentryExam.conceptWeights)
   const drift = Math.abs(actual - expected) / expected;
   console.log(`  ${conceptId}: expected~${Math.round(expected)}, actual ${actual}, drift ${(drift * 100).toFixed(1)}%`);
   assert.ok(drift < 0.1, `concept ${conceptId} drift too high: ${drift}`);
+}
+
+header(`All registered exams (${moduleExams.length}): perfect-run sweep`);
+for (const exam of moduleExams) {
+  for (let i = 0; i < 8; i++) {
+    const e = generateExam(exam, (i + 1) * 8009);
+    assert.equal(e.questions.length, exam.totalQuestions, `${exam.moduleSlug} wrong length`);
+    const responses = e.questions.map((q) => {
+      switch (q.answer.kind) {
+        case "numeric":
+          return `${q.answer.value}${q.answer.unit ? ` ${q.answer.unit}` : ""}`;
+        case "text":
+          return q.answer.acceptedAnswers[0];
+        case "multiple-choice":
+          return `${q.answer.correctIndex}`;
+        case "multi-select":
+          return q.answer.correctIndices.slice();
+      }
+    });
+    const r = gradeExam(exam, e, responses);
+    assert.equal(
+      r.correctCount,
+      e.totalQuestions,
+      `${exam.moduleSlug} seed ${(i + 1) * 8009} got ${r.correctCount}/${e.totalQuestions} — broken template`,
+    );
+  }
+  console.log(`  ${exam.moduleSlug}: 8 seeds, 8 perfect runs`);
 }
 
 console.log("\nAll exam engine tests passed.");

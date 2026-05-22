@@ -4,6 +4,7 @@ import { hasModuleExam } from "../../../content/exams";
 import type { Lesson, Module } from "@/lib/types";
 import { LessonCard } from "./LessonCard";
 import { StatusBadge } from "../StatusBadge";
+import { ExamStatusBadge } from "../exam/ExamStatusBadge";
 
 type ModuleCardProps = {
   moduleItem: Module;
@@ -40,9 +41,12 @@ export function ModuleCard({ moduleItem, lessons }: ModuleCardProps) {
         <div className="mt-5 rounded-md border border-emerald-500/30 bg-emerald-500/5 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
-                Module exam available
-              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+                  Module exam available
+                </p>
+                <ExamStatusBadge moduleSlug={moduleItem.slug} />
+              </div>
               <p className="mt-1 text-xs text-emerald-800/80 dark:text-emerald-200/80">
                 50-question concept exam · 95% to pass · numbers randomize each attempt.
               </p>
