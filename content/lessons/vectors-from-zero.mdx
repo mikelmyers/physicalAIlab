@@ -1,71 +1,545 @@
 # Vectors from Zero
 
+## Re-entry Promise
+
+If the word *vector* makes you think of a list of numbers, or an arrow on a page, or an entry on a SAT problem, that is fine. By the end of this lesson, those will all be the same object viewed from different angles, and you will know when to use each picture.
+
+This lesson assumes you can compute with signed numbers, evaluate $\sqrt{a^2 + b^2}$, and read a coordinate plane. If any of that is shaky, the prerequisite lesson on signed numbers and the prerequisite lesson on coordinate systems will repair it without ego. Vectors are not advanced. They are essential. We will build the meaning before pushing on the symbols.
+
 ## Objective
 
-Understand vectors as quantities with both size and direction, then use components to describe motion, force, and position changes.
+By the end of this lesson you should be able to:
+
+- Define a scalar and a vector, and explain the difference using physical examples that you can demonstrate with your hand.
+- Represent any 2D or 3D vector in two equivalent ways: as a geometric arrow with a tail, a head, a length, and an angle; or as an ordered tuple of components.
+- Compute the magnitude of a vector in 2D or 3D.
+- Add, subtract, and scale vectors, both graphically (tip-to-tail) and algebraically (component-by-component).
+- Convert between magnitude-and-direction form and component form for 2D vectors, fluently and in either direction.
+- Construct a unit vector in the direction of any given vector and explain what the components of a unit vector mean physically.
+- Identify the standard basis vectors $\hat{\imath}, \hat{\jmath}, \hat{k}$ and write any vector as a linear combination of them.
+- Distinguish position, displacement, and velocity vectors and not confuse them, especially when reasoning about a moving robot or drone.
+- Apply vectors to at least three distinct engineering settings (force balance, drone navigation, robot kinematics) without grabbing a formula sheet.
+- Write a small Python utility that performs all of the above operations and verify it against worked examples.
+
+If you can do those things at speed, you have built the foundation that every later math lesson (multivariable calculus, linear algebra, differential equations) and every later applied lesson (robot kinematics, computer vision, drone control, electromagnetism) will lean on. Vectors are not a topic. They are the lingua franca of physical systems.
 
 ## Why It Matters
 
-Robots, drones, physics, computer vision, and GIS all use vectors. A drone velocity, a robot movement command, a force, and a GPS displacement all have direction as well as magnitude.
+Almost every quantity that describes the physical world has direction as well as size:
 
-## Concept
+- A **drone velocity** is not just "ten meters per second." It is ten meters per second *in some direction*. If you tell an autopilot "fly at 10 m/s" without a heading, you have given it a scalar where it needed a vector and the airframe will sit on the ground.
+- A **force** on a robot arm is not just "five newtons." It is five newtons *applied along a particular line in space*. Two equal-magnitude forces in opposite directions cancel; two in the same direction add. The accounting only works when the direction is part of the quantity.
+- A **GPS displacement** between two waypoints is not just "two hundred meters." It is two hundred meters *along a specific bearing*. You cannot navigate with the magnitude alone.
+- A **pixel motion** in a video frame is not just "five pixels." It is five pixels *in some image-plane direction*. Optical flow algorithms compute these displacement vectors per pixel; the direction is what tells you the camera is panning right rather than left.
+- An **electric field** at a point is not just "five volts per meter." It is five volts per meter *pointing some way*. Maxwell's equations are written in terms of vector fields because no scalar quantity can describe how electric force directs a charge.
 
-A scalar has size only:
+If you cannot operate with vectors fluently, you will plug magnitudes into formulas as if they were the whole story, and the formulas will lie to you. Vectors are the smallest object that does not lie about the physical world.
 
-$$speed = 5m/s$$
+## Why This Idea Exists
 
-A vector has size and direction:
+Scalars are older than civilization. Counting sheep, measuring grain, marking days — all scalar. Direction-bearing quantities are also old (the Greeks understood that two equal forces can balance), but a *compact symbolic notation* for them is recent.
 
-$$velocity = 5m/s\ east$$
+The modern vector took a long time to arrive. In the 1840s, William Rowan Hamilton invented quaternions to extend complex numbers to three dimensions, and quaternions could represent rotations and orientations in space. But quaternions were awkward to teach and not quite what most engineers needed.
 
-In 2D, a vector can be written with components:
+In the 1880s, Josiah Willard Gibbs (at Yale) and Oliver Heaviside (in England), working independently, stripped quaternions down to a streamlined system: vectors as ordered tuples with addition, scalar multiplication, dot products, and cross products. This is the system you are about to learn. It became dominant because it matched how engineers and physicists actually wanted to work: separate the magnitudes from the directions, but never lose the directions.
+
+The notation we use today (arrows over letters, components in parentheses, $\hat{\imath}$ and $\hat{\jmath}$ basis vectors) was stabilized in the early 20th century by the physics community and is now universal. When you read a robotics paper, a drone autopilot manual, a controls textbook, or an electromagnetism text, the vector notation is the same. Learning vectors well now means every paper you ever read after this is more accessible.
+
+## Plain-Language Intuition
+
+Hold your hand out flat and point.
+
+That gesture has two parts: a *direction* (where your hand points) and a *length* (how far your arm reaches). The combination of those two pieces of information is a vector. The length alone, with no direction, is a scalar. The direction alone, with no length, is a unit vector (more on those later).
+
+Now move your hand from one place to another. The path you took, expressed only as "where did you start and where did you end," is a *displacement vector*. The shape of the path itself is irrelevant; the displacement is just the straight-line "from-tail-to-head" arrow.
+
+Add a clock. If you moved your hand a certain displacement in a certain time, dividing the displacement by the time gives you a *velocity vector*. Same direction as the displacement (for now), but its magnitude is in distance-per-time instead of distance.
+
+This is the entire intuition:
+
+> A vector is something that has both a size and a direction, and adding two of them tip-to-tail gives a third one.
+
+Everything else in this lesson is a careful unpacking of that sentence.
+
+## Core Theory
+
+### Scalars and Vectors
+
+A **scalar** is a quantity that is fully specified by a single number with units:
+
+$$m = 3.5 \text{ kg}, \quad T = 21^{\circ}\text{C}, \quad t = 4.2 \text{ s}$$
+
+A **vector** is a quantity that requires both a number (its *magnitude*) and a direction. In 2D, two pieces of information are needed; in 3D, three; in $n$ dimensions, $n$.
+
+We will write vectors in bold or with an arrow:
+
+$$\vec{v}, \quad \mathbf{v}, \quad \vec{F}, \quad \mathbf{r}$$
+
+The magnitude (a scalar) is written with absolute-value bars:
+
+$$|\vec{v}|, \quad \|\vec{v}\|$$
+
+Both notations are acceptable. We will mostly use $|\vec{v}|$ in this lesson; later, when we want to be precise about which norm we mean, we will use $\|\vec{v}\|$.
+
+### Two Equivalent Representations
+
+A vector has two equally valid descriptions, and switching between them is most of the work of using vectors well.
+
+**Geometric form** (arrow): a vector is an arrow drawn in space. It has a *tail* (start), a *head* (end), a *length* (magnitude), and a *direction* (where it points).
+
+The position of the tail does not matter. Two arrows with the same length and the same direction represent the same vector, even if one starts at the origin and the other starts at the point (5, 7). A vector is *free*: it can be slid around in space without changing its identity, as long as its length and direction stay the same.
+
+**Algebraic form** (components): a vector is an ordered tuple of numbers, one per dimension. In 2D:
 
 $$\vec{v} = (v_x, v_y)$$
 
-The magnitude is:
+In 3D:
+
+$$\vec{v} = (v_x, v_y, v_z)$$
+
+Each component tells you how far the head moves *from the tail* along that coordinate axis. If $\vec{v} = (3, 4)$, then starting from the tail, the head is 3 units along the $x$-axis and 4 units along the $y$-axis.
+
+The two forms are equivalent. If you give me the arrow, I can read off the components. If you give me the components, I can draw the arrow. The fluency you want to develop is the ability to flip between the two effortlessly.
+
+### Magnitude
+
+The magnitude of a vector is its length. In 2D, by the Pythagorean theorem,
 
 $$|\vec{v}| = \sqrt{v_x^2 + v_y^2}$$
 
-## Worked Example
+In 3D,
 
-A robot moves `3 m` east and `4 m` north. Its displacement vector is:
+$$|\vec{v}| = \sqrt{v_x^2 + v_y^2 + v_z^2}$$
 
-$$\vec{d} = (3, 4)$$
+Notice that magnitude is a **scalar**. It is a single non-negative number. It has the same units as the components (if the components are in meters, the magnitude is in meters). The magnitude is never negative, because the components are squared before being summed.
 
-The magnitude is:
+If $|\vec{v}| = 0$, the vector is the zero vector $\vec{0}$, which has no direction. The zero vector is the only vector for which "direction" is undefined.
 
-$$|\vec{d}| = \sqrt{3^2 + 4^2} = 5m$$
+### Vector Addition (Geometrically)
 
-## Exercise
+To add two vectors $\vec{a}$ and $\vec{b}$ geometrically, slide $\vec{b}$ so that its tail sits at the head of $\vec{a}$. The sum $\vec{a} + \vec{b}$ is the arrow from the tail of $\vec{a}$ to the head of $\vec{b}$.
 
-Find the magnitude of each vector:
+This is the **tip-to-tail rule** and it is the only geometric rule you need for vector addition. It encodes a physical fact: if you walk along the displacement $\vec{a}$, and then continue along the displacement $\vec{b}$, your net displacement is the sum $\vec{a} + \vec{b}$.
 
-1. `(6, 8)`
-2. `(5, 12)`
-3. `(-3, 4)`
+Vector addition is **commutative**: $\vec{a} + \vec{b} = \vec{b} + \vec{a}$. Both orderings give the same final position. The geometric proof: the parallelogram you get from sliding $\vec{a}$ to the head of $\vec{b}$ (and vice versa) has the same diagonal either way.
 
-Explain why a negative component does not make the magnitude negative.
+### Vector Addition (Algebraically)
+
+In components, addition is dead simple: add the components.
+
+$$\vec{a} + \vec{b} = (a_x + b_x, \ a_y + b_y) \quad \text{(in 2D)}$$
+
+$$\vec{a} + \vec{b} = (a_x + b_x, \ a_y + b_y, \ a_z + b_z) \quad \text{(in 3D)}$$
+
+The component form lets you compute sums fast and exactly. The geometric form lets you see why the sum makes physical sense. You need both.
+
+### Scalar Multiplication
+
+Multiplying a vector $\vec{v}$ by a scalar $k$ multiplies every component by $k$:
+
+$$k \vec{v} = (k v_x, \ k v_y)$$
+
+Geometrically:
+
+- If $k > 0$, the result is a vector in the same direction as $\vec{v}$, with magnitude $k \cdot |\vec{v}|$.
+- If $k < 0$, the result is in the *opposite* direction, with magnitude $|k| \cdot |\vec{v}|$.
+- If $k = 0$, the result is the zero vector.
+- If $|k| = 1$ but $k \ne 1$, the magnitude is unchanged and the direction is either kept ($k = 1$) or flipped ($k = -1$).
+
+The magnitude of the scaled vector is:
+
+$$|k \vec{v}| = |k| \cdot |\vec{v}|$$
+
+The absolute value on $k$ matters: a $-2$ scale doubles the magnitude (it does not "negate the magnitude," which would be meaningless).
+
+### Vector Subtraction
+
+Subtraction is addition of the opposite:
+
+$$\vec{a} - \vec{b} = \vec{a} + (-\vec{b}) = (a_x - b_x, \ a_y - b_y)$$
+
+Geometrically, $\vec{a} - \vec{b}$ is the arrow from the head of $\vec{b}$ to the head of $\vec{a}$ when both have the same tail. This will be the standard way you compute relative positions: if $\vec{r}_A$ is the position of object A and $\vec{r}_B$ is the position of object B, then $\vec{r}_A - \vec{r}_B$ is the displacement from B to A.
+
+### Unit Vectors
+
+A **unit vector** is a vector with magnitude exactly 1. Unit vectors carry direction information without any size information; they are pure directions.
+
+Given any nonzero vector $\vec{v}$, you can construct the unit vector in the same direction by dividing by the magnitude:
+
+$$\hat{v} = \frac{\vec{v}}{|\vec{v}|}$$
+
+This is called **normalizing** the vector. The result $\hat{v}$ has the same direction as $\vec{v}$ but magnitude 1.
+
+Examples:
+
+- The unit vector in the direction of $(3, 4)$ is $\frac{1}{5}(3, 4) = (0.6, 0.8)$. Check: $\sqrt{0.6^2 + 0.8^2} = \sqrt{0.36 + 0.64} = 1$. ✓
+- The unit vector in the direction of $(1, 1)$ is $\frac{1}{\sqrt{2}}(1, 1) \approx (0.707, 0.707)$.
+
+You cannot normalize the zero vector ($\vec{0}$ has no direction), so the rule above implicitly assumes $|\vec{v}| > 0$.
+
+### Standard Basis Vectors
+
+In 2D, the **standard basis** is the pair of unit vectors
+
+$$\hat{\imath} = (1, 0), \quad \hat{\jmath} = (0, 1)$$
+
+In 3D, the standard basis is
+
+$$\hat{\imath} = (1, 0, 0), \quad \hat{\jmath} = (0, 1, 0), \quad \hat{k} = (0, 0, 1)$$
+
+Any vector can be written as a sum of basis vectors scaled by its components:
+
+$$\vec{v} = v_x \hat{\imath} + v_y \hat{\jmath} + v_z \hat{k}$$
+
+This *expansion in basis vectors* is exactly the same content as writing the components in a tuple, but the notation makes it clear how each component contributes to the overall direction. You will see physics texts switch between $(v_x, v_y, v_z)$ and $v_x \hat{\imath} + v_y \hat{\jmath} + v_z \hat{k}$ depending on which is more readable in context.
+
+### Magnitude–Direction Form (2D)
+
+In 2D, you can also describe a vector by its magnitude $|\vec{v}|$ and its angle $\theta$ measured counter-clockwise from the positive $x$-axis. Conversion between the two forms is via trigonometry:
+
+**Component form to magnitude/angle:**
+
+$$|\vec{v}| = \sqrt{v_x^2 + v_y^2}, \quad \theta = \operatorname{atan2}(v_y, v_x)$$
+
+The `atan2` function is what you should use in code; it correctly handles all four quadrants. The naive `arctan(v_y / v_x)` will silently give wrong answers when $v_x < 0$.
+
+**Magnitude/angle to component form:**
+
+$$v_x = |\vec{v}| \cos\theta, \quad v_y = |\vec{v}| \sin\theta$$
+
+This is the central conversion you will use constantly when problems describe vectors in words ("a velocity of 12 m/s at 30° above horizontal") but you need to work with them in components for algebra or code.
+
+### Position, Displacement, and Velocity
+
+These three are *not* the same vector, and confusing them is the source of about half of all vector mistakes. Read carefully.
+
+A **position vector** $\vec{r}$ points from a chosen origin to a point. It depends on your choice of origin: change the origin and every position vector in your problem changes. Position vectors live in some specific coordinate system; if you change coordinate systems, you change the position vectors. Position vectors are *not free*; their tail must be at the origin.
+
+A **displacement vector** $\Delta \vec{r} = \vec{r}_2 - \vec{r}_1$ points from one position to another. It does *not* depend on the choice of origin: shift the origin, and both $\vec{r}_1$ and $\vec{r}_2$ shift by the same amount, so the difference is unchanged. Displacement vectors are free; they can be drawn anywhere, since only the difference between two endpoints matters.
+
+A **velocity vector** $\vec{v} = \frac{d\vec{r}}{dt}$ is the rate of change of the position vector with respect to time. Like displacement, it is a free vector and does not depend on the origin. Its components have units of distance per time.
+
+Why do we keep these three straight? Because when you write a robot control law that says "go to position $\vec{r}_{\text{target}}$ from position $\vec{r}_{\text{current}}$ with some velocity," you cannot mix them up: $\vec{r}_{\text{target}} - \vec{r}_{\text{current}}$ is a *displacement* (the path that closes the gap), and the velocity must be in the direction of that displacement (and have the right magnitude per second). Treating either as the other will send the robot to the wrong place.
+
+### Vectors as Elements of a Vector Space (Glimpse)
+
+What you are learning here is, structurally, a tiny piece of a much larger object called a **vector space**. A vector space is any set of objects (called *vectors*) where addition and scalar multiplication are defined and obey eight specific axioms (closure, associativity, commutativity, identity, inverse, distributivity, and so on).
+
+The familiar 2D and 3D vectors with real-number components form vector spaces called $\mathbb{R}^2$ and $\mathbb{R}^3$. But polynomials of degree $\le n$, continuous functions on an interval, matrices of a given size, and quantum-mechanical state amplitudes all also form vector spaces. The vector operations you are learning here transfer directly to all of them. This is one of the reasons linear algebra is so powerful: you learn one set of operations, and they work in dozens of seemingly unrelated settings.
+
+For this lesson we will stay concrete and stick to $\mathbb{R}^2$ and $\mathbb{R}^3$. But know that the rules you are practicing scale up.
+
+## Visual or Mental Model
+
+If you are not visualizing while reading, you are guessing. Here are the canonical pictures.
+
+### 2D Vectors on a Grid
+
+Imagine a Cartesian plane. Place the tail of a vector $\vec{v} = (3, 4)$ at the origin. Step 3 units to the right (positive $x$), then 4 units up (positive $y$). The head of the arrow lands at the point (3, 4). Draw the arrow from origin to that point.
+
+Now slide the same arrow so its tail sits at (5, 1). The head will be at (5+3, 1+4) = (8, 5). It is the same vector. The components do not change when you slide the arrow.
+
+### 3D Vectors and the Right-Hand Rule
+
+In 3D, we use a right-handed coordinate system. Point your right hand's fingers in the direction of positive $x$. Curl them toward positive $y$. Your thumb points in the direction of positive $z$. This convention is universal in engineering, physics, and robotics.
+
+You will see the right-hand rule again with the cross product. Get used to it now.
+
+### Magnitude-and-Direction View
+
+Imagine standing at the tail of a vector. Magnitude is "how far to walk." Direction is "which way to face before walking." This is the most physical picture and the one to use when a problem is phrased in natural language ("walk 100 meters at a bearing of 45°").
+
+### Tip-to-Tail Addition
+
+Draw $\vec{a}$. Without lifting your pencil, draw $\vec{b}$ starting from where $\vec{a}$ ended. The arrow from your starting point to where you ended is $\vec{a} + \vec{b}$. This picture is the geometric proof that vector addition makes physical sense for displacements.
+
+### Parallelogram Rule (Equivalent)
+
+Draw $\vec{a}$ and $\vec{b}$ from the same tail. Complete the parallelogram. The diagonal from the shared tail is $\vec{a} + \vec{b}$. This view makes the commutativity of vector addition visually obvious: the diagonal is the same whether you go around the parallelogram clockwise or counter-clockwise.
+
+## Worked Examples
+
+### Example 1 — Find Magnitude
+
+Find the magnitude of $\vec{v} = (6, 8)$.
+
+$$|\vec{v}| = \sqrt{6^2 + 8^2} = \sqrt{36 + 64} = \sqrt{100} = 10$$
+
+The magnitude is 10. Notice that I recognized $(6, 8)$ as a multiple of the $(3, 4, 5)$ Pythagorean triple, so I expected the answer to be 10 without doing arithmetic. Building this kind of fluency saves time.
+
+### Example 2 — Find the Components Given Magnitude and Angle
+
+A drone flies at 15 m/s at an angle of 30° above horizontal. Find the horizontal and vertical components of its velocity.
+
+We use $v_x = |\vec{v}| \cos\theta$ and $v_y = |\vec{v}| \sin\theta$ with $|\vec{v}| = 15$ and $\theta = 30°$.
+
+$$v_x = 15 \cos 30° = 15 \cdot \frac{\sqrt{3}}{2} \approx 12.99 \text{ m/s}$$
+
+$$v_y = 15 \sin 30° = 15 \cdot \frac{1}{2} = 7.5 \text{ m/s}$$
+
+Sanity check: $v_x^2 + v_y^2 \approx 168.7 + 56.25 = 224.95 \approx 15^2 = 225$. The components agree with the original magnitude.
+
+### Example 3 — Add Two Vectors
+
+Two ropes pull on a ring. Rope A pulls with force $\vec{F}_A = (10, 0)$ N (horizontally) and rope B pulls with force $\vec{F}_B = (0, 24)$ N (vertically). Find the net force on the ring.
+
+$$\vec{F}_{\text{net}} = \vec{F}_A + \vec{F}_B = (10 + 0, \ 0 + 24) = (10, 24) \text{ N}$$
+
+The magnitude of the net force is
+
+$$|\vec{F}_{\text{net}}| = \sqrt{10^2 + 24^2} = \sqrt{100 + 576} = \sqrt{676} = 26 \text{ N}$$
+
+And the angle (above horizontal):
+
+$$\theta = \operatorname{atan2}(24, 10) \approx 67.4°$$
+
+So the ring experiences 26 N of force at about 67.4° above horizontal.
+
+### Example 4 — Subtract Two Vectors (Relative Position)
+
+A drone is at position $\vec{r}_D = (120, 50)$ m relative to home base. A landing pad is at position $\vec{r}_L = (180, 90)$ m. Find the displacement from the drone to the landing pad.
+
+$$\Delta \vec{r} = \vec{r}_L - \vec{r}_D = (180 - 120, \ 90 - 50) = (60, 40) \text{ m}$$
+
+The straight-line distance is
+
+$$|\Delta \vec{r}| = \sqrt{60^2 + 40^2} = \sqrt{3600 + 1600} = \sqrt{5200} \approx 72.1 \text{ m}$$
+
+The drone needs to fly 72.1 m on a heading approximately
+
+$$\theta = \operatorname{atan2}(40, 60) \approx 33.7°$$
+
+counter-clockwise from the positive $x$-axis (i.e., 33.7° above the east direction if $x$ is east and $y$ is north).
+
+### Example 5 — Normalize a Vector
+
+A camera reports a 3D motion vector $\vec{m} = (2, -2, 1)$. Compute the unit vector $\hat{m}$ that gives the direction of motion only.
+
+$$|\vec{m}| = \sqrt{2^2 + (-2)^2 + 1^2} = \sqrt{4 + 4 + 1} = \sqrt{9} = 3$$
+
+$$\hat{m} = \frac{\vec{m}}{|\vec{m}|} = \left(\frac{2}{3}, \ -\frac{2}{3}, \ \frac{1}{3}\right)$$
+
+Check the magnitude of $\hat{m}$:
+
+$$|\hat{m}| = \sqrt{\left(\tfrac{2}{3}\right)^2 + \left(\tfrac{2}{3}\right)^2 + \left(\tfrac{1}{3}\right)^2} = \sqrt{\tfrac{4}{9} + \tfrac{4}{9} + \tfrac{1}{9}} = \sqrt{1} = 1 \checkmark$$
+
+### Example 6 — Scalar Multiplication
+
+A robot is currently moving with velocity $\vec{v} = (3, 4)$ m/s. The controller decides to brake at half speed in the same direction. What is the new velocity vector?
+
+We scale by $k = 0.5$:
+
+$$\vec{v}_{\text{new}} = 0.5 \cdot (3, 4) = (1.5, 2)$$
+
+The magnitude is $\sqrt{1.5^2 + 2^2} = \sqrt{2.25 + 4} = \sqrt{6.25} = 2.5$ m/s, which is exactly half of the original speed $|(3, 4)| = 5$ m/s. The direction is unchanged. The brake worked.
+
+### Example 7 — Failure Mode: Confusing Position and Displacement
+
+A common mistake: a problem says "a drone starts at $(20, 10)$ m and moves to $(40, 30)$ m. What is its displacement?" A learner who writes the displacement as $(40, 30)$ — the *final position* — has confused position with displacement. The displacement is the *change*:
+
+$$\Delta \vec{r} = (40 - 20, \ 30 - 10) = (20, 20)$$
+
+The displacement is the subtraction of two position vectors, not either of the positions themselves. Always check: does the answer change if I move the origin? If it does, you computed a position, not a displacement.
+
+### Example 8 — Failure Mode: Forgetting `atan2`
+
+A vector has components $(-3, -4)$. Use the careless formula:
+
+$$\theta = \arctan\left(\frac{-4}{-3}\right) = \arctan\left(\frac{4}{3}\right) \approx 53.1°$$
+
+This is wrong. The vector $(-3, -4)$ is in the *third* quadrant (both components negative), so its angle should be in the third quadrant, around $180° + 53.1° = 233.1°$ (or equivalently $-126.9°$). The plain `arctan` collapsed the signs and gave the angle for the vector $(3, 4)$ instead.
+
+Use `atan2`:
+
+$$\theta = \operatorname{atan2}(-4, -3) \approx 233.1° \quad (\text{or} \quad -126.9°)$$
+
+`atan2(y, x)` accepts the signs of both components separately and returns the correct quadrant. In every programming language, the order of arguments is `atan2(y, x)`. Burn that in.
+
+## Engineering Connections
+
+### Force Balance (Statics)
+
+A bracket holds a sign. Three cables pull on the bracket: cable 1 horizontally with force 100 N, cable 2 at 60° above horizontal with force 80 N, and cable 3 directly upward with force 50 N. Is the bracket in equilibrium? You answer this by adding the three force vectors. Each force gets decomposed into components, the components are summed, and if the sum is the zero vector, the bracket is in equilibrium. Without vectors, you cannot do this problem at all. With vectors, it is two short lines of arithmetic.
+
+### Drone Navigation
+
+An autopilot receives a target waypoint as a position vector and reads the current drone position from GPS. Subtracting gives a displacement vector. Normalizing gives a direction; scaling that direction by the desired ground speed gives a velocity command. Vectors *are* the autopilot's internal language.
+
+### Robot Kinematics
+
+A robot arm has joints. The position of the end-effector (tip of the arm) is a position vector that depends on each joint angle. The kinematics equations are vector equations: the position of the end-effector is the sum of the link vectors, each rotated by its joint angle. Without vectors, kinematics would not have a tractable notation. With vectors, you write the *forward kinematics* of a 6-joint arm in a single line.
+
+### Computer Vision: Optical Flow
+
+When a camera looks at a scene that is moving (or the camera itself is moving), each pixel can be assigned a small 2D vector that describes how that pixel has moved between two consecutive frames. The collection of all those vectors is an *optical flow field*. Robotics and AR systems use optical flow to estimate camera motion. Each tiny vector in that field is exactly the kind of object you are learning to manipulate.
+
+### Electromagnetism: Field Vectors
+
+The electric field $\vec{E}$ and magnetic field $\vec{B}$ at every point in space are vectors. Maxwell's equations describe how these vector fields change in space and time. The entire physical theory of electromagnetism is unintelligible without vectors.
+
+### Numerical Computing (Why NumPy Exists)
+
+In Python, a list of three numbers `[1, 2, 3]` does *not* behave like a vector. Adding two lists concatenates them. NumPy was built to give Python a real vector type (`np.array`) that behaves the way physics and engineering need: component-wise addition, scalar multiplication, magnitude, dot product, and so on. When you start using NumPy seriously in the programming track, you will appreciate that it is just an efficient implementation of the operations you are learning here.
+
+## Practice Set
+
+Work through these without skipping ahead. The answer to each follows after the full set.
+
+### Warm-ups (Magnitude and Components)
+
+1. Find the magnitude of $\vec{a} = (8, 6)$.
+2. Find the magnitude of $\vec{b} = (-5, 12)$.
+3. Find the magnitude of $\vec{c} = (1, 1, 1)$.
+4. A vector $\vec{v}$ has magnitude 10 and points at an angle of 60° above the positive $x$-axis. Find its components.
+5. A vector $\vec{w}$ has components $(7, 0)$. Find its magnitude and its angle from the positive $x$-axis.
+
+### Vector Addition and Subtraction
+
+6. Compute $(2, 3) + (5, -1)$.
+7. Compute $(7, -4) - (3, -1)$.
+8. Compute $3 \cdot (2, -5)$.
+9. Compute $(1, 2) + 2 \cdot (3, 4)$.
+10. Given $\vec{a} = (1, 2, 3)$ and $\vec{b} = (4, -1, 5)$, compute $\vec{a} + \vec{b}$ and $\vec{a} - \vec{b}$.
+
+### Unit Vectors and Basis
+
+11. Find the unit vector in the direction of $\vec{v} = (3, 4)$.
+12. Find the unit vector in the direction of $\vec{w} = (-6, 8)$.
+13. Find the unit vector in the direction of $\vec{u} = (1, 1)$. Express to 4 decimal places.
+14. Express the vector $\vec{v} = (2, -3, 5)$ as a linear combination of $\hat{\imath}, \hat{\jmath}, \hat{k}$.
+
+### Applied (Engineering Settings)
+
+15. A drone flies at 20 m/s at an angle of 25° above horizontal. Find the horizontal and vertical components.
+16. A robot starts at position $(0, 0)$ and moves through displacements $(3, 4)$, then $(-1, 2)$, then $(5, -3)$. What is its final position?
+17. Two forces act on an object: $\vec{F}_1 = (40, 30)$ N and $\vec{F}_2 = (-20, 10)$ N. What is the net force, in both component form and magnitude/angle form?
+18. A camera reports a 3D motion vector for an object: $\vec{m} = (6, -2, 3)$ pixels/frame. Find the speed (magnitude) and the unit direction.
+19. A drone is currently at $(150, 80)$ m and needs to reach $(50, 200)$ m. Find the displacement, the distance to travel, and the bearing (angle from positive $x$-axis).
+
+### Challenge
+
+20. Two vectors have the same magnitude $r$. Their sum has magnitude $r$ as well. What is the angle between them? (Hint: think about an equilateral triangle in the parallelogram diagram.)
+21. Show, using components, that $|\vec{a} + \vec{b}| \le |\vec{a}| + |\vec{b}|$ for any two vectors $\vec{a}$ and $\vec{b}$. (This is the triangle inequality.) When does equality hold?
+22. Given $\vec{a} = (4, 3)$, find a vector $\vec{b}$ perpendicular to $\vec{a}$ with $|\vec{b}| = 10$. (There are exactly two such vectors; find both.)
+
+### Error Spotting
+
+23. A student claims that $|\vec{v}| = v_x + v_y$. Give a specific counterexample and explain why the formula is wrong in general.
+24. A student computes the angle of $\vec{v} = (-2, 3)$ as $\arctan(3 / -2) = \arctan(-1.5) \approx -56.3°$. The correct angle is about $123.7°$. Explain the mistake and correct it.
+25. A student claims that the unit vector in the direction of $(5, 5)$ is $(1, 1)$. Show why this is wrong and give the correct answer.
+
+### Answers and Brief Explanations
+
+1. $\sqrt{64 + 36} = \sqrt{100} = 10$.
+2. $\sqrt{25 + 144} = \sqrt{169} = 13$.
+3. $\sqrt{1 + 1 + 1} = \sqrt{3} \approx 1.732$.
+4. $v_x = 10 \cos 60° = 5$; $v_y = 10 \sin 60° = 5\sqrt{3} \approx 8.66$.
+5. $|\vec{w}| = 7$; angle $= 0°$ (the vector lies along the positive $x$-axis).
+6. $(7, 2)$.
+7. $(4, -3)$.
+8. $(6, -15)$.
+9. $(1 + 6, \ 2 + 8) = (7, 10)$.
+10. Sum $(5, 1, 8)$; difference $(-3, 3, -2)$.
+11. $|\vec{v}| = 5$; $\hat{v} = (3/5, 4/5) = (0.6, 0.8)$.
+12. $|\vec{w}| = 10$; $\hat{w} = (-0.6, 0.8)$.
+13. $|\vec{u}| = \sqrt{2}$; $\hat{u} = (1/\sqrt{2}, 1/\sqrt{2}) \approx (0.7071, 0.7071)$.
+14. $\vec{v} = 2\hat{\imath} - 3\hat{\jmath} + 5\hat{k}$.
+15. $v_x = 20 \cos 25° \approx 18.13$ m/s; $v_y = 20 \sin 25° \approx 8.45$ m/s.
+16. Final position $= (0 + 3 - 1 + 5, \ 0 + 4 + 2 - 3) = (7, 3)$.
+17. $\vec{F}_{\text{net}} = (20, 40)$ N; magnitude $\sqrt{400 + 1600} = \sqrt{2000} \approx 44.72$ N; angle $\approx 63.4°$.
+18. Speed $\sqrt{36 + 4 + 9} = \sqrt{49} = 7$ pixels/frame; $\hat{m} = (6/7, -2/7, 3/7)$.
+19. Displacement $(-100, 120)$ m; distance $\sqrt{10000 + 14400} = \sqrt{24400} \approx 156.2$ m; bearing $\operatorname{atan2}(120, -100) \approx 129.8°$.
+20. The angle between them is 120°. (The triangle formed by $\vec{a}$, $\vec{b}$, and $-(\vec{a} + \vec{b})$ is equilateral.)
+21. Squaring both sides and using $\vec{a} \cdot \vec{b} \le |\vec{a}||\vec{b}|$ gives the result. Equality holds when $\vec{a}$ and $\vec{b}$ point in the same direction.
+22. The two perpendicular vectors of magnitude 10 are $(-6, 8)$ and $(6, -8)$. (To get a perpendicular in 2D, swap the components and negate one of them, then rescale.)
+23. Counterexample: $\vec{v} = (3, 4)$, so $|\vec{v}| = 5$ but $v_x + v_y = 7$. The formula treats the magnitude as a linear sum of components, but Pythagoras is non-linear.
+24. The vector $(-2, 3)$ is in the second quadrant (negative $x$, positive $y$). Plain `arctan` cannot distinguish quadrants. Use `atan2(3, -2) ≈ 123.7°`.
+25. $(1, 1)$ has magnitude $\sqrt{2}$, not 1. The unit vector in the direction of $(5, 5)$ is $\frac{1}{5\sqrt{2}}(5, 5) = (1/\sqrt{2}, 1/\sqrt{2}) \approx (0.707, 0.707)$.
 
 ## Build Task
 
-Write a vector utility that computes:
+Write a small Python module called `vector.py` that supports the operations introduced in this lesson. The module should be usable from a Jupyter notebook or a script.
 
-- magnitude
-- component addition
-- component subtraction
-- scaling by a number
+Requirements:
+
+- A `Vector` class that stores any number of components.
+- Equality based on component values (with optional floating-point tolerance).
+- Addition (`+`), subtraction (`-`), and scalar multiplication (`*`, both `k * v` and `v * k`) via Python operator overloading.
+- A `magnitude()` method (or `__abs__`) that returns the Euclidean length.
+- A `normalized()` method that returns a new `Vector` with magnitude 1, raising a clear error on the zero vector.
+- A `dot()` method that takes another vector of equal dimension and returns the dot product (preview of the next lesson, but useful here for perpendicularity tests).
+- A clean string representation: `Vector(3, 4)` rather than something opaque.
+
+Tests (write these as `assert` statements or with `pytest`):
+
+- `Vector(3, 4).magnitude() == 5.0`
+- `Vector(1, 2) + Vector(3, 4) == Vector(4, 6)`
+- `Vector(5, 5) - Vector(1, 1) == Vector(4, 4)`
+- `Vector(3, 4) * 2 == Vector(6, 8)`
+- `2 * Vector(3, 4) == Vector(6, 8)`
+- `Vector(3, 4).normalized() == Vector(0.6, 0.8)` (with appropriate float tolerance)
+- `Vector(0, 0).normalized()` should raise an exception
+- `Vector(1, 0).dot(Vector(0, 1)) == 0`
+
+Stretch goals (do at least one):
+
+- Add a `from_polar(magnitude, angle_rad)` classmethod for 2D vectors.
+- Add a `to_polar()` method that returns `(magnitude, angle_rad)` for 2D vectors using `math.atan2`.
+- Use `matplotlib` to render a small diagram of two vectors and their sum (tip-to-tail).
+- Support arbitrary dimension (work with `Vector(1, 2, 3)` and `Vector(1, 2, 3, 4)` without changes).
+
+Save your code, your tests, and one screenshot of the matplotlib diagram (if you did that stretch goal) as proof of completion.
 
 ## Quiz
 
-1. What is the difference between a scalar and a vector?
-2. What do vector components represent?
-3. Why is magnitude never negative?
-4. Where do vectors appear in robotics or drones?
+These questions probe concept understanding. Answer them before checking yourself.
+
+1. What is the difference between a scalar and a vector? Give one example of each that is *not* in this lesson.
+2. What does it mean for two vectors to be "equal"? Can two arrows that start at different points represent the same vector?
+3. Why is magnitude never negative? Give the math reason and the physical reason.
+4. If $\vec{v} = (3, -4)$, what is $|\vec{v}|$? In which quadrant is the vector?
+5. Why must you use `atan2` rather than plain `arctan` to compute a vector's angle from its components?
+6. What is a unit vector? Why is the zero vector excluded from having a unit-vector version?
+7. Write $(2, -1, 3)$ as a linear combination of $\hat{\imath}, \hat{\jmath}, \hat{k}$.
+8. If $\vec{a}$ and $\vec{b}$ are added tip-to-tail, what do the tail of the sum and the head of the sum represent geometrically?
+9. A robot starts at $(10, 5)$ and after some motion is at $(7, 9)$. What is its position vector at the end? What is its displacement vector?
+10. Two equal-magnitude forces act on an object. They sum to zero. What must be true about their directions?
+11. Why do we need a separate kind of multiplication (dot product, cross product) for vectors, rather than just "vector times vector" being defined component-wise?
+12. Suppose you change the choice of origin in a problem. Which of these change: position vectors, displacement vectors, velocity vectors? Explain.
 
 ## Proof of Completion
 
-Submit the vector utility, three examples, and a sketch of one vector with components.
+You finished this lesson when you can:
 
-## Next Lesson
+- Pass an unaided 50-question concept exam covering vectors (the geometry-trig-and-vectors module exam in the platform) at 95%+.
+- Submit your `vector.py` module with all required tests passing.
+- Reproduce the tip-to-tail addition diagram by hand for at least two non-trivial vector additions, with components labeled and computed.
+- Explain in one paragraph (out loud, in writing, or to a peer) the difference between position, displacement, and velocity vectors, with a real example for each.
 
-Trigonometry for Drones and Robotics.
+Keep all of these in a `lessons/vectors-from-zero/` folder under your build log so you can revisit and improve them later.
+
+## Sources and Further Study
+
+This lesson can be read alone, but if you want a second voice on the same material:
+
+- **MIT OCW 18.02 — Multivariable Calculus**, Lecture 1 (Denis Auroux). Free video. Vectors and dot products. *The* canonical first lecture.
+  ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/
+
+- **Khan Academy** — *Vectors and spaces* unit (free). Excellent visual intuition; works well as a warm-up before this lesson or as a corrective if any section here was confusing.
+  khanacademy.org/math/linear-algebra/vectors-and-spaces
+
+- **Strang, *Introduction to Linear Algebra***. Chapter 1 covers vectors from scratch with Strang's signature directness. The first 30 pages are some of the best math writing you will encounter.
+
+- **Hubbard & Hubbard, *Vector Calculus, Linear Algebra, and Differential Forms***. A more demanding treatment that unifies vectors with linear algebra and calculus. Read this in a few months when this lesson feels easy.
+
+- **Crowe, *A History of Vector Analysis***. The historical story of how Gibbs and Heaviside built modern vector notation from Hamilton's quaternions. Read if you want to understand *why* the notation looks the way it does.
+
+If a section of this lesson failed for you, the most likely place to find a better explanation is the corresponding lecture in MIT 18.02 — that course is what this module is anchored to.
+
+## Next Lesson Bridge
+
+You now have vectors in your toolkit. The next concept you need is the **dot product**, which measures how much two vectors "point in the same direction." It is the bridge between the geometric and component pictures: the dot product is computed algebraically from components but interpreted geometrically as $|\vec{a}||\vec{b}|\cos\theta$. It is also the first vector operation that returns a scalar, which is where most students stumble.
+
+After the dot product comes the **cross product** (in 3D), which returns a vector perpendicular to both inputs and whose magnitude measures the parallelogram area they span. These two operations together unlock force decompositions, torque calculations, angular momentum, projection geometry, and the cross-product form of Maxwell's equations.
+
+You will see these in the lesson *Dot and Cross Products* (Module 3, after Trigonometry).

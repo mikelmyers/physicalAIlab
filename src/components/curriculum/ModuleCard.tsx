@@ -1,6 +1,10 @@
+import Link from "next/link";
+import { ShieldCheck } from "lucide-react";
+import { hasModuleExam } from "../../../content/exams";
 import type { Lesson, Module } from "@/lib/types";
 import { LessonCard } from "./LessonCard";
 import { StatusBadge } from "../StatusBadge";
+import { ExamStatusBadge } from "../exam/ExamStatusBadge";
 
 type ModuleCardProps = {
   moduleItem: Module;
@@ -8,6 +12,8 @@ type ModuleCardProps = {
 };
 
 export function ModuleCard({ moduleItem, lessons }: ModuleCardProps) {
+  const examAvailable = hasModuleExam(moduleItem.slug);
+
   return (
     <section className="rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -31,6 +37,29 @@ export function ModuleCard({ moduleItem, lessons }: ModuleCardProps) {
           </p>
         )}
       </div>
+      {examAvailable ? (
+        <div className="mt-5 rounded-md border border-emerald-500/30 bg-emerald-500/5 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+                  Module exam available
+                </p>
+                <ExamStatusBadge moduleSlug={moduleItem.slug} />
+              </div>
+              <p className="mt-1 text-xs text-emerald-800/80 dark:text-emerald-200/80">
+                50-question concept exam · 95% to pass · numbers randomize each attempt.
+              </p>
+            </div>
+            <Link
+              href={`/exams/${moduleItem.slug}`}
+              className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white"
+            >
+              <ShieldCheck size={14} /> Open exam
+            </Link>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

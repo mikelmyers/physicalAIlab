@@ -1,13 +1,14 @@
 import Link from "next/link";
-import { ArrowRight, CircuitBoard, GraduationCap, NotebookText, Sigma } from "lucide-react";
+import { ArrowRight, CircuitBoard, Flame, GraduationCap, NotebookText, ShieldCheck, Sigma } from "lucide-react";
 import { TrackCard } from "@/components/curriculum/TrackCard";
+import { moduleExams } from "../../content/exams";
 import { projects, tracks, getTrackLessons } from "@/lib/data";
 
 const signals = [
   { label: "Tracks", value: "10" },
-  { label: "Seed lessons", value: "7" },
-  { label: "MVP storage", value: "Local" },
-  { label: "License", value: "MIT" },
+  { label: "Module exams", value: `${moduleExams.length}` },
+  { label: "Pass bar", value: "95%" },
+  { label: "Daily set", value: "10 q" },
 ];
 
 export default function Home() {
@@ -31,15 +32,21 @@ export default function Home() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 className="inline-flex items-center gap-2 rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-zinc-950"
-                href="/curriculum"
+                href="/practice"
               >
-                Open curriculum <ArrowRight size={16} />
+                <Flame size={16} /> Daily practice
+              </Link>
+              <Link
+                className="inline-flex items-center gap-2 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-800 dark:text-emerald-200"
+                href="/exams"
+              >
+                <ShieldCheck size={16} /> Module exams
               </Link>
               <Link
                 className="inline-flex items-center gap-2 rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 dark:border-zinc-700 dark:text-zinc-100"
-                href="/learning-path"
+                href="/curriculum"
               >
-                Start from zero
+                Curriculum <ArrowRight size={16} />
               </Link>
             </div>
           </div>

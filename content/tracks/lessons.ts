@@ -1,125 +1,20 @@
 import type { Lesson } from "../../src/lib/types";
+import { cloudNetworkingTelemetryLessons } from "./lessons/cloud-networking-telemetry.ts";
+import { codingFoundationsLessons } from "./lessons/coding-foundations.ts";
+import { computerVisionLessons } from "./lessons/computer-vision.ts";
+import { dronesGisRemoteSensingLessons } from "./lessons/drones-gis-remote-sensing.ts";
+import { electronicsAndCircuitsLessons } from "./lessons/electronics-and-circuits.ts";
+import { machineLearningAndAiLessons } from "./lessons/machine-learning-and-ai.ts";
+import { mathematicalFoundationsLessons } from "./lessons/mathematical-foundations.ts";
+import { mechanicalEngineeringLessons } from "./lessons/mechanical-engineering.ts";
+import { mechatronicsLessons } from "./lessons/mechatronics.ts";
+import { numericalMethodsLessons } from "./lessons/numerical-methods.ts";
+import { optimizationLessons } from "./lessons/optimization.ts";
+import { researchMethodsLessons } from "./lessons/research-methods.ts";
+import { roboticsLessons } from "./lessons/robotics.ts";
+import { theoreticalPhysicsLessons } from "./lessons/theoretical-physics.ts";
 
-export const lessons: Lesson[] = [
-  {
-    slug: "arithmetic-units-and-estimation",
-    trackSlug: "mathematical-foundations",
-    moduleSlug: "math-reentry-toolkit",
-    title: "Arithmetic, Units, and Estimation",
-    summary: "Rebuild number sense, unit awareness, and quick reasonableness checks for technical work.",
-    kind: "lesson",
-    status: "available",
-    order: 1,
-    estimatedMinutes: 35,
-    checkId: "arithmetic-units-core-check",
-    mdxPath: "content/lessons/arithmetic-units-and-estimation.mdx",
-  },
-  {
-    slug: "fractions-ratios-and-proportions",
-    trackSlug: "mathematical-foundations",
-    moduleSlug: "math-reentry-toolkit",
-    title: "Fractions, Ratios, and Proportions",
-    summary: "Use fractions and ratios as engineering language for scaling, mixtures, maps, gears, and sensors.",
-    kind: "lesson",
-    status: "available",
-    order: 2,
-    estimatedMinutes: 40,
-    prerequisites: ["arithmetic-units-and-estimation"],
-    checkId: "fractions-ratios-core-check",
-    mdxPath: "content/lessons/fractions-ratios-and-proportions.mdx",
-  },
-  {
-    slug: "signed-numbers-and-order-of-operations",
-    trackSlug: "mathematical-foundations",
-    moduleSlug: "math-reentry-toolkit",
-    title: "Signed Numbers and Order of Operations",
-    summary: "Handle negative values, parentheses, exponents, and calculation order without losing the physical meaning.",
-    kind: "lesson",
-    status: "available",
-    order: 3,
-    estimatedMinutes: 35,
-    prerequisites: ["fractions-ratios-and-proportions"],
-    checkId: "signed-numbers-core-check",
-    mdxPath: "content/lessons/signed-numbers-and-order-of-operations.mdx",
-  },
-  {
-    slug: "solving-equations-from-zero",
-    trackSlug: "mathematical-foundations",
-    moduleSlug: "equations-units-and-graphs",
-    title: "Solving Equations from Zero",
-    summary: "Learn equations as balance statements and solve for unknowns one reversible step at a time.",
-    kind: "lesson",
-    status: "available",
-    order: 1,
-    estimatedMinutes: 45,
-    prerequisites: ["signed-numbers-and-order-of-operations"],
-    mdxPath: "content/lessons/solving-equations-from-zero.mdx",
-  },
-  {
-    slug: "units-and-dimensional-analysis",
-    trackSlug: "mathematical-foundations",
-    moduleSlug: "equations-units-and-graphs",
-    title: "Units and Dimensional Analysis",
-    summary: "Use units as a debugging system for formulas, calculations, simulations, and lab measurements.",
-    kind: "lesson",
-    status: "available",
-    order: 2,
-    estimatedMinutes: 40,
-    prerequisites: ["solving-equations-from-zero"],
-    mdxPath: "content/lessons/units-and-dimensional-analysis.mdx",
-  },
-  {
-    slug: "graphing-functions-for-builders",
-    trackSlug: "mathematical-foundations",
-    moduleSlug: "equations-units-and-graphs",
-    title: "Graphing Functions for Builders",
-    summary: "Read and sketch graphs as stories about change, systems, sensors, and design tradeoffs.",
-    kind: "lesson",
-    status: "available",
-    order: 3,
-    estimatedMinutes: 45,
-    prerequisites: ["units-and-dimensional-analysis"],
-    mdxPath: "content/lessons/graphing-functions-for-builders.mdx",
-  },
-  {
-    slug: "algebra-for-engineering-systems",
-    trackSlug: "mathematical-foundations",
-    moduleSlug: "equations-units-and-graphs",
-    title: "Algebra for Engineering Systems",
-    summary: "Use equations as models for physical relationships, constraints, and system behavior.",
-    kind: "lesson",
-    status: "available",
-    order: 4,
-    estimatedMinutes: 35,
-    prerequisites: ["graphing-functions-for-builders"],
-    mdxPath: "content/lessons/algebra-for-engineering-systems.mdx",
-  },
-  {
-    slug: "trigonometry-for-drones-and-robotics",
-    trackSlug: "mathematical-foundations",
-    moduleSlug: "geometry-trig-and-vectors",
-    title: "Trigonometry for Drones and Robotics",
-    summary: "Convert angles and distances into components, heights, bearings, and field measurements.",
-    kind: "lesson",
-    status: "available",
-    order: 2,
-    estimatedMinutes: 40,
-    prerequisites: ["algebra-for-engineering-systems"],
-    mdxPath: "content/lessons/trigonometry-for-drones-and-robotics.mdx",
-  },
-  {
-    slug: "vectors-from-zero",
-    trackSlug: "mathematical-foundations",
-    moduleSlug: "geometry-trig-and-vectors",
-    title: "Vectors from Zero",
-    summary: "Understand vectors as quantities with size and direction, then use components for motion and force.",
-    kind: "lesson",
-    status: "available",
-    order: 1,
-    estimatedMinutes: 45,
-    prerequisites: ["algebra-for-engineering-systems"],
-    mdxPath: "content/lessons/vectors-from-zero.mdx",
-  },
+const existingAvailableLessons: Lesson[] = [
   {
     slug: "python-functions-for-technical-tools",
     trackSlug: "coding-foundations",
@@ -180,4 +75,22 @@ export const lessons: Lesson[] = [
     estimatedMinutes: 30,
     mdxPath: "content/lessons/introduction-to-theoretical-physics.mdx",
   },
+];
+
+export const lessons: Lesson[] = [
+  ...mathematicalFoundationsLessons,
+  ...codingFoundationsLessons,
+  ...electronicsAndCircuitsLessons,
+  ...mechatronicsLessons,
+  ...roboticsLessons,
+  ...dronesGisRemoteSensingLessons,
+  ...computerVisionLessons,
+  ...cloudNetworkingTelemetryLessons,
+  ...machineLearningAndAiLessons,
+  ...optimizationLessons,
+  ...numericalMethodsLessons,
+  ...mechanicalEngineeringLessons,
+  ...researchMethodsLessons,
+  ...theoreticalPhysicsLessons,
+  ...existingAvailableLessons,
 ];
