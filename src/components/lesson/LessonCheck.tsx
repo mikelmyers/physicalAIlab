@@ -2,94 +2,20 @@
 
 import { CheckCircle2, RotateCcw, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
-import { getLessonCheck, type LessonCheckQuestion } from "@/lib/lessonChecks";
+import { readStorage, removeStorage, writeStorage } from "@/lib/browserStorage";
+import { checkAnswer, type CheckResult } from "@/lib/checkAnswer";
+import { getLessonCheck } from "@/lib/lessonChecks";
 import { cn } from "@/lib/utils";
 
 type LessonCheckProps = {
   checkId: string;
 };
 
-type CheckResult = {
-  correct: boolean;
-  message: string;
-};
-
-function normalizeText(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .replace(/[×*]/g, "x")
-    .trim();
-}
-
-function parseNumericAnswer(value: string) {
-  const normalized = value.trim().replace(/,/g, "");
-  const match = normalized.match(/^([-+]?\d*\.?\d+(?:e[-+]?\d+)?)(?:\s*([a-zA-Z/%^0-9-]+))?$/i);
-
-  if (!match) {
-    return null;
-  }
-
-  return {
-    value: Number(match[1]),
-    unit: match[2] ?? "",
-  };
-}
-
-function normalizeUnit(unit: string) {
-  return unit
-    .replace(/hrs?/i, "h")
-    .replace(/hours?/i, "h")
-    .replace(/meters?/i, "m")
-    .replace(/amps?/i, "A")
-    .trim();
-}
-
-function checkAnswer(question: LessonCheckQuestion, answer: string): CheckResult {
-  if (!answer.trim()) {
-    return { correct: false, message: "Enter an answer first." };
-  }
-
-  if (question.kind === "text") {
-    const normalizedAnswer = normalizeText(answer);
-    const correct = question.acceptedAnswers.some((accepted) => normalizeText(accepted) === normalizedAnswer);
-
-    return {
-      correct,
-      message: correct ? "Correct." : "Not quite. Check the explanation and try again.",
-    };
-  }
-
-  const parsed = parseNumericAnswer(answer);
-
-  if (!parsed || Number.isNaN(parsed.value)) {
-    return { correct: false, message: "Enter a number, optionally followed by a unit." };
-  }
-
-  const tolerance = question.tolerance ?? 0;
-  const valueCorrect = Math.abs(parsed.value - question.value) <= tolerance;
-  const unitCorrect = question.unit ? normalizeUnit(parsed.unit) === normalizeUnit(question.unit) : true;
-
-  return {
-    correct: valueCorrect && unitCorrect,
-    message:
-      valueCorrect && unitCorrect
-        ? "Correct."
-        : question.unit
-          ? `Not quite. Expected ${question.value} ${question.unit}.`
-          : `Not quite. Expected ${question.value}.`,
-  };
-}
-
 export function LessonCheck({ checkId }: LessonCheckProps) {
   const check = getLessonCheck(checkId);
   const storageKey = `physical-ai-lab:lesson-check:${checkId}`;
   const [answers, setAnswers] = useState<Record<string, string>>(() => {
-    if (typeof window === "undefined") {
-      return {};
-    }
-
-    const saved = window.localStorage.getItem(storageKey);
+    const saved = readStorage(storageKey);
     return saved ? (JSON.parse(saved) as Record<string, string>) : {};
   });
   const [submitted, setSubmitted] = useState(false);
@@ -118,13 +44,13 @@ export function LessonCheck({ checkId }: LessonCheckProps) {
   function updateAnswer(questionId: string, value: string) {
     const next = { ...answers, [questionId]: value };
     setAnswers(next);
-    window.localStorage.setItem(storageKey, JSON.stringify(next));
+    writeStorage(storageKey, JSON.stringify(next));
   }
 
   function reset() {
     setAnswers({});
     setSubmitted(false);
-    window.localStorage.removeItem(storageKey);
+    removeStorage(storageKey);
   }
 
   return (
@@ -135,7 +61,7 @@ export function LessonCheck({ checkId }: LessonCheckProps) {
           <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-700 dark:text-zinc-300">{check.description}</p>
         </div>
         <div className="rounded-md bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
-          {submitted ? `${correctCount}/${check.questions.length} · ${score}%` : "Not submitted"}
+          {submitted ? `${correctCount}/${check.questions.length} - ${score}%` : "Not submitted"}
         </div>
       </div>
 

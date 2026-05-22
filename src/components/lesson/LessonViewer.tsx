@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Lesson } from "@/lib/types";
+import { LessonCheck } from "./LessonCheck";
 import { LessonProgressToggle } from "./LessonProgressToggle";
 import { StatusBadge } from "../StatusBadge";
 
@@ -35,6 +36,7 @@ export function LessonViewer({
         <div className="prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-24 prose-pre:border prose-pre:border-zinc-800 prose-pre:bg-zinc-950 prose-code:text-cyan-700 dark:prose-code:text-cyan-300">
           {children}
         </div>
+        {lesson.checkId ? <LessonCheck checkId={lesson.checkId} /> : null}
         <nav className="mt-10 grid gap-4 border-t border-zinc-200 pt-6 dark:border-zinc-800 sm:grid-cols-2">
           {previousLesson ? (
             <Link

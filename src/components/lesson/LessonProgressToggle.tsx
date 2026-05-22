@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Circle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { readStorage, writeStorage } from "@/lib/browserStorage";
 
 const storageKey = "physical-ai-lab:completed-lessons";
 
@@ -14,20 +15,20 @@ export function LessonProgressToggle({ lessonSlug }: LessonProgressToggleProps) 
 
   useEffect(() => {
     queueMicrotask(() => {
-      const saved = window.localStorage.getItem(storageKey);
+      const saved = readStorage(storageKey);
       const completedLessons = saved ? (JSON.parse(saved) as string[]) : [];
       setCompleted(completedLessons.includes(lessonSlug));
     });
   }, [lessonSlug]);
 
   function toggle() {
-    const saved = window.localStorage.getItem(storageKey);
+    const saved = readStorage(storageKey);
     const completedLessons = saved ? (JSON.parse(saved) as string[]) : [];
     const next = completed
       ? completedLessons.filter((slug) => slug !== lessonSlug)
       : Array.from(new Set([...completedLessons, lessonSlug]));
 
-    window.localStorage.setItem(storageKey, JSON.stringify(next));
+    writeStorage(storageKey, JSON.stringify(next));
     setCompleted(!completed);
     window.dispatchEvent(new Event("physical-ai-lab-progress"));
   }

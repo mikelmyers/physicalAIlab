@@ -33,6 +33,7 @@ export type Lesson = {
   order: number;
   estimatedMinutes: number;
   prerequisites?: string[];
+  checkId?: string;
   mdxPath: string;
 };
 

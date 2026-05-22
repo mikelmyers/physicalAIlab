@@ -23,6 +23,7 @@ const { tracks } = await import(pathToFileURL(path.join(root, "content/tracks/tr
 const { modules } = await import(pathToFileURL(path.join(root, "content/tracks/modules.ts")));
 const { lessons } = await import(pathToFileURL(path.join(root, "content/tracks/lessons.ts")));
 const { projects } = await import(pathToFileURL(path.join(root, "content/projects/projects.ts")));
+const { lessonChecks } = await import(pathToFileURL(path.join(root, "src/lib/lessonChecks.ts")));
 
 uniqueBy(tracks, "slug", "track");
 uniqueBy(modules, "slug", "module");
@@ -32,6 +33,7 @@ uniqueBy(projects, "slug", "project");
 const trackSlugs = new Set(tracks.map((track) => track.slug));
 const moduleSlugs = new Set(modules.map((moduleItem) => moduleItem.slug));
 const lessonSlugs = new Set(lessons.map((lesson) => lesson.slug));
+const lessonCheckIds = new Set(lessonChecks.map((check) => check.id));
 
 for (const moduleItem of modules) {
   if (!trackSlugs.has(moduleItem.trackSlug)) {
@@ -61,6 +63,10 @@ for (const lesson of lessons) {
     if (!lessonSlugs.has(prerequisite)) {
       errors.push(`Lesson ${lesson.slug} references missing prerequisite ${prerequisite}`);
     }
+  }
+
+  if (lesson.checkId && !lessonCheckIds.has(lesson.checkId)) {
+    errors.push(`Lesson ${lesson.slug} references missing lesson check ${lesson.checkId}`);
   }
 }
 

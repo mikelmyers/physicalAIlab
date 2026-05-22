@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { readStorage } from "@/lib/browserStorage";
 import { ProgressBar } from "./ProgressBar";
 
 const storageKey = "physical-ai-lab:completed-lessons";
@@ -15,7 +16,7 @@ export function ProgressForLessons({ lessonSlugs, label }: ProgressForLessonsPro
 
   useEffect(() => {
     function readCompleted() {
-      const saved = window.localStorage.getItem(storageKey);
+      const saved = readStorage(storageKey);
       setCompleted(saved ? (JSON.parse(saved) as string[]) : []);
     }
 

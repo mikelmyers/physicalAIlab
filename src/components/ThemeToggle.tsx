@@ -2,13 +2,14 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
+import { readStorage, writeStorage } from "@/lib/browserStorage";
 
 export function ThemeToggle() {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     queueMicrotask(() => {
-      const saved = window.localStorage.getItem("physical-ai-lab:theme");
+      const saved = readStorage("physical-ai-lab:theme");
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const nextIsDark = saved ? saved === "dark" : prefersDark;
       setIsDark(nextIsDark);
@@ -20,7 +21,7 @@ export function ThemeToggle() {
     const next = !isDark;
     setIsDark(next);
     document.documentElement.classList.toggle("dark", next);
-    window.localStorage.setItem("physical-ai-lab:theme", next ? "dark" : "light");
+    writeStorage("physical-ai-lab:theme", next ? "dark" : "light");
   }
 
   return (

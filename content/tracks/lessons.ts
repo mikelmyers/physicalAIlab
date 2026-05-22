@@ -11,6 +11,7 @@ export const lessons: Lesson[] = [
     status: "available",
     order: 1,
     estimatedMinutes: 35,
+    checkId: "arithmetic-units-core-check",
     mdxPath: "content/lessons/arithmetic-units-and-estimation.mdx",
   },
   {
@@ -24,6 +25,7 @@ export const lessons: Lesson[] = [
     order: 2,
     estimatedMinutes: 40,
     prerequisites: ["arithmetic-units-and-estimation"],
+    checkId: "fractions-ratios-core-check",
     mdxPath: "content/lessons/fractions-ratios-and-proportions.mdx",
   },
   {
@@ -37,6 +39,7 @@ export const lessons: Lesson[] = [
     order: 3,
     estimatedMinutes: 35,
     prerequisites: ["fractions-ratios-and-proportions"],
+    checkId: "signed-numbers-core-check",
     mdxPath: "content/lessons/signed-numbers-and-order-of-operations.mdx",
   },
   {

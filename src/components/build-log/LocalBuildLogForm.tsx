@@ -2,6 +2,7 @@
 
 import { Plus } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
+import { readStorage, writeStorage } from "@/lib/browserStorage";
 import type { BuildLog } from "@/lib/types";
 import { BuildLogCard } from "./BuildLogCard";
 
@@ -12,7 +13,7 @@ export function LocalBuildLogForm() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      const saved = window.localStorage.getItem(storageKey);
+      const saved = readStorage(storageKey);
       setEntries(saved ? (JSON.parse(saved) as BuildLog[]) : []);
     });
   }, []);
@@ -40,7 +41,7 @@ export function LocalBuildLogForm() {
     };
     const next = [entry, ...entries];
     setEntries(next);
-    window.localStorage.setItem(storageKey, JSON.stringify(next));
+    writeStorage(storageKey, JSON.stringify(next));
     event.currentTarget.reset();
   }
 
