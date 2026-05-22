@@ -47,3 +47,17 @@ Curriculum intent:
 - Distinguish ratios, rates, unit rates, proportions, and proportional relationships.
 - Connect ratios to gear reductions, voltage dividers, map scale, drone image scale, and physical scaling.
 - Warn early that not all scaling is linear.
+
+### Signed Numbers and Order of Operations
+
+Primary anchors:
+
+- OpenStax Prealgebra sections on integers, opposites, absolute value, signed-number operations, and order of operations.
+- Khan Academy Pre-algebra sequence on negative numbers, expression evaluation, and order-of-operations pitfalls.
+
+Curriculum intent:
+
+- Treat negative numbers as sign conventions and direction, not just abstract marks.
+- Connect order of operations to calculators, code, spreadsheets, firmware, and simulations.
+- Emphasize parentheses around negative bases and left-to-right evaluation for shared-precedence operations.
+- Bridge directly into control error, coordinate systems, voltage polarity, and signed movement simulation.

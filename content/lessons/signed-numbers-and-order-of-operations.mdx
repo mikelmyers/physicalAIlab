@@ -1,68 +1,486 @@
 # Signed Numbers and Order of Operations
 
+## Re-entry Promise
+
+This lesson assumes negative numbers and calculation order may feel slippery. That is normal. Signed numbers are not just a school topic; they are how technical systems represent direction, error, offset, debt, temperature, voltage polarity, altitude change, and coordinate position.
+
+We will rebuild the meaning first, then the rules.
+
 ## Objective
 
-Handle positive and negative numbers, parentheses, exponents, multiplication, division, addition, and subtraction in the correct order.
+By the end, you should be able to:
+
+- Explain positive and negative numbers using a number line.
+- Distinguish subtraction from a negative value.
+- Understand opposite and absolute value.
+- Apply order of operations without relying on vague memory.
+- Evaluate expressions with negative numbers, parentheses, exponents, multiplication, division, addition, and subtraction.
+- Connect sign conventions to robots, drones, circuits, coordinate systems, and physics.
 
 ## Why It Matters
 
-Robots move forward and backward. Coordinates can be positive or negative. Sensors report offsets. Simulations fail when calculation order is wrong.
+Physical systems need direction. Without signs, you cannot clearly represent:
 
-## Concept
+- left vs right,
+- forward vs backward,
+- up vs down,
+- charging vs discharging,
+- positive vs negative voltage,
+- above vs below sea level,
+- error above or below a target,
+- clockwise vs counterclockwise rotation.
 
-A signed number includes direction or position relative to zero:
+Order of operations matters because computers, calculators, spreadsheets, firmware, and simulations all evaluate expressions according to rules. If you write the expression wrong, the machine will confidently compute the wrong thing.
 
-- `+5 m` can mean 5 meters forward.
-- `-5 m` can mean 5 meters backward.
-- `-2 C` can mean 2 degrees below zero Celsius.
+## Why This Idea Exists
 
-Order of operations tells you which operation happens first:
+Positive numbers are natural when counting objects. Negative numbers took longer to become accepted because they are less obvious physically. But once people needed to represent debts, losses, below-zero temperatures, direction, and algebraic balance, negative numbers became unavoidable.
 
-1. Parentheses
+Order of operations exists because mathematical expressions need shared grammar. Without conventions, the expression:
+
+$$2 + 3 \times 4$$
+
+could mean:
+
+$$(2 + 3) \times 4 = 20$$
+
+or:
+
+$$2 + (3 \times 4) = 14$$
+
+The convention removes ambiguity.
+
+## Plain-Language Intuition
+
+A sign tells you which side of zero you are on or which direction you are moving.
+
+On a number line:
+
+- positive numbers are to the right of zero,
+- negative numbers are to the left of zero,
+- zero is the reference point.
+
+If east is positive, then west is negative.
+
+If up is positive, then down is negative.
+
+If a target error is:
+
+$$error = target - measured$$
+
+then a positive error and a negative error mean different correction directions.
+
+## Core Theory
+
+### Integers
+
+Integers are whole numbers and their opposites:
+
+$$..., -3, -2, -1, 0, 1, 2, 3, ...$$
+
+They are useful for counting steps, positions, direction changes, and discrete quantities.
+
+### Opposite
+
+The opposite of a number is the same distance from zero on the other side.
+
+The opposite of `5` is `-5`.
+
+The opposite of `-5` is `5`.
+
+Mathematically:
+
+$$-(-5) = 5$$
+
+### Absolute Value
+
+Absolute value is distance from zero:
+
+$$|n|$$
+
+Distance is never negative.
+
+$$|-7| = 7$$
+
+$$|7| = 7$$
+
+In engineering, absolute value can represent magnitude without direction.
+
+### Adding Signed Numbers
+
+Adding a positive number moves right on the number line.
+
+Adding a negative number moves left.
+
+$$3 + (-5) = -2$$
+
+This is the same as:
+
+$$3 - 5 = -2$$
+
+### Subtracting Signed Numbers
+
+Subtracting a number means adding its opposite.
+
+$$a - b = a + (-b)$$
+
+Example:
+
+$$4 - (-3) = 4 + 3 = 7$$
+
+Subtracting a negative increases the value because you are removing a movement to the left.
+
+### Multiplying Signed Numbers
+
+Rules:
+
+- positive times positive is positive,
+- positive times negative is negative,
+- negative times positive is negative,
+- negative times negative is positive.
+
+Why is negative times negative positive? One intuition: multiplying by a negative reverses direction. Reversing a reversal points you forward again.
+
+$$(-3)(-4) = 12$$
+
+### Dividing Signed Numbers
+
+Division follows the same sign pattern as multiplication:
+
+$$\frac{-12}{3} = -4$$
+
+$$\frac{-12}{-3} = 4$$
+
+### Order Of Operations
+
+Use this order:
+
+1. Parentheses and grouping
 2. Exponents
 3. Multiplication and division from left to right
 4. Addition and subtraction from left to right
 
-For example:
+The left-to-right part matters. Multiplication does not always happen before division. They share a level. Addition and subtraction also share a level.
 
-$$2 + 3 \times 4 = 14$$
+### Parentheses And Negative Bases
 
-because multiplication happens before addition.
+This distinction matters:
 
-## Worked Example
+$$-3^2 = -9$$
 
-A robot starts at `x = -3 m`, moves `+8 m`, then moves `-2 m`.
+because the exponent applies to `3`, then the negative sign is applied.
 
-$$x = -3 + 8 - 2$$
+But:
 
-$$x = 3m$$
+$$(-3)^2 = 9$$
 
-It ends 3 meters to the positive side of zero.
+because the base is the entire signed number `-3`.
+
+This is a common source of mistakes in calculators and code.
+
+## Mental Models
+
+### Number Line As Position
+
+Imagine a robot on a line:
+
+- `0` is the starting dock.
+- positive means east.
+- negative means west.
+
+If the robot starts at `-3`, moves `+8`, then moves `-2`:
+
+$$-3 + 8 - 2 = 3$$
+
+It ends at position `+3`.
+
+### Sign As Direction
+
+A sign is not always "good" or "bad." It often means direction relative to a convention.
+
+If altitude change is positive upward:
+
+- `+20 m` means climb,
+- `-20 m` means descend.
+
+### Parentheses As Packaging
+
+Parentheses package a value or expression so it is treated as one thing.
+
+`(-5)` is a packaged negative five.
+
+`-(5^2)` means the negative of twenty-five.
+
+## Worked Example 1: Robot Position
+
+A robot starts at `x = -4 m`. It moves `+10 m`, then `-3 m`.
+
+$$x = -4 + 10 - 3$$
+
+First:
+
+$$-4 + 10 = 6$$
+
+Then:
+
+$$6 - 3 = 3$$
+
+The robot ends at `x = 3 m`.
+
+## Worked Example 2: Temperature Change
+
+A battery test chamber is at `-8 C`. It warms by `15 C`.
+
+$$-8 + 15 = 7$$
+
+The chamber reaches `7 C`.
+
+The sign tells position relative to zero Celsius.
+
+## Worked Example 3: Correcting Sensor Offset
+
+A pressure sensor has an offset of `-0.20 V`. A raw reading is `2.10 V`. If corrected value is:
+
+$$corrected = raw - offset$$
+
+then:
+
+$$corrected = 2.10 - (-0.20)$$
+
+$$corrected = 2.30V$$
+
+Subtracting a negative offset increased the corrected value.
+
+## Worked Example 4: Order Of Operations
+
+Evaluate:
+
+$$12 - 3 \times 2$$
+
+Multiplication first:
+
+$$3 \times 2 = 6$$
+
+Then subtraction:
+
+$$12 - 6 = 6$$
+
+Now compare:
+
+$$(12 - 3) \times 2$$
+
+Parentheses first:
+
+$$12 - 3 = 9$$
+
+Then multiplication:
+
+$$9 \times 2 = 18$$
+
+Parentheses changed the meaning.
+
+## Worked Example 5: Negative Exponent Pitfall
+
+Evaluate:
+
+$$-4^2$$
+
+Exponent first:
+
+$$4^2 = 16$$
+
+Then apply the negative:
+
+$$-4^2 = -16$$
+
+But:
+
+$$(-4)^2 = 16$$
+
+The parentheses change the base.
+
+## Worked Example 6: Control Error
+
+A robot arm target angle is `30 degrees`. The measured angle is `34 degrees`.
+
+$$error = target - measured$$
+
+$$error = 30 - 34 = -4 degrees$$
+
+The negative error says the arm is 4 degrees beyond the target in the positive direction, so the correction should move opposite that direction.
+
+## Common Failure Modes
+
+### Failure Mode 1: Losing The Negative Sign
+
+`-3^2` and `(-3)^2` are not the same.
+
+Fix: use parentheses when the negative value is intended to be the base.
+
+### Failure Mode 2: Treating Subtracting A Negative As Subtracting
+
+$$5 - (-2)$$
+
+is:
+
+$$5 + 2 = 7$$
+
+Fix: rewrite subtraction as adding the opposite.
+
+### Failure Mode 3: Forgetting Left-To-Right
+
+Multiplication and division are evaluated left to right. Addition and subtraction are evaluated left to right.
+
+Fix: do not treat PEMDAS as if multiplication always beats division.
+
+### Failure Mode 4: Sign Convention Not Defined
+
+If you do not define which direction is positive, a negative value may be ambiguous.
+
+Fix: state the reference direction before calculating.
+
+## Engineering Connections
+
+### Robotics
+
+Robot coordinate systems use signed positions and velocities. Error terms in control loops can be positive or negative.
+
+### Drones
+
+Altitude change, yaw direction, pitch, roll, and navigation offsets all depend on sign conventions.
+
+### Circuits
+
+Voltage polarity, current direction, signal offsets, and AC waveforms require signed quantities.
+
+### Computer Vision
+
+Pixel coordinate differences can be positive or negative depending on direction in the image.
+
+### Physics
+
+Velocity, acceleration, force, displacement, charge, potential energy changes, and fields can involve signed quantities.
+
+## Practice Set
+
+### Warmups
+
+1. Plot `-4`, `0`, `3`, and `7` on a number line.
+2. Find the opposite of `-9`.
+3. Find `|-12|`.
+4. Calculate `6 + (-10)`.
+5. Calculate `8 - (-3)`.
+6. Calculate `(-4)(7)`.
+7. Calculate `(-6)(-5)`.
+8. Calculate `-5^2`.
+9. Calculate `(-5)^2`.
+10. Calculate `18 / (-3)`.
+
+### Applied Problems
+
+1. A rover starts at `x = -6 m`, moves `+11 m`, then moves `-4 m`. Where is it?
+2. A drone descends `12 m` from an altitude of `50 m`. If upward is positive, what is the altitude change?
+3. A temperature starts at `-5 C` and increases by `18 C`. What is the new temperature?
+4. A sensor reading is `1.8 V` and its offset is `-0.15 V`. Use `corrected = raw - offset`.
+5. A robot target is `100 mm`; measured position is `113 mm`. Compute `target - measured`.
+
+### Order-Of-Operations Problems
+
+Evaluate:
+
+1. `4 + 3 * 5`
+2. `(4 + 3) * 5`
+3. `20 - 12 / 3`
+4. `(20 - 12) / 3`
+5. `-2^4`
+6. `(-2)^4`
+7. `6 - 2 * (-3)`
+8. `18 / 3 * 2`
+
+### Error-Spotting
+
+1. Someone says `4 - (-3) = 1`. Explain the mistake.
+2. Someone says `-6^2 = 36`. Explain the missing parentheses.
+3. Someone evaluates `18 / 3 * 2` as `3`. Explain the left-to-right rule.
+4. Someone reports a drone position of `-20 m` but never defines the origin or positive direction. Explain why that is incomplete.
+
+### Challenge
+
+A robot moves along a one-dimensional track. Positive direction is east. It starts at `x = -2 m`.
+
+Movement sequence:
+
+1. `+5 m`
+2. `-9 m`
+3. `+4 m`
+4. `-(-3 m)` as a correction command
+
+Find the final position. Then write a plain-language interpretation of each step.
 
 ## Exercise
 
-Calculate and explain the meaning:
+Choose a physical system and define a sign convention.
 
-1. `-4 + 9`
-2. `12 - 3 * 2`
-3. `(12 - 3) * 2`
-4. A sensor offset is `-0.25 V`; a reading is `2.10 V`. What is the corrected value if you subtract the offset?
+Examples:
+
+- drone altitude change,
+- robot x-axis movement,
+- motor rotation direction,
+- sensor voltage offset,
+- control-loop error.
+
+Then create five signed-number examples inside that system and explain what each sign means physically.
 
 ## Build Task
 
-Create a coordinate-step calculator. Start with a position and apply a list of signed movements.
+Create a signed movement simulator in Python or TypeScript.
+
+It should:
+
+- accept a starting position,
+- accept a list of signed movements,
+- compute final position,
+- compute total distance traveled,
+- compute displacement from start to finish,
+- print a step-by-step trace.
+
+Important distinction:
+
+Distance traveled is total path length and is never negative.
+
+Displacement is change in position and can be positive, negative, or zero.
 
 ## Quiz
 
-1. What does a negative number often represent in a coordinate system?
-2. Why do parentheses matter?
-3. Which happens first: addition or multiplication?
-4. Why is `12 - 3 * 2` different from `(12 - 3) * 2`?
+1. What does a negative number mean on a number line?
+2. What is the opposite of `-8`?
+3. Why is absolute value never negative?
+4. What is `5 - (-4)`?
+5. Why is `-3^2` different from `(-3)^2`?
+6. Which operations share the same priority level as multiplication?
+7. Why does sign convention matter in robotics?
+8. What is the difference between distance and displacement?
+9. Give one circuit example where sign or polarity matters.
+10. Why should expressions in code use explicit parentheses when ambiguity is possible?
 
 ## Proof of Completion
 
-Submit five signed-number examples, the coordinate-step calculator, and one note about a mistake that parentheses can prevent.
+Submit:
+
+- completed warmups,
+- completed applied problems,
+- completed order-of-operations problems,
+- corrections for the error-spotting section,
+- the signed movement simulator,
+- one build-log entry describing a sign mistake you now know how to avoid.
+
+## Sources And Further Study
+
+- OpenStax Prealgebra: integers, opposites, absolute value, signed-number operations, and order of operations.
+- Khan Academy Pre-algebra: negative numbers, order of operations, expressions, and negative-number expression pitfalls.
 
 ## Next Lesson
 
 Solving Equations from Zero.
+
+You are ready for it when you can evaluate signed expressions carefully and explain what a negative value means in a physical system.
