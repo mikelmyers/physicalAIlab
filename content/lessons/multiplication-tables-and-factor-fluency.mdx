@@ -1,0 +1,479 @@
+# Multiplication Tables and Factor Fluency
+
+## Re-entry Promise
+
+If you were ever told you had to "memorize the times tables" and you found that demoralizing, this lesson rebuilds that practice as a *deliberate fluency project* — not a test of intelligence, not a rite of passage, but a working-memory upgrade. The reason engineers, scientists, and mathematicians need instant multiplication facts is not that the facts are deep; it is that *every* harder problem will ask you to look them up dozens of times mid-thought. If you have to compute $7 \times 8$ from scratch in the middle of a derivative or a units conversion, the rest of your reasoning collapses. The arithmetic should be background; the thinking should be foreground.
+
+This lesson assumes the place-value lesson is comfortable. It does not assume you currently know the times tables cold. You will leave with a plan to acquire that fluency, the patterns that make it easier than rote, and an introduction to factors — the natural sequel of memorized products.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Recall every multiplication fact from $1 \times 1$ through $12 \times 12$ in under two seconds, without finger counting and without computing.
+- Recognize squares $1^2$ through $20^2$ on sight.
+- Recognize $\sqrt{n}$ for any perfect square up to 400 on sight.
+- Use the patterns in the 5s, 9s, 10s, and 11s tables to recover any forgotten fact instantly.
+- Apply the commutative property of multiplication to halve the number of facts you actually need to drill ($a \times b = b \times a$).
+- List the factors of any whole number up to 100.
+- State and apply the divisibility rules for 2, 3, 4, 5, 6, 8, 9, 10, and 11.
+- Distinguish *factor* from *multiple* and from *divisor* (these terms are tightly related but not interchangeable).
+- Recognize prime numbers up to 100 by sight.
+- Build a small piece of code (your choice of language) that produces multiplication tables, divisibility tests, and factor lists.
+
+## Why It Matters
+
+Three concrete reasons this matters in engineering and physical AI:
+
+1. **You will multiply small integers all day.** Every calculation of "how many bytes is this struct?" (count up 4-byte ints and 8-byte doubles), "what is the area of this rectangle?", "what is the voltage drop across these resistors in series?", "what is the gear ratio?", "how many milliseconds in 5 minutes?" all reduce to multi-digit multiplication on top of single-digit facts. If the single-digit facts are slow, everything above is slow.
+
+2. **Factor recognition is everywhere.** When you see the number 60 in a problem, your brain should *immediately* see "$60 = 2^2 \cdot 3 \cdot 5$" or at minimum "$60 = 12 \cdot 5 = 10 \cdot 6 = 4 \cdot 15$." This is how you spot canonical simplifications in fractions, find common denominators, choose sample rates, pick gear teeth, identify resistor color codes, and even recognize that 60 Hz is special because it factors cleanly into many useful subdivisions (30, 20, 15, 12, 10, etc.).
+
+3. **Mental math is your error detector.** When you compute $437 \times 28$ on a calculator and the result is wildly different from your mental estimate, you should catch the keystroke error in real time. Without solid multiplication fluency, your estimates are imprecise and your error detection is weak. With it, you have a built-in spell-checker for arithmetic.
+
+## Why This Idea Exists
+
+Multiplication is repeated addition. $7 \times 8$ is what you get if you take 7 copies of 8 (or 8 copies of 7, by commutativity) and add them up. You could *always* compute any product by doing the repeated addition by hand, just as you could *always* compute a base-10 sum by writing down tally marks instead of using positional notation. But human working memory is small (rough rule: $7 \pm 2$ items at a time, though this is an oversimplification of George Miller's actual paper). If repeated addition consumes most of your working memory, you cannot think about anything else simultaneously.
+
+Schoolchildren have been drilled on multiplication tables for at least 4,000 years. Babylonian clay tablets from around 1800 BCE contain multiplication tables (in base 60). The medieval Italian merchants who first popularized Hindu-Arabic numerals in Europe trained for years on times-table drills because trade calculations depended on it. The Russian (or "peasant" or "Egyptian") multiplication method offers an alternative for people without memorized facts. Methods like Vedic mathematics offer mnemonic systems for whole tables.
+
+There is no shortcut that lets you skip this. There are only ways to make the acquisition more efficient. Modern recommendations: short, spaced repetition sessions (5–10 minutes daily) using flashcards or a flashcard app, focused on the facts you most often miss. You will lock in $12 \times 12 = 144$ entries in 2–4 weeks of consistent practice. (The table has 144 cells, but by commutativity you only need to learn 78 unique entries, and the $\times 1$ and $\times 10$ rows are essentially free, leaving more like 50 to actively drill.)
+
+## Plain-Language Intuition
+
+Picture a 12-by-12 grid of squares, like a chessboard with a few extra rows and columns. The square in row $i$, column $j$ contains the number $i \times j$. That is the multiplication table.
+
+Most of the grid is symmetric: row 3 column 7 and row 7 column 3 both contain 21. So you really only need to learn the upper-triangular half (or the lower-triangular half, your choice). That cuts the workload in half immediately.
+
+The first and last rows/columns are nearly free:
+
+- The $\times 1$ row: every entry equals its column number.
+- The $\times 10$ row: every entry is its column number followed by a zero.
+- The $\times 11$ row, for single digits, is the digit duplicated (11, 22, 33, ..., 99) — easy to spot.
+- The $\times 0$ row is all zeros — almost too easy to be a row.
+
+The interesting facts are the ones in the middle: $6 \times 7, 6 \times 8, 7 \times 8, 7 \times 9, 8 \times 9$. These are the high-traffic facts you will use most often and the ones most students remember least solidly. Make those your priority.
+
+## Core Theory
+
+### The Multiplication Table
+
+Here is the full 12-by-12 multiplication table:
+
+| × | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **1** | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+| **2** | 2 | 4 | 6 | 8 | 10 | 12 | 14 | 16 | 18 | 20 | 22 | 24 |
+| **3** | 3 | 6 | 9 | 12 | 15 | 18 | 21 | 24 | 27 | 30 | 33 | 36 |
+| **4** | 4 | 8 | 12 | 16 | 20 | 24 | 28 | 32 | 36 | 40 | 44 | 48 |
+| **5** | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50 | 55 | 60 |
+| **6** | 6 | 12 | 18 | 24 | 30 | 36 | 42 | 48 | 54 | 60 | 66 | 72 |
+| **7** | 7 | 14 | 21 | 28 | 35 | 42 | 49 | 56 | 63 | 70 | 77 | 84 |
+| **8** | 8 | 16 | 24 | 32 | 40 | 48 | 56 | 64 | 72 | 80 | 88 | 96 |
+| **9** | 9 | 18 | 27 | 36 | 45 | 54 | 63 | 72 | 81 | 90 | 99 | 108 |
+| **10** | 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 | 100 | 110 | 120 |
+| **11** | 11 | 22 | 33 | 44 | 55 | 66 | 77 | 88 | 99 | 110 | 121 | 132 |
+| **12** | 12 | 24 | 36 | 48 | 60 | 72 | 84 | 96 | 108 | 120 | 132 | 144 |
+
+The diagonal — $1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144$ — is the *squares*. Recognize those on sight. They appear constantly in geometry (areas), physics (kinetic energy, $\frac{1}{2}mv^2$), and computer science (resolutions: $128 \times 128, 256 \times 256, 512 \times 512$ are all on this diagonal).
+
+### Patterns That Make It Easier
+
+You do not have to grind every cell with brute force.
+
+**The 5s table** ends in 5 or 0 alternately: $5, 10, 15, 20, 25, 30, \ldots$ Notice: $5 \times n$ is "half of $10 \times n$." So $5 \times 8 = \frac{80}{2} = 40$. Free.
+
+**The 9s table** has two patterns:
+- The digits of $9 \times n$ sum to 9 (for $n = 1$ through $9$): $9 \times 4 = 36$ ($3 + 6 = 9$), $9 \times 7 = 63$ ($6 + 3 = 9$), $9 \times 8 = 72$ ($7 + 2 = 9$). Use this as a check.
+- $9 \times n = (n - 1) \times 10 + (10 - n)$. So $9 \times 7 = 6 \times 10 + 3 = 63$. The tens digit is $n - 1$; the ones digit is $10 - n$.
+
+**The 10s table** appends a zero to the multiplier. Free.
+
+**The 11s table** for single digits is the digit doubled: $11 \times 3 = 33$, $11 \times 8 = 88$. For $11 \times 11$ and $11 \times 12$ you should just know: $121$ and $132$.
+
+**The doubles** ($\times 2$ row) are addition with itself. $2 \times 7 = 7 + 7 = 14$. If you can add two single digits fast, you have the $\times 2$ row.
+
+**The 4s** are doubles of doubles: $4 \times 7 = 2 \times (2 \times 7) = 2 \times 14 = 28$.
+
+**The 8s** are doubles of 4s: $8 \times 7 = 2 \times (4 \times 7) = 2 \times 28 = 56$.
+
+**The 6s** are doubles of 3s: $6 \times 7 = 2 \times (3 \times 7) = 2 \times 21 = 42$.
+
+So if you know the 3s, you get the 6s, 9s, and 12s. If you know the 2s, you get the 4s and 8s. The independent facts you actually need to learn are smaller than they look.
+
+**Squares are anchors.** $7^2 = 49$ is a stable, easily memorized number. Then $7 \times 8 = 49 + 7 = 56$ and $7 \times 6 = 49 - 7 = 42$. The neighbors of a square are easy if you have the square.
+
+### Commutativity Halves the Work
+
+$a \times b = b \times a$ for every $a, b$. So $7 \times 8 = 8 \times 7$. Once you know either, you know both. This roughly halves the unique facts in the 12×12 table from 144 to 78 (the diagonal counts once, and you only need one triangle).
+
+### Squares Worth Knowing on Sight
+
+Beyond $12 \times 12$, memorize a handful more squares because they come up in physics, geometry, and CS:
+
+| $n$ | $n^2$ |
+| --- | --- |
+| 13 | 169 |
+| 14 | 196 |
+| 15 | 225 |
+| 16 | 256 |
+| 17 | 289 |
+| 18 | 324 |
+| 19 | 361 |
+| 20 | 400 |
+| 25 | 625 |
+| 30 | 900 |
+| 50 | 2500 |
+| 100 | 10000 |
+
+The square of 25 is $625$, the square of 50 is $2{,}500$, and the square of 100 is $10{,}000$. These pop up in unit conversions and engineering constants enough that they are worth knowing.
+
+### Factors
+
+A **factor** of $n$ is a whole number $f$ such that $n / f$ is also a whole number — i.e., $f$ divides $n$ evenly with no remainder. Equivalently: $f$ is a factor of $n$ if there exists a whole number $g$ such that $f \cdot g = n$.
+
+Factors of 12: $1, 2, 3, 4, 6, 12$. We list them in increasing order. Notice they come in pairs that multiply to 12:
+
+$$1 \times 12, \quad 2 \times 6, \quad 3 \times 4$$
+
+Factors of 24: $1, 2, 3, 4, 6, 8, 12, 24$. Pairs:
+
+$$1 \times 24, \quad 2 \times 12, \quad 3 \times 8, \quad 4 \times 6$$
+
+A handy method for finding all factors of $n$: walk through $f = 1, 2, 3, \ldots$ up to $\sqrt{n}$. For each $f$ that divides $n$, write down both $f$ and $n / f$. Stop at $\sqrt{n}$ because beyond that, you start finding pairs you have already found. For $n = 36$: try $f = 1, 2, 3, 4, 5, 6$. Pairs: $(1, 36), (2, 18), (3, 12), (4, 9), (6, 6)$. Five fails to divide. Done. Factors of 36: $\{1, 2, 3, 4, 6, 9, 12, 18, 36\}$.
+
+The vocabulary:
+
+- **factor** of $n$ — same as **divisor** of $n$ — a number that divides $n$ without remainder.
+- **multiple** of $n$ — a number that $n$ divides without remainder; equivalently, a number you can reach by multiplying $n$ by a whole number. Multiples of 6: $0, 6, 12, 18, 24, 30, \ldots$
+- **prime** — a whole number greater than 1 whose only factors are 1 and itself. The primes up to 50 are $\{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47\}$.
+- **composite** — a whole number greater than 1 that is not prime; i.e., it has factors other than 1 and itself. Composites up to 20: $\{4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20\}$.
+- **unit** — the number 1 is special: not prime, not composite.
+- **zero** — also special: every nonzero whole number divides 0, so 0 has infinitely many divisors.
+
+### Divisibility Rules
+
+Quick tests for whether $n$ is divisible by small numbers, without doing the division:
+
+- **Divisible by 2**: $n$ is even (ones digit is $0, 2, 4, 6, 8$).
+- **Divisible by 3**: the sum of digits of $n$ is divisible by 3.
+  - 471: $4 + 7 + 1 = 12$. 12 is divisible by 3, so 471 is divisible by 3 ($471 / 3 = 157$).
+- **Divisible by 4**: the last two digits of $n$ form a number divisible by 4.
+  - 1316: last two digits 16, which is divisible by 4. ✓
+- **Divisible by 5**: ones digit is 0 or 5.
+- **Divisible by 6**: divisible by both 2 and 3.
+- **Divisible by 8**: the last three digits of $n$ form a number divisible by 8.
+  - 71016: last three digits 016, which is divisible by 8. ✓
+- **Divisible by 9**: the sum of digits of $n$ is divisible by 9.
+  - 432: $4 + 3 + 2 = 9$. ✓ ($432 / 9 = 48$.)
+- **Divisible by 10**: ones digit is 0.
+- **Divisible by 11**: the alternating sum of digits ($d_0 - d_1 + d_2 - d_3 + \cdots$, ones digit first) is divisible by 11.
+  - 2728: alternating sum $8 - 2 + 7 - 2 = 11$. ✓ ($2728 / 11 = 248$.)
+
+These rules can be proven from place value. The "divisible by 3" rule, for instance, works because $10 \equiv 1 \pmod 3$, so $10^k \equiv 1 \pmod 3$ for every $k$. Therefore a number's value modulo 3 equals the sum of its digits modulo 3. We will come back to these proofs in *GCD, LCM, and Prime Factorization*.
+
+### Composite Decomposition
+
+Every composite number has a unique decomposition into prime factors (proved in the GCD/LCM/Primes lesson — the *Fundamental Theorem of Arithmetic*). Examples:
+
+$$12 = 2^2 \cdot 3, \quad 18 = 2 \cdot 3^2, \quad 60 = 2^2 \cdot 3 \cdot 5, \quad 100 = 2^2 \cdot 5^2$$
+
+Recognizing the prime factorization is a fluency you will build over time. It is the reason "60" feels like a more useful number than "59" (a prime, harder to subdivide) or "61" (also a prime). Engineering choices — minutes per hour, seconds per minute, gear teeth in transmissions, frame rates in video — repeatedly favor numbers with rich factorizations.
+
+## Visual or Mental Model
+
+The 12-by-12 table is a *physical* object. Many homes and classrooms had it printed on a poster on the wall. Building this poster in your head is the goal.
+
+When you think of $7 \times 8$, you want to:
+
+1. **Not** count: $8, 16, 24, 32, 40, 48, 56$ (too slow).
+2. **Not** add: $8 + 8 + 8 + 8 + 8 + 8 + 8 = 56$ (also too slow).
+3. **Recall** directly: "$7 \times 8 = 56$" comes out of memory in under a second.
+
+For drilling, the most effective method is **spaced repetition flashcards** with the failing cards re-presented more often. Apps that implement this well: Anki, Quizlet, Brilliant. A homemade deck of 78 cards (one per unique fact) used 5 minutes a day reaches solid retention in 2–3 weeks.
+
+A useful supplementary visual: lay out the 12×12 grid and *color-code* the cells. Cells you know cold get one color. Cells you have to compute get a different color. Watch the "compute" color shrink over a few weeks. The progress is itself motivating.
+
+## Worked Examples
+
+### Example 1 — Recover a Forgotten Fact
+
+You blank on $7 \times 8$. Recover it.
+
+Option A: nearest square. $8^2 = 64$. Then $7 \times 8 = 64 - 8 = 56$.
+
+Option B: factoring. $8 = 2 \times 4$. So $7 \times 8 = (7 \times 2) \times 4 = 14 \times 4 = 56$.
+
+Option C: $7 \times 8 = 7 \times 10 - 7 \times 2 = 70 - 14 = 56$.
+
+Any of these takes 3 seconds with practice. The point is to *get* the right answer, not to compete on speed. Recovery skills beat panic.
+
+### Example 2 — List All Factors of 48
+
+Walk $f = 1, 2, 3, 4, 5, 6$ (we stop at $\sqrt{48} \approx 6.9$):
+
+- $f = 1$: $48 / 1 = 48$. Pair: $(1, 48)$.
+- $f = 2$: $48 / 2 = 24$. Pair: $(2, 24)$.
+- $f = 3$: $48 / 3 = 16$. Pair: $(3, 16)$.
+- $f = 4$: $48 / 4 = 12$. Pair: $(4, 12)$.
+- $f = 5$: $48 / 5 = 9.6$. Not whole, skip.
+- $f = 6$: $48 / 6 = 8$. Pair: $(6, 8)$.
+
+Factors of 48: $\{1, 2, 3, 4, 6, 8, 12, 16, 24, 48\}$.
+
+### Example 3 — Divisibility Battery
+
+Is 246 divisible by 2? 3? 6? 9?
+
+- By 2: last digit is 6 (even). ✓
+- By 3: $2 + 4 + 6 = 12$. 12 is divisible by 3. ✓
+- By 6: yes (divisible by both 2 and 3).
+- By 9: $2 + 4 + 6 = 12$. 12 is *not* divisible by 9. ✗
+
+Verify: $246 / 2 = 123$, $246 / 3 = 82$, $246 / 6 = 41$, $246 / 9 \approx 27.33$. All match.
+
+### Example 4 — Recognize a Prime
+
+Is 97 prime? Check divisibility by primes up to $\sqrt{97} \approx 9.85$, i.e. by 2, 3, 5, 7.
+
+- 97 is odd → not divisible by 2.
+- $9 + 7 = 16$ → not divisible by 3.
+- 97 ends in 7 → not divisible by 5.
+- $97 / 7 \approx 13.86$ → not divisible by 7. (Check: $7 \times 13 = 91, 7 \times 14 = 98$. 97 lies between, so not a multiple of 7.)
+
+No prime $\le \sqrt{97}$ divides 97, so 97 is prime.
+
+### Example 5 — Prime Factorize 84
+
+Repeatedly divide out the smallest prime that fits.
+
+- $84 / 2 = 42$.
+- $42 / 2 = 21$.
+- $21 / 3 = 7$.
+- $7$ is prime.
+
+So $84 = 2^2 \cdot 3 \cdot 7$.
+
+### Example 6 — Use Patterns Together
+
+Compute $14 \times 15$.
+
+Option A: $14 \times 15 = 14 \times 10 + 14 \times 5 = 140 + 70 = 210$.
+
+Option B: $14 \times 15 = 15 \times 14 = 15 \times (10 + 4) = 150 + 60 = 210$.
+
+Option C: $14 \times 15 = (15 - 1) \times 15 = 15^2 - 15 = 225 - 15 = 210$. (Uses memorized $15^2 = 225$.)
+
+Three different paths, same answer. Pick whichever is fastest for you in the moment.
+
+### Example 7 — Failure Mode: Slow Recovery, Wrong Answer
+
+A student is asked $6 \times 7$. They count "$7, 14, 21, 28, 35, 42$." They write $42$. Correct, but it took 8 seconds. In an exam or in real engineering, that is a tax on every problem. The goal is to convert that recall into a 1-second lookup.
+
+Another failure mode: counting incorrectly under time pressure. "$7, 14, 21, 28, 35, 41$" — they skip-counted wrong. Wrote 41. Drilling the *fact* eliminates the count-and-error class of mistake entirely.
+
+### Example 8 — Failure Mode: Confusing Factor and Multiple
+
+A student is asked "list the multiples of 6 less than 50" and writes $\{1, 2, 3, 6\}$ — those are the **factors** of 6, not the **multiples**. The multiples of 6 less than 50 are $\{0, 6, 12, 18, 24, 30, 36, 42, 48\}$.
+
+The fix: factors are inside the number (they divide it); multiples are outside (they are products of it). $6$ has factors $\{1, 2, 3, 6\}$ and multiples $\{6, 12, 18, 24, \ldots\}$.
+
+## Engineering Connections
+
+### Resistor Values, Gear Ratios, and Highly Divisible Numbers
+
+The number 60 is special because it factors as $2^2 \cdot 3 \cdot 5$, giving it 12 factors: $\{1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60\}$. This is why ancient Babylonian astronomers chose base 60 (and why we still have 60 minutes in an hour and 60 seconds in a minute). It is also why 60-tooth gears, 60-frame-per-second video, and 60 Hz mains power are convenient — many submultiples are exact whole numbers.
+
+When choosing a motor with a planetary gearbox, the gear ratio is a product of the planet/sun teeth ratios; recognizing factor structure helps you pick a ratio close to your target without weird fractions.
+
+In standard resistor series (E12, E24, E96), the values are chosen so that the ratio between successive values is approximately $\sqrt[12]{10}$. The actual values (10, 12, 15, 18, 22, 27, ...) are picked to factor cleanly. Engineering convention favors factor-rich numbers.
+
+### Power-of-Two Sizes in Computing
+
+Memory sizes, image dimensions, and array indices in computing are often powers of 2: 256, 512, 1024, 2048, 4096, 8192. You should know these on sight up to $2^{20} \approx 10^6$. They reflect the fact that addressing $n$ items requires $\log_2 n$ bits. A 32-bit address space is $2^{32} \approx 4.3 \times 10^9$ bytes (4 GB), which is why 32-bit machines could not directly address more than 4 GB of RAM.
+
+### Frame Rates and Sample Rates
+
+Frame rates of 24, 25, 30, 50, 60, 120, 240 fps are all factor-friendly: they divide into 480 evenly. Audio sample rates of 8000, 16000, 22050, 24000, 32000, 44100, 48000, 96000 Hz are chosen for similar reasons (and a couple of historical accidents). When you do signal processing and need to resample audio from 44100 to 48000 Hz, you are stuck with the ugly ratio $\frac{48000}{44100} = \frac{160}{147}$. The two were chosen by different industries (CD vs. movie); their LCM ($705{,}600{,}000$) is what a high-quality resampler internally upsamples to.
+
+### Color Depth and Bit Depth
+
+24-bit color = $8$ bits per channel × 3 channels. $2^8 = 256$ levels per channel. $2^{24} \approx 16.7$ million colors total. High-dynamic-range systems use 10 or 12 bits per channel ($2^{10} = 1024$, $2^{12} = 4096$ levels). These numbers come up so often in image processing that recognizing them instantly speeds reading.
+
+## Practice Set
+
+### Times Table Drill (Single-Digit)
+
+For each, write the answer without computing:
+
+1. $7 \times 8$
+2. $9 \times 6$
+3. $8 \times 8$
+4. $7 \times 9$
+5. $4 \times 7$
+6. $11 \times 12$
+7. $12 \times 7$
+8. $6 \times 7$
+9. $5 \times 9$
+10. $3 \times 8$
+
+### Squares
+
+11. $13^2$
+12. $15^2$
+13. $25^2$
+14. $\sqrt{169}$
+15. $\sqrt{225}$
+
+### Factor Lists
+
+16. List all factors of 60.
+17. List all factors of 100.
+18. List all factors of 75.
+19. List all factors of 64.
+20. List all factors of 49.
+
+### Divisibility
+
+For each, list which of $\{2, 3, 4, 5, 6, 9, 11\}$ divides the number.
+
+21. $432$
+22. $1{,}530$
+23. $7{,}777$
+24. $111{,}111$
+25. $9{,}999$
+
+### Prime Recognition
+
+For each, decide whether it is prime; if composite, give a prime factor.
+
+26. $51$
+27. $73$
+28. $91$
+29. $1$
+30. $97$
+
+### Mixed / Applied
+
+31. A drone has 4 rotors, each spinning at 7,800 RPM. What is the total RPM (rotational throughput)? Use mental math.
+32. A signal is sampled at 48,000 Hz and stored as 16-bit samples (2 bytes each). How many bytes per second? Per minute? Per hour?
+33. A robot's wheel has 36 teeth on the driven gear and 12 teeth on the driving gear. What is the gear ratio? How many turns of the driving gear per turn of the driven gear?
+34. A 24-frame-per-second film is 90 minutes long. How many total frames? Use mental math.
+35. A 3D printer has a print bed that is 256 mm × 256 mm. What is the area in square millimeters? In square centimeters?
+
+### Challenge
+
+36. The number 240 is *highly composite*: it has more divisors than any smaller number. List all its factors.
+37. Find a three-digit number that is divisible by all of {2, 3, 5, 7, 11}.
+38. Find the smallest number that is divisible by 1, 2, 3, ..., 10. (Hint: this is the LCM of 1–10. You will compute it formally in the next lesson but you can think your way there.)
+39. Without computing, decide whether $1024 \times 768$ is divisible by 6.
+40. The product $7 \times 11 \times 13 = 1001$. Use that to compute $1001 \times 123 \times 7 \times 11 \times 13$.
+
+### Error Spotting
+
+41. A student says $8 \times 7 = 54$. Correct?
+42. A student says the factors of 30 are $\{2, 3, 5, 6\}$. Correct? If not, what is missing?
+43. A student says 91 is prime. Correct? (Hint: $91 = ?$.)
+44. A student says the multiples of 4 are $\{1, 2, 4\}$. Correct? If not, what is the correct concept?
+
+### Answers and Brief Explanations
+
+1. 56. 2. 54. 3. 64. 4. 63. 5. 28. 6. 132. 7. 84. 8. 42. 9. 45. 10. 24.
+
+11. 169. 12. 225. 13. 625. 14. 13. 15. 15.
+
+16. {1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60}.
+17. {1, 2, 4, 5, 10, 20, 25, 50, 100}.
+18. {1, 3, 5, 15, 25, 75}.
+19. {1, 2, 4, 8, 16, 32, 64}.
+20. {1, 7, 49}.
+
+21. 432 = $2^4 \cdot 27 = 2^4 \cdot 3^3$. Divisible by 2, 3, 4, 6, 9; not by 5 or 11.
+22. 1530 = $2 \cdot 3^2 \cdot 5 \cdot 17$. Divisible by 2, 3, 5, 6, 9; not by 4 or 11.
+23. 7777 = $7 \cdot 11 \cdot 101$. Divisible by 11; not by 2, 3, 4, 5, 6, 9.
+24. 111111 = $3 \cdot 7 \cdot 11 \cdot 13 \cdot 37$. Divisible by 3, 11; not by 2, 4, 5, 6, 9.
+25. 9999 = $3^2 \cdot 11 \cdot 101$. Divisible by 3, 9, 11; not by 2, 4, 5, 6.
+
+26. $51 = 3 \times 17$. Composite. 3 is a prime factor.
+27. 73 is prime.
+28. $91 = 7 \times 13$. Composite.
+29. 1 is neither prime nor composite. By convention it is a unit.
+30. 97 is prime.
+
+31. $4 \times 7800 = 31{,}200$ RPM total.
+32. 48,000 × 2 = 96,000 bytes/s. Per minute: $96{,}000 \times 60 = 5{,}760{,}000$ bytes ≈ 5.76 MB. Per hour: $5.76 \times 60 \approx 345.6$ MB.
+33. Ratio is 36:12 = 3:1. The driving gear turns 3 times for every 1 turn of the driven gear (a 3:1 reduction).
+34. $24 \times 60 \times 90 = 129{,}600$ frames.
+35. $256^2 = 65{,}536$ mm². In cm² (divide by 100 for $\text{mm}^2 \to \text{cm}^2$): $655.36$ cm².
+
+36. Factors of 240: $\{1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 16, 20, 24, 30, 40, 48, 60, 80, 120, 240\}$. Twenty factors.
+37. LCM of {2, 3, 5, 7, 11} = $2 \cdot 3 \cdot 5 \cdot 7 \cdot 11 = 2310$. Any multiple of 2310 in three-digit range: there are none — 2310 is already four digits. So no three-digit number is divisible by all five. The question is a trick.
+38. LCM of 1–10 = $2^3 \cdot 3^2 \cdot 5 \cdot 7 = 2520$.
+39. $1024 \times 768 = 786{,}432$. Divisible by 6 iff divisible by 2 and 3. Both factors are: $1024 = 2^{10}$ (divisible by 2), $768 = 256 \times 3 = 2^8 \cdot 3$ (divisible by 3). Product is divisible by both. So yes.
+40. $1001 \times 123 \times 7 \times 11 \times 13 = 1001 \times 123 \times 1001 = 1001^2 \times 123 = 1{,}002{,}001 \times 123 = 123{,}246{,}123$.
+
+41. Wrong. $8 \times 7 = 56$. Common mis-recall, possibly cross-pollinated with $9 \times 6 = 54$.
+42. Incomplete. Factors of 30 are $\{1, 2, 3, 5, 6, 10, 15, 30\}$. The student missed 1, 10, 15, and 30.
+43. Wrong. $91 = 7 \times 13$.
+44. Wrong concept. $\{1, 2, 4\}$ are *factors* of 4. The multiples of 4 are $\{4, 8, 12, 16, 20, \ldots\}$.
+
+## Build Task
+
+Write a small program (Python or your language of choice) called `factor_fluency`. Required functions:
+
+1. `times_table(n)` — print the $n \times n$ multiplication table as a formatted grid.
+2. `factors(n)` — return the sorted list of factors of `n`.
+3. `is_prime(n)` — return True if `n` is prime; False otherwise. Use only divisions by primes up to $\sqrt{n}$.
+4. `prime_factorize(n)` — return a dict mapping each prime factor of `n` to its exponent. For example, `prime_factorize(84)` returns `{2: 2, 3: 1, 7: 1}`.
+5. `divisible_by(n, d)` — return True if `n` is divisible by `d`. Implement using your own modulo, not language built-ins, for the practice.
+6. `divisibility_battery(n)` — print which of {2, 3, 4, 5, 6, 8, 9, 10, 11} divide `n`.
+
+Tests:
+
+- `factors(12) == [1, 2, 3, 4, 6, 12]`
+- `is_prime(97) == True`
+- `is_prime(91) == False`
+- `prime_factorize(60) == {2: 2, 3: 1, 5: 1}`
+- `prime_factorize(1) == {}` (1 has no prime factors)
+- `prime_factorize(7) == {7: 1}`
+
+Stretch goals: build a flashcard quizzer that drills the times tables with spaced repetition. Track which facts you miss and re-present them more often.
+
+## Quiz
+
+Try to answer without computing.
+
+1. What does it mean for $a$ to be a factor of $b$?
+2. What is the difference between a factor and a multiple?
+3. Why are 0 and 1 special (not prime, not composite)?
+4. Why does the divisibility-by-3 rule (digit sum is divisible by 3) work? Justify briefly.
+5. Compute $25 \times 25$ from memory.
+6. Compute $15^2$ from memory.
+7. List all factors of 36.
+8. Factor 72 into primes.
+9. Is 119 prime? If not, find a prime factor.
+10. Is the number 0 divisible by 7? Justify.
+11. Which is divisible by 9: 1234 or 1233?
+12. The number $2^{10}$ equals what? Why is this number useful in computing?
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Pass the inline lesson check below at 100% on first attempt.
+- Recall every entry of the 12×12 times table in under 2 seconds (drill until this is true).
+- List the prime factorization of any whole number under 1,000 in under 30 seconds.
+- Recall the divisibility rules for 2, 3, 4, 5, 6, 8, 9, 10, 11 without consulting notes.
+- Run your `factor_fluency` module with all listed tests passing.
+
+## Sources and Further Study
+
+- **Khan Academy** — *Multiplication and division* (free). Use the drill exercises for spaced practice.
+- **Anki shared decks** — search "multiplication times tables" for community-built flashcard decks.
+- **Conway and Guy, *The Book of Numbers***. A delightful tour of the integers that includes patterns in factorization and primes.
+- **Crandall and Pomerance, *Prime Numbers: A Computational Perspective***. For when you want to go deep on prime testing and factoring algorithms — research-level book, but the early chapters are accessible.
+
+## Next Lesson Bridge
+
+Multiplication fluency unlocks the next lesson, *Long Division and Divisibility*, where we work the standard algorithm in detail and the divisibility rules get proved from place value. After that, *GCD, LCM, and Prime Factorization* uses factor recognition to compute greatest common divisors and least common multiples — the operations that underlie fraction arithmetic, signal processing sample-rate matching, and cryptography. The integers will not seem so flat once you can read their factor structure on sight.
+
