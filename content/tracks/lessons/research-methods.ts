@@ -1,0 +1,325 @@
+import type { Lesson } from "../../../src/lib/types.ts";
+
+const TRACK = "research-methods";
+
+function future(
+  moduleSlug: string,
+  order: number,
+  slug: string,
+  title: string,
+  summary: string,
+  options: { estimatedMinutes?: number; prerequisites?: string[] } = {},
+): Lesson {
+  return {
+    slug,
+    trackSlug: TRACK,
+    moduleSlug,
+    title,
+    summary,
+    kind: "lesson",
+    status: "future",
+    order,
+    estimatedMinutes: options.estimatedMinutes ?? 90,
+    prerequisites: options.prerequisites,
+    mdxPath: `content/lessons/${slug}.mdx`,
+  };
+}
+
+const literatureReadingAndSynthesis: Lesson[] = [
+  future(
+    "literature-reading-and-synthesis",
+    1,
+    "anatomy-of-an-academic-paper",
+    "Anatomy of an Academic Paper",
+    "The standard sections of a research paper, what each one is for, and where to look for the claims that matter most.",
+  ),
+  future(
+    "literature-reading-and-synthesis",
+    2,
+    "three-pass-reading-method",
+    "The Three-Pass Reading Method",
+    "Keshav's three-pass approach to reading papers efficiently: skim, detailed read, and reimplementation-level study.",
+  ),
+  future(
+    "literature-reading-and-synthesis",
+    3,
+    "reading-abstracts-strategically",
+    "Reading Abstracts Strategically",
+    "How to extract the problem, method, results, and significance from an abstract in under two minutes to triage your reading queue.",
+  ),
+  future(
+    "literature-reading-and-synthesis",
+    4,
+    "decoding-mathematical-notation-in-papers",
+    "Decoding Mathematical Notation in Papers",
+    "Strategies for parsing dense equations, looking up unfamiliar symbols, and translating notation into intuition without getting stuck.",
+  ),
+  future(
+    "literature-reading-and-synthesis",
+    5,
+    "structured-paper-notes-with-zotero-and-notion",
+    "Structured Paper Notes with Zotero and Notion",
+    "Templates and workflows for capturing summaries, key results, and questions in Zotero or Notion so that papers remain searchable later.",
+  ),
+  future(
+    "literature-reading-and-synthesis",
+    6,
+    "citation-tracing-forward-and-backward",
+    "Citation Tracing Forward and Backward",
+    "Following references backward to foundational work and forward to recent extensions in order to map a research lineage.",
+  ),
+  future(
+    "literature-reading-and-synthesis",
+    7,
+    "using-google-scholar-semantic-scholar-arxiv",
+    "Using Google Scholar, Semantic Scholar, and arXiv Effectively",
+    "Search operators, alerts, citation graphs, and author pages on the three search engines that matter for technical research.",
+  ),
+  future(
+    "literature-reading-and-synthesis",
+    8,
+    "building-a-literature-review",
+    "Building a Literature Review",
+    "Structuring a literature review thematically rather than chronologically, identifying the conversation, and finding your contribution.",
+  ),
+  future(
+    "literature-reading-and-synthesis",
+    9,
+    "identifying-open-problems",
+    "Identifying Open Problems",
+    "Reading limitations sections, future work paragraphs, and contradictions across papers to spot underexplored research directions.",
+  ),
+  future(
+    "literature-reading-and-synthesis",
+    10,
+    "evaluating-paper-quality-and-red-flags",
+    "Evaluating Paper Quality and Red Flags",
+    "Signals of strong and weak work: weak baselines, cherry-picked results, missing ablations, predatory venues, and unreproducible claims.",
+  ),
+];
+
+const latexAndScientificWriting: Lesson[] = [
+  future(
+    "latex-and-scientific-writing",
+    1,
+    "latex-from-zero",
+    "LaTeX from Zero",
+    "Why LaTeX exists, how it differs from a word processor, and your first compiled document with title, author, and body text.",
+  ),
+  future(
+    "latex-and-scientific-writing",
+    2,
+    "installing-tex-live-or-using-overleaf",
+    "Installing TeX Live or Using Overleaf",
+    "Choosing between a local TeX Live installation and the Overleaf web editor, with setup instructions for both paths.",
+  ),
+  future(
+    "latex-and-scientific-writing",
+    3,
+    "document-classes-and-preamble",
+    "Document Classes and the Preamble",
+    "Article, report, book, and beamer classes; the preamble; package imports; and the global structure of a LaTeX source file.",
+  ),
+  future(
+    "latex-and-scientific-writing",
+    4,
+    "sectioning-and-table-of-contents",
+    "Sectioning and Table of Contents",
+    "Sections, subsections, labels and references, automatic numbering, and generating a table of contents.",
+  ),
+  future(
+    "latex-and-scientific-writing",
+    5,
+    "math-mode-and-inline-equations",
+    "Math Mode and Inline Equations",
+    "Inline versus display math, math operators, Greek letters, subscripts and superscripts, and the symbols you will use most.",
+  ),
+  future(
+    "latex-and-scientific-writing",
+    6,
+    "equation-environments-align-cases-matrix",
+    "Equation Environments: align, cases, matrix",
+    "Multi-line equations, conditional definitions, matrices and arrays, and aligning equations on the equals sign.",
+  ),
+  future(
+    "latex-and-scientific-writing",
+    7,
+    "theorems-proofs-and-amsthm",
+    "Theorems, Proofs, and amsthm",
+    "Defining theorem, lemma, definition, and proof environments with amsthm, and styling them for a clean paper.",
+  ),
+  future(
+    "latex-and-scientific-writing",
+    8,
+    "bibtex-and-citation-management",
+    "BibTeX and Citation Management",
+    "Creating a .bib file, citing with cite and natbib, exporting from Zotero or Google Scholar, and choosing a bibliography style.",
+  ),
+  future(
+    "latex-and-scientific-writing",
+    9,
+    "figures-in-latex",
+    "Figures in LaTeX",
+    "Including graphics with graphicx, captions, labels, subfigures, and managing float placement when LaTeX disagrees with you.",
+  ),
+  future(
+    "latex-and-scientific-writing",
+    10,
+    "tables-in-latex",
+    "Tables in LaTeX",
+    "The tabular and booktabs environments, multi-column and multi-row cells, and producing publication-quality tables.",
+  ),
+  future(
+    "latex-and-scientific-writing",
+    11,
+    "conference-versus-journal-templates",
+    "Conference versus Journal Templates",
+    "Working with IEEE, ACM, NeurIPS, ICML, and Elsevier templates; column counts, page limits, and anonymous review conventions.",
+  ),
+  future(
+    "latex-and-scientific-writing",
+    12,
+    "structuring-an-academic-paper",
+    "Structuring an Academic Paper",
+    "Writing the introduction, methods, results, and discussion sections so each one does its job; the contribution paragraph and the elevator pitch.",
+  ),
+];
+
+const reproducibleResearch: Lesson[] = [
+  future(
+    "reproducible-research",
+    1,
+    "the-reproducibility-crisis",
+    "The Reproducibility Crisis",
+    "What replication, reproduction, and robustness mean; why so many published results fail to replicate; and what individual researchers can do.",
+  ),
+  future(
+    "reproducible-research",
+    2,
+    "version-control-discipline-for-research-code",
+    "Version Control Discipline for Research Code",
+    "Branching strategies, commit hygiene, tagging experiment runs, and using git to make every result traceable to an exact code state.",
+  ),
+  future(
+    "reproducible-research",
+    3,
+    "conda-and-pip-environments",
+    "Conda and pip Environments",
+    "Creating reproducible Python environments with conda and pip, pinning versions, and exporting environment files for collaborators.",
+  ),
+  future(
+    "reproducible-research",
+    4,
+    "docker-for-reproducible-compute",
+    "Docker for Reproducible Compute",
+    "Containerizing a research environment, writing a Dockerfile, pinning system dependencies, and shipping a runnable compute artifact.",
+  ),
+  future(
+    "reproducible-research",
+    5,
+    "jupyter-notebooks-vs-scripts-tradeoffs",
+    "Jupyter Notebooks vs Scripts Tradeoffs",
+    "When notebooks help and when they hurt, hidden state pitfalls, and refactoring exploratory notebooks into reusable scripts and modules.",
+  ),
+  future(
+    "reproducible-research",
+    6,
+    "data-versioning-with-dvc",
+    "Data Versioning with DVC",
+    "Tracking large datasets and model artifacts with DVC, integrating with git, and reproducing pipelines from a single commit.",
+  ),
+  future(
+    "reproducible-research",
+    7,
+    "publishing-code-with-papers",
+    "Publishing Code with Papers",
+    "Preparing a code release alongside a paper: licensing, READMEs, example runs, model weights, and the Papers with Code ecosystem.",
+  ),
+  future(
+    "reproducible-research",
+    8,
+    "the-fair-principles",
+    "The FAIR Principles",
+    "Making research outputs Findable, Accessible, Interoperable, and Reusable, with practical steps for datasets, code, and metadata.",
+  ),
+];
+
+const presentationAndCommunication: Lesson[] = [
+  future(
+    "presentation-and-communication",
+    1,
+    "structure-of-a-twenty-minute-talk",
+    "The Structure of a 20-Minute Talk",
+    "Time budget, opening hook, problem statement, method, results, and conclusion; planning a talk that lands in the allotted slot.",
+  ),
+  future(
+    "presentation-and-communication",
+    2,
+    "slide-design-principles",
+    "Slide Design Principles",
+    "Visual hierarchy, contrast, whitespace, font and color choices, and the difference between slides for reading and slides for talking.",
+  ),
+  future(
+    "presentation-and-communication",
+    3,
+    "choosing-what-not-to-put-on-a-slide",
+    "Choosing What NOT to Put on a Slide",
+    "The discipline of subtraction: cutting wall-of-text bullets, redundant axes, and decorative clutter so the message survives.",
+  ),
+  future(
+    "presentation-and-communication",
+    4,
+    "presenting-math-and-equations-in-talks",
+    "Presenting Math and Equations in Talks",
+    "Building up equations one term at a time, annotating with intuition, and giving the audience a chance to read before you speak.",
+  ),
+  future(
+    "presentation-and-communication",
+    5,
+    "technical-demos-that-work",
+    "Technical Demos That Work",
+    "Rehearsing live demos, recording backups, designing for the failure mode, and choosing what to demonstrate versus what to describe.",
+  ),
+  future(
+    "presentation-and-communication",
+    6,
+    "conference-posters",
+    "Conference Posters",
+    "Designing a poster that reads from across the room, the headline-led layout, and what to actually say during the poster session.",
+  ),
+  future(
+    "presentation-and-communication",
+    7,
+    "lightning-talks",
+    "Lightning Talks",
+    "The constraints of a 3-to-5-minute talk, choosing a single message, and finishing on time without rushing the conclusion.",
+  ),
+  future(
+    "presentation-and-communication",
+    8,
+    "technical-interviews",
+    "Technical Interviews",
+    "Whiteboard problem-solving, research presentations for academic and industry interviews, and answering questions you do not know the answer to.",
+  ),
+  future(
+    "presentation-and-communication",
+    9,
+    "writing-for-a-non-specialist-audience",
+    "Writing for a Non-Specialist Audience",
+    "Translating technical work for funders, policymakers, journalists, and the general public without distorting the science.",
+  ),
+  future(
+    "presentation-and-communication",
+    10,
+    "blog-posts-and-twitter-as-research-output",
+    "Blog Posts and Twitter as Research Output",
+    "Using blog posts, threads, and short-form writing to distribute research, build an audience, and accelerate feedback loops.",
+  ),
+];
+
+export const researchMethodsLessons: Lesson[] = [
+  ...literatureReadingAndSynthesis,
+  ...latexAndScientificWriting,
+  ...reproducibleResearch,
+  ...presentationAndCommunication,
+];
