@@ -1,0 +1,68 @@
+# Signed Numbers and Order of Operations
+
+## Objective
+
+Handle positive and negative numbers, parentheses, exponents, multiplication, division, addition, and subtraction in the correct order.
+
+## Why It Matters
+
+Robots move forward and backward. Coordinates can be positive or negative. Sensors report offsets. Simulations fail when calculation order is wrong.
+
+## Concept
+
+A signed number includes direction or position relative to zero:
+
+- `+5 m` can mean 5 meters forward.
+- `-5 m` can mean 5 meters backward.
+- `-2 C` can mean 2 degrees below zero Celsius.
+
+Order of operations tells you which operation happens first:
+
+1. Parentheses
+2. Exponents
+3. Multiplication and division from left to right
+4. Addition and subtraction from left to right
+
+For example:
+
+$$2 + 3 \times 4 = 14$$
+
+because multiplication happens before addition.
+
+## Worked Example
+
+A robot starts at `x = -3 m`, moves `+8 m`, then moves `-2 m`.
+
+$$x = -3 + 8 - 2$$
+
+$$x = 3m$$
+
+It ends 3 meters to the positive side of zero.
+
+## Exercise
+
+Calculate and explain the meaning:
+
+1. `-4 + 9`
+2. `12 - 3 * 2`
+3. `(12 - 3) * 2`
+4. A sensor offset is `-0.25 V`; a reading is `2.10 V`. What is the corrected value if you subtract the offset?
+
+## Build Task
+
+Create a coordinate-step calculator. Start with a position and apply a list of signed movements.
+
+## Quiz
+
+1. What does a negative number often represent in a coordinate system?
+2. Why do parentheses matter?
+3. Which happens first: addition or multiplication?
+4. Why is `12 - 3 * 2` different from `(12 - 3) * 2`?
+
+## Proof of Completion
+
+Submit five signed-number examples, the coordinate-step calculator, and one note about a mistake that parentheses can prevent.
+
+## Next Lesson
+
+Solving Equations from Zero.

@@ -2,12 +2,28 @@ import type { Module } from "../../src/lib/types";
 
 export const modules: Module[] = [
   {
-    slug: "engineering-algebra-and-geometry",
+    slug: "math-reentry-toolkit",
     trackSlug: "mathematical-foundations",
-    title: "Engineering Algebra and Geometry",
-    summary: "Equations, distances, angles, vectors, and coordinate systems for technical work.",
+    title: "Math Re-entry Toolkit",
+    summary: "Arithmetic, estimation, units, fractions, signed numbers, and the habits needed to study again.",
     status: "available",
     order: 1,
+  },
+  {
+    slug: "equations-units-and-graphs",
+    trackSlug: "mathematical-foundations",
+    title: "Engineering Algebra and Geometry",
+    summary: "Equations, dimensional analysis, graphs, functions, and technical problem translation.",
+    status: "available",
+    order: 2,
+  },
+  {
+    slug: "geometry-trig-and-vectors",
+    trackSlug: "mathematical-foundations",
+    title: "Geometry, Trigonometry, and Vectors",
+    summary: "Distances, angles, triangles, components, and vector reasoning for physical systems.",
+    status: "available",
+    order: 3,
   },
   {
     slug: "technical-python",
