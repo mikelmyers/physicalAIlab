@@ -5,6 +5,7 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import { CodeBlock } from "@/components/lesson/CodeBlock";
+import { LessonCheck } from "@/components/lesson/LessonCheck";
 import { MathBlock } from "@/components/lesson/MathBlock";
 
 type LessonFrontmatter = {
@@ -14,6 +15,7 @@ type LessonFrontmatter = {
 const mdxComponents = {
   MathBlock,
   CodeBlock,
+  LessonCheck,
 };
 
 export async function renderLessonMdx(mdxPath: string) {
