@@ -1,0 +1,60 @@
+# Algebra for Engineering Systems
+
+## Objective
+
+Use algebra to represent physical relationships, solve for unknown quantities, and check whether an engineering result is reasonable.
+
+## Why It Matters
+
+Every robot, drone, circuit, and simulation is full of relationships between quantities. Algebra turns those relationships into tools you can inspect and reuse.
+
+## Concept
+
+An equation is a compact model. If a sensor produces a voltage proportional to distance, or a battery runtime depends on current draw, algebra lets you rearrange the model and solve for the unknown.
+
+For a linear relationship:
+
+$$y = mx + b$$
+
+`m` is the rate of change and `b` is the starting offset. In a technical system, the units matter as much as the numbers.
+
+## Worked Example
+
+A sensor reads `0.5 V` at zero distance and increases by `0.02 V` per centimeter:
+
+$$V = 0.02d + 0.5$$
+
+If the sensor reads `1.7 V`, solve for `d`:
+
+$$1.7 = 0.02d + 0.5$$
+
+$$1.2 = 0.02d$$
+
+$$d = 60 cm$$
+
+## Exercise
+
+A motor controller maps throttle percentage `t` to wheel speed `s` with:
+
+$$s = 0.12t + 0.4$$
+
+Find the speed when `t = 50`, then solve for the throttle needed to reach `8.8 m/s`.
+
+## Build Task
+
+Create a small calculator function that solves a linear equation of the form `y = mx + b` for either `y` or `x`.
+
+## Quiz
+
+1. What does the slope represent in a physical system?
+2. Why should units be tracked while solving equations?
+3. What does the intercept represent?
+4. What is the first step when solving `y = mx + b` for `x`?
+
+## Proof of Completion
+
+Submit the calculator code, two example calculations, and a short note explaining how algebra shows up in a real engineering system.
+
+## Next Lesson
+
+Trigonometry for Drones and Robotics.

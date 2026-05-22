@@ -1,0 +1,59 @@
+# Python Functions for Technical Tools
+
+## Objective
+
+Write reusable Python functions that turn formulas into dependable engineering tools.
+
+## Why It Matters
+
+Technical work is full of repeated calculations. Functions let you encode formulas once, test them, and reuse them inside calculators, simulations, and lab scripts.
+
+## Concept
+
+A function should have a clear name, explicit inputs, a single responsibility, and predictable output.
+
+```python
+def ohms_law_voltage(current_amps: float, resistance_ohms: float) -> float:
+    return current_amps * resistance_ohms
+```
+
+This function represents:
+
+$$V = IR$$
+
+## Worked Example
+
+```python
+def battery_runtime_hours(capacity_ah: float, current_amps: float) -> float:
+    if current_amps <= 0:
+        raise ValueError("current_amps must be positive")
+    return capacity_ah / current_amps
+
+runtime = battery_runtime_hours(5.0, 1.25)
+print(runtime)
+```
+
+The result is `4.0` hours.
+
+## Exercise
+
+Write a function that converts wheel RPM and wheel diameter into linear speed.
+
+## Build Task
+
+Create a `calculators.py` file with functions for Ohm's Law, battery runtime, and unit conversion. Add at least three example calls.
+
+## Quiz
+
+1. Why should a function have a clear name?
+2. What is one reason to validate inputs?
+3. How do type hints help future readers?
+4. Why is a technical calculator a good first project?
+
+## Proof of Completion
+
+Submit the Python file, example outputs, and one note about a bug or edge case you handled.
+
+## Next Lesson
+
+Ohm's Law and Basic Circuits.

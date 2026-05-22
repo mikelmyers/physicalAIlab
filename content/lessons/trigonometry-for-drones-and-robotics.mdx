@@ -1,0 +1,58 @@
+# Trigonometry for Drones and Robotics
+
+## Objective
+
+Use sine, cosine, and tangent to convert between angles, distances, heights, and vector components.
+
+## Why It Matters
+
+Drones estimate altitude, camera footprint, bearing, and field of view with triangles. Robots decompose motion into forward, sideways, and vertical components.
+
+## Concept
+
+For a right triangle:
+
+$$\sin(\theta) = \frac{opposite}{hypotenuse}$$
+
+$$\cos(\theta) = \frac{adjacent}{hypotenuse}$$
+
+$$\tan(\theta) = \frac{opposite}{adjacent}$$
+
+Vector components use the same relationships:
+
+$$x = r\cos(\theta)$$
+
+$$y = r\sin(\theta)$$
+
+## Worked Example
+
+A drone points a camera downward with a horizontal field-of-view half-angle of `35°`. At `50 m` altitude, the half-width of the ground footprint is:
+
+$$w = 50\tan(35^\circ)$$
+
+$$w \approx 35.0m$$
+
+The full footprint width is about `70 m`.
+
+## Exercise
+
+A robot moves `2.5 m` at a heading of `40°`. Compute the `x` and `y` components of that motion.
+
+## Build Task
+
+Create a function that converts a distance and heading into `x` and `y` components. Add a second function that estimates drone camera footprint width.
+
+## Quiz
+
+1. Which trig function relates opposite and adjacent sides?
+2. Why are vector components useful for robot motion?
+3. What happens to the drone footprint when altitude increases?
+4. Why should degrees and radians be handled carefully in code?
+
+## Proof of Completion
+
+Submit component calculations, code, and a short diagram or sketch of the triangle used.
+
+## Next Lesson
+
+Introduction to Coordinate Systems.
