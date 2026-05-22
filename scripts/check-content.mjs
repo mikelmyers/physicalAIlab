@@ -24,6 +24,7 @@ const { modules } = await import(pathToFileURL(path.join(root, "content/tracks/m
 const { lessons } = await import(pathToFileURL(path.join(root, "content/tracks/lessons.ts")));
 const { projects } = await import(pathToFileURL(path.join(root, "content/projects/projects.ts")));
 const { lessonChecks } = await import(pathToFileURL(path.join(root, "src/lib/lessonChecks.ts")));
+const { moduleExams } = await import(pathToFileURL(path.join(root, "content/exams/index.ts")));
 
 uniqueBy(tracks, "slug", "track");
 uniqueBy(modules, "slug", "module");
@@ -78,6 +79,37 @@ for (const project of projects) {
   }
 }
 
+uniqueBy(moduleExams, "moduleSlug", "moduleExam");
+
+for (const exam of moduleExams) {
+  if (!moduleSlugs.has(exam.moduleSlug)) {
+    errors.push(`Module exam ${exam.moduleSlug} references missing module`);
+  }
+  if (exam.totalQuestions < 50) {
+    errors.push(`Module exam ${exam.moduleSlug} has only ${exam.totalQuestions} questions; minimum 50`);
+  }
+  if (exam.passThreshold < 95) {
+    errors.push(`Module exam ${exam.moduleSlug} pass threshold ${exam.passThreshold} is below 95`);
+  }
+  const conceptIds = new Set(exam.concepts.map((c) => c.id));
+  for (const tpl of exam.templates) {
+    if (!conceptIds.has(tpl.conceptId)) {
+      errors.push(`Module exam ${exam.moduleSlug} template ${tpl.id} references unknown concept ${tpl.conceptId}`);
+    }
+  }
+  for (const conceptId of Object.keys(exam.conceptWeights)) {
+    if (!conceptIds.has(conceptId)) {
+      errors.push(`Module exam ${exam.moduleSlug} weight references unknown concept ${conceptId}`);
+    }
+  }
+  for (const concept of exam.concepts) {
+    const tplsForConcept = exam.templates.filter((t) => t.conceptId === concept.id);
+    if (tplsForConcept.length === 0) {
+      errors.push(`Module exam ${exam.moduleSlug} concept ${concept.id} has zero question templates`);
+    }
+  }
+}
+
 if (errors.length > 0) {
   console.error("Content integrity check failed:");
   for (const error of errors) {
@@ -86,4 +118,4 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
-console.log(`Content integrity check passed: ${tracks.length} tracks, ${modules.length} modules, ${lessons.length} lessons, ${projects.length} projects.`);
+console.log(`Content integrity check passed: ${tracks.length} tracks, ${modules.length} modules, ${lessons.length} lessons, ${projects.length} projects, ${moduleExams.length} module exams.`);

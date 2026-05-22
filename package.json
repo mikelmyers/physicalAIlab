@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "check:content": "node scripts/check-content.mjs",
-    "test:checks": "node scripts/test-lesson-checks.mjs"
+    "test:checks": "node scripts/test-lesson-checks.mjs",
+    "test:exam": "node scripts/test-exam-engine.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
