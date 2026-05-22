@@ -56,7 +56,7 @@ for (const lesson of lessons) {
     errors.push(`Lesson ${lesson.slug} track ${lesson.trackSlug} does not match module track ${moduleItem.trackSlug}`);
   }
 
-  if (!exists(lesson.mdxPath)) {
+  if (lesson.status !== "future" && !exists(lesson.mdxPath)) {
     errors.push(`Lesson ${lesson.slug} missing MDX file ${lesson.mdxPath}`);
   }
 

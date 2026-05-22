@@ -26,6 +26,96 @@ export const modules: Module[] = [
     order: 3,
   },
   {
+    slug: "pre-calculus",
+    trackSlug: "mathematical-foundations",
+    title: "Pre-calculus",
+    summary:
+      "Polynomial, rational, exponential, and logarithmic functions; conic sections; sequences; complex numbers. The bridge to calculus.",
+    status: "future",
+    order: 4,
+  },
+  {
+    slug: "calculus-i-differentiation",
+    trackSlug: "mathematical-foundations",
+    title: "Calculus I — Differentiation",
+    summary:
+      "Limits, continuity, derivatives, chain rule, implicit differentiation, related rates, optimization, linearization. Anchored to MIT 18.01.",
+    status: "future",
+    order: 5,
+  },
+  {
+    slug: "calculus-ii-integration-and-series",
+    trackSlug: "mathematical-foundations",
+    title: "Calculus II — Integration and Series",
+    summary:
+      "Antiderivatives, fundamental theorem, integration techniques, applications, improper integrals, sequences, series, Taylor expansions. Anchored to MIT 18.01.",
+    status: "future",
+    order: 6,
+  },
+  {
+    slug: "multivariable-calculus",
+    trackSlug: "mathematical-foundations",
+    title: "Multivariable Calculus",
+    summary:
+      "Partial derivatives, gradients, multiple integrals, line and surface integrals, divergence, curl, Green's/Stokes/divergence theorems. Anchored to MIT 18.02.",
+    status: "future",
+    order: 7,
+  },
+  {
+    slug: "linear-algebra",
+    trackSlug: "mathematical-foundations",
+    title: "Linear Algebra",
+    summary:
+      "Vectors, matrices, systems, vector spaces, orthogonality, determinants, eigenvalues, SVD, and applications to data and dynamics. Anchored to MIT 18.06 (Strang).",
+    status: "future",
+    order: 8,
+  },
+  {
+    slug: "differential-equations",
+    trackSlug: "mathematical-foundations",
+    title: "Differential Equations",
+    summary:
+      "First and second order ODEs, systems, Laplace transforms, intro to PDEs and Fourier methods. Anchored to MIT 18.03.",
+    status: "future",
+    order: 9,
+  },
+  {
+    slug: "probability-and-statistics",
+    trackSlug: "mathematical-foundations",
+    title: "Probability and Statistics",
+    summary:
+      "Probability spaces, random variables, distributions, expectation, joint distributions, central limit theorem, estimation, hypothesis testing, regression. Anchored to MIT 6.041 / 18.05.",
+    status: "future",
+    order: 10,
+  },
+  {
+    slug: "real-analysis",
+    trackSlug: "mathematical-foundations",
+    title: "Real Analysis",
+    summary:
+      "The rigorous foundation under calculus: sequences, limits, continuity, differentiability, the Riemann integral, metric spaces. Required for graduate-level math and theoretical physics.",
+    status: "future",
+    order: 11,
+  },
+  {
+    slug: "abstract-algebra",
+    trackSlug: "mathematical-foundations",
+    title: "Abstract Algebra",
+    summary:
+      "Groups, rings, fields, modules. Required for theoretical physics (symmetry, gauge theory) and cryptography.",
+    status: "future",
+    order: 12,
+  },
+  {
+    slug: "topology",
+    trackSlug: "mathematical-foundations",
+    title: "Topology",
+    summary:
+      "Point-set topology, continuous maps, compactness, connectedness; introduction to algebraic topology. Required for general relativity, gauge theory, and modern geometry.",
+    status: "future",
+    order: 13,
+  },
+  {
     slug: "technical-python",
     trackSlug: "coding-foundations",
     title: "Technical Python",
