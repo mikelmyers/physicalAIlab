@@ -1,0 +1,808 @@
+# Scientific Notation
+
+## Re-entry Promise
+
+Scientific notation is the engineering language for talking about *very large* and *very small* numbers without going cross-eyed. The mass of an electron is $9.109 \times 10^{-31}$ kg. The distance to Andromeda is $2.4 \times 10^{22}$ m. A modern LLM has $10^{11}$ parameters. Each of these has either too many zeros or too many decimal places to write comfortably in standard notation. Scientific notation packs them down to a coefficient and an exponent of ten, and gives you a clean algebra for arithmetic across many orders of magnitude.
+
+This lesson assumes you know integer exponents (lesson 13) and decimal arithmetic (lesson 9). It does not assume you remember how to add or multiply numbers in scientific notation, or when to use scientific versus engineering notation, or how to count significant figures from a scientific-notation expression — we will build it all from scratch.
+
+By the end you should be able to read, write, and arithmetic in scientific notation fluently, switch between scientific and engineering notation (the SI-prefix-friendly form), and reason about *orders of magnitude* — the workhorse mental skill of all engineering and science. The next lesson (16) builds significant-figure tracking on top of this notation.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Convert any number, no matter how large or small, into **standard scientific notation** $a \times 10^b$ with $1 \le |a| < 10$ and integer $b$.
+- Convert back to decimal form from scientific notation.
+- State and use **engineering notation** (a closely-related form that constrains the exponent to a multiple of 3 to align with SI prefixes).
+- Add, subtract, multiply, and divide numbers in scientific notation.
+- Apply scientific notation to evaluate engineering and physics expressions across many orders of magnitude without losing track.
+- Recognize SI prefixes from femto ($10^{-15}$) to peta ($10^{15}$) and beyond.
+- Estimate the **order of magnitude** of a calculation result before doing the precise arithmetic, as a sanity check.
+- Identify the most common errors in scientific-notation arithmetic: forgetting to align exponents before adding, miscounting decimal places, dropping a minus sign in the exponent.
+- Use **Fermi estimation** to bracket the order of magnitude of unfamiliar quantities (full treatment in lesson 17, foundation here).
+
+## Why It Matters
+
+Scientific notation is the *universal* numerical format of science and engineering. A small selection of contexts where it is essential:
+
+1. **Physics constants.** Speed of light $c = 2.998 \times 10^8$ m/s. Planck's constant $h = 6.626 \times 10^{-34}$ J·s. Gravitational constant $G = 6.674 \times 10^{-11}$ N·m²/kg². Electron charge $e = 1.602 \times 10^{-19}$ C. Avogadro's number $N_A = 6.022 \times 10^{23}$ /mol. None of these can be written sensibly without exponent notation.
+
+2. **Astronomy.** Distance to nearest star (Proxima Centauri): $4.0 \times 10^{16}$ m. Earth's mass: $5.97 \times 10^{24}$ kg. Sun's luminosity: $3.85 \times 10^{26}$ W.
+
+3. **Microscopy and nanotechnology.** Atomic radius: $\sim 10^{-10}$ m. Visible-light wavelength: $\sim 10^{-7}$ m. Cell membrane thickness: $\sim 10^{-8}$ m. Transistor gate length (cutting-edge): $\sim 10^{-9}$ m (a few nanometers).
+
+4. **Computing.** RAM in a modern laptop: $\sim 10^{10}$ bytes. Internet packet count per second globally: $\sim 10^{14}$. Bits in a 256-bit cryptographic key: $2^{256} \approx 10^{77}$.
+
+5. **Drone power budgets.** A drone consumes $\sim 10^2$ W of power and stores $\sim 10^5$ J of energy in its battery. Flight time: $10^5 / 10^2 = 10^3$ s ≈ 17 min. Quick mental arithmetic in exponent form.
+
+6. **Machine learning.** A modern LLM has $\sim 10^{11}$ parameters trained on $\sim 10^{12}$ tokens, requiring $\sim 10^{24}$ floating-point operations. A scientific notation expression compresses these numbers to something humans can reason about.
+
+7. **Sensor specs.** Op-amp input bias current: $\sim 10^{-12}$ A (picoamps). MEMS accelerometer noise: $\sim 10^{-6}$ g. ADC resolution: $\sim 10^{-5}$ V for a 16-bit sensor on a 0.5 V range.
+
+8. **Geology and weather.** Earth's age: $4.54 \times 10^9$ years. Atmospheric pressure at sea level: $1.013 \times 10^5$ Pa. Annual global fossil-fuel CO₂ emissions: $\sim 4 \times 10^{13}$ kg.
+
+9. **Biology and medicine.** Diameter of a typical bacterium: $\sim 10^{-6}$ m. Atoms in a glass of water: $\sim 10^{25}$. Typical dose of vitamin C: $10^{-3}$ kg = $10^0$ g = $10^3$ mg.
+
+10. **Cosmology and quantum.** Age of the universe: $\sim 4 \times 10^{17}$ s. Planck length: $1.6 \times 10^{-35}$ m. The two extremes of physical reality differ by 52 orders of magnitude — a span you can write in scientific notation but cannot remotely picture.
+
+Scientific notation is the *only* way to handle numbers that span this range. Fluency here pays for itself every day in technical work.
+
+## Why This Idea Exists
+
+Scientific notation is, in a sense, an inevitability: once positional decimal notation exists (lesson 2) and integer exponents exist (lesson 13), the idea of expressing any number as "coefficient × power of ten" is just waiting to be formalized.
+
+**Archimedes** (3rd century BCE) wrote *The Sand Reckoner*, in which he proposed a way to express absurdly large numbers — specifically, the number of grains of sand that would fill the universe — using a system of *myriad-myriads* (powers of 10⁸). Archimedes was reaching for the idea of scientific notation 1,800 years before it became standard.
+
+**Christoph Rudolff** (1525) used the decimal point and powers-of-ten thinking; **Simon Stevin** (1585, *De Thiende*) formalized decimal fractions. With decimal fractions in hand, the path to scientific notation was open.
+
+**John Napier**'s logarithm tables (1614) implicitly used scientific-notation thinking: any positive number could be expressed as $a \times 10^b$, and the logarithm broke it into characteristic ($b$) and mantissa (related to $\log a$).
+
+**Modern scientific notation** as a standard convention emerged in the 19th century with the rapid expansion of physics and chemistry — where numbers like Avogadro's number forced the issue. The notation $a \times 10^b$ with $1 \le |a| < 10$ is sometimes called *normalized scientific notation* and is the form universally taught today.
+
+**Engineering notation** — constraining the exponent to multiples of 3 to align with SI prefixes — emerged in the early 20th century with electrical engineering, where "kilohms" and "microfarads" mapped cleanly to factors of $10^3$ and $10^{-6}$. It is the calculator-display default in engineering mode and the working language of every datasheet.
+
+**SI prefixes** as we know them were standardized by the General Conference on Weights and Measures (CGPM) over the 20th century. The full set extends from yocto ($10^{-24}$) to yotta ($10^{24}$), with the new prefixes ronna/quetta ($10^{27}$, $10^{30}$) and ronto/quecto ($10^{-27}$, $10^{-30}$) added in 2022 to cope with the growing global data volume.
+
+The deepest application of scientific-notation thinking is the **Fermi estimation** discipline, attributed to physicist Enrico Fermi (1901–1954). Fermi was famous for back-of-the-envelope calculations: estimating the energy of the first atomic bomb test from the displacement of scraps of paper dropped during the blast, or asking job candidates "how many piano tuners are there in Chicago?" to see whether they could quickly compose order-of-magnitude estimates from sparse data. The Fermi method works by chaining together estimates that are each accurate to within a factor of 10 — i.e., within one order of magnitude — and observing that the final answer is often quite accurate even if intermediate steps are not.
+
+## Plain-Language Intuition
+
+### What Scientific Notation Is
+
+A number in scientific notation has two parts:
+
+$$a \times 10^b$$
+
+- $a$ is the **coefficient** (or **mantissa**). For normalized scientific notation, $1 \le |a| < 10$ — exactly one nonzero digit before the decimal point.
+- $b$ is the **exponent** — a positive or negative integer indicating "how many places to shift the decimal point."
+
+Examples:
+
+- $300{,}000{,}000 = 3 \times 10^8$.
+- $0.000452 = 4.52 \times 10^{-4}$.
+- $6.626 \times 10^{-34}$ (Planck's constant in J·s).
+
+The coefficient holds the *significant digits*. The exponent holds the *scale*.
+
+### Why the Coefficient Constraint
+
+If we always force $1 \le |a| < 10$, the representation is unique. $300 = 3 \times 10^2$, not also $30 \times 10^1$ or $0.3 \times 10^3$. The convention makes comparisons and arithmetic clean.
+
+In *informal* writing you sometimes see $30 \times 10^1$ or $0.3 \times 10^3$; these are valid expressions but not "normalized scientific notation."
+
+### The Decimal-Shift Picture
+
+Scientific notation is a way of separating the *scale* from the *significant digits*. The decimal point in the coefficient tells you the precision; the exponent tells you the magnitude.
+
+Picture a sliding-window: $4.52 \times 10^3$ means "take the digits 4, 5, 2, slide the decimal point three places to the right, fill with zeros if needed." You get $4520$. Slide three places left for $10^{-3}$: $0.00452$.
+
+The exponent is *literally* the number of places you shift the decimal point.
+
+### Engineering Notation
+
+A close cousin: in **engineering notation**, the coefficient $1 \le |a| < 1000$ and the exponent is a multiple of 3.
+
+- $300{,}000{,}000 = 300 \times 10^6$ (engineering) = $3 \times 10^8$ (scientific).
+- $0.000452 = 452 \times 10^{-6}$ (engineering) = $4.52 \times 10^{-4}$ (scientific).
+
+Engineering notation aligns with **SI prefixes**:
+
+| Prefix | Symbol | Factor |
+|---|---|---|
+| yotta | Y | $10^{24}$ |
+| zetta | Z | $10^{21}$ |
+| exa | E | $10^{18}$ |
+| peta | P | $10^{15}$ |
+| tera | T | $10^{12}$ |
+| giga | G | $10^9$ |
+| mega | M | $10^6$ |
+| kilo | k | $10^3$ |
+| (none) | — | $10^0$ |
+| milli | m | $10^{-3}$ |
+| micro | µ | $10^{-6}$ |
+| nano | n | $10^{-9}$ |
+| pico | p | $10^{-12}$ |
+| femto | f | $10^{-15}$ |
+| atto | a | $10^{-18}$ |
+| zepto | z | $10^{-21}$ |
+| yocto | y | $10^{-24}$ |
+
+In engineering notation, the coefficient can be read directly with the SI prefix. $4.7 \times 10^{-6}$ F = $4.7$ µF. $1.5 \times 10^9$ Hz = $1.5$ GHz. Capacitor values, frequencies, resistances, currents, voltages — they all live in engineering notation.
+
+## Core Theory
+
+### Conversion: Standard → Scientific
+
+To convert any nonzero number to scientific notation:
+
+1. Find the **first nonzero digit** (this becomes the leading digit of the coefficient).
+2. Place the decimal point immediately after it.
+3. Count the decimal-point shift: positive if you moved left (number ≥ 10), negative if you moved right (number < 1).
+4. Write as coefficient × 10^(shift).
+
+Examples:
+
+- $456{,}000$: first nonzero is 4. Place decimal: $4.56000$. Original decimal was at the end, 5 places to the right. So shift is +5. Result: $4.56 \times 10^5$.
+- $0.0079$: first nonzero is 7. Place decimal: $7.9$. Original decimal was 3 places to the left. So shift is $-3$. Result: $7.9 \times 10^{-3}$.
+- $42$: first nonzero is 4. Place decimal: $4.2$. Shift +1. Result: $4.2 \times 10^1$.
+
+### Conversion: Scientific → Standard
+
+To convert $a \times 10^b$ to standard decimal:
+
+- If $b > 0$: move the decimal in $a$ to the right by $b$ places, padding with zeros.
+- If $b < 0$: move the decimal in $a$ to the left by $|b|$ places, padding with zeros (and a leading $0.$).
+- If $b = 0$: $a \times 10^0 = a$ (no shift).
+
+Examples:
+
+- $3.14 \times 10^4 = 31400$.
+- $2.5 \times 10^{-3} = 0.0025$.
+- $9.0 \times 10^0 = 9.0$.
+
+### Multiplication
+
+$$\left( a \times 10^b \right) \cdot \left( c \times 10^d \right) = (a \cdot c) \times 10^{b + d}$$
+
+Multiply coefficients; add exponents. If the result coefficient is not in $[1, 10)$, re-normalize.
+
+Example: $(3 \times 10^4) \cdot (2 \times 10^{-7}) = 6 \times 10^{-3}$.
+
+Example: $(4 \times 10^5) \cdot (5 \times 10^{-2}) = 20 \times 10^3 = 2 \times 10^4$ (re-normalize after coefficient ≥ 10).
+
+### Division
+
+$$\frac{a \times 10^b}{c \times 10^d} = \frac{a}{c} \times 10^{b - d}$$
+
+Divide coefficients; subtract exponents. Re-normalize if needed.
+
+Example: $\frac{6 \times 10^7}{3 \times 10^4} = 2 \times 10^3$.
+
+Example: $\frac{2 \times 10^3}{5 \times 10^6} = 0.4 \times 10^{-3} = 4 \times 10^{-4}$ (re-normalize after coefficient < 1).
+
+### Powers
+
+$$(a \times 10^b)^n = a^n \times 10^{b \cdot n}$$
+
+Raise the coefficient to the power; multiply the exponent.
+
+Example: $(2 \times 10^3)^4 = 16 \times 10^{12} = 1.6 \times 10^{13}$.
+
+### Roots
+
+$$\sqrt[n]{a \times 10^b} = \sqrt[n]{a} \times 10^{b/n}$$
+
+But if $b$ is not divisible by $n$, you need to adjust the coefficient and exponent first to make it work cleanly.
+
+Example: $\sqrt{4 \times 10^6} = 2 \times 10^3$. (Easy: $b = 6$ divides by $n = 2$.)
+
+Example: $\sqrt{4 \times 10^5}$: rewrite as $40 \times 10^4$, then $\sqrt{40} \times 10^2 = \sqrt{40} \cdot 100 \approx 6.32 \cdot 100 = 632$. Or as $4 \times 10^4 \cdot 10$, ... best to just compute as $\sqrt{4 \times 10^5} = \sqrt{4 \times 10^4 \cdot 10} = 2 \times 10^2 \cdot \sqrt{10} \approx 200 \cdot 3.162 = 632$. Same result.
+
+### Addition and Subtraction
+
+For addition and subtraction, you *must* align the exponents first. Then add/subtract the coefficients; the common exponent is the exponent of the result.
+
+$$\left( a \times 10^b \right) + \left( c \times 10^d \right) = ?$$
+
+Step 1: Convert one number so the exponents match. Pick the larger exponent (it's safer for precision).
+
+Step 2: Add/subtract coefficients.
+
+Step 3: Re-normalize if needed.
+
+Example: $(3.4 \times 10^5) + (2.1 \times 10^4)$.
+
+Rewrite the second: $2.1 \times 10^4 = 0.21 \times 10^5$.
+
+Add: $3.4 + 0.21 = 3.61$. Common exponent $10^5$.
+
+Result: $3.61 \times 10^5$.
+
+Example: $(7 \times 10^{-6}) + (3 \times 10^{-7})$.
+
+Rewrite: $3 \times 10^{-7} = 0.3 \times 10^{-6}$.
+
+Add: $7 + 0.3 = 7.3$.
+
+Result: $7.3 \times 10^{-6}$.
+
+**Why must you align?** Because scientific notation hides the place value behind the exponent. Adding $3 \times 10^5$ ($300{,}000$) and $2 \times 10^4$ ($20{,}000$) gives $320{,}000$, *not* $5 \times 10^9$. The exponents matter for what's being added.
+
+### Order of Magnitude
+
+The **order of magnitude** of a number $N$ is the exponent $b$ in its scientific-notation form $a \times 10^b$. Sometimes given as the exponent of the *nearest* power of 10:
+
+- $5 \times 10^4$ is order $10^4$ (or some say $10^5$, since 5 rounds to 10). Conventions vary.
+
+Strict convention: "order of magnitude of $N$" is $\lfloor \log_{10} |N| \rfloor$.
+
+Looser convention: "order of magnitude of $N$" is the closest integer power of 10.
+
+In daily engineering speech, "10× change" or "two orders of magnitude" usually mean factors of 10. "Same order of magnitude" usually means "within a factor of 3 to 10."
+
+The order-of-magnitude habit is the most useful estimation tool in engineering. Before doing any precise calculation, ask: what's the order of magnitude of the answer? If your detailed answer is wildly different, you have a bug.
+
+### Counting Significant Figures (Quick Preview)
+
+A number in scientific notation makes significant-figure counting easy: the *number of digits in the coefficient* is the number of significant figures.
+
+- $3 \times 10^5$: 1 sig fig.
+- $3.0 \times 10^5$: 2 sig figs.
+- $3.00 \times 10^5$: 3 sig figs.
+- $3.000 \times 10^5$: 4 sig figs.
+
+Trailing zeros in the coefficient *do* count, because they were explicitly written. In standard notation, trailing zeros are ambiguous: is $300$ one, two, or three sig figs? You can't tell. Scientific notation removes the ambiguity.
+
+Full sig-fig discussion is lesson 16. For now: when in doubt, write in scientific notation to make precision explicit.
+
+## Visual or Mental Model
+
+### Model 1: Decimal-Point Slide
+
+Picture the decimal point in your number as a movable bead on a string. Scientific notation tells you *where the bead really is* (via the coefficient) and *how far to slide it* (via the exponent).
+
+$4.52 \times 10^7$: the bead is at position "$4.52$" in coefficient land, but you need to slide it 7 positions to the right in standard land. Result: $45{,}200{,}000$.
+
+### Model 2: Orders of Magnitude Stack
+
+Imagine a vertical stack of powers of 10, with $10^0 = 1$ in the middle:
+
+```
+   ...
+   10^3 = 1,000   (kilo)
+   10^2 = 100
+   10^1 = 10
+   10^0 = 1
+   10^-1 = 0.1
+   10^-2 = 0.01
+   10^-3 = 0.001  (milli)
+   ...
+```
+
+Every number lives somewhere on this ladder. Scientific notation tells you the closest rung (the exponent) and how far up or down from it you are (the coefficient).
+
+The famous *Powers of Ten* film (Ray and Charles Eames, 1968) is exactly this ladder, but with physical objects at each rung. From a 1-meter-square Chicago picnic up to galactic scales ($10^{25}$ m), then back down to subatomic ($10^{-15}$ m). The whole visible universe spans about 40 rungs of this ladder.
+
+### Model 3: Slide Rule (Historical)
+
+A slide rule is a physical calculator that exploits the multiplicative property of exponents. Multiplying two numbers becomes *adding two distances* on a logarithmic scale. Engineering students used slide rules from the 1700s through the 1970s, when pocket calculators displaced them.
+
+The slide rule literally embodies scientific notation: it shows you the coefficient (where the slider lines up) and forces you to track the exponent yourself.
+
+### Model 4: Pocket Calculator Display
+
+A scientific calculator displays a number like $3.14159 \times 10^{-23}$ as "$3.14159E-23$" or "$3.14159e-23$". The 'E' or 'e' is read as "times ten to the". This is the same scientific notation, in a screen-friendly format.
+
+In code: Python `3.14e-23` is the literal `3.14 × 10^-23` as a float. C: `3.14e-23` likewise. The convention is universal across programming languages.
+
+## Worked Examples
+
+### Example 1 — Convert to Scientific
+
+Convert $45{,}600$ to scientific notation.
+
+First nonzero: 4. Place decimal: $4.56$. Original decimal at end ($45600.$), shifted 4 places left. Result: $4.56 \times 10^4$.
+
+### Example 2 — Convert to Scientific (Small Number)
+
+Convert $0.000307$ to scientific notation.
+
+First nonzero: 3. Place decimal: $3.07$. Original decimal was 4 places to the left of the first nonzero. Result: $3.07 \times 10^{-4}$.
+
+### Example 3 — Convert from Scientific
+
+Convert $1.23 \times 10^6$ to standard decimal.
+
+Shift decimal 6 places right: $1230000$.
+
+### Example 4 — Convert from Scientific (Negative Exponent)
+
+Convert $8.9 \times 10^{-5}$ to standard.
+
+Shift decimal 5 places left: $0.000089$.
+
+### Example 5 — Convert to Engineering
+
+Convert $4.52 \times 10^5$ to engineering notation.
+
+Need exponent to be multiple of 3. Closest: $10^3$ (kilo) or $10^6$ (mega). Choose $10^3$: $4.52 \times 10^5 = 452 \times 10^3$.
+
+Alternative: $0.452 \times 10^6$ — but engineering convention prefers the coefficient in $[1, 1000)$, so $452 \times 10^3$ (= 452 k_) is the standard form.
+
+### Example 6 — Convert to Engineering with SI Prefix
+
+Convert $2.7 \times 10^{-8}$ to engineering notation with SI prefix.
+
+Need exponent multiple of 3. Nearest: $10^{-9}$ (nano). $2.7 \times 10^{-8} = 27 \times 10^{-9} = 27$ nano-units.
+
+If the units were farads: 27 nF.
+
+### Example 7 — Multiplication
+
+Compute $(3 \times 10^4)(4 \times 10^{-7})$.
+
+Coefficients: $3 \cdot 4 = 12$. Exponents: $4 + (-7) = -3$. Result: $12 \times 10^{-3}$.
+
+Re-normalize: $1.2 \times 10^{-2}$.
+
+### Example 8 — Division
+
+Compute $\frac{6 \times 10^8}{2 \times 10^{-3}}$.
+
+Coefficients: $6/2 = 3$. Exponents: $8 - (-3) = 11$. Result: $3 \times 10^{11}$.
+
+### Example 9 — Power
+
+Compute $(2.5 \times 10^4)^3$.
+
+$2.5^3 = 15.625$. $10^4 \cdot 3 = 10^{12}$. Result: $15.625 \times 10^{12} = 1.5625 \times 10^{13}$.
+
+### Example 10 — Addition (Aligned Exponents)
+
+Compute $(4.5 \times 10^5) + (2.3 \times 10^5)$.
+
+Exponents already match. Sum coefficients: $4.5 + 2.3 = 6.8$. Result: $6.8 \times 10^5$.
+
+### Example 11 — Addition (Different Exponents)
+
+Compute $(7 \times 10^4) + (3 \times 10^2)$.
+
+Align to larger exponent: $3 \times 10^2 = 0.03 \times 10^4$.
+
+Sum: $7 + 0.03 = 7.03$. Result: $7.03 \times 10^4$.
+
+### Example 12 — Subtraction with Cancellation Loss
+
+Compute $(1.234567 \times 10^9) - (1.234500 \times 10^9)$.
+
+Subtract coefficients: $1.234567 - 1.234500 = 0.000067$. Common exponent: $10^9$.
+
+Re-normalize: $6.7 \times 10^4$.
+
+We started with two 7-figure numbers and ended with a 2-figure result. This is **catastrophic cancellation** — most of the precision is lost in the subtraction because the inputs were nearly equal. A real danger in numerical computation.
+
+### Example 13 — Speed of Light Calculation
+
+Wavelength × frequency = speed of light. Visible light at $\lambda = 5 \times 10^{-7}$ m. Frequency?
+
+$f = c/\lambda = (3 \times 10^8) / (5 \times 10^{-7}) = (3/5) \times 10^{8 - (-7)} = 0.6 \times 10^{15} = 6 \times 10^{14}$ Hz.
+
+### Example 14 — Drone Battery Calculation
+
+Drone battery: $6 \times 10^4$ J. Power draw: $3 \times 10^2$ W. Flight time?
+
+$t = E/P = (6 \times 10^4) / (3 \times 10^2) = 2 \times 10^2$ s ≈ 200 s ≈ 3.3 min.
+
+(In a real drone the calculation is messier due to varying loads, but the order of magnitude is right.)
+
+### Example 15 — Atoms in a Gram of Carbon
+
+One gram of carbon ($^{12}$C) has $\frac{1}{12}$ mole, and 1 mole has Avogadro's number of atoms:
+
+$N = \frac{1}{12} \cdot 6.022 \times 10^{23} = 0.502 \times 10^{23} = 5.02 \times 10^{22}$ atoms.
+
+### Example 16 — Memory Bandwidth
+
+A memory module transfers $8 \times 10^9$ bytes per second. A 1080p video frame is $1920 \times 1080 \times 3$ bytes (RGB) ≈ $6.2 \times 10^6$ bytes. Frames per second the memory can support?
+
+$\text{rate} = (8 \times 10^9) / (6.2 \times 10^6) = 1.29 \times 10^3 \approx 1290$ frames/sec. Far more than the 60 fps of a display — but the memory might also handle ML inference, compression, etc., so capacity is consumed elsewhere.
+
+### Example 17 — Failure Mode: Adding Without Aligning Exponents
+
+A student computes $(3 \times 10^5) + (2 \times 10^3) = 5 \times 10^8$.
+
+Wrong: added both coefficients and exponents. The right way: align exponents first.
+
+Correct: $(3 \times 10^5) + (0.02 \times 10^5) = 3.02 \times 10^5$.
+
+### Example 18 — Failure Mode: Sign Error in Exponent
+
+A student converts $0.005$ to $5 \times 10^3$.
+
+Wrong sign. $0.005$ is *less than 1*, so the exponent must be negative. Correct: $5 \times 10^{-3}$.
+
+The mental check: $10^{-3} = 0.001$, so $5 \times 10^{-3} = 0.005$. ✓
+
+### Example 19 — Failure Mode: Coefficient Out of Range
+
+A student writes $42 \times 10^3$ as a "scientific notation" expression.
+
+Not normalized: coefficient $42 \not\in [1, 10)$. Correct normalized form: $4.2 \times 10^4$.
+
+$42 \times 10^3$ is valid as a *numerical expression* but not as standard scientific notation. In engineering notation, $42 \times 10^3 = 42$ kilo-units is valid.
+
+### Example 20 — Failure Mode: Forgetting to Re-Normalize
+
+A student multiplies $(5 \times 10^3)(4 \times 10^2) = 20 \times 10^5$.
+
+Result is correct but not normalized. Re-normalize: $2 \times 10^6$.
+
+## Engineering Connections
+
+### Datasheet Reading
+
+Almost every component datasheet uses engineering notation with SI prefixes:
+
+- Resistor: 4.7 kΩ
+- Capacitor: 22 µF
+- Inductor: 100 mH (millihenry) or 1.5 µH
+- Transistor base current: 50 µA
+- LED forward voltage: 1.8 V (no prefix; small enough)
+- Switching frequency: 100 kHz
+- Op-amp input bias current: 200 pA (picoamp)
+
+Reading a datasheet fluently *requires* knowing the SI prefixes cold. Failure to do so leads to design errors of 1000× in component values.
+
+### Frequency Spectrum
+
+The electromagnetic spectrum spans:
+
+- Radio waves: $10^3$ to $10^9$ Hz (kHz to GHz)
+- Microwaves: $10^9$ to $10^{12}$ Hz (GHz to THz)
+- Infrared: $10^{12}$ to $4 \times 10^{14}$ Hz
+- Visible: $4 \times 10^{14}$ to $7 \times 10^{14}$ Hz (red to violet)
+- UV: $7 \times 10^{14}$ to $3 \times 10^{16}$ Hz
+- X-rays: $3 \times 10^{16}$ to $3 \times 10^{19}$ Hz
+- Gamma rays: $> 3 \times 10^{19}$ Hz
+
+The whole spectrum spans about 17 orders of magnitude. Without scientific notation, this would be incomprehensible.
+
+### Particle Physics Energies
+
+Energies are typically measured in electron-volts (eV):
+
+- $1$ eV = $1.602 \times 10^{-19}$ J
+- Visible photon: ~2 eV
+- X-ray photon: ~10 keV ($10^4$ eV)
+- LHC proton energy: ~7 TeV ($7 \times 10^{12}$ eV)
+
+The LHC collides particles with $\sim 10^{12}$ eV of energy each. The unit eV is itself a scientific-notation-friendly choice — you never have to write the Joules.
+
+### Astronomy Distances
+
+- Earth-Moon: $3.8 \times 10^8$ m
+- Earth-Sun: $1.5 \times 10^{11}$ m
+- Solar system: $\sim 10^{13}$ m
+- Nearest star: $4 \times 10^{16}$ m
+- Milky Way diameter: $10^{21}$ m
+- Observable universe: $10^{27}$ m
+
+You go from human scale ($1$ m) to cosmic scale in 27 orders of magnitude. Scientific notation is the only sane way to talk about it.
+
+### Computing Performance
+
+A modern CPU runs at $3 \times 10^9$ Hz (3 GHz) and does about $10^{10}$ operations per second per core. A high-end GPU has $10^4$ cores and does $10^{13}$ floating-point operations per second. An exascale supercomputer cluster does $10^{18}$ ops/sec.
+
+Training a modern LLM uses about $10^{24}$ floating-point operations. At $10^{18}$ ops/sec, that's $10^6$ seconds ≈ 11 days of compute. Fluent scientific-notation arithmetic makes these capacity estimates trivial.
+
+### Atomic Physics Numbers
+
+- Mass of electron: $9.109 \times 10^{-31}$ kg
+- Mass of proton: $1.673 \times 10^{-27}$ kg (about 1836× the electron)
+- Bohr radius: $5.29 \times 10^{-11}$ m
+- Speed of light: $2.998 \times 10^8$ m/s
+
+A hydrogen atom is $\sim 10^{-10}$ m. A proton is $\sim 10^{-15}$ m. The *vast majority* of an atom's volume is empty space. The ratio of atomic to nuclear size is $\sim 10^5$, the same as the ratio of football-stadium size to a marble at center field.
+
+### Statistical Mechanics Numbers
+
+Avogadro's number is $6.022 \times 10^{23}$ — atoms in a mole. This is the bridge between human-scale chemistry (grams) and atomic-scale physics. Boltzmann's constant $k_B = 1.381 \times 10^{-23}$ J/K is the bridge between temperature and energy at the atomic scale.
+
+The product $N_A k_B = R = 8.314$ J/(mol·K), the gas constant. The product of $10^{23}$ and $10^{-23}$ is "around 1" — these constants exist on either side of the macroscopic-microscopic boundary.
+
+### Drone Performance Math
+
+A drone with $\sim 10^{-1}$ kg mass, $\sim 10^1$ N thrust per motor (× 4 motors = 40 N), $\sim 10^4$ rpm motor speed, $\sim 10^{-2}$ m propeller radius. Tip speed of propeller: $\omega r = (10^4 \cdot 2\pi/60) \cdot 10^{-2} \approx 10^1$ m/s. Reynolds number of propeller airflow: $Re = \rho v L / \mu \approx (1.2)(10)(0.01)/(10^{-5}) \approx 10^4$.
+
+Each step uses scientific notation to keep the arithmetic from drowning in zeros. The Reynolds number $\sim 10^4$ tells you the propeller is in the transition between laminar and turbulent flow — a meaningful design parameter.
+
+### Order-of-Magnitude Sanity Checks
+
+Suppose your ML model claims to compute 32 billion ($3.2 \times 10^{10}$) ops per second on your laptop CPU. A typical laptop CPU does $\sim 10^{10}$ ops/sec. Match within a factor of 3 — plausible. If your model claimed $10^{15}$ ops/sec, you should look for a bug, because that exceeds the actual hardware capability by 5 orders of magnitude.
+
+This kind of order-of-magnitude sanity check is the most valuable debugging tool in engineering. It catches an enormous fraction of bugs without doing any precise math.
+
+## Practice Set
+
+### Convert to Scientific
+
+Express each number in normalized scientific notation $a \times 10^b$ with $1 \le |a| < 10$.
+
+1. $5{,}600$
+2. $34{,}000{,}000$
+3. $0.0078$
+4. $0.000000452$
+5. $9$
+6. $0.5$
+7. $602{,}200{,}000{,}000{,}000{,}000{,}000{,}000$ (Avogadro's number)
+8. $0.0000000000000000000000001$ ($10^{-25}$)
+9. $-12{,}500$
+10. $-0.00037$
+
+### Convert from Scientific to Standard
+
+11. $3.5 \times 10^4$
+12. $7.8 \times 10^{-3}$
+13. $1.0 \times 10^0$
+14. $9.99 \times 10^7$
+15. $4.21 \times 10^{-9}$
+16. $6.022 \times 10^{23}$
+17. $-5 \times 10^{-2}$
+
+### Convert to Engineering Notation (and SI Prefix)
+
+For each, write in engineering notation (coefficient in $[1, 1000)$, exponent multiple of 3) and give the SI prefix.
+
+18. $4.7 \times 10^{-6}$
+19. $1.5 \times 10^9$
+20. $3.3 \times 10^3$
+21. $2.7 \times 10^{-12}$
+22. $8 \times 10^{15}$
+23. $5 \times 10^{-9}$
+24. $4 \times 10^{-2}$
+
+### Multiplication
+
+25. $(3 \times 10^4)(2 \times 10^5)$
+26. $(5 \times 10^{-3})(4 \times 10^7)$
+27. $(7 \times 10^6)(8 \times 10^{-9})$
+28. $(2.5 \times 10^4)(4 \times 10^{-2})$
+29. $(1.5 \times 10^3)^2$
+30. $(2 \times 10^5)^4$
+31. $\sqrt{4 \times 10^6}$
+32. $\sqrt[3]{8 \times 10^{12}}$
+
+### Division
+
+33. $\frac{8 \times 10^6}{2 \times 10^2}$
+34. $\frac{9 \times 10^{-3}}{3 \times 10^{-7}}$
+35. $\frac{1.2 \times 10^9}{4 \times 10^3}$
+36. $\frac{5 \times 10^4}{2.5 \times 10^{-2}}$
+37. $\frac{3 \times 10^8}{6 \times 10^{14}}$ (speed of light / visible-light frequency = wavelength)
+
+### Addition and Subtraction
+
+38. $(3.4 \times 10^6) + (5.2 \times 10^6)$
+39. $(7 \times 10^4) + (8 \times 10^3)$
+40. $(1.5 \times 10^{-5}) - (2 \times 10^{-6})$
+41. $(2.0 \times 10^9) + (4 \times 10^7)$
+42. $(6.32 \times 10^4) - (2.18 \times 10^4)$
+
+### Applied
+
+43. The radius of Earth is $\sim 6.4 \times 10^6$ m. The radius of the Sun is $\sim 7 \times 10^8$ m. Ratio?
+44. A drone battery stores $9 \times 10^4$ J and supplies $5 \times 10^2$ W to the motors. Flight time?
+45. A modern LLM has $7 \times 10^{10}$ parameters, each is a 32-bit float (4 bytes). Total memory for the model?
+46. Photon energy: $E = hf$ with $h = 6.626 \times 10^{-34}$ J·s. For visible light at $f = 5 \times 10^{14}$ Hz, what is $E$?
+47. Convert $E$ from #46 to electron-volts. ($1$ eV $= 1.602 \times 10^{-19}$ J.)
+48. A 12 V battery delivers 0.5 A through a 24 Ω load. Power dissipated? (Use $P = IV$.)
+49. The Sun's luminosity is $3.85 \times 10^{26}$ W. Earth's distance is $1.5 \times 10^{11}$ m. Intensity (power per area) at Earth, assuming a spherical surface of radius equal to Earth's orbit ($I = L / (4\pi r^2)$)?
+50. Resistance of a wire with resistivity $\rho = 1.7 \times 10^{-8}$ Ω·m, length 100 m, cross-sectional area $2 \times 10^{-6}$ m². Use $R = \rho L / A$.
+
+### Order of Magnitude
+
+For each, give the order of magnitude (round to nearest power of 10).
+
+51. Population of Earth: $\sim 8.0 \times 10^9$. Order?
+52. Length of a small ant: $5$ mm.
+53. Mass of a paper clip: $1$ g.
+54. Wavelength of red light: $700$ nm.
+55. Annual global GDP: about $10^{14}$ dollars (one hundred trillion).
+56. Number of grains of sand on Earth: $\sim 10^{18}$.
+57. Number of atoms in your body: $\sim 10^{27}$.
+58. Frequency of a 4 GHz CPU clock.
+
+### Fermi Estimation Warm-Up
+
+Estimate each within an order of magnitude. Show your reasoning.
+
+59. How many seconds in a year? Use $\sim 3 \times 10^7$.
+60. How many heartbeats in a typical 80-year human lifetime?
+61. How many words has the average adult read in their lifetime?
+62. How many breaths does a person take in a day?
+63. How many cars are on the road globally at any one moment?
+64. How many leaves are on a typical mature tree?
+
+### Challenge
+
+65. Show that for any positive number $N$, the exponent in its scientific notation form is $\lfloor \log_{10} N \rfloor$.
+66. The mass of the observable universe is estimated at $1.5 \times 10^{53}$ kg. The mass of a proton is $1.67 \times 10^{-27}$ kg. How many protons in the observable universe?
+67. Show that multiplying $a \times 10^b$ by itself $n$ times gives $a^n \times 10^{bn}$.
+68. A computer doubles in speed every 2 years (Moore's law approximation). How many times faster after 40 years? Express in scientific notation.
+69. The age of the universe is $\sim 4.4 \times 10^{17}$ s. How many CPU clock cycles since the Big Bang at a 1 GHz clock?
+70. Estimate the order of magnitude of $\pi^{10}$ without computing precisely.
+
+### Error Spotting
+
+71. A student writes $25 \times 10^4$ as scientific notation. Address.
+72. A student converts $0.000045$ to $4.5 \times 10^5$. Address.
+73. A student computes $(2 \times 10^3) + (3 \times 10^4) = 5 \times 10^7$. Address.
+74. A student computes $(4 \times 10^6) \cdot (5 \times 10^4) = 20 \times 10^{24}$. Address.
+75. A student converts $2.7 \times 10^{-3}$ to $0.00027$. Address.
+76. A student reads "5 µF" and stores it in code as `5`. Address.
+
+### Answers
+
+1. $5.6 \times 10^3$.
+2. $3.4 \times 10^7$.
+3. $7.8 \times 10^{-3}$.
+4. $4.52 \times 10^{-7}$.
+5. $9 \times 10^0$.
+6. $5 \times 10^{-1}$.
+7. $6.022 \times 10^{23}$.
+8. $1 \times 10^{-25}$.
+9. $-1.25 \times 10^4$.
+10. $-3.7 \times 10^{-4}$.
+
+11. $35{,}000$.
+12. $0.0078$.
+13. $1.0$.
+14. $99{,}900{,}000$.
+15. $0.00000000421$.
+16. $602{,}200{,}000{,}000{,}000{,}000{,}000{,}000$.
+17. $-0.05$.
+
+18. $4.7$ µ (micro).
+19. $1.5$ G (giga).
+20. $3.3$ k (kilo).
+21. $2.7$ p (pico).
+22. $8$ P (peta).
+23. $5$ n (nano).
+24. $40 \times 10^{-3}$ = $40$ m (milli). (Or $4 \times 10^{-2}$ stays as is; engineering notation rounds the exponent to a multiple of 3, so $40 \times 10^{-3}$ is the cleaner form.)
+
+25. $6 \times 10^9$.
+26. $20 \times 10^4 = 2 \times 10^5$.
+27. $56 \times 10^{-3} = 5.6 \times 10^{-2}$.
+28. $10 \times 10^2 = 1 \times 10^3$.
+29. $2.25 \times 10^6$.
+30. $16 \times 10^{20} = 1.6 \times 10^{21}$.
+31. $2 \times 10^3$.
+32. $2 \times 10^4$.
+
+33. $4 \times 10^4$.
+34. $3 \times 10^4$.
+35. $0.3 \times 10^6 = 3 \times 10^5$.
+36. $2 \times 10^6$.
+37. $0.5 \times 10^{-6} = 5 \times 10^{-7}$.
+
+38. $8.6 \times 10^6$.
+39. $7 \times 10^4 + 0.8 \times 10^4 = 7.8 \times 10^4$.
+40. $1.5 \times 10^{-5} - 0.2 \times 10^{-5} = 1.3 \times 10^{-5}$.
+41. $2.0 \times 10^9 + 0.04 \times 10^9 = 2.04 \times 10^9$.
+42. $(6.32 - 2.18) \times 10^4 = 4.14 \times 10^4$.
+
+43. $(7 \times 10^8) / (6.4 \times 10^6) \approx 109$, so Sun is about 110× larger.
+44. $9 \times 10^4 / 5 \times 10^2 = 1.8 \times 10^2$ s = 180 s = 3 min.
+45. $7 \times 10^{10} \cdot 4 = 2.8 \times 10^{11}$ bytes = 280 GB.
+46. $E = (6.626 \times 10^{-34})(5 \times 10^{14}) = 33.13 \times 10^{-20} = 3.313 \times 10^{-19}$ J.
+47. $3.313 \times 10^{-19} / 1.602 \times 10^{-19} \approx 2.07$ eV. (About 2 eV per visible photon. ✓)
+48. $P = IV = 0.5 \cdot 12 = 6$ W. (Resistor must dissipate 6 W; needs proper sizing for thermal management.)
+49. $I = (3.85 \times 10^{26}) / (4\pi \cdot (1.5 \times 10^{11})^2) = (3.85 \times 10^{26}) / (4\pi \cdot 2.25 \times 10^{22}) = (3.85 \times 10^{26}) / (2.827 \times 10^{23}) = 1.362 \times 10^3$ W/m² (about 1360 W/m², the actual "solar constant.")
+50. $R = (1.7 \times 10^{-8} \cdot 100) / (2 \times 10^{-6}) = 1.7 \times 10^{-6} / 2 \times 10^{-6} = 0.85$ Ω.
+
+51. $10^{10}$ (rounding 8 up to 10 — close to but not yet $10^{10}$; strictly, order is $10^9$).
+52. $5$ mm = $5 \times 10^{-3}$ m, order $10^{-2}$ (since 5 rounds to 10).
+53. $1$ g = $10^{-3}$ kg, order $10^{-3}$.
+54. $700$ nm = $7 \times 10^{-7}$ m, order $10^{-6}$.
+55. $10^{14}$.
+56. $10^{18}$.
+57. $10^{27}$.
+58. $4 \times 10^9$ Hz, order $10^9$ or $10^{10}$ depending on rounding.
+
+59. $1$ year = $365 \cdot 24 \cdot 3600 = 365 \cdot 86400 = 31{,}536{,}000 \approx 3.15 \times 10^7$ s ≈ $3 \times 10^7$.
+60. ~$70$ beats/min × $60$ min/hr × $24$ hr/day × $365$ days/yr × $80$ yr ≈ $3 \times 10^9$ beats.
+61. ~$10^8$ to $10^9$ depending on reading habits. (200 words/min × 30 min/day × 365 × 80 ≈ $1.75 \times 10^8$ words.)
+62. ~$15$ breaths/min × $60$ × $24$ ≈ $2.2 \times 10^4$ breaths/day.
+63. ~$10^9$ cars exist; perhaps $10^8$ on the road at any moment. (Rough order; varies by region and time of day.)
+64. ~$10^4$ to $10^5$ leaves depending on tree size and species.
+
+65. The exponent $b$ in $a \times 10^b$ with $1 \le a < 10$ satisfies $10^b \le N < 10^{b+1}$, equivalently $b \le \log_{10} N < b + 1$, so $b = \lfloor \log_{10} N \rfloor$.
+66. $1.5 \times 10^{53} / 1.67 \times 10^{-27} = 0.898 \times 10^{80} = 9 \times 10^{79}$ protons.
+67. $(a \times 10^b)^n = a^n \times 10^{bn}$ by repeated application of the exponent rules. (Multiply $n$ copies; coefficients multiply to $a^n$, exponents add to $bn$.)
+68. 40 years / 2 years = 20 doublings. $2^{20} = 1{,}048{,}576 \approx 10^6$. So about a million times faster.
+69. $4.4 \times 10^{17} \text{ s} \times 10^9 \text{ cycles/s} = 4.4 \times 10^{26}$ cycles. (A modern computer could do more cycles in a year than have occurred since the Big Bang at 1 Hz.)
+70. $\pi \approx 3.14$, $\pi^2 \approx 10$, so $\pi^{10} \approx 10^5$ — order of magnitude $10^5$. (Precise value: $\pi^{10} \approx 93648$.)
+
+71. Not normalized. $25 \times 10^4 = 2.5 \times 10^5$.
+72. Wrong sign on exponent. $0.000045 < 1$ requires negative exponent. Correct: $4.5 \times 10^{-5}$.
+73. Did not align exponents. Correct: $(2 \times 10^3) + (3 \times 10^4) = (0.2 \times 10^4) + (3 \times 10^4) = 3.2 \times 10^4$.
+74. Exponents add, do not multiply. Correct: $(4 \times 10^6) \cdot (5 \times 10^4) = 20 \times 10^{10} = 2 \times 10^{11}$.
+75. Correct: $2.7 \times 10^{-3} = 0.0027$, not $0.00027$. The student moved the decimal 4 places (one too many). $10^{-3}$ means 3 places.
+76. Stored as `5` (just an integer) loses the unit and prefix. If `5` is meant to be Farads, it's wildly wrong (5 F is a huge capacitor; 5 µF = $5 \times 10^{-6}$ F is a typical small capacitor). Always store with explicit units, e.g., `capacitance_F = 5e-6`.
+
+## Build Task
+
+Write `scientific_notation.py` (or your language equivalent).
+
+Required functions:
+
+1. `to_scientific(x)` — given a number $x$, return a string in normalized scientific notation like `"4.52e6"` or `"3.0e-4"`.
+2. `from_scientific(s)` — parse a scientific-notation string and return a `float`.
+3. `to_engineering(x)` — return a tuple `(coefficient, exponent, prefix)` where exponent is a multiple of 3 and prefix is the SI letter. Example: `to_engineering(4.7e-6) == (4.7, -6, "µ")`.
+4. `align_exponents(values)` — given a list of `(coefficient, exponent)` tuples, return a new list where all have the same (largest) exponent, ready for addition.
+5. `add_scientific(a, b)` — given two `(coefficient, exponent)` tuples, return their sum, normalized.
+6. `multiply_scientific(a, b)` — given two `(coefficient, exponent)` tuples, return their product, normalized.
+7. `order_of_magnitude(x)` — return $\lfloor \log_{10} |x| \rfloor$ for nonzero $x$.
+
+Tests:
+
+- `to_scientific(45600) == "4.56e4"` (or similar canonical form)
+- `to_scientific(0.0079) == "7.9e-3"`
+- `from_scientific("3.14e-5") == 3.14e-5`
+- `to_engineering(4.7e-6) == (4.7, -6, "µ")`
+- `to_engineering(1.5e9) == (1.5, 9, "G")`
+- `add_scientific((3.4, 5), (2.1, 4)) == (3.61, 5)` (or close, within float tolerance)
+- `multiply_scientific((3, 4), (4, -7)) == (1.2, -2)`
+- `order_of_magnitude(45600) == 4`
+- `order_of_magnitude(0.0079) == -3`
+
+Stretch goals:
+
+- Build a `SIQuantity` class that holds a numerical value, a unit string, and an SI prefix. Implement arithmetic that handles unit propagation (using a units library like `pint` for reference). Verify that voltage × current = power, that wavelength × frequency = velocity, etc.
+- Write a Fermi-estimation calculator: take a list of order-of-magnitude estimates with uncertainties (e.g., "100 to 1000 grains of sand per cubic cm"), combine multiplicatively, and report the result with an uncertainty band.
+- Implement a "human-readable formatter" that takes a raw number and emits "$4.7$ kΩ" or "$22$ µF" appropriately, choosing the right SI prefix based on the magnitude.
+
+## Quiz
+
+1. State the definition of normalized scientific notation.
+2. Convert $0.0000123$ to scientific notation.
+3. Convert $5.6 \times 10^4$ to standard decimal.
+4. Compute $(3 \times 10^4)(2 \times 10^{-2})$.
+5. Compute $\frac{6 \times 10^9}{3 \times 10^5}$.
+6. Compute $(7 \times 10^4) + (5 \times 10^3)$.
+7. Express $4.7 \times 10^{-6}$ farads with an SI prefix.
+8. What is the order of magnitude of $4.5 \times 10^7$?
+9. Why must exponents be aligned before adding two numbers in scientific notation?
+10. Estimate the number of seconds in a year (within a factor of 2).
+11. The speed of light is $3 \times 10^8$ m/s. How long does light take to travel 1 m?
+12. Estimate the volume of your home (in m³) within an order of magnitude.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Pass the inline lesson check at 100% on first attempt.
+- Convert any number to and from scientific notation fluently.
+- Multiply, divide, add, and subtract scientific-notation expressions correctly without a calculator.
+- Recall all SI prefixes from femto to peta on demand.
+- Estimate any everyday quantity within one order of magnitude (Fermi estimation).
+- Identify scientific-notation errors in others' work.
+- Run your `scientific_notation.py` module with all listed tests passing.
+
+## Sources and Further Study
+
+- **Eames Brothers, *Powers of Ten* (1968 film)**. The single most effective introduction to order-of-magnitude thinking. Watch on YouTube; under 10 minutes.
+- **Hans Christian von Baeyer, *Information: The New Language of Science***. Engaging treatment of the role of orders of magnitude in modern science.
+- **Sanjoy Mahajan, *Street-Fighting Mathematics*** (MIT Press, free PDF). Outstanding training in Fermi estimation and order-of-magnitude reasoning.
+- **John Harte, *Consider a Spherical Cow***. Classic textbook on environmental Fermi estimation; reads like physics applied to the real world.
+- **NIST SI Brochure**. The official reference for SI prefixes and the metric system. Includes the new yotta+ prefixes (ronna, quetta) added in 2022.
+- **Wikipedia: "Names of large numbers"** and **"Orders of magnitude (numbers)"**. Useful reference tables.
+
+## Next Lesson Bridge
+
+Lesson 16 — *Significant Figures and Measurement Uncertainty* — combines scientific notation (this lesson) with rounding (lesson 9) to establish how many digits of an answer you are *allowed* to report. The rule of thumb: a multiplication or division result has the *same number of significant figures as the input with the fewest*. Reporting more is dishonest about precision.
+
+Lesson 17 — *Engineering Estimation and Fermi Problems* — drills the order-of-magnitude estimation discipline you have been practicing in this lesson's challenge problems. Fermi estimation is one of the most powerful engineering thinking skills you can develop.
+
+After that, the Math Re-entry module closes out (lessons 18, 19, 20) with data literacy, basic probability, and basic statistics. Then the entire upper math sequence — pre-calc, calculus, linear algebra, real analysis, optimization, statistics, etc. — uses scientific notation as its native numerical idiom. You will be doing exponent arithmetic every day for the rest of your engineering and research life.

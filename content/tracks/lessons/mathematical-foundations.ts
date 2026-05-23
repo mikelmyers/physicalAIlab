@@ -90,19 +90,21 @@ const mathReentryToolkit: Lesson[] = [
     "Prime numbers, factor trees, the greatest common divisor and least common multiple, and how prime factorization underwrites cryptography.",
     { estimatedMinutes: 105, checkId: "gcd-lcm-and-prime-factorization-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     6,
     "fractions-meaning-and-equivalence",
     "Fractions: Meaning and Equivalence",
     "What a fraction actually represents, equivalent fractions, simplifying to lowest terms, and comparing fractions on a number line.",
+    { estimatedMinutes: 100, checkId: "fractions-meaning-and-equivalence-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     7,
     "fractions-add-subtract-multiply-divide",
     "Fractions: Add, Subtract, Multiply, Divide",
     "Common-denominator addition and subtraction, multiplication, reciprocals, and division of fractions, with worked examples for engineering ratios.",
+    { estimatedMinutes: 110, checkId: "fractions-add-subtract-multiply-divide-check" },
   ),
   available(
     "math-reentry-toolkit",
@@ -112,26 +114,29 @@ const mathReentryToolkit: Lesson[] = [
     "Use fractions and ratios as engineering language for scaling, mixtures, maps, gears, and sensors.",
     { estimatedMinutes: 40, prerequisites: ["arithmetic-units-and-estimation"] },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     9,
     "decimals-and-decimal-arithmetic",
     "Decimals and Decimal Arithmetic",
     "Decimal place value, conversions to and from fractions, decimal arithmetic, and when to use decimals versus fractions in engineering.",
+    { estimatedMinutes: 105, checkId: "decimals-and-decimal-arithmetic-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     10,
     "percent-and-percent-change",
     "Percent and Percent Change",
     "What a percent really means, percent of a number, percent change, error as a percent, and engineering tolerance.",
+    { estimatedMinutes: 95, checkId: "percent-and-percent-change-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     11,
     "negative-numbers-and-the-number-line",
     "Negative Numbers and the Number Line",
     "Negative numbers as positions and directions, ordering signed numbers, and the number line as a mental model for direction.",
+    { estimatedMinutes: 95, checkId: "negative-numbers-and-the-number-line-check" },
   ),
   available(
     "math-reentry-toolkit",
@@ -145,26 +150,29 @@ const mathReentryToolkit: Lesson[] = [
       checkId: "signed-numbers-core-check",
     },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     13,
     "integer-exponents-and-rules",
     "Integer Exponents and Exponent Rules",
     "Integer exponents (positive, zero, negative), the laws of exponents, and why a zero or negative exponent has the value it does.",
+    { estimatedMinutes: 100, checkId: "integer-exponents-and-rules-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     14,
     "roots-and-radicals",
     "Roots and Radicals",
     "Square roots, higher roots, simplifying radical expressions, and the relationship between roots and fractional exponents.",
+    { estimatedMinutes: 110, checkId: "roots-and-radicals-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     15,
     "scientific-notation",
     "Scientific Notation",
     "Writing very large and very small numbers compactly, doing arithmetic in scientific notation, and the order-of-magnitude habit.",
+    { estimatedMinutes: 95, checkId: "scientific-notation-check" },
   ),
   future(
     "math-reentry-toolkit",

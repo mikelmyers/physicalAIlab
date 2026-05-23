@@ -1,0 +1,858 @@
+# Negative Numbers and the Number Line
+
+## Re-entry Promise
+
+Negative numbers are one of the longest-resisted ideas in mathematical history. The Greeks rejected them. European mathematicians fought over them for centuries — some refused to publish solutions involving negatives even into the 17th century, calling them "false roots" or "fictitious numbers." The struggle was not arithmetic but conceptual: what could it possibly mean to have *less than nothing*?
+
+The modern answer is that "less than nothing" was always the wrong framing. Negative numbers are not deficiencies; they are *positions* and *directions*. They are the natural numerical language for anything with a built-in reference point: temperature above or below zero, balance above or below a baseline, distance to the east or west of a fixed line, velocity in one direction vs the opposite, voltage above or below ground. Once you switch the mental model from "less than zero" to "the other side of zero," negative numbers stop being mysterious.
+
+This lesson assumes you can do arithmetic with positive whole numbers, fractions, and decimals (lessons 2-10 of this module). It does not assume you remember the sign rules; we will rebuild them from the number-line model, prove the four-rules consequences ("a negative times a negative is a positive"), and make them feel inevitable. The next lesson (12, already deep) drills the order-of-operations and sign-tracking habits for serious algebra.
+
+By the end of this lesson, you should be able to picture every number on a single horizontal line, know what its position and its sign-direction mean physically, and reason about gains, losses, displacements, and signed coordinates without flinching.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Define the set of integers $\mathbb{Z}$ and locate any rational number on the number line.
+- Read negative numbers fluently in three contexts: position, direction, and magnitude-with-sign.
+- Distinguish **distance** (always nonnegative) from **displacement** (signed).
+- Compute the **absolute value** of any number and explain what it measures.
+- Compare and order any two signed numbers using the number line and the definition of "less than."
+- Add, subtract, multiply, and divide signed numbers correctly, justifying each rule from the number-line model.
+- State **why** a negative times a negative is positive (a real argument, not "the rule").
+- Reason about signed quantities in engineering: signed integers in computers (two's complement), bipolar voltages, signed velocity, displacement vs distance, signed angles, GPS east/west longitudes, accounting credits/debits.
+- Avoid the common signed-number error modes: dropped signs, sign confusion in subtraction, misreading $-3^2$ vs $(-3)^2$, and treating $|x|$ as if it removed information.
+
+## Why It Matters
+
+Negative numbers are everywhere in engineering, science, finance, and software:
+
+1. **Voltage above or below ground.** Many op-amp circuits use ±15 V supplies. An audio waveform varies symmetrically around 0 V, swinging into negative voltage half the time. Without signed numbers, audio is incomprehensible.
+
+2. **Velocity and direction.** A drone moving north at 5 m/s has velocity +5 m/s (if north is positive). Moving south, -5 m/s. The sign is *direction*, not magnitude.
+
+3. **Signed integers in computers.** A 32-bit `int` represents values from $-2^{31}$ to $2^{31} - 1$. The bit pattern uses *two's complement* encoding — directly tied to the number-line interpretation.
+
+4. **Coordinate systems.** Any Cartesian frame has positive and negative axes. East/west longitude on Earth: positive east of the prime meridian, negative west. Latitude: positive north of equator, negative south. GPS receivers spit out signed coordinates.
+
+5. **Accounting and finance.** Debits and credits, deposits and withdrawals, profits and losses are all signed quantities. A "loss of \$500" is "+\$500 to the loss column" or equivalently "-\$500 to the bottom line."
+
+6. **Temperatures.** Celsius below 0 °C is meaningful (freezing). Kelvin is unsigned, but the conversion between them uses signed arithmetic.
+
+7. **Control errors.** A PID controller computes "error = setpoint − measured value." This is *signed*: positive if measured is too low, negative if too high. The sign tells the controller which way to push.
+
+8. **Time differences.** "How many seconds until event X" is positive before, negative after. Schedulers and timestamps rely on signed time arithmetic.
+
+9. **Net forces and torques.** A spring stretched in one direction produces +F; compressed in the other direction, -F. Hooke's law $F = -kx$ has a negative sign that is literally the physics: the restoring force opposes displacement.
+
+10. **Probabilities never go negative.** This is a useful contrast: not every quantity is signed. Distinguishing signed from unsigned quantities is part of good engineering thinking.
+
+Knowing negatives well is not "kid stuff" — it is the gateway to all algebra. Every equation you will solve, every transfer function you will analyze, every gradient-descent step in machine learning, depends on cleanly handling signs.
+
+## Why This Idea Exists
+
+Negative numbers have been suspected, used, denied, and re-discovered for at least 2,500 years.
+
+**China**, around 200 BCE: the *Nine Chapters on the Mathematical Art* (九章算術) explicitly uses negative numbers for losses, with red rods denoting positive and black rods denoting negative. The Chinese had a rule for signed addition and subtraction that is essentially what we use today.
+
+**India**, around 600 CE: Brahmagupta gives the first complete set of arithmetic rules for negative numbers in his *Brahmasphuṭasiddhānta*. He calls negatives "debts" and positives "fortunes." His rules: a debt subtracted from zero is a fortune (i.e., $-(-a) = a$); a debt times a debt is a fortune; a debt times a fortune is a debt. All correct, all in 628 CE.
+
+**Islamic mathematics**, 8th–12th centuries: al-Khwarizmi and his successors knew negatives but used them sparingly. The algebra they were developing centered on positive solutions; negative roots were typically discarded as "not real."
+
+**Europe** was slower. Even into the Renaissance, mathematicians like Cardano and Viète called negative roots "false" or "fictitious." It took until **Wallis** (1655) and **Newton** (late 1600s) for negative numbers to be fully accepted in European mathematics. The British Royal Society debated negatives' legitimacy as late as the 1750s.
+
+The conceptual leap that finally settled it was the **number line**, attributed to **John Wallis** in his *Treatise of Algebra* (1685). Once you have a horizontal line with 0 in the middle and positives to the right, *negatives are just the positions on the left*. The metaphysical mystery ("what is less than nothing?") evaporates: numbers are positions, not quantities-of-something-physical.
+
+The modern abstract treatment — integers as equivalence classes of pairs of natural numbers, $(a, b) \sim (c, d) \iff a + d = b + c$ — was developed in the 19th century as part of the rigorization of analysis. This construction makes "negative" precise without metaphor: the integer $-3$ is the equivalence class containing $(0, 3), (1, 4), (2, 5), \ldots$ — pairs whose second component exceeds the first by 3. Subtraction becomes addition of the "reversed" pair. This is the same trick (ordered pairs and equivalence classes) used for fractions.
+
+The physics applications followed: **Descartes** (1637) created coordinate geometry using positive and negative axes; **Newton** (1687) wrote signed quantities into mechanics; **Coulomb** (1785) used signed charges; **Faraday** and **Maxwell** (1800s) signed currents and fields. By the modern era, refusing to use negative numbers in engineering would be incomprehensible.
+
+## Plain-Language Intuition
+
+### The Number Line
+
+Draw a horizontal line. Mark a point in the middle and label it **0**. Place positive numbers to the *right* of zero ($1, 2, 3, \ldots$) and negative numbers to the *left* ($-1, -2, -3, \ldots$). Fractions and decimals fill in between the integers.
+
+```
+  ... -3   -2   -1    0    1    2    3 ...
+   ----+----+----+----+----+----+----+----
+```
+
+Every real number occupies exactly one point on this line. The further right, the larger; the further left, the smaller.
+
+### Sign as Direction
+
+A signed number has two parts: a **magnitude** (size) and a **sign** (+ or −). The sign tells you *which direction from zero* you are; the magnitude tells you *how far*.
+
+- $+5$: five steps to the right of zero.
+- $-5$: five steps to the left of zero.
+
+Both have magnitude 5. They differ only in direction.
+
+Adding a positive number moves *right*. Adding a negative number moves *left*. Subtracting a positive moves left; subtracting a negative moves right. These four are the same rule expressed four ways: the sign of what you are *doing* combined with the operation (+ or −) tells you the net direction.
+
+### The Three Meanings of a Negative
+
+A negative number can play three slightly different roles, all consistent:
+
+**Meaning 1: Position.** A point on the line, to the left of zero. "The temperature is $-3 °\text{C}$" means: the temperature occupies the position 3 units below zero on the temperature scale.
+
+**Meaning 2: Direction with magnitude.** A signed quantity describing motion or change. "Net displacement is $-7$ m" means: 7 meters in the negative direction (say, south, if north is positive).
+
+**Meaning 3: Operator (the unary minus).** A function that *reverses direction*. "Take the opposite of $x$, written $-x$." If $x = 4$, then $-x = -4$. If $x = -4$, then $-x = +4$. The minus sign as operator sends each number to its reflection across zero.
+
+These three meanings overlap and reinforce each other. A negative number is a position, a directed magnitude, and the result of reflecting a positive across zero, all at once.
+
+## Core Theory
+
+### The Set of Integers $\mathbb{Z}$
+
+The **integers** $\mathbb{Z}$ consist of the natural numbers, their negatives, and zero:
+
+$$\mathbb{Z} = \{\ldots, -3, -2, -1, 0, 1, 2, 3, \ldots\}$$
+
+The symbol $\mathbb{Z}$ comes from German *Zahlen* ("numbers"). Integers are closed under addition, subtraction, and multiplication — but not division (since $\frac{1}{2}$ is not an integer). To get a number system closed under division (except by zero), you extend to the rationals $\mathbb{Q}$, which include all the integers as a subset.
+
+The **negative integers** are $\{\ldots, -3, -2, -1\}$. The **positive integers** are $\{1, 2, 3, \ldots\}$. Zero is neither positive nor negative; it is the *unique* number that is its own opposite ($-0 = 0$).
+
+### Absolute Value
+
+The **absolute value** of a number $x$, written $|x|$, is the distance from $x$ to 0 on the number line — always nonnegative.
+
+$$|x| = \begin{cases} x & \text{if } x \ge 0 \\ -x & \text{if } x < 0 \end{cases}$$
+
+Examples:
+
+- $|7| = 7$
+- $|-7| = 7$
+- $|0| = 0$
+- $|3.14| = 3.14$
+- $|-\frac{2}{3}| = \frac{2}{3}$
+
+The absolute value is sometimes called the **magnitude** or the **modulus**. It strips the sign.
+
+Properties:
+
+1. $|x| \ge 0$ for all $x$ (nonnegativity).
+2. $|x| = 0$ iff $x = 0$.
+3. $|-x| = |x|$ (symmetry).
+4. $|xy| = |x| \cdot |y|$ (multiplicativity).
+5. $|x + y| \le |x| + |y|$ (the **triangle inequality** — fundamental in real analysis).
+
+### Ordering
+
+The number line gives the ordering: $a < b$ iff $a$ is to the *left* of $b$ on the number line.
+
+Consequences:
+
+- Negatives are less than positives: $-100 < 1$, $-0.001 < 0.001$.
+- Among negatives, *more negative* means *smaller*: $-5 < -3$ because $-5$ is further left.
+
+This last one is a common mistake. The numerical magnitude is bigger for $-5$ than for $-3$ ($|{-5}| > |{-3}|$), but as numbers on the line, $-5 < -3$.
+
+Mnemonic: think temperature. $-30 °\text{F}$ is colder than $-5 °\text{F}$. Colder = smaller = more negative.
+
+### The Opposite (Unary Minus)
+
+The **opposite** (or **additive inverse**) of $x$ is the number $-x$ such that $x + (-x) = 0$.
+
+- Opposite of $5$ is $-5$.
+- Opposite of $-3$ is $+3$ (i.e., $-(-3) = 3$).
+- Opposite of $0$ is $0$.
+
+The unary minus reflects across zero. Applied twice, it returns the original: $-(-x) = x$.
+
+The opposite is *not* the same as the reciprocal. The opposite is the additive inverse ($x + (-x) = 0$); the reciprocal is the multiplicative inverse ($x \cdot \frac{1}{x} = 1$). Different rules, different identity elements.
+
+### Addition of Signed Numbers
+
+**Rule 1.** Same signs: add the magnitudes, keep the sign.
+
+- $(+3) + (+5) = +8$ (positive plus positive)
+- $(-3) + (-5) = -8$ (negative plus negative)
+
+**Rule 2.** Opposite signs: subtract the smaller magnitude from the larger, keep the sign of the larger.
+
+- $(+7) + (-3) = +4$ (positive wins by 4)
+- $(-7) + (+3) = -4$ (negative wins by 4)
+- $(+5) + (-5) = 0$ (equal magnitudes cancel)
+
+**Visual check (number line):** start at $a$, move right (if positive) or left (if negative) by $|b|$, end at $a + b$.
+
+Example: $(-7) + (+3)$. Start at $-7$. Move right 3. Land at $-4$.
+
+Example: $(+5) + (-8)$. Start at $+5$. Move left 8. Land at $-3$.
+
+### Subtraction of Signed Numbers
+
+The key identity:
+
+$$\boxed{a - b = a + (-b)}$$
+
+Subtraction is **addition of the opposite**. There are no special "subtraction rules" — you convert to addition and apply the addition rules.
+
+Examples:
+
+- $5 - 3 = 5 + (-3) = 2$.
+- $5 - (-3) = 5 + (+3) = 8$. (Subtracting a negative is adding the positive.)
+- $-5 - 3 = -5 + (-3) = -8$.
+- $-5 - (-3) = -5 + (+3) = -2$.
+
+The most error-prone case is subtracting a negative. Students often try to keep track of three minus signs at once: $-5 - (-3)$. Rewrite it: $-5 + 3 = -2$. Easier.
+
+### Multiplication of Signed Numbers
+
+**Rules** (memorize until obvious):
+
+- positive × positive = positive
+- positive × negative = negative
+- negative × positive = negative
+- negative × negative = positive
+
+**Why** does negative times negative equal positive? This is a real question that confused mathematicians for centuries. Here is a clean argument.
+
+We accept that $(-1) \cdot 1 = -1$ (multiplying by 1 is identity, then the minus reflects). We accept that $a + (-a) = 0$ for any $a$. We accept the distributive law $a(b + c) = ab + ac$.
+
+Now compute $(-1) \cdot 0$. By the additive identity, this equals $0$:
+
+$$(-1) \cdot 0 = 0$$
+
+Rewrite $0 = 1 + (-1)$:
+
+$$(-1) \cdot (1 + (-1)) = 0$$
+
+Distribute:
+
+$$(-1) \cdot 1 + (-1) \cdot (-1) = 0$$
+
+$$-1 + (-1) \cdot (-1) = 0$$
+
+So $(-1) \cdot (-1) = 1$. Negative times negative is positive — *forced* by the algebraic rules we already accept for positive numbers.
+
+This generalizes: $(-a) \cdot (-b) = ab$ for any $a, b$. The "sign rules" are not arbitrary conventions; they are *logical consequences* of arithmetic.
+
+**Intuition (number line / physics).** A negative multiplier *reverses direction*. Multiplying by $-1$ reflects across zero. Reflecting twice returns you to the original side. So negative × negative = positive.
+
+**Intuition (debts and obligations).** If a debt of \$5 is *removed* (negative of negative), your net worth goes *up* by \$5 (positive change). Removing a negative is a positive.
+
+### Division of Signed Numbers
+
+Same sign rules as multiplication:
+
+- positive / positive = positive
+- positive / negative = negative
+- negative / positive = negative
+- negative / negative = positive
+
+Why? Division is multiplication by the reciprocal: $\frac{a}{b} = a \cdot \frac{1}{b}$. The sign rules carry over from multiplication.
+
+Examples:
+
+- $\frac{-12}{4} = -3$
+- $\frac{12}{-4} = -3$
+- $\frac{-12}{-4} = +3$
+- $\frac{0}{-7} = 0$
+- $\frac{-7}{0}$ undefined (zero in denominator)
+
+### Exponents with Negatives: The $-3^2$ Trap
+
+Notation matters here. Read carefully:
+
+- $(-3)^2 = (-3) \cdot (-3) = +9$. The parentheses group the negative sign with the 3 before squaring.
+- $-3^2 = -(3^2) = -9$. Without parentheses, the exponent applies to 3 *first* (exponents bind tighter than unary minus), then the negative.
+
+This is one of the most common errors in algebra. Always parenthesize a negative base if you want the negative inside the exponentiation.
+
+In code:
+
+- Python: `(-3)**2` is `9`. `-3**2` is `-9` (exponent binds tighter than unary minus). Same as the math convention.
+- Spreadsheets: behavior varies. Excel `=-3^2` returns `9`! (Excel binds unary minus tighter than `^`, against math convention.) Always parenthesize in spreadsheets.
+
+### Distance vs Displacement
+
+Two scalar quantities with the same units (length), one signed, one unsigned. The distinction is foundational in physics and engineering.
+
+**Distance.** Total path length. Always nonnegative. If you walk 10 m north and then 6 m south, you walked a *distance* of 16 m.
+
+**Displacement.** Net change in position. Signed. Same journey: displacement is $+10 - 6 = +4$ m (4 m north of where you started).
+
+A robot's odometer reports distance. Its position estimator reports displacement (in some coordinate frame). Both are useful; they answer different questions.
+
+### Signed Quantities in Computers
+
+A computer represents signed integers using **two's complement**. For an $N$-bit signed integer:
+
+- Bit pattern $00\ldots 0$ through $01\ldots 1$ encodes $0$ through $2^{N-1} - 1$ (positives).
+- Bit pattern $10\ldots 0$ through $11\ldots 1$ encodes $-2^{N-1}$ through $-1$ (negatives).
+
+For 8-bit signed (range $-128$ to $+127$):
+
+- $0000\,0000 = 0$
+- $0000\,0001 = 1$
+- $0111\,1111 = 127$ (max positive)
+- $1000\,0000 = -128$ (min negative — note the asymmetric range)
+- $1111\,1111 = -1$
+- $1111\,1110 = -2$
+
+The encoding: to get the value of a negative bit pattern, invert all bits and add 1, then negate. This sounds complicated but the hardware loves it: signed addition and subtraction use the *same* circuits as unsigned, plus a sign-flag check.
+
+The asymmetric range ($-128$ to $+127$, not $\pm 128$) means $-(-128)$ overflows in 8-bit signed math. This is a real bug in production code, including a famous case in Ariane 5 (a rocket lost in 1996 partly because of a similar overflow). Defensive code checks before negating an integer.
+
+### Mod and Negative Numbers
+
+The mathematical convention: $a \mod n$ is the *least nonnegative* remainder when $a$ is divided by $n$. So $-7 \mod 5 = 3$ (because $-7 = (-2) \cdot 5 + 3$ with remainder 3 in $[0, 5)$).
+
+But programming languages differ:
+
+- **Python**: `-7 % 5 == 3`. Math convention. ✓
+- **C, C++, Java, JavaScript**: `-7 % 5 == -2`. Sign follows dividend. ✗ for math, but consistent with their integer division.
+
+Knowing your language's convention prevents subtle bugs. If you need the math convention in C/JS, write `((a % n) + n) % n`.
+
+## Visual or Mental Model
+
+### Model 1: Horizontal Number Line
+
+The default. Zero in the middle, positives right, negatives left. Every real number is a point. Comparing two numbers: the one on the right is larger.
+
+```
+  ... -3   -2   -1    0    1    2    3 ...
+   ----+----+----+----+----+----+----+----
+       |←|←|←|         |→|→|→|
+       (negative direction) (positive direction)
+```
+
+Use this to *visualize* every signed arithmetic operation. Addition is moving along the line. Multiplication by $-1$ is reflecting across $0$.
+
+### Model 2: Thermometer
+
+Vertical line, temperature scale. $0 °\text{C}$ in the middle (where water freezes). Positive temperatures *above*, negative temperatures *below*. Cold ($-30 °\text{C}$) is far below; warm ($+30 °\text{C}$) is far above.
+
+The thermometer model is useful because temperatures *change* — they go up and down. "It warmed up 5 °C from $-12 °\text{C}$" gives a new temperature of $-7 °\text{C}$. The arithmetic is just signed addition on the thermometer scale.
+
+### Model 3: Elevator / Floor Numbers
+
+In Europe (and many North American buildings), the ground floor is 0, basement floors are negative (B1 = floor $-1$, B2 = floor $-2$), and floors above are positive (1, 2, 3, ...).
+
+"Take the elevator from floor 5 down to B2" is a displacement of $-2 - 5 = -7$ floors.
+
+This model makes the *position vs displacement* distinction concrete: where you are (position) vs how far you moved (displacement).
+
+### Model 4: Bank Account
+
+A balance can be positive (assets) or negative (overdraft / debt). A deposit is a positive change; a withdrawal is a negative change. Net balance is the sum of all transactions.
+
+Useful for the *gain/loss* intuition. "I lost \$200" = "my balance changed by $-200$". The sign communicates direction (gain vs loss); the magnitude communicates how much.
+
+### Model 5: Coordinate System
+
+A horizontal x-axis with positive to the right and negative to the left. (Then later, a 2D plane with both axes — but for this lesson, just the horizontal one.)
+
+This is the model that becomes the foundation of all algebra, calculus, and signal processing: graphs of functions, vectors, position-time plots.
+
+## Worked Examples
+
+### Example 1 — Addition (Same Signs)
+
+$(-7) + (-12) = ?$
+
+Both negative: add magnitudes, keep negative. $7 + 12 = 19$. Answer: $-19$.
+
+### Example 2 — Addition (Opposite Signs)
+
+$(-15) + (+8) = ?$
+
+Subtract smaller from larger: $15 - 8 = 7$. Sign of larger (the negative): $-7$.
+
+### Example 3 — Subtraction (Subtract a Negative)
+
+$5 - (-9) = ?$
+
+Subtracting a negative is adding the positive: $5 + 9 = 14$.
+
+### Example 4 — Subtraction (Negative Minus Positive)
+
+$-12 - 5 = ?$
+
+Rewrite: $-12 + (-5) = -17$. (Don't be fooled by the "minus minus" — there's only one minus sign here, the operation.)
+
+### Example 5 — Multiplication
+
+$(-6) \cdot (+4) = ?$
+
+Opposite signs: negative. $6 \cdot 4 = 24$. Answer: $-24$.
+
+### Example 6 — Multiplication (Two Negatives)
+
+$(-6) \cdot (-4) = ?$
+
+Same signs: positive. Answer: $+24$.
+
+### Example 7 — Division
+
+$\frac{-36}{-9} = ?$
+
+Same signs: positive. $36 / 9 = 4$. Answer: $+4$.
+
+### Example 8 — Order of Operations with Signs
+
+Compute $-3 - (-2)(5) + (-1)^3$.
+
+Step 1: Compute $(-1)^3 = -1$ (odd power of $-1$). Compute $(-2)(5) = -10$.
+
+Substitute: $-3 - (-10) + (-1)$.
+
+Step 2: $-3 - (-10) = -3 + 10 = 7$. Then $7 + (-1) = 6$.
+
+Answer: 6.
+
+### Example 9 — Absolute Value Inside an Expression
+
+Compute $|{-5}| - |{-12}| + |3 - 8|$.
+
+- $|{-5}| = 5$
+- $|{-12}| = 12$
+- $|3 - 8| = |{-5}| = 5$
+
+So $5 - 12 + 5 = -2$.
+
+### Example 10 — Comparing Negatives
+
+Order from smallest to largest: $-7, -2, 0, -10, 3$.
+
+Smallest is most negative (furthest left). Ordering: $-10 < -7 < -2 < 0 < 3$.
+
+### Example 11 — Negative on a Coordinate Axis
+
+A drone is at $x = -3$ m (3 m west of home). It flies to $x = +5$ m. Displacement?
+
+Displacement = (new) − (old) = $5 - (-3) = 5 + 3 = 8$ m east.
+
+### Example 12 — Velocity Sign Convention
+
+A car driving north at 60 km/h, with "north positive": velocity = $+60$ km/h.
+
+A car driving south at 60 km/h: velocity = $-60$ km/h.
+
+Same *speed* (60 km/h), opposite *velocity*. Speed is the absolute value of velocity.
+
+### Example 13 — PID Controller Error
+
+Setpoint: 25 °C. Measured: 22 °C. Error = $25 - 22 = +3 °\text{C}$ (positive: measured is below setpoint, must heat).
+
+Measured rises to 27 °C. Error = $25 - 27 = -2 °\text{C}$ (negative: above setpoint, must cool).
+
+The sign of the error tells the controller which direction to push.
+
+### Example 14 — Two's Complement
+
+What 8-bit signed value is $1111\,1100_2$?
+
+To decode: invert all bits → $0000\,0011_2$ = 3 decimal. Add 1 → 4. Negate → $-4$.
+
+So $1111\,1100$ in 8-bit signed = $-4$.
+
+### Example 15 — Negative Mod (Python vs C)
+
+What is $-7 \mod 3$ in Python vs C?
+
+Python: `-7 % 3 == 2` (math convention; result is nonnegative).
+
+C: `-7 % 3 == -1` (sign follows dividend).
+
+Both are *internally consistent* (each satisfies $a = (a / b) \cdot b + (a \% b)$ with their respective integer division), but the conventions differ.
+
+### Example 16 — Failure Mode: $-3^2$ vs $(-3)^2$
+
+A student computes $-3^2 = 9$ (squaring first if you read left-to-right naively, then keeping the sign of the input).
+
+The convention is unambiguous: exponents bind tighter than unary minus. So $-3^2 = -(3^2) = -9$. To square negative 3, write $(-3)^2 = 9$.
+
+### Example 17 — Failure Mode: Sign Confusion in Subtraction
+
+A student computes $-5 - 3$ as $-2$ (subtracting 3 from 5 first, then applying the negative).
+
+Wrong: $-5 - 3 = -5 + (-3) = -8$. Always rewrite subtraction as addition of the opposite before evaluating.
+
+### Example 18 — Failure Mode: Treating $|x|$ as Information-Preserving
+
+A student is asked: if $|x| = 5$, what is $x$?
+
+The student answers $x = 5$.
+
+Half-right: $x$ could be $+5$ or $-5$. Absolute value strips the sign, so it cannot be uniquely inverted. The equation $|x| = 5$ has *two* solutions.
+
+### Example 19 — Failure Mode: Mixing Up Distance and Displacement
+
+A robot walks 8 m east, then 3 m west. What is its displacement? What is its total distance traveled?
+
+Displacement: $+8 - 3 = +5$ m east.
+Distance: $8 + 3 = 11$ m total.
+
+Confusing the two is a common physics error.
+
+### Example 20 — Failure Mode: Negative Inside a Square Root
+
+A student computes $\sqrt{-4} = -2$.
+
+Wrong. $-2 \cdot -2 = +4$, not $-4$. The square root of a negative real number is not a real number. (It is an imaginary number, $\sqrt{-4} = 2i$ in complex arithmetic — topic of a much later lesson.)
+
+The general lesson: a negative number is squared to give a positive number, so no real square has a negative value.
+
+## Engineering Connections
+
+### Signed Sensor Readings
+
+A 12-bit signed ADC reads values from $-2048$ to $+2047$, representing a bipolar voltage range like $\pm 10$ V. A reading of $+1024$ corresponds to $+5$ V; a reading of $-1024$ to $-5$ V. The sign of the reading tells you the polarity of the input.
+
+Two's complement is everywhere in DSP code: audio samples, accelerometer readings, gyroscope readings. Handling sign correctly is essential to getting the right physical interpretation.
+
+### Op-Amp Bipolar Supplies
+
+Many analog circuits run on $\pm 15$ V (or $\pm 12$ V, $\pm 5$ V). The "negative rail" is genuinely below the ground reference voltage. Voltages in the circuit can range positive or negative relative to ground. Signed arithmetic is the natural mode of analysis.
+
+For an audio amp, an output sample of $-1.2$ V means the speaker cone is being pulled in one direction (the opposite of what $+1.2$ V would do). The sign is the direction of physical motion.
+
+### Coordinate Frames
+
+GPS coordinates use signed values:
+
+- Latitude: $-90°$ (south pole) to $+90°$ (north pole). Equator is $0°$.
+- Longitude: $-180°$ (just west of the antimeridian) to $+180°$ (just east). Prime meridian (Greenwich) is $0°$.
+
+Subtracting two latitudes gives a signed displacement. Cardinal directions emerge from sign conventions.
+
+In robotics, the world frame typically has:
+
+- East = $+x$
+- North = $+y$
+- Up = $+z$
+
+A vehicle moving south-west has negative $x$ and negative $y$ components of velocity. The signs encode direction.
+
+### Hooke's Law
+
+$F = -k x$ for a spring with stiffness $k$ and displacement $x$ from equilibrium. The negative sign is essential: if $x > 0$ (stretched), the restoring force is in the $-x$ direction (pulls back). If $x < 0$ (compressed), the restoring force is in the $+x$ direction (pushes out).
+
+This signed-force pattern shows up everywhere in mechanics: gravity (vertical), damping ($-b v$), control feedback. The minus sign distinguishes restoring from destabilizing.
+
+### PID Control Error Sign
+
+A standard PID controller computes:
+
+$$u(t) = K_p e(t) + K_i \int e(t) \, dt + K_d \frac{de}{dt}$$
+
+where $e(t) = r(t) - y(t)$ is the error (setpoint minus measurement). When $e > 0$, the controller pushes harder; when $e < 0$, it pulls back. The sign of the error determines the *direction* of control action. Get the sign convention wrong and your robot's wheels spin the wrong way (or worse, it goes unstable).
+
+### Two's Complement Overflow
+
+In 32-bit signed arithmetic, the smallest representable value is $-2^{31} = -2{,}147{,}483{,}648$. Negating it produces $+2^{31}$, which *overflows* — there is no $+2^{31}$ in 32-bit signed range. Most CPUs silently wrap to $-2^{31}$ again, or set an overflow flag that few programmers check.
+
+The Ariane 5 rocket failure (1996) involved a 64-bit float being converted to a 16-bit signed integer with the value out of range. The conversion overflowed, triggering an exception, which the flight software did not handle, which led to loss of control, which led to the rocket's destruction 37 seconds after liftoff. The signed-integer range matters in production code.
+
+### Voltage Polarity in Battery Reversal
+
+A AA battery has +1.5 V on one terminal, 0 V on the other. Insert it backwards and you have $-1.5$ V where +1.5 V was expected. Most electronics will be damaged. Some have protection diodes that block reverse current. The sign of the voltage matters physically.
+
+### Latitude / Longitude Distance Calculations
+
+To compute distance between two GPS points: subtract the signed latitudes and longitudes, then apply the Haversine formula. The signed subtraction handles east-west and north-south differences correctly. A naive *unsigned* difference of longitudes 179°E and 179°W would say "358°" when in fact they are 2° apart across the antimeridian — a sign-aware approach catches this.
+
+### Charge Carrier Convention
+
+Historically, current is defined as the flow of *positive* charges, but in metal wires the actual carriers are negatively-charged electrons. So conventional current flows in the opposite direction from electron flow. This sign quirk has confused physics students for 150 years. The sign convention is a labeling choice, not a physical asymmetry — but you must keep it straight when reasoning about doping, drift velocity, and semiconductor physics.
+
+## Practice Set
+
+### Identification
+
+State whether each number is positive, negative, or zero.
+
+1. $-3.14$
+2. $0$
+3. $0.0001$
+4. $-\frac{1}{2}$
+5. $-(-7)$
+6. $|-9|$
+
+### Absolute Value
+
+7. $|-15|$
+8. $|7|$
+9. $|0|$
+10. $|3 - 11|$
+11. $|{-5} \cdot 2|$
+12. $|{-3}| + |{-7}|$
+13. $|{-3} + {-7}|$
+14. If $|x| = 12$, what are the possible values of $x$?
+
+### Ordering
+
+15. Order from smallest to largest: $-5, 3, -8, 0, 1$.
+16. Order from smallest to largest: $-\frac{1}{2}, -\frac{1}{3}, -1, 0, \frac{1}{4}$.
+17. Order from smallest to largest: $-0.1, -0.05, -0.5, -0.01$.
+18. Which is larger: $-100$ or $-99$?
+19. Which is colder: $-15 °\text{C}$ or $-3 °\text{C}$?
+
+### Addition
+
+20. $(-9) + (-4)$
+21. $(-12) + (+5)$
+22. $(+15) + (-8)$
+23. $(-7) + (+7)$
+24. $(-3.5) + (+1.2)$
+25. $\left(-\frac{2}{3}\right) + \left(-\frac{1}{6}\right)$
+
+### Subtraction
+
+26. $5 - 12$
+27. $-3 - 8$
+28. $-3 - (-8)$
+29. $0 - (-7)$
+30. $-15 - (-5)$
+31. $\frac{1}{2} - \left(-\frac{1}{4}\right)$
+
+### Multiplication
+
+32. $(-3)(7)$
+33. $(-4)(-9)$
+34. $(+6)(-5)$
+35. $(-2)(-3)(-4)$
+36. $(-1)^5$
+37. $(-1)^{100}$
+38. $-2^4$
+39. $(-2)^4$
+40. $0 \cdot (-100)$
+
+### Division
+
+41. $\frac{-24}{6}$
+42. $\frac{36}{-9}$
+43. $\frac{-100}{-4}$
+44. $\frac{0}{-12}$
+45. $\frac{-7}{0}$ (state the issue)
+
+### Combined / Order of Operations
+
+46. $-5 + 3 \cdot (-2)$
+47. $(-3)^2 - 4 \cdot (-2)$
+48. $\frac{-12 + 8}{-2}$
+49. $|{-7}| - |3 - 10|$
+50. $-(-5) + (-(-3))$
+51. $-2 \cdot |-3| + (-1)^7$
+52. $\frac{-(-6)^2}{-3}$
+53. $(-2 - 5) \cdot (-3 + 1)$
+
+### Applied
+
+54. A submarine is at depth $-450$ m (below sea level). It rises 175 m. New depth?
+55. A bank account balance is -\$75 (overdraft). A deposit of \$200 is made. New balance?
+56. A drone's altitude is 80 m. It descends 35 m. New altitude?
+57. The temperature is $-12 °\text{C}$. It rises by $9 °\text{C}$, then drops by $4 °\text{C}$. Final temperature?
+58. A stock opened at \$120 and closed at \$103. Signed change?
+59. A robot at position $x = -5$ m moves to $x = +12$ m. Displacement?
+60. A car's speedometer reads 60 km/h. It is driving south; you take north as positive. Express velocity.
+61. Sensor calibration: a temperature sensor reads $-2 °\text{C}$ when the true temperature is $0 °\text{C}$. What is the error (true − measured)?
+62. An 8-bit signed integer represents values $-128$ to $+127$. What is the binary representation of $-1$ in two's complement?
+
+### Coordinate / Geometric
+
+63. Two GPS points: $A = +40°$ latitude, $B = -10°$ latitude. Latitude difference $B - A$?
+64. A rover moves $+8$ m east, then $-6$ m east (i.e., 6 m west). Net displacement east?
+65. Total distance traveled by the rover in problem 64?
+66. A vehicle moves $-3$ m east and $+4$ m north. What is the magnitude of its displacement? (Hint: Pythagorean theorem.)
+
+### Challenge
+
+67. Prove that $-(-x) = x$ for any real $x$. Use the definition of additive inverse.
+68. Show that $|x + y| \le |x| + |y|$ (triangle inequality). Hint: consider all four sign cases of $x$ and $y$.
+69. Show that $|xy| = |x| \cdot |y|$ for any real $x, y$.
+70. The integer set $\mathbb{Z}$ is closed under $+, -, \cdot$ but not $\div$. Give an example showing it is not closed under division.
+71. In two's complement 8-bit, what is the result of $127 + 1$? What about $-128 - 1$? Both overflow — describe the wrap-around.
+72. Show that $(-1)^n = +1$ if $n$ is even and $-1$ if $n$ is odd. Use induction.
+73. Prove that if $a < b$ and $c < 0$, then $ac > bc$. (Multiplying an inequality by a negative reverses it.)
+
+### Error Spotting
+
+74. A student writes $-5 - 3 = -2$. Find the error.
+75. A student writes $-3^2 = 9$. Address.
+76. A student says $|{-7}| = -7$. Address.
+77. A student computes $(-2)(-3)(-4)$ and gets $+24$. Find the error.
+78. A student says $-10 > -3$ because "10 is bigger than 3." Address.
+79. A student computes $|{-5} + 3| = |{-5}| + |3| = 8$. Address.
+80. A student claims the absolute value of any number is positive. Address.
+
+### Answers
+
+1. Negative.
+2. Zero (neither positive nor negative).
+3. Positive.
+4. Negative.
+5. $-(-7) = 7$, positive.
+6. $|-9| = 9$, positive.
+
+7. 15.
+8. 7.
+9. 0.
+10. $|-8| = 8$.
+11. $|-10| = 10$.
+12. $3 + 7 = 10$.
+13. $|-10| = 10$.
+14. $x = +12$ or $x = -12$.
+
+15. $-8 < -5 < 0 < 1 < 3$.
+16. $-1 < -\frac{1}{2} < -\frac{1}{3} < 0 < \frac{1}{4}$.
+17. $-0.5 < -0.1 < -0.05 < -0.01$.
+18. $-99$ (less negative).
+19. $-15 °\text{C}$ (more negative = colder).
+
+20. $-13$.
+21. $-7$.
+22. $+7$.
+23. $0$.
+24. $-2.3$.
+25. $-\frac{5}{6}$.
+
+26. $-7$.
+27. $-11$.
+28. $+5$.
+29. $+7$.
+30. $-10$.
+31. $\frac{3}{4}$.
+
+32. $-21$.
+33. $+36$.
+34. $-30$.
+35. $-24$ (odd number of negatives).
+36. $-1$.
+37. $+1$.
+38. $-16$ (exponent first, then negate).
+39. $+16$ (parentheses include the negative).
+40. $0$.
+
+41. $-4$.
+42. $-4$.
+43. $+25$.
+44. $0$.
+45. Undefined (division by zero).
+
+46. $-5 + (-6) = -11$.
+47. $9 - (-8) = 17$.
+48. $\frac{-4}{-2} = 2$.
+49. $7 - 7 = 0$.
+50. $5 + 3 = 8$.
+51. $-2 \cdot 3 + (-1) = -7$.
+52. $\frac{-36}{-3} = 12$.
+53. $(-7)(-2) = 14$.
+
+54. $-450 + 175 = -275$ m.
+55. $-75 + 200 = +125$, so +\$125.
+56. $80 - 35 = 45$ m.
+57. $-12 + 9 - 4 = -7 °\text{C}$.
+58. $103 - 120 = -17$, so -\$17 (a loss).
+59. $12 - (-5) = +17$ m.
+60. $-60$ km/h.
+61. $0 - (-2) = +2 °\text{C}$ (sensor reads 2 too low).
+62. $1111\,1111$ (all bits set).
+
+63. $-10 - 40 = -50$ degrees (B is south of A).
+64. $+2$ m east.
+65. $8 + 6 = 14$ m total distance.
+66. $\sqrt{9 + 16} = 5$ m.
+
+67. By definition, $-x$ is the number such that $x + (-x) = 0$. So $-(-x)$ is the number such that $(-x) + (-(-x)) = 0$. But also $(-x) + x = 0$ (commutativity). Both equations have a unique solution by additive inverse uniqueness, so $-(-x) = x$.
+68. Case 1: $x, y \ge 0$. Then $|x+y| = x+y = |x|+|y|$, equality. Case 2: $x, y \le 0$. Then $|x+y| = -(x+y) = -x-y = |x|+|y|$. Case 3: one positive, one negative. WLOG $x > 0 > y$. Then $|x+y| = |x| - |y|$ if $|x| > |y|$, or $|y| - |x|$ if $|y| > |x|$. Either way, less than $|x| + |y|$.
+69. Cases: both nonneg: $|xy| = xy = |x||y|$. Both nonpos: $|xy| = xy = (-|x|)(-|y|) = |x||y|$ (negative times negative). Mixed signs: $|xy| = -xy$ (since $xy \le 0$), but the absolute values multiply.
+70. $\frac{1}{2} \notin \mathbb{Z}$, but $1, 2 \in \mathbb{Z}$. So $\mathbb{Z}$ is not closed under division.
+71. $127 + 1$: in 8-bit, $0111\,1111 + 1 = 1000\,0000 = -128$. Wraps around to most negative. $-128 - 1$: $1000\,0000 - 1 = 0111\,1111 = +127$. Wraps to most positive.
+72. Base case: $(-1)^0 = 1 = +1$. Inductive step: $(-1)^{n+1} = (-1)^n \cdot (-1)$. If $(-1)^n = +1$ (n even, n+1 odd), then $(-1)^{n+1} = -1$. If $(-1)^n = -1$ (n odd, n+1 even), then $(-1)^{n+1} = +1$. ∎
+73. $a < b \Rightarrow b - a > 0$. Multiply by $c < 0$: $(b - a) c < 0$ (positive times negative is negative). So $bc - ac < 0$, hence $ac > bc$. ∎
+
+74. Subtraction is addition of the opposite: $-5 - 3 = -5 + (-3) = -8$, not $-2$.
+75. Exponent binds tighter than unary minus. $-3^2 = -(3^2) = -9$, not 9. For $+9$, write $(-3)^2$.
+76. Absolute value is never negative. $|{-7}| = 7$, not $-7$.
+77. Three negatives multiplied: odd number of negatives means the result is negative. $(-2)(-3)(-4) = (6)(-4) = -24$, not $+24$.
+78. "Bigger magnitude" is not the same as "larger value." $-10$ is *further from zero* than $-3$, but it is *more negative*, so $-10 < -3$.
+79. The triangle inequality is an *inequality*, not an equality, and the case here has $x$ and $y$ of opposite signs. $|{-5} + 3| = |{-2}| = 2 \ne 8$.
+80. Almost true: $|x| \ge 0$ for all $x$, but $|0| = 0$ specifically. The absolute value is *nonnegative*, not strictly positive.
+
+## Build Task
+
+Write `signed_arithmetic.py` (or your language equivalent).
+
+Required functions:
+
+1. `sign(x)` — return $-1$, $0$, or $+1$ depending on the sign of $x$.
+2. `abs_value(x)` — implement the absolute value without using the built-in `abs`.
+3. `opposite(x)` — return $-x$. (Trivial; useful for clarity.)
+4. `signed_add(a, b)` — add two signed numbers, returning the result. Handle all four sign-combination cases explicitly (do not just use `+`).
+5. `signed_multiply(a, b)` — multiply two signed numbers, returning the result. Use the magnitudes and sign rules explicitly.
+6. `to_twos_complement(n, bits)` — for a signed integer $n$ in range $[-2^{bits-1}, 2^{bits-1})$, return the bit string of length `bits` in two's complement encoding. Example: `to_twos_complement(-1, 8) == "11111111"`.
+7. `from_twos_complement(s)` — inverse: parse a bit string and return the signed integer it encodes.
+
+Tests:
+
+- `sign(-5) == -1`
+- `sign(0) == 0`
+- `sign(7) == +1`
+- `abs_value(-3.14) == 3.14`
+- `signed_add(-7, +5) == -2`
+- `signed_multiply(-3, -4) == +12`
+- `signed_multiply(0, -7) == 0`
+- `to_twos_complement(0, 8) == "00000000"`
+- `to_twos_complement(127, 8) == "01111111"`
+- `to_twos_complement(-128, 8) == "10000000"`
+- `to_twos_complement(-1, 8) == "11111111"`
+- `from_twos_complement("11111100") == -4`
+
+Stretch goals:
+
+- Build a `SignedQuantity` class that carries a sign and a magnitude separately. Implement `__add__`, `__sub__`, `__mul__`, `__truediv__`, `__neg__`, `__abs__`. Compare your implementation's output to using Python's built-in signed `int` and `float`.
+- Implement a tiny PID controller with explicit error-sign handling. Test it on a simulated temperature plant (a first-order system with a setpoint).
+- Implement modular arithmetic two ways: math convention (`a mod n` always nonneg) and C convention (sign follows dividend). Demonstrate the difference on $-7 \mod 5$.
+
+## Quiz
+
+1. State the definition of absolute value.
+2. Why is the absolute value of any number nonnegative?
+3. State the rule for adding two numbers with the same sign; with opposite signs.
+4. Explain how subtraction relates to addition.
+5. Why is $-3^2 \ne (-3)^2$?
+6. Why is a negative times a negative a positive? Give either the algebraic or the physical-intuition argument.
+7. Order from smallest to largest: $-7, -100, -1, 0, 3$.
+8. Compute $|{-3}| + |{-9}| - |3 - 9|$.
+9. A drone at position $-12$ m moves to $+5$ m. Displacement?
+10. What is $\frac{-72}{-9}$?
+11. Convert $-5$ to 8-bit two's complement binary.
+12. What is the difference between distance and displacement?
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Pass the inline lesson check at 100% on first attempt.
+- Add, subtract, multiply, and divide any two signed numbers with magnitudes up to 100 in under 15 seconds each.
+- Locate any rational number on a hand-drawn number line, with correct ordering.
+- Compute the absolute value of any expression involving signed numbers without error.
+- Convert between signed decimal integers and two's complement binary for at least 8-bit precision.
+- Run your `signed_arithmetic.py` module with all listed tests passing.
+- Explain to someone else why a negative times a negative is a positive, *without* just citing "the rule."
+
+## Sources and Further Study
+
+- **MIT OCW 18.01 — Single Variable Calculus.** All problem sets assume signed-number fluency; if any feel hard, return here.
+- **Mary L. Boas, *Mathematical Methods in the Physical Sciences***. Chapter 1 reviews signed-number and complex-number arithmetic in a compact engineer-friendly form.
+- **Khan Academy — Negative Numbers**. Excellent visual treatment of the number-line model with practice.
+- **Brahmagupta, *Brahmasphuṭasiddhānta***. The first complete rules for negative-number arithmetic, 628 CE. English summaries are accessible online.
+- **Wallis, *Treatise of Algebra* (1685)**. The number line as a mental model for signed numbers; this is the cleanest mathematical formulation that finally killed the "negatives are fictitious" objection.
+- **Donald Knuth, *The Art of Computer Programming, Vol. 2*, Section 4.1**. Two's complement and signed-integer arithmetic in computers.
+- **William Kahan, "Lecture Notes on the Status of IEEE 754."** Signed zero and other oddities of floating-point that build on this lesson.
+
+## Next Lesson Bridge
+
+Lesson 12 — *Signed Numbers and Order of Operations* — drills the operational and order-of-operations habits we have lightly touched on here. That lesson is already at depth and ready to study. Combine it with what you have learned today and you will be able to evaluate any rational-number expression cleanly, no matter how many minus signs are involved.
+
+After that, lesson 13 takes us into *Integer Exponents and Rules* — the next algebraic toolkit. Negative numbers will come back in *exponents* ($x^{-1}$ is the reciprocal), and they will come back in *bases* (with the parenthesization care from this lesson). Then *Roots and Radicals* (lesson 14) and *Scientific Notation* (lesson 15) round out the exponent/radical foundation that all of physics and engineering speaks in.
+
+Signed reasoning then comes back in every later lesson — function graphs, vectors, derivatives, matrix algebra, control theory, signal processing, ML gradients. You will use this lesson's habits every day for the rest of the curriculum.

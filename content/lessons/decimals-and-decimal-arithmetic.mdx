@@ -1,0 +1,820 @@
+# Decimals and Decimal Arithmetic
+
+## Re-entry Promise
+
+A decimal is not a different *kind* of number from a fraction. Every decimal — terminating or repeating — is rational. Every rational number can be written as a decimal. They are two notations for the same objects. Once you internalize that, everything you have learned about fractions transfers immediately to decimals, plus you gain a much more practical computational form for engineering work.
+
+The lesson assumes you know what a fraction is and that you can do fraction arithmetic (lessons 6 and 7 of this module). It assumes you remember place value for whole numbers (lesson 2). Everything else will be rebuilt — including the precise reason that $\frac{1}{3} = 0.3333\ldots$ never terminates while $\frac{1}{4} = 0.25$ does, and the precise reason that `0.1 + 0.2` does not equal `0.3` in any floating-point language.
+
+By the end you should be able to compute fluently in decimal form, know exactly when to convert between fractions and decimals (and when not to), and understand the binary-floating-point pitfalls that haunt every numerical software project ever written. The "0.1 + 0.2 problem" alone is responsible for thousands of bugs in financial software, scientific computation, and machine learning — and once you understand fractions and decimals together, the bug becomes obvious.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Read and write decimals in standard form, with correct place-value names (tenths, hundredths, thousandths, ...).
+- Convert any fraction to a decimal by long division.
+- Convert any **terminating** decimal to an exact fraction in lowest terms.
+- Convert any **repeating** decimal to an exact fraction using the geometric-series trick.
+- State and use the **terminating-decimal theorem**: a fraction $\frac{p}{q}$ in lowest terms terminates iff $q$ has no prime factors other than 2 and 5.
+- Add, subtract, multiply, and divide decimals fluently.
+- Apply correct rounding rules, including the "round half to even" (banker's rounding) convention used in IEEE 754 floating-point.
+- Read and use scientific notation for very large and very small decimals.
+- Explain why **binary floating-point** representations of common decimals like $0.1$ are inexact, and why $0.1 + 0.2$ is not exactly $0.3$ in IEEE 754.
+- Choose between `int`, `float`, `Decimal`, and `Fraction` types in real code based on the problem's accuracy and performance requirements.
+
+## Why It Matters
+
+Decimals are the universal numerical language of engineering and science. Every measurement instrument outputs decimals (or integers, which are just whole decimals). Every spreadsheet column is decimal. Every CAD drawing dimension. Every voltage reading, every battery charge percentage, every drone GPS coordinate.
+
+But decimals come with subtle traps:
+
+1. **Floating-point inexactness.** $0.1 + 0.2 \approx 0.3000000000000000444$. The discrepancy is small but it propagates and amplifies through long computations. Most ML models, climate simulations, and trading algorithms eventually have to reason about this.
+
+2. **Currency arithmetic.** Banks do *not* use floats for money. They use fixed-point or decimal arithmetic. A $0.01 rounding error per transaction across a billion transactions a day is $10 million a day. Real money.
+
+3. **Sensor precision.** A 12-bit ADC has 12 bits of resolution. That is roughly $\log_{10}(2^{12}) \approx 3.6$ significant decimal digits. Reporting a sensor reading as "1.234567 V" is dishonest — the sensor cannot resolve below the millivolt level. Knowing how many decimal places are real comes from understanding decimal precision.
+
+4. **Scientific notation.** Almost every physics calculation uses scientific notation to avoid wrangling 10 zeros. The speed of light is $3 \times 10^8$ m/s, not $300{,}000{,}000$. You need decimal fluency to manipulate these.
+
+5. **Display vs. internal representation.** Your GPS shows latitude 47.6062°. The internal representation might be a fixed-point integer in milli-degrees (47606), or a double-precision float (47.60620000000000003), or a string. The displayed decimal hides whatever is actually being computed.
+
+6. **Sample rates and time bases.** Audio at 44.1 kHz means a sample every $\frac{1}{44{,}100}$ second $\approx 22.676 \mu$s. The decimal-rational duality determines whether your clock drifts.
+
+Knowing decimals well is not optional. It is the medium of all numerical work.
+
+## Why This Idea Exists
+
+Decimal fractions are a surprisingly modern invention. The Babylonian and Egyptian fraction systems lasted for millennia. The Hindu-Arabic numeral system reached Europe in the 12th century, but decimal *fractions* — the idea of extending positional notation to the right of the units place — only became standard in the 17th century.
+
+**Simon Stevin**, a Flemish mathematician and engineer, published *De Thiende* ("The Tenth") in 1585, advocating the use of decimal fractions for everyday computation. Stevin's notation was clumsy by modern standards (he wrote $0.378$ as $0\,(0)\,3\,(1)\,7\,(2)\,8\,(3)$, with circled digits marking the place), but his proposal was revolutionary: do all arithmetic in base 10, including fractions, by simply continuing the place-value system past the units digit.
+
+**John Napier** (around 1614) used a decimal point in his logarithm tables, which is roughly the notation we use today (`.` in Britain and the US, `,` in continental Europe).
+
+The reason decimal fractions caught on so completely is *computational efficiency*. Adding $\frac{3}{8} + \frac{5}{12}$ requires finding LCM, rewriting both fractions, then simplifying. Adding $0.375 + 0.41\overline{6}$ is just digit-by-digit place-value addition like any whole-number sum. For routine engineering calculation, this is much faster.
+
+The price you pay is that *exact rational arithmetic* is lost when you commit to decimals. $\frac{1}{3}$ has no exact finite decimal representation; the best you can do is approximate it as $0.3333\ldots$ to some number of digits. So engineering has to choose: exact-but-clumsy fractions, or approximate-but-fast decimals. Almost everyone chooses decimals, then writes code to handle the approximation errors.
+
+Binary floating-point (IEEE 754) is the same trade-off pushed to its limit: use base 2 instead of base 10 for hardware efficiency, accept that almost every "nice" decimal is approximated, and engineer around the imprecision. The trade-off has been worth it for fifty years and counting.
+
+## Plain-Language Intuition
+
+A decimal number is just a place-value representation extended past the ones place. The place values to the *right* of the decimal point are:
+
+| Position | Place | Value |
+|---|---|---|
+| 1st | tenths | $\frac{1}{10}$ |
+| 2nd | hundredths | $\frac{1}{100}$ |
+| 3rd | thousandths | $\frac{1}{1{,}000}$ |
+| 4th | ten-thousandths | $\frac{1}{10{,}000}$ |
+| ... | ... | $\frac{1}{10^k}$ |
+
+So $0.375$ is $3 \cdot \frac{1}{10} + 7 \cdot \frac{1}{100} + 5 \cdot \frac{1}{1{,}000} = \frac{375}{1{,}000} = \frac{3}{8}$.
+
+And $0.\overline{3} = 0.333\ldots$ is $3 \cdot \frac{1}{10} + 3 \cdot \frac{1}{100} + 3 \cdot \frac{1}{1{,}000} + \ldots$, an infinite sum that equals $\frac{1}{3}$ (as we will derive).
+
+The key insight: a decimal is a fraction whose denominator is a power of 10 (if it terminates), or a sum of such fractions (if it repeats). Decimals are not a new kind of number; they are a particular way of representing rationals.
+
+## Core Theory
+
+### Place-Value Notation
+
+A decimal number has the form
+
+$$\ldots d_2 d_1 d_0 . d_{-1} d_{-2} d_{-3} \ldots$$
+
+where each $d_i$ is a digit (0-9) and the value is
+
+$$\sum_i d_i \cdot 10^i$$
+
+The decimal point separates the integer part (left) from the fractional part (right).
+
+Some conventions:
+
+- A bare integer is the same as that integer followed by ".0" — they refer to the same number, but in different forms.
+- Leading zeros to the left of the decimal point are optional in display: "0.5" and ".5" mean the same. Style guides generally prefer the leading zero for clarity.
+- Trailing zeros to the right of the decimal point can matter for *precision* indication (in significant figures, a topic for lesson 16). "3.20" indicates measurement to the hundredths place; "3.2" indicates measurement to the tenths place only. The values are equal but the implied precision differs.
+
+### Conversion: Decimal → Fraction (Terminating)
+
+Take a terminating decimal like $0.475$.
+
+Number of decimal places: 3. Multiply numerator and denominator by $10^3 = 1{,}000$:
+
+$$0.475 = \frac{475}{1{,}000}$$
+
+Simplify with GCD: $\gcd(475, 1000) = 25$. $\frac{475}{1000} = \frac{19}{40}$.
+
+**Algorithm**: count decimal places $k$. Write as $\frac{\text{(digits without point)}}{10^k}$. Simplify with GCD.
+
+### Conversion: Fraction → Decimal (Long Division)
+
+Take a fraction like $\frac{3}{8}$. Divide 3 by 8 using long division, continuing past the decimal point:
+
+- $3.000 \div 8$: 8 goes into 30 three times (24), remainder 6.
+- 60 ÷ 8: 8 goes seven times (56), remainder 4.
+- 40 ÷ 8: 8 goes five times (40), remainder 0. Done.
+
+So $\frac{3}{8} = 0.375$.
+
+Now try $\frac{1}{3}$:
+
+- $1.000 \div 3$: 3 goes into 10 three times (9), remainder 1.
+- 10 ÷ 3: 3 goes three times (9), remainder 1.
+- 10 ÷ 3: 3 goes three times (9), remainder 1.
+- ...
+
+Repeats forever. $\frac{1}{3} = 0.\overline{3}$ (the bar denotes the repeating block).
+
+### The Terminating-Decimal Theorem
+
+**Theorem.** A fraction $\frac{p}{q}$ in lowest terms has a terminating decimal expansion if and only if $q$ has no prime factors other than 2 and 5.
+
+**Proof sketch.** A terminating decimal $\frac{a}{10^k}$ has denominator $10^k = 2^k \cdot 5^k$ — only 2's and 5's in the prime factorization. So if $\frac{p}{q}$ (in lowest terms) terminates, then $q$ divides $10^k$ for some $k$, so $q$ has only 2's and 5's. Conversely, if $q$ only has 2's and 5's, we can pad with whichever of 2 or 5 is missing to reach a power of 10, then write the fraction over that power of 10. ∎
+
+Examples:
+
+- $\frac{1}{2} = 0.5$ (terminates: $q = 2$).
+- $\frac{1}{4} = 0.25$ (terminates: $q = 2^2$).
+- $\frac{1}{5} = 0.2$ (terminates: $q = 5$).
+- $\frac{1}{8} = 0.125$ (terminates: $q = 2^3$).
+- $\frac{3}{40} = 0.075$ (terminates: $q = 2^3 \cdot 5$).
+- $\frac{1}{3} = 0.\overline{3}$ (does not terminate: $q = 3$).
+- $\frac{1}{6} = 0.1\overline{6}$ (does not terminate: $q = 2 \cdot 3$, has a 3).
+- $\frac{1}{7} = 0.\overline{142857}$ (does not terminate: $q = 7$).
+- $\frac{1}{11} = 0.\overline{09}$ (does not terminate: $q = 11$).
+
+The repeating block length can be characterized too: it is the smallest $k$ such that $10^k \equiv 1 \pmod{q}$ (after the 2- and 5- factors of $q$ are pulled out). For $q = 7$, $k = 6$. For $q = 11$, $k = 2$.
+
+### Converting Repeating Decimals to Fractions
+
+The trick: let $x$ be the repeating decimal, multiply by an appropriate power of 10 to shift the repeat block, subtract, and solve for $x$.
+
+**Example.** Convert $0.\overline{3} = 0.333\ldots$ to a fraction.
+
+Let $x = 0.333\ldots$. Then $10x = 3.333\ldots$. Subtract: $10x - x = 3.333\ldots - 0.333\ldots = 3$. So $9x = 3$, giving $x = \frac{1}{3}$.
+
+**Example.** Convert $0.\overline{142857}$ to a fraction.
+
+Let $x = 0.142857142857\ldots$. The block is 6 digits long, so multiply by $10^6$: $10^6 x = 142857.142857\ldots$. Subtract: $(10^6 - 1) x = 142857$. So $x = \frac{142857}{999999}$. Simplify: $\gcd(142857, 999999) = 142857$. $x = \frac{1}{7}$. ✓
+
+**Example.** Convert $0.1\overline{6}$ to a fraction.
+
+Multiply by 10 first to clear the non-repeating part: $10x = 1.\overline{6}$. Then $100x = 16.\overline{6}$. Subtract: $100x - 10x = 16.\overline{6} - 1.\overline{6} = 15$. So $90x = 15$, $x = \frac{15}{90} = \frac{1}{6}$. ✓
+
+**Algorithm.** For $0.a_1 a_2 \ldots a_m \overline{b_1 b_2 \ldots b_n}$ (with $m$ non-repeating digits before an $n$-digit repeating block), the value is
+
+$$x = \frac{(\text{whole digits } a_1 \ldots a_m b_1 \ldots b_n) - (\text{prefix digits } a_1 \ldots a_m)}{10^{m+n} - 10^m}$$
+
+Simplify.
+
+### A Beautiful Identity: $0.\overline{9} = 1$
+
+If $x = 0.999\ldots$, then $10x = 9.999\ldots$. Subtract: $9x = 9$, so $x = 1$.
+
+The two notations $0.\overline{9}$ and $1$ are *the same number*. The repeating-decimal trick gives a clean proof. Some students balk at this; the right response is that decimal notation is just a notation, and some numbers have two valid notations. (Just as $\frac{1}{2}$ and $\frac{2}{4}$ are the same number, $1$ and $0.\overline{9}$ are the same number.)
+
+### Decimal Arithmetic
+
+**Addition / subtraction.** Align the decimal points (pad with zeros if needed), then add or subtract column by column with carries or borrows, exactly as for integers.
+
+Example: $3.74 + 12.6 = ?$
+
+```
+  3.74
++12.60
+------
+ 16.34
+```
+
+Padded one zero on $12.6$ for alignment. Sum: $16.34$.
+
+Example: $5 - 1.273 = ?$
+
+```
+  5.000
+- 1.273
+------
+  3.727
+```
+
+Padded three zeros on the $5$. Standard borrow-and-subtract.
+
+**Multiplication.** Multiply the numbers as if they were integers (ignore decimal points). Then count the total number of digits after the decimal point in *both* multiplicands; that is where the decimal point goes in the answer.
+
+Example: $0.4 \times 2.5$.
+
+Ignore decimals: $4 \times 25 = 100$.
+
+Decimal places: 1 (in 0.4) + 1 (in 2.5) = 2. So the answer has 2 decimal places: $1.00 = 1.0$.
+
+Sanity check: $0.4 \times 2.5 = \frac{2}{5} \cdot \frac{5}{2} = 1$. ✓
+
+**Division.** Convert to integer division by shifting the decimal point. Specifically, multiply numerator and denominator by the same power of 10 to make the denominator an integer.
+
+Example: $12.6 \div 0.4$.
+
+Multiply both by 10: $126 \div 4 = 31.5$.
+
+So $12.6 \div 0.4 = 31.5$.
+
+### Rounding
+
+A decimal can be **rounded** to a given number of decimal places (or significant figures, but that is lesson 16). Common rounding modes:
+
+**Round half up.** If the digit immediately after the cutoff is 5 or greater, round up; otherwise round down. $3.745$ rounded to 2 decimal places becomes $3.75$.
+
+**Round half to even (banker's rounding).** Same as round-half-up *except* when the digit after the cutoff is exactly 5 and there are no further nonzero digits; then round to the nearest even digit. $3.745 \to 3.74$ (round to even), $3.755 \to 3.76$ (round to even).
+
+Why banker's rounding? Repeatedly rounding half up biases sums upward. Banker's rounding distributes the bias: half the boundary cases round up, half round down, depending on parity. IEEE 754 floating-point uses banker's rounding by default.
+
+**Round toward zero (truncation).** Drop the digits past the cutoff. $3.789 \to 3.78$ (toward zero), $-3.789 \to -3.78$ (toward zero).
+
+**Round toward $+\infty$ (ceiling).** Always round up. $3.001 \to 3.01$ (to 2 places).
+
+**Round toward $-\infty$ (floor).** Always round down. $3.999 \to 3.99$ (to 2 places).
+
+For most engineering work, "round half to even" is the safest default. For currency, "round half away from zero" is common ("round half up" for positive amounts).
+
+### Scientific Notation
+
+A very large or very small number is more readable in scientific notation:
+
+$$a \times 10^b$$
+
+where $1 \le |a| < 10$ and $b$ is an integer.
+
+Examples:
+
+- $300{,}000{,}000 = 3 \times 10^8$ (speed of light in m/s).
+- $0.0000001 = 1 \times 10^{-7}$ (about a wavelength of visible light in meters).
+- $6.022 \times 10^{23}$ (Avogadro's number).
+- $1.602 \times 10^{-19}$ (charge of an electron in coulombs).
+
+Engineering notation is similar but constrains the exponent to be a multiple of 3 (matching SI prefixes like kilo, mega, giga, micro, nano):
+
+- $300{,}000{,}000 = 300 \times 10^6$ (300 mega-units).
+- $0.0000001 = 100 \times 10^{-9}$ (100 nanometers, more recognizable).
+
+Scientific notation gets a full lesson (lesson 15 of this module); here we are just naming the convention.
+
+### Binary Floating-Point: The Trap
+
+Computers store decimals as **binary** fractions, not decimal fractions. A `double` (64-bit IEEE 754 float) is
+
+$$\text{value} = \text{sign} \times m \times 2^e$$
+
+where $m$ is a 53-bit binary mantissa (integer between $2^{52}$ and $2^{53} - 1$, with an implicit leading 1) and $e$ is an integer exponent.
+
+This means a `double` is fundamentally a fraction with denominator a power of 2. The terminating-decimal theorem applies: a decimal terminates in *binary* iff its denominator in lowest terms is a power of 2 (no 3's, 5's, 7's, etc.).
+
+So $0.5 = \frac{1}{2}$ is exact in binary float (denominator 2).
+$0.25 = \frac{1}{4}$ is exact (denominator $2^2$).
+$0.1 = \frac{1}{10}$ is *not* exact in binary — its binary expansion is the repeating $0.0001100110011\ldots_2$, which gets truncated to 53 bits.
+
+When you write $0.1 + 0.2$ in Python (or any IEEE 754 language), you are actually computing
+
+$$(\text{nearest 53-bit binary to } 0.1) + (\text{nearest 53-bit binary to } 0.2)$$
+
+The result is approximately $0.30000000000000004$, *not* exactly $0.3$. The cumulative rounding error of those two binary truncations does not vanish on addition.
+
+Try it:
+
+```python
+>>> 0.1 + 0.2
+0.30000000000000004
+>>> 0.1 + 0.2 == 0.3
+False
+```
+
+This is not a bug. It is the unavoidable consequence of representing $\frac{1}{10}$ in base 2.
+
+**Workarounds.**
+
+- For *currency*, use `Decimal` (Python `decimal` module) or fixed-point integers (e.g., store amounts in cents as integers).
+- For *exact rational arithmetic*, use `Fraction` (Python `fractions` module) or libraries like SymPy.
+- For *numerical computation* where float error is acceptable, use float but never test equality directly. Use `abs(a - b) < epsilon` for some small tolerance.
+
+### Density and Significant Figures
+
+A decimal with $k$ decimal places represents the rational $\frac{\text{integer}}{10^k}$. As $k$ increases, decimals can approximate any real number arbitrarily closely. This is the foundation of the *completeness* of $\mathbb{R}$ — every real number is the limit of a sequence of decimals.
+
+For measurement, the number of *meaningful* decimal places is bounded by the instrument's precision. A ruler with 1 mm marks gives 3 significant figures for a 100 mm measurement; reporting "100.000 mm" implies precision the ruler does not have. This is the topic of *significant figures and uncertainty* (lesson 16).
+
+## Visual or Mental Model
+
+### Model 1: Place-Value Strip
+
+Picture a place-value strip extending in both directions from the decimal point:
+
+```
+... 10000 1000 100 10 1 . 0.1 0.01 0.001 0.0001 ...
+        ten thousands  ones    tenths   thousandths
+```
+
+Each position is 10× the next on the right, $\frac{1}{10}$ on the right of the previous. The decimal point is just the boundary marker. Everything else is the same as whole-number place value.
+
+### Model 2: Number-Line Subdivision
+
+To place $0.375$ on the number line:
+
+- 0 to 1 divided into 10 parts (each $0.1$). $0.375$ is between $0.3$ and $0.4$.
+- Each tenth divided into 10 hundredths. $0.375$ is between $0.37$ and $0.38$.
+- Each hundredth divided into 10 thousandths. $0.375$ is exactly at the 5th tick.
+
+Decimal expansion is a sequence of progressively finer subdivisions of the unit interval. This is why "more decimal places = more precision."
+
+### Model 3: Long-Division Frame
+
+Picture long division as a procedure that produces decimal digits one at a time. The remainder at each step is the seed for the next digit. The expansion terminates when the remainder hits 0; it repeats when a remainder occurs twice in the sequence.
+
+For $\frac{1}{7}$, the remainders cycle 1, 3, 2, 6, 4, 5, 1, ... (the original 1 returns after 6 steps), giving the 6-digit repeating block $142857$.
+
+### Model 4: Binary Float Layout
+
+A 64-bit double:
+
+```
+[sign 1 bit][exponent 11 bits][mantissa 52 bits]
+```
+
+The number is $(-1)^s \cdot (1.m) \cdot 2^{e - 1023}$, where $m$ is the 52-bit fractional part of the mantissa (with implicit leading 1) and $e$ is the unsigned 11-bit exponent.
+
+For $0.1$:
+
+- Closest representable double: $0.1000000000000000055511151231257827021181583404541015625$.
+- The error is about $5.5 \times 10^{-18}$.
+
+The error is too small for most engineering, but it compounds in iterations and ruins equality tests.
+
+## Worked Examples
+
+### Example 1 — Decimal to Fraction
+
+Convert $0.625$ to a fraction.
+
+$0.625 = \frac{625}{1000}$. $\gcd(625, 1000) = 125$. $\frac{625}{1000} = \frac{5}{8}$.
+
+### Example 2 — Fraction to Terminating Decimal
+
+Convert $\frac{7}{16}$ to a decimal. $q = 16 = 2^4$, so it terminates.
+
+Long division: $7 \div 16$.
+
+$70 / 16 = 4$ R 6. $60 / 16 = 3$ R 12. $120 / 16 = 7$ R 8. $80 / 16 = 5$ R 0.
+
+$\frac{7}{16} = 0.4375$.
+
+Alternative: multiply numerator and denominator by enough 5's to make the denominator a power of 10. $\frac{7}{16} = \frac{7 \cdot 625}{16 \cdot 625} = \frac{4375}{10000} = 0.4375$. ✓
+
+### Example 3 — Fraction to Repeating Decimal
+
+Convert $\frac{5}{12}$ to a decimal. $q = 12 = 2^2 \cdot 3$. The 3 forces non-termination.
+
+Long division: $5 \div 12$.
+
+$50/12 = 4$ R 2. $20/12 = 1$ R 8. $80/12 = 6$ R 8. ... The remainder 8 has repeated, so the decimal expansion repeats from there.
+
+Result: $\frac{5}{12} = 0.41\overline{6}$.
+
+### Example 4 — Repeating Decimal to Fraction
+
+Convert $0.\overline{27}$ to a fraction.
+
+$x = 0.272727\ldots$. $100x = 27.272727\ldots$. Subtract: $99x = 27$. $x = \frac{27}{99} = \frac{3}{11}$.
+
+### Example 5 — Mixed Repeating Decimal
+
+Convert $0.16\overline{3}$ to a fraction.
+
+Non-repeating part: 2 digits. Repeating part: 1 digit. So multiply by $10^2 = 100$ and $10^3 = 1000$.
+
+$100 x = 16.\overline{3}$. $1000 x = 163.\overline{3}$. Subtract: $900 x = 147$. $x = \frac{147}{900} = \frac{49}{300}$.
+
+Verify: $\frac{49}{300} = ?$ $49 / 300$: $490/300 = 1$ R 190. $1900/300 = 6$ R 100. $1000/300 = 3$ R 100. ... So $0.16\overline{3}$. ✓
+
+### Example 6 — Decimal Addition
+
+$2.345 + 0.789 = ?$
+
+```
+  2.345
++ 0.789
+-------
+  3.134
+```
+
+Column 3: 5 + 9 = 14, write 4, carry 1. Column 2: 4 + 8 + 1 = 13, write 3, carry 1. Column 1: 3 + 7 + 1 = 11, write 1, carry 1. Column 0: 2 + 0 + 1 = 3.
+
+Result: $3.134$.
+
+### Example 7 — Decimal Multiplication
+
+$0.04 \times 0.6 = ?$
+
+Ignore decimals: $4 \times 6 = 24$.
+
+Decimal places: 2 + 1 = 3. So answer has 3 decimal places: $0.024$.
+
+### Example 8 — Decimal Division
+
+$12.5 \div 0.25 = ?$
+
+Multiply both by 100: $1250 \div 25 = 50$.
+
+### Example 9 — Rounding Rules
+
+Round $3.14159$ to 3 decimal places.
+
+The fourth decimal place is 5, followed by a nonzero (9). Round half up gives $3.142$. Round half to even: the same, because the next digit (9) breaks the tie. Result: $3.142$.
+
+Round $3.145$ to 2 decimal places.
+
+The third decimal is exactly 5 with no further nonzero. Round half up: $3.15$. Round half to even: round to the nearest even hundredths digit. The two options are $3.14$ (even) and $3.15$ (odd). So round to even: $3.14$.
+
+### Example 10 — Scientific Notation
+
+Write $0.00000452$ in scientific notation.
+
+Move decimal 6 places right: $4.52$. Exponent: $-6$.
+
+Result: $4.52 \times 10^{-6}$.
+
+### Example 11 — The 0.1 + 0.2 Problem
+
+Compute $0.1 + 0.2$ in your head: $0.3$.
+
+In Python:
+
+```python
+>>> 0.1 + 0.2
+0.30000000000000004
+```
+
+What went wrong? $0.1$ in binary is the repeating $0.000110011001100\ldots_2$. The nearest 53-bit float is approximately $0.1 + 5.5 \times 10^{-18}$. Similarly for $0.2$. Their float sum is *not* the same float as the nearest representation of $0.3$. The discrepancy is small but real.
+
+Fix: use `decimal.Decimal("0.1") + decimal.Decimal("0.2") == decimal.Decimal("0.3")` (True), or `Fraction(1,10) + Fraction(2,10) == Fraction(3,10)` (True). Both give exact results.
+
+### Example 12 — Sensor Reading and Decimal Precision
+
+A 12-bit ADC reads voltages 0-5 V. One count corresponds to $\frac{5}{4096} \approx 0.001221$ V.
+
+A reading of 2048 counts: $\frac{2048}{4096} \cdot 5 = 2.5$ V.
+A reading of 2049 counts: $\frac{2049}{4096} \cdot 5 = 2.5012$ V (to 5 significant figures).
+
+The 4th significant figure is the smallest the sensor can resolve. Reporting "2.5012345 V" is meaningless — those last 3 digits are imaginary.
+
+### Example 13 — Failure Mode: Decimal-Point Misalignment
+
+A student writes:
+
+```
+  3.74
++12.6
+------
+?
+```
+
+If you don't align the decimal points, you might add 4 + 6 in the rightmost column to get 10, leading to nonsense. Always align decimal points before adding. The correct sum is 16.34, computed by padding 12.6 as 12.60 and aligning.
+
+### Example 14 — Failure Mode: Forgetting Decimal Places in Multiplication
+
+A student computes $0.5 \times 0.4 = 2$ (ignoring decimal places).
+
+Wrong: $0.5 \times 0.4 = 0.20 = 0.2$. The student multiplied the digits ($5 \times 4 = 20$) but forgot to insert the decimal point. Total decimal places: 1 + 1 = 2.
+
+### Example 15 — Failure Mode: Floating-Point Equality Test
+
+A student writes:
+
+```python
+if x * 0.1 == 0.1 * x:
+    print("Equal")
+else:
+    print("Not equal")
+```
+
+Most of the time this is True (because the multiplications are deterministic). But subtle reordering or accumulated error can make floating-point operations non-commutative across longer chains. Never rely on float equality for derived values. Use a tolerance check: `abs(a - b) < 1e-9` or similar.
+
+## Engineering Connections
+
+### ADC Quantization
+
+An $N$-bit ADC produces integers $0, 1, 2, \ldots, 2^N - 1$ that represent voltages in equal-size steps of $\frac{V_\text{range}}{2^N - 1}$. The voltage corresponding to count $c$ is $\frac{c}{2^N - 1} \cdot V_\text{range}$ — a rational number that becomes a decimal when computed.
+
+A 16-bit audio ADC at 1 V range has step size $\frac{1}{65535}$ V $\approx 15.3 \mu$V. Audio at 16-bit is quoted as having 96 dB dynamic range ($20 \log_{10}(2^{16}) \approx 96$). Better audio uses 24-bit ($\approx 144$ dB) which steps in $\frac{1}{16777215}$ V $\approx 60$ nV.
+
+### Currency Arithmetic
+
+A dollar value like $\$3.14$ is exactly $\frac{314}{100}$. Storing it as a float gives $3.140000000000000124\ldots$. Summing a million such values introduces about $10^{-10}$ cumulative error — usually less than a cent, but unacceptable for accounting.
+
+The fix: store amounts as integer cents ($314$). All arithmetic is integer (exact). Display divides by 100 for human readers. Most banking software does this internally.
+
+### GPS Coordinates
+
+A latitude like $47.6062°$ has $7$ significant figures, resolving to about 1 cm at the equator. Storing as a double gives plenty of precision for the lat/lon range $[-180, 180]$. But subtraction of two nearby coordinates (to compute distance) loses significant figures fast: $47.6062 - 47.6061 = 0.0001 = 10^{-4}$ — going from 6 to 1 significant figures. This is **catastrophic cancellation**, a major source of numerical error in geometric computation.
+
+The fix: convert to a local coordinate frame (e.g., ENU — East/North/Up in meters from a reference point) before subtraction. Now you're working with meters, which preserves precision.
+
+### Sample-Rate Conversion
+
+Audio at $44{,}100$ Hz is sampled every $\frac{1}{44100} \approx 22.676 \mu$s. The ratio of $44{,}100$ to $48{,}000$ is the fraction $\frac{441}{480} = \frac{147}{160}$ (after simplification — GCD 300, from the prior lesson). Internally, a high-quality resampler operates at $44100 \cdot 160 = 7{,}056{,}000$ Hz to keep all timing exact. The exact fraction matters: an inexact ratio causes clock drift that becomes audible over long playback.
+
+### Sensor Precision Specs
+
+A datasheet for a digital pressure sensor might state "±2.5 hPa accuracy at 25°C." That ±2.5 hPa is the absolute decimal precision of any reading. Reporting "1013.247 hPa" with this sensor is misleading — only "1013" is justified by accuracy.
+
+In code, you can compute with more digits than you display. Internal computation in doubles, display rounded to 3 significant figures (or matching the sensor accuracy). This separation of computation precision from display precision is a design choice in every measurement system.
+
+### IEEE 754 Across Languages
+
+Almost every modern language uses IEEE 754 doubles for default decimal arithmetic: C `double`, Java `double`, Python `float`, JavaScript `number`. Cross-language calculations behave identically (modulo compiler differences in math function precision).
+
+Exception: Python `decimal.Decimal` and Java `BigDecimal` and Ruby `BigDecimal` are *base-10 decimal* types that avoid the binary-rounding pitfall entirely. They are slower (no hardware support) but exact in decimal. Use them for financial, accounting, and any human-facing decimal computation.
+
+The choice between `float`, `Decimal`, and `Fraction` is a design decision every numerical engineer makes:
+
+| Type | Pros | Cons |
+|---|---|---|
+| `float` (binary) | Fast (hardware), enough precision for most engineering | Inexact for non-power-of-2 decimals; equality fragile |
+| `Decimal` (base 10) | Exact for finite decimals; predictable rounding | Slower; still finite precision (e.g., 1/3 still repeats) |
+| `Fraction` (rational) | Exact for all rationals | Slowest; numerator and denominator can grow large |
+
+For sensor readings, controllers, ML inference, graphics: float. For money: Decimal. For symbolic math, exact ratios, careful number theory: Fraction.
+
+## Practice Set
+
+### Decimal to Fraction
+
+Convert each terminating decimal to a fraction in lowest terms.
+
+1. $0.5$
+2. $0.25$
+3. $0.125$
+4. $0.6$
+5. $0.375$
+6. $0.875$
+7. $0.04$
+8. $0.625$
+9. $0.0625$
+10. $2.4$
+
+### Fraction to Decimal
+
+Convert each fraction to a decimal. State whether the decimal terminates or repeats.
+
+11. $\frac{1}{4}$
+12. $\frac{3}{8}$
+13. $\frac{2}{5}$
+14. $\frac{1}{6}$
+15. $\frac{1}{7}$ (find the full 6-digit repeat block)
+16. $\frac{7}{11}$
+17. $\frac{1}{12}$
+18. $\frac{3}{16}$
+19. $\frac{2}{9}$
+20. $\frac{5}{6}$
+
+### Repeating Decimal to Fraction
+
+Convert each repeating decimal to a fraction.
+
+21. $0.\overline{3}$
+22. $0.\overline{6}$
+23. $0.\overline{45}$
+24. $0.\overline{142857}$
+25. $0.5\overline{3}$
+26. $0.1\overline{6}$
+27. $0.\overline{1}$
+28. $0.0\overline{9}$
+
+### Decimal Arithmetic
+
+29. $3.4 + 2.78$
+30. $5.2 - 1.347$
+31. $0.6 \cdot 0.4$
+32. $0.25 \cdot 0.32$
+33. $2.4 \cdot 1.5$
+34. $7.2 \div 0.4$
+35. $0.025 \div 0.5$
+36. $100 \div 0.04$
+37. $1.5^2$
+38. $0.1^3$
+
+### Rounding
+
+Round each to the specified precision. Use round-half-to-even unless stated.
+
+39. $3.14159$ to 2 decimal places.
+40. $0.12345$ to 3 decimal places.
+41. $5.5$ to 0 decimal places.
+42. $4.5$ to 0 decimal places.
+43. $2.675$ to 2 decimal places.
+44. $-1.5$ to 0 decimal places (using round-half-to-even).
+45. $0.999$ to 1 decimal place.
+
+### Scientific Notation
+
+Write in scientific notation.
+
+46. $5{,}000$
+47. $0.0046$
+48. $300{,}000{,}000$
+49. $0.000000789$
+50. $602{,}200{,}000{,}000{,}000{,}000{,}000{,}000$ (Avogadro's number)
+
+### Applied
+
+51. A 10-bit ADC reads 0-3.3 V. What is the smallest voltage difference it can distinguish?
+52. Convert 25 cm to inches (1 inch = 2.54 cm). Round to 3 decimal places.
+53. A drone's battery is at 14.8 V at full charge and 11.1 V when empty (lithium polymer at $3.7$ V/cell, 4 cells in series, with a $3.3 \cdot 3 = $ wait, recompute: $3.7 \cdot 4 = 14.8$ ✓, $2.775 \cdot 4 = 11.1$ ✓). What fraction of the discharge range corresponds to a reading of 12.0 V?
+54. A 1 W laser has wavelength $532$ nm = $5.32 \times 10^{-7}$ m. Compute the energy per photon using $E = \frac{hc}{\lambda}$, with $h = 6.626 \times 10^{-34}$ J·s and $c = 3.00 \times 10^8$ m/s.
+55. A budget of \$10,000 spread across 7 line items equally. What is each line item in dollars and cents? Round to 2 decimal places using banker's rounding. What is the total of all 7 rounded amounts? Does it match \$10,000?
+56. Compute the resistance of a resistor with color code: brown-black-orange-gold. (Tip: brown=1, black=0, orange=3 zeros, gold=±5%.) Express the result as a decimal with appropriate uncertainty.
+
+### Floating-Point Awareness
+
+57. Predict (without running code) the result of `0.1 + 0.2 == 0.3` in Python. Why?
+58. Predict `0.5 + 0.5 == 1.0`. Why is this different?
+59. Predict `1.0 / 3.0 + 1.0 / 3.0 + 1.0 / 3.0 == 1.0`. Why or why not?
+60. Suppose a financial system accumulates `0.01` to a sum 10,000 times using float. What is the likely difference from the exact value?
+
+### Challenge
+
+61. Show that the binary expansion of $\frac{1}{10}$ has the repeating block $0011$ after a 1-bit prefix. (Compute by hand using long division in binary.)
+62. Find all fractions $\frac{p}{q}$ (with $1 \le p < q \le 20$ in lowest terms) whose decimal expansion terminates.
+63. The decimal $\frac{1}{17}$ has a repeating block of length 16. Compute the first 16 decimal digits.
+64. Show that if a fraction $\frac{1}{q}$ has decimal repeat length $k$, then $k | \phi(q)$ where $\phi$ is Euler's totient function. (This connects to lesson 5's modular inverses.)
+65. Prove that $0.\overline{142857} = \frac{1}{7}$ implies $0.\overline{285714} = \frac{2}{7}$. (Hint: it is the same digits with a cyclic shift.)
+66. Banker's rounding example: round $\{0.5, 1.5, 2.5, 3.5, 4.5\}$ to integers using banker's rounding. Sum the rounded values; sum the originals; compare.
+
+### Error Spotting
+
+67. A student computes $0.2 \times 0.3 = 0.6$. Address.
+68. A student converts $\frac{1}{8}$ as $0.18$ ("just put the digits"). Address.
+69. A student claims $0.\overline{9}$ is "very close to but not equal to" $1$. Address.
+70. A student stores a money amount as `1.23` in Python and is surprised that `value * 100` is `122.99999999999999`. Explain and recommend a fix.
+
+### Answers
+
+1. $\frac{1}{2}$.
+2. $\frac{1}{4}$.
+3. $\frac{1}{8}$.
+4. $\frac{3}{5}$.
+5. $\frac{3}{8}$.
+6. $\frac{7}{8}$.
+7. $\frac{1}{25}$.
+8. $\frac{5}{8}$.
+9. $\frac{1}{16}$.
+10. $\frac{12}{5}$.
+
+11. $0.25$, terminates.
+12. $0.375$, terminates.
+13. $0.4$, terminates.
+14. $0.1\overline{6}$, repeats.
+15. $0.\overline{142857}$, repeats.
+16. $0.\overline{63}$, repeats. ($7/11 = 0.636363\ldots$)
+17. $0.08\overline{3}$, repeats.
+18. $0.1875$, terminates.
+19. $0.\overline{2}$, repeats.
+20. $0.8\overline{3}$, repeats.
+
+21. $\frac{1}{3}$.
+22. $\frac{2}{3}$.
+23. $\frac{45}{99} = \frac{5}{11}$.
+24. $\frac{1}{7}$.
+25. $0.5\overline{3}$: $10x = 5.\overline{3}$, $100x = 53.\overline{3}$, $90x = 48$, $x = \frac{48}{90} = \frac{8}{15}$.
+26. $\frac{1}{6}$ (worked above).
+27. $\frac{1}{9}$.
+28. $0.0\overline{9}$: $10x = 0.\overline{9} = 1$ (!), so $x = \frac{1}{10}$. (Surprising — same value as $0.1$.)
+
+29. $6.18$.
+30. $3.853$.
+31. $0.24$.
+32. $0.08$.
+33. $3.6$.
+34. $72/4 = 18$.
+35. $25 \div 500 = 0.05$.
+36. $10000/4 = 2500$.
+37. $2.25$.
+38. $0.001$.
+
+39. $3.14$.
+40. $0.123$.
+41. $6$ (banker's: round 5 to even neighbor — 6 is even).
+42. $4$ (banker's: round 5 to even — 4 is even).
+43. $2.68$ (banker's: 5 with even neighbor 8). (Note: in float, $2.675$ may actually round differently due to binary representation. Pure decimal arithmetic gives 2.68.)
+44. $-2$ (banker's: round to even — −2 is even).
+45. $1.0$ (round half up gives $1.0$; banker's: 9 is followed by no further digit, but it's 9 not 5 — round normally up to $1.0$.) Actually 0.999 → 1.0 by any rounding rule, since 0.999 > 0.95.
+
+46. $5 \times 10^3$.
+47. $4.6 \times 10^{-3}$.
+48. $3 \times 10^8$.
+49. $7.89 \times 10^{-7}$.
+50. $6.022 \times 10^{23}$.
+
+51. $\frac{3.3}{1023} \approx 0.00323$ V or about $3.23$ mV.
+52. $25 / 2.54 \approx 9.843$ inches.
+53. Range = $14.8 - 11.1 = 3.7$ V. From 12.0 V: charge remaining = $\frac{12.0 - 11.1}{3.7} = \frac{0.9}{3.7} \approx 0.243$, or 24%.
+54. $E = \frac{(6.626 \times 10^{-34})(3 \times 10^8)}{5.32 \times 10^{-7}} = \frac{19.878 \times 10^{-26}}{5.32 \times 10^{-7}} \approx 3.74 \times 10^{-19}$ J.
+55. Each line: $10000 / 7 = 1428.5714\ldots$. Round (banker's): $1428.57$ each. Sum of 7 = $9999.99$. Discrepancy of \$0.01 means one item must be adjusted to $1428.58$ for the totals to balance. (This is exactly why banks have "rounding adjustment" line items.)
+56. Brown-black-orange = 10 with 3 zeros = $10{,}000$ Ω = 10 kΩ. Gold = ±5%. So $10{,}000 \pm 500$ Ω.
+
+57. False. The two binary-rounded sums differ from the binary-rounded $0.3$ by tiny amounts.
+58. True. Both $0.5$ and $1.0$ are exact in binary float ($\frac{1}{2}$ and $\frac{1}{1}$).
+59. False, generally. $1/3$ has no exact binary float representation; three roundings accumulate small errors that may not cancel back to 1.0.
+60. About $10^{-11}$ to $10^{-9}$ error. Cumulative float error from 10,000 additions of an inexact value. Below the millicent level but visible in any precise accounting.
+
+61. Long division of 1 by 1010 (= 10 in binary): the procedure produces the repeating $0.0\overline{0011}$ in binary. (Trust the theorem; the proof is mechanical.)
+62. Fractions $\frac{p}{q}$ in lowest terms with $1 \le p < q \le 20$ and $q \in \{2, 4, 5, 8, 10, 16, 20\}$ (only 2's and 5's in factorization). Enumerate by $q$:
+- $q = 2$: $\frac{1}{2}$.
+- $q = 4$: $\frac{1}{4}, \frac{3}{4}$.
+- $q = 5$: $\frac{1}{5}, \frac{2}{5}, \frac{3}{5}, \frac{4}{5}$.
+- $q = 8$: $\frac{1}{8}, \frac{3}{8}, \frac{5}{8}, \frac{7}{8}$.
+- $q = 10$: $\frac{1}{10}, \frac{3}{10}, \frac{7}{10}, \frac{9}{10}$.
+- $q = 16$: $\frac{1}{16}, \frac{3}{16}, \frac{5}{16}, \frac{7}{16}, \frac{9}{16}, \frac{11}{16}, \frac{13}{16}, \frac{15}{16}$.
+- $q = 20$: $\frac{1}{20}, \frac{3}{20}, \frac{7}{20}, \frac{9}{20}, \frac{11}{20}, \frac{13}{20}, \frac{17}{20}, \frac{19}{20}$.
+63. $1/17 = 0.\overline{0588235294117647}$. (Computed by long division; check that $17 \times 5882352941176470 \cdot 17 / 10^{16}$ is close to 1.)
+64. By Fermat's little theorem and its generalizations, the order of 10 modulo $q$ (the smallest $k$ with $10^k \equiv 1 \pmod q$) divides $\phi(q)$. The decimal repeat length is exactly this order.
+65. $0.\overline{142857} \cdot 2 = 0.\overline{285714}$, with a cyclic shift of the same digit pattern. The 6-digit block divides evenly by 2 here.
+66. Sum of originals: $0.5 + 1.5 + 2.5 + 3.5 + 4.5 = 12.5$. Banker's rounding: $0 + 2 + 2 + 4 + 4 = 12$. Half-up rounding: $1 + 2 + 3 + 4 + 5 = 15$. Banker's is closer to the exact sum.
+
+67. Wrong. $0.2 \times 0.3 = 0.06$ (2 decimal places: 1 + 1 = 2, so $6 \to 0.06$).
+68. Wrong. $\frac{1}{8} = 0.125$. The student conflated "8 has 1 decimal place" with "the result." Correct procedure: long division or multiply by $\frac{125}{125}$ to get $\frac{125}{1000} = 0.125$.
+69. Wrong. The two notations represent the same number, by the algebraic argument: $9 \cdot 0.\overline{9} = 9$. This is a standard real-analysis result.
+70. Storing `1.23` as float loses precision: the actual stored value is approximately `1.2299999999999999822\ldots`. Multiplying by 100 gives a value near but not equal to 123. Fix: use `Decimal("1.23")` if exactness matters, or store as integer cents (`123`).
+
+## Build Task
+
+Write `decimal_arithmetic.py` (or your language's equivalent) extending your fraction module with decimal conversion utilities.
+
+Required functions:
+
+1. `fraction_to_decimal(num, den, max_digits=20)` — return a string with the decimal expansion of $\frac{\text{num}}{\text{den}}$. Detect repeating blocks and return them with bracket notation, e.g., `"0.[142857]"` for $\frac{1}{7}$.
+2. `decimal_string_to_fraction(s)` — parse a decimal string (possibly with a repeating bracketed block) and return a tuple `(num, den)` in lowest terms.
+3. `terminates(num, den)` — return True iff $\frac{\text{num}}{\text{den}}$ has a terminating decimal expansion.
+4. `repeat_length(num, den)` — return the length of the repeating block for the decimal of $\frac{\text{num}}{\text{den}}$. Return 0 if it terminates.
+5. `round_half_even(x, decimals)` — round a Python float to a given number of decimal places using banker's rounding.
+
+Tests:
+
+- `fraction_to_decimal(1, 3) == "0.[3]"`
+- `fraction_to_decimal(1, 7) == "0.[142857]"`
+- `fraction_to_decimal(1, 8) == "0.125"`
+- `fraction_to_decimal(5, 6) == "0.8[3]"` (or equivalent)
+- `decimal_string_to_fraction("0.[3]") == (1, 3)`
+- `decimal_string_to_fraction("0.125") == (1, 8)`
+- `terminates(1, 8) is True`
+- `terminates(1, 7) is False`
+- `repeat_length(1, 7) == 6`
+- `round_half_even(2.5, 0) == 2`
+- `round_half_even(3.5, 0) == 4`
+
+Stretch goals:
+
+- Demonstrate the 0.1 + 0.2 problem: print the binary float values of 0.1, 0.2, 0.3, and 0.1 + 0.2 to 20 decimal places using Python's `repr` or `%.20f`. Explain what you see.
+- Implement a `BinaryFloat` class that simulates 16-bit, 32-bit, and 64-bit IEEE 754 representations of a given decimal, showing the exact stored value.
+- Build a small "fraction arithmetic vs float arithmetic" comparison: sum $\sum_{n=1}^{1000} \frac{1}{n}$ using floats and using `Fraction`s. Compare the results.
+
+## Quiz
+
+1. Convert $0.375$ to a fraction in lowest terms.
+2. Convert $\frac{3}{16}$ to a decimal.
+3. Convert $0.\overline{45}$ to a fraction.
+4. State the terminating-decimal theorem.
+5. Why does $\frac{1}{7}$ have a repeating decimal expansion?
+6. Compute $1.5 \cdot 0.4$.
+7. Compute $6.0 \div 0.25$.
+8. Round $3.475$ to 2 decimal places using banker's rounding.
+9. Write $0.000043$ in scientific notation.
+10. Why is `0.1 + 0.2` not equal to `0.3` in standard floating-point arithmetic?
+11. What is the difference between Python's `float`, `Decimal`, and `Fraction` types? When would you use each?
+12. A 14-bit ADC has range 0-10 V. What is its resolution in volts?
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Pass the inline lesson check at 100% on first attempt.
+- Convert any terminating decimal to a fraction (and back) in under 15 seconds.
+- Convert any repeating decimal to a fraction in under 60 seconds.
+- Add, subtract, multiply, or divide any two decimals with 3 or fewer decimal places fluently.
+- Round any decimal to the correct number of places using banker's rounding correctly.
+- Write your `decimal_arithmetic.py` module with all listed tests passing.
+- Explain the 0.1 + 0.2 problem to someone else and recommend the correct data type for currency, scientific computation, and exact rational work.
+
+## Sources and Further Study
+
+- **William Kahan, "Lecture Notes on the Status of IEEE 754"** (UC Berkeley, 1996). The clearest exposition of floating-point arithmetic by the principal architect of the IEEE 754 standard. Available freely online.
+- **MIT OCW 6.092 — Introduction to Programming in Java** and **6.0001 — Introduction to Computer Science**. Introductory material on floating-point.
+- **David Goldberg, "What Every Computer Scientist Should Know About Floating-Point Arithmetic"** (1991, ACM Computing Surveys). The canonical paper. Available freely on the web.
+- **Knuth, *The Art of Computer Programming, Volume 2*, Section 4.2.** Definitive treatment of floating-point representations and algorithms.
+- **Python `decimal` and `fractions` module documentation.** Practical guides to the alternatives.
+- **IEEE 754-2008 standard.** The actual document; long but authoritative.
+
+## Next Lesson Bridge
+
+You now have decimals, fractions, and the conversions between them. The next lesson is **Percent and Percent Change**, which is nothing more than decimals with a special denominator (100) and a few engineering conventions. The hard work is done.
+
+After that comes negative numbers (the number line in full), then signed numbers and order of operations (already deep), then exponents and radicals, then scientific notation in full, then significant figures and uncertainty — where the rounding rules from this lesson combine with measurement precision to determine how many decimal places of an answer you are *allowed* to report.
+
+The decimal toolkit you built here underlies every numerical computation in the rest of this curriculum.

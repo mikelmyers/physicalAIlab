@@ -1,0 +1,627 @@
+# Fractions: Meaning and Equivalence
+
+## Re-entry Promise
+
+Fractions are the first place arithmetic stopped being about counting. Up to this point in the math sequence everything has been whole numbers — apples, dollars, seconds, register counts. Fractions admit *parts of things*. That sounds easy until you try to formalize it, at which point fractions become the most subtle topic in elementary mathematics. They have at least three different "meanings" depending on context, two notations that look the same but mean different things, and an equivalence relation that is the prototype for most of higher mathematics.
+
+This lesson assumes you remember roughly what $\frac{1}{2}$ feels like and can read $\frac{3}{4}$ as "three-fourths." It does not assume you can add fractions without thinking; that is the next lesson. We are going to do something more important first: establish what a fraction *is* and when two fractions are *the same*. By the end you will know why $\frac{2}{4}$ and $\frac{1}{2}$ are not the same symbol but represent the same number, why $\frac{0}{0}$ is forbidden, and why a fraction is best thought of as an *equivalence class* of integer pairs — the same construction Galileo's contemporaries needed and the same one used today inside every CAS, every fixed-point DSP, and every rational-arithmetic library.
+
+You will leave this lesson with three things: a working definition of a rational number, the ability to simplify and compare fractions reliably, and an honest answer to the question "what is $\frac{1}{3}$ on a number line, really?"
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- State the **three meanings** of a fraction (part of a whole, quotient of integers, multiplicative operator) and pick the most useful one for a given problem.
+- Read and write fractions correctly: numerator, denominator, proper, improper, mixed.
+- Place fractions on the number line and explain why the rational numbers are *dense*.
+- Identify when two fractions are **equivalent** using the cross-product test: $\frac{a}{b} = \frac{c}{d} \iff ad = bc$ (with $b, d \ne 0$).
+- Simplify any fraction to **lowest terms** using the GCD.
+- Compare two fractions by (a) common denominator, (b) cross-multiplication, or (c) decimal conversion — and know which method is fastest in which situation.
+- Convert between improper fractions and mixed numbers.
+- Recognize fractions in disguise: ratios, percentages, probabilities, slopes, scaling factors, gear ratios.
+- Explain why the construction "ordered pairs of integers under an equivalence relation" produces the rational numbers $\mathbb{Q}$.
+
+## Why It Matters
+
+Engineers and scientists use fractions every day, but rarely the cute textbook kind like $\frac{1}{2} + \frac{1}{3}$. They use them in disguise:
+
+1. **Sensor calibration.** A pressure sensor outputs an integer reading 0–4095 representing a real range 0–100 kPa. The conversion is $\text{kPa} = \frac{100}{4095} \cdot \text{count}$. That $\frac{100}{4095}$ is a fraction. You will see thousands of these in embedded code.
+
+2. **Probability.** A drone vision system labels a detection as "70% confident." That 70% is the fraction $\frac{7}{10}$ — and probability is just the study of fractions in $[0, 1]$ with a few extra axioms.
+
+3. **Gear ratios.** A 60-tooth driven gear meshed with a 20-tooth driver has a gear ratio $\frac{60}{20} = \frac{3}{1}$. The fraction *is* the ratio.
+
+4. **Slope.** The slope of a line is $\frac{\Delta y}{\Delta x}$. Every derivative ever computed is, in some limit, a fraction.
+
+5. **Aspect ratios.** A 1920 × 1080 image has aspect ratio $\frac{1920}{1080} = \frac{16}{9}$. The simplification is the GCD reduction from the previous lesson.
+
+6. **Computer arithmetic.** Fixed-point math (used in DSPs, FPGAs, ML quantization) stores numbers as a fraction with a power-of-two denominator. A Q15 number is an integer $n$ with $-1 \le \frac{n}{2^{15}} < 1$. The "decimal point" in fixed-point math is literally a fraction.
+
+7. **Music and frequency.** A perfect fifth is the frequency ratio $\frac{3}{2}$. An octave is $\frac{2}{1}$. The whole theory of musical consonance, going back to Pythagoras, was the discovery that small-integer fraction ratios sound consonant.
+
+8. **Floating-point numbers.** Every IEEE-754 float is fundamentally a fraction: a sign bit, an integer mantissa, and a binary exponent. A `float` value of $0.5$ is exactly $\frac{1}{2}$. A `float` value of $0.1$ is *not* exactly $\frac{1}{10}$ — there is no finite binary fraction equal to one-tenth.
+
+The grade-school question "what is $\frac{1}{2} + \frac{1}{3}$?" pales next to the engineering question "what is the smallest exact fraction equal to this Q15 fixed-point reading?" — but the second question requires every single skill from the first.
+
+## Why This Idea Exists
+
+Fractions are at least 4,000 years old. The Egyptians, the Babylonians, and the Greeks all had fraction systems, although none of them had ours.
+
+The **Rhind Papyrus** (Egyptian, around 1650 BCE) contains a table of fractions, but the Egyptians only used *unit fractions* — fractions with numerator 1. They wrote $\frac{2}{5}$ as $\frac{1}{3} + \frac{1}{15}$. This was awkward but reflected an honest view: a fraction was always "one part of $n$." The fraction $\frac{1}{4}$ was a real thing because it described one of four equal pieces of a loaf, but $\frac{3}{4}$ required a separate notation (and was usually written as $\frac{1}{2} + \frac{1}{4}$).
+
+The **Babylonians** used a positional sexagesimal (base-60) system, so they wrote fractions as sums of $\frac{1}{60}, \frac{1}{3600}, \ldots$ — the same way we still write angles (60 minutes per degree, 60 seconds per minute) and times. The Babylonian astronomical tables in their fraction form are still legible today.
+
+The **Greeks** preferred to think of fractions as **ratios** rather than numbers. For Euclid, $\frac{2}{3}$ was not a number — it was a relationship between two integer quantities. This view, that fractions are essentially *pairs* of integers rather than single numbers, would eventually become the modern formalization.
+
+The notation $\frac{a}{b}$ comes from **Arab mathematicians** in the 12th century. Al-Hassar (around 1170 CE) wrote fractions vertically with a horizontal bar between numerator and denominator. This notation passed into Europe through Fibonacci's *Liber Abaci* (1202).
+
+The modern construction of $\mathbb{Q}$ — the set of rational numbers, formally defined as equivalence classes of integer pairs $(a, b)$ with $b \ne 0$ — was clarified in the 19th century, when mathematicians like Dedekind and Weierstrass were trying to put analysis on a rigorous foundation. The whole modern edifice of real and complex analysis rests on first having the rationals built correctly, and the rationals are built out of fractions and an equivalence relation.
+
+The reason humans bothered to invent this idea is simple: **you cannot measure the world with integers alone**. A piece of wood is not 4 cubits or 5 cubits — it is 4 and a bit. The "and a bit" forced the invention of fractions, and once invented, they did not stop being useful.
+
+## Plain-Language Intuition
+
+A fraction $\frac{a}{b}$ has three closely related meanings, all of which are correct:
+
+### Meaning 1: Part of a Whole
+
+Take a whole thing (a pizza, a rectangle, a unit interval). Divide it into $b$ equal parts. Take $a$ of them. The amount you have is $\frac{a}{b}$.
+
+$\frac{3}{4}$ means: divide one whole into 4 equal parts, take 3 of them.
+
+This is the meaning you learned first and the one most people remember. It works perfectly for $\frac{1}{2}, \frac{2}{3}, \frac{3}{4}$ and is intuitive on cakes, pizzas, and gas tanks.
+
+### Meaning 2: Quotient of Integers
+
+A fraction is the answer to a division question.
+
+$\frac{3}{4}$ is also the answer to "what is $3 \div 4$?"
+
+If you take 3 cookies and share them equally among 4 children, each child gets $\frac{3}{4}$ of a cookie. The fraction *is* the division.
+
+This is the most useful meaning when you are working with computers, because every division of integers produces a fraction (possibly with quotient and remainder, but a fraction nonetheless).
+
+### Meaning 3: Multiplicative Operator (Scaling Factor)
+
+A fraction is something you multiply by to scale.
+
+To find $\frac{3}{4}$ of 12, you multiply: $\frac{3}{4} \cdot 12 = 9$.
+
+The fraction $\frac{3}{4}$ acts like a function: it sends 12 to 9, sends 100 to 75, sends $x$ to $\frac{3x}{4}$. In this view a fraction is a *machine* for scaling.
+
+This is the meaning that dominates in engineering: voltage dividers, gear reductions, image resizing, probability, and conversions all use fractions as operators.
+
+### Why all three meanings agree
+
+These three meanings give the same answer for the same fraction. $\frac{3}{4}$ is 3-out-of-4 equal parts; $\frac{3}{4}$ is $3 \div 4 = 0.75$; $\frac{3}{4} \cdot 100 = 75$ which is 75% of the whole. The three views are equivalent and you should be fluent in all of them.
+
+## Core Theory
+
+### Notation
+
+A fraction is written $\frac{a}{b}$ where:
+
+- $a$ is the **numerator** (top); it tells how many parts.
+- $b$ is the **denominator** (bottom); it tells the size of each part.
+- The denominator $b$ must not be zero. (Dividing by zero is undefined.)
+
+The fraction is **proper** if $|a| < |b|$ (the value is between $-1$ and $1$), and **improper** if $|a| \ge |b|$. For example, $\frac{3}{4}$ is proper; $\frac{5}{4}$ is improper.
+
+An improper fraction can be written as a **mixed number** with a whole part: $\frac{5}{4} = 1\frac{1}{4}$ (read "one and one quarter").
+
+### Definition: The Rational Numbers $\mathbb{Q}$
+
+The set of **rational numbers** $\mathbb{Q}$ is the set of fractions $\frac{a}{b}$ where $a \in \mathbb{Z}$ (the integers) and $b \in \mathbb{Z} \setminus \{0\}$ (the nonzero integers), with the convention that two fractions are the **same number** if they reduce to the same simplest form.
+
+Symbolically:
+
+$$\mathbb{Q} = \left\{ \frac{a}{b} \,\middle|\, a, b \in \mathbb{Z}, b \ne 0 \right\} / \sim$$
+
+where the equivalence relation $\sim$ is defined below.
+
+### The Equivalence Relation (Two Fractions Are Equal When...)
+
+This is the load-bearing rule of fraction arithmetic:
+
+$$\boxed{\,\frac{a}{b} = \frac{c}{d} \iff ad = bc\,}$$
+
+(for $b, d \ne 0$).
+
+This is called the **cross-product test**.
+
+Examples:
+
+- $\frac{2}{4} = \frac{1}{2}$ because $2 \cdot 2 = 4 \cdot 1$. ✓
+- $\frac{6}{9} = \frac{2}{3}$ because $6 \cdot 3 = 9 \cdot 2 = 18$. ✓
+- $\frac{3}{5} \ne \frac{4}{7}$ because $3 \cdot 7 = 21$ but $5 \cdot 4 = 20$.
+
+You should think of the cross-product test as the *definition* of fraction equality, not a trick. Once you have this, everything else about fractions follows.
+
+### Equivalent Fractions and the Fundamental Equivalence Theorem
+
+**Theorem.** For any nonzero integer $k$, $\frac{a}{b} = \frac{ka}{kb}$.
+
+*Proof.* By the cross-product test: $a \cdot (kb) = b \cdot (ka)$ since both equal $kab$. ∎
+
+This means you can multiply numerator and denominator by the same nonzero number without changing the fraction. You can also *divide* numerator and denominator by any common factor (which is the same as multiplying by $\frac{1}{k}$ for some $k$).
+
+Multiplying numerator and denominator by the same thing is called **scaling up**; dividing them by a common factor is called **simplifying** or **reducing**.
+
+### Lowest Terms
+
+A fraction $\frac{a}{b}$ is in **lowest terms** (or **simplest form**) if $\gcd(|a|, |b|) = 1$ — that is, numerator and denominator share no common factor other than 1.
+
+**Procedure to simplify $\frac{a}{b}$ to lowest terms:**
+
+1. Compute $g = \gcd(|a|, |b|)$ (Euclidean algorithm from the prior lesson).
+2. Replace with $\frac{a/g}{b/g}$.
+3. By convention, the sign goes on top: $\frac{-3}{4} = -\frac{3}{4}$, and $\frac{3}{-4} = -\frac{3}{4}$.
+
+Example: simplify $\frac{420}{1050}$.
+
+$\gcd(420, 1050) = 210$ (from the prior lesson).
+
+$\frac{420 \div 210}{1050 \div 210} = \frac{2}{5}$.
+
+Every rational number has a *unique* representative in lowest terms (with positive denominator). This is why $\mathbb{Q}$ "works": every number has one canonical name.
+
+### Comparing Fractions
+
+To decide whether $\frac{a}{b} < \frac{c}{d}$ or $\frac{a}{b} > \frac{c}{d}$ (with positive denominators), use one of three methods:
+
+**Method A: Common denominator.** Rewrite both fractions with the LCM of the denominators as the common denominator, then compare numerators.
+
+$\frac{3}{8}$ vs $\frac{5}{12}$: LCM(8, 12) = 24. $\frac{3}{8} = \frac{9}{24}$, $\frac{5}{12} = \frac{10}{24}$. Since $9 < 10$, $\frac{3}{8} < \frac{5}{12}$.
+
+**Method B: Cross-multiplication.** For positive $b, d$: $\frac{a}{b} < \frac{c}{d} \iff ad < bc$.
+
+Same example: $3 \cdot 12 = 36$, $8 \cdot 5 = 40$. Since $36 < 40$, $\frac{3}{8} < \frac{5}{12}$. (No need to find LCM.)
+
+**Method C: Decimal conversion.** Convert both to decimals: $\frac{3}{8} = 0.375$, $\frac{5}{12} \approx 0.4167$. Since $0.375 < 0.4167$, $\frac{3}{8} < \frac{5}{12}$. (Useful when the numbers are awkward.)
+
+For two fractions with the *same* denominator, just compare numerators. For two fractions with the *same* numerator, the one with the *smaller* denominator is *larger* (each piece is bigger).
+
+### Mixed Numbers and Improper Fractions
+
+To convert improper to mixed: divide numerator by denominator with quotient $q$ and remainder $r$. Then $\frac{a}{b} = q\frac{r}{b}$.
+
+Example: $\frac{17}{5}$. $17 = 3 \cdot 5 + 2$. So $\frac{17}{5} = 3\frac{2}{5}$.
+
+To convert mixed to improper: $q\frac{r}{b} = \frac{qb + r}{b}$.
+
+Example: $4\frac{3}{7} = \frac{4 \cdot 7 + 3}{7} = \frac{31}{7}$.
+
+**Common engineering convention:** *always use improper fractions in calculations*. Mixed numbers are for human-friendly display only. The improper form is what you compute with.
+
+### Density of the Rationals
+
+Between any two distinct rational numbers, there is another rational number. (In fact, infinitely many.)
+
+Why? Given $\frac{a}{b} < \frac{c}{d}$ (with positive denominators), the **mediant** $\frac{a + c}{b + d}$ lies strictly between them. So does the arithmetic mean $\frac{1}{2}(\frac{a}{b} + \frac{c}{d}) = \frac{ad + bc}{2bd}$.
+
+This is what "density" means: the rationals have no "next" element. Between $0$ and $\frac{1}{1{,}000{,}000{,}000}$ there are infinitely many other rationals.
+
+**But the rationals do not fill the number line.** There exist real numbers (like $\sqrt{2}$ and $\pi$) that are *not* rational. The Pythagoreans discovered this fact about $\sqrt{2}$ in the 6th century BCE — reputedly the man who first noticed it was murdered for the impiety. The full study of which numbers are rational and which are not belongs to real analysis. For now: rationals are dense but incomplete.
+
+### Visualizing on the Number Line
+
+Place 0 on the number line. Then 1. Then divide the interval $[0, 1]$ into $b$ equal parts — each tick is $\frac{1}{b}$ apart. The $a$-th tick from zero is at $\frac{a}{b}$.
+
+The fraction $\frac{3}{4}$ is at the third quarter-mark between 0 and 1:
+
+```
+  0           1/4         2/4         3/4         1
+  +-----------+-----------+-----------+-----------+
+                                      *
+```
+
+(Note that $\frac{2}{4} = \frac{1}{2}$, so the middle tick is at "half" no matter how we labeled it.)
+
+Negative fractions are on the left side of 0. $-\frac{3}{4}$ is at the same distance from 0 as $\frac{3}{4}$, on the other side.
+
+Improper fractions extend past 1: $\frac{5}{4}$ is one tick past 1 in the $\frac{1}{4}$ grid.
+
+## Visual or Mental Model
+
+### Model 1: Area Model (best for part-of-whole intuition)
+
+Draw a rectangle. Divide it horizontally into $b$ equal strips. Shade $a$ of them. The shaded fraction is $\frac{a}{b}$.
+
+To see why $\frac{2}{4} = \frac{1}{2}$: draw a 1×1 square. Divide into 4 horizontal strips, shade 2 of them — top half is shaded. Now redraw the same shading by dividing into 2 horizontal strips, shade the top one — same shaded region. Same number; different names.
+
+To see why $\frac{a}{b} = \frac{ka}{kb}$ in general: take any area model, then sub-divide each existing strip into $k$ smaller strips. Now you have $kb$ total strips and $ka$ shaded ones. Same shaded area; the fraction has not changed.
+
+### Model 2: Number Line Model (best for ordering and density)
+
+Draw a horizontal line with 0 marked. Mark $1, 2, 3, \ldots$ to the right. Mark $-1, -2, -3, \ldots$ to the left.
+
+To place $\frac{a}{b}$: starting from 0, walk $a$ steps of length $\frac{1}{b}$. If $a$ is positive, walk right; if negative, walk left.
+
+The number line model reveals which fraction is bigger (right is bigger), and it reveals the density property (between any two ticks, more ticks).
+
+### Model 3: Division-Result Model (best for engineering and code)
+
+Imagine actually doing the division $a \div b$ and not stopping at the decimal point. The result is the fraction.
+
+This is the model your CPU uses. When you write `3 / 4` in Python with `from __future__ import division` (or in Python 3 by default), the result is `0.75`. The fraction $\frac{3}{4}$ is literally the division result.
+
+### Model 4: Multiplicative-Operator Model (best for scaling)
+
+Imagine a machine with an input port and an output port. The machine multiplies the input by some factor.
+
+A "$\frac{3}{4}$ machine" takes 100 in and produces 75 out. It takes 12 in and produces 9 out. It takes $x$ in and produces $\frac{3x}{4}$ out.
+
+Engineering uses this model constantly: a voltage divider with ratio $\frac{R_2}{R_1 + R_2}$ is a "$\frac{1}{3}$ machine" (or whatever) that scales the input voltage by that fraction.
+
+## Worked Examples
+
+### Example 1 — Simplify $\frac{36}{60}$
+
+Find $\gcd(36, 60)$. By Euclidean: $60 = 1 \cdot 36 + 24$; $36 = 1 \cdot 24 + 12$; $24 = 2 \cdot 12$. GCD = 12.
+
+$\frac{36}{60} = \frac{36/12}{60/12} = \frac{3}{5}$.
+
+### Example 2 — Simplify $\frac{1{,}920}{1{,}080}$ (Image Aspect Ratio)
+
+Find $\gcd(1920, 1080)$. Use Euclidean.
+
+- $1920 = 1 \cdot 1080 + 840$
+- $1080 = 1 \cdot 840 + 240$
+- $840 = 3 \cdot 240 + 120$
+- $240 = 2 \cdot 120 + 0$
+
+GCD = 120.
+
+$\frac{1920}{1080} = \frac{16}{9}$.
+
+The aspect ratio 16:9 was chosen for HDTV precisely because the underlying pixel counts simplify to small integers.
+
+### Example 3 — Are $\frac{18}{24}$ and $\frac{15}{20}$ Equal?
+
+Cross-product: $18 \cdot 20 = 360$; $24 \cdot 15 = 360$. Equal. ✓
+
+Check by simplification: $\frac{18}{24} = \frac{3}{4}$ (divide by 6); $\frac{15}{20} = \frac{3}{4}$ (divide by 5). Same. ✓
+
+### Example 4 — Compare $\frac{5}{7}$ and $\frac{7}{10}$
+
+Cross-multiplication: $5 \cdot 10 = 50$; $7 \cdot 7 = 49$. Since $50 > 49$, $\frac{5}{7} > \frac{7}{10}$.
+
+Decimal check: $\frac{5}{7} \approx 0.7143$; $\frac{7}{10} = 0.7$. ✓
+
+### Example 5 — Convert $\frac{47}{8}$ to a Mixed Number
+
+$47 = 5 \cdot 8 + 7$. So $\frac{47}{8} = 5\frac{7}{8}$.
+
+### Example 6 — Convert $7\frac{2}{9}$ to an Improper Fraction
+
+$7 \cdot 9 + 2 = 65$. So $7\frac{2}{9} = \frac{65}{9}$.
+
+### Example 7 — Find a Fraction Between $\frac{1}{3}$ and $\frac{1}{2}$
+
+Mediant: $\frac{1 + 1}{3 + 2} = \frac{2}{5}$. Check: $\frac{1}{3} \approx 0.333$, $\frac{2}{5} = 0.4$, $\frac{1}{2} = 0.5$. ✓
+
+(There are infinitely many others; the mediant is one specific choice that always works.)
+
+### Example 8 — Calibration Fraction
+
+A 12-bit ADC ($2^{12} = 4096$ counts) reads voltages 0.0 V to 3.3 V linearly. What fraction of full scale is a reading of 2,048 counts? What voltage?
+
+Fraction of full scale: $\frac{2048}{4096} = \frac{1}{2}$ (simplify by GCD = 2048).
+
+Voltage: $\frac{1}{2} \cdot 3.3 \text{ V} = 1.65 \text{ V}$.
+
+### Example 9 — Failure Mode: Wrong Sign
+
+A student is asked: "is $\frac{-3}{4}$ equal to $\frac{3}{-4}$?"
+
+The student says no (different signs in different places).
+
+By the cross-product test: $(-3) \cdot (-4) = 12$ and $4 \cdot 3 = 12$. Equal. ✓
+
+The convention is to write the sign on top (or out front): both equal $-\frac{3}{4}$.
+
+### Example 10 — Failure Mode: Adding Numerators and Denominators
+
+A student is asked: "compute $\frac{1}{2} + \frac{1}{3}$."
+
+The student writes $\frac{1 + 1}{2 + 3} = \frac{2}{5}$.
+
+This is wrong. (The correct answer is $\frac{5}{6}$, computed via a common denominator — covered in the next lesson.)
+
+The error is more interesting than it looks: $\frac{2}{5}$ *is* the mediant of $\frac{1}{2}$ and $\frac{1}{3}$, so it's between them. But the *sum* of $\frac{1}{2}$ and $\frac{1}{3}$ is larger than either one, so it can't possibly be between them. The mediant is not the sum. This is one of the most common mistakes in elementary mathematics, and it persists because the wrong answer ($\frac{2}{5}$) is at least *plausible*.
+
+### Example 11 — Failure Mode: Forgetting to Simplify
+
+A student computes a gear ratio as $\frac{60}{20}$ and leaves it. The driver gear has 20 teeth, the driven has 60. The student says "ratio is 60:20."
+
+Not wrong, but not done. In lowest terms, the ratio is $\frac{60}{20} = \frac{3}{1}$, which is the more conventional way to write it: "3:1 reduction." Every engineering field has conventions about how to present ratios in lowest terms.
+
+### Example 12 — Failure Mode: Denominator Zero
+
+A student writes $\frac{5}{0}$ in a calculation. This is not a real number. The expression $\frac{5}{0}$ has no value.
+
+Why? Because "$\frac{5}{0}$" would be the answer to "$5 = 0 \cdot x$" — but $0 \cdot x = 0$ for any $x$, never 5. There is no $x$ that works, so the fraction is undefined.
+
+In code, dividing by zero raises an error or produces `inf` (or `NaN`). Both behaviors are warnings that the math has broken down.
+
+## Engineering Connections
+
+### Fixed-Point Arithmetic in DSPs
+
+A "Q-format" number is an integer stored as a fraction with a power-of-2 denominator. A Q15 number is an integer $n$ in the range $[-2^{15}, 2^{15})$ representing the rational $\frac{n}{2^{15}}$, which lies in $[-1, 1)$. A Q1.30 number uses 1 integer bit and 30 fractional bits, giving the range $[-2, 2)$.
+
+Why fractions? Because audio processors and DSP chips need to do millions of multiplications per second, and floating-point hardware is large and power-hungry. A fixed-point multiply is just an integer multiply followed by a bit shift. The bit shift *is* the denominator change in fraction terms: dividing a Q15 product by $2^{15}$ to renormalize the implied fraction.
+
+Audio codecs (AAC, MP3), modems, embedded sensor processing, and FPGA-based signal chains overwhelmingly use Q-format fractions internally. ML model quantization (8-bit and 4-bit inference) uses the same idea.
+
+### Sensor Calibration
+
+A temperature sensor outputs $V_{\text{out}} = (T - T_0) \cdot k$ where $k$ has units of V/°C. To recover temperature from voltage: $T = T_0 + \frac{V_{\text{out}}}{k}$. That $\frac{V}{k}$ is a fraction whose value depends on calibration.
+
+In real embedded code you will see a constant like `0.00488f` for "volts per ADC count" (= $\frac{20}{4096}$ for a $\pm 10$ V ADC). That constant is a fraction reduced to its decimal form.
+
+### Image Resampling
+
+Resizing a $1920 \times 1080$ image to $640 \times 360$: width ratio $\frac{640}{1920} = \frac{1}{3}$, height ratio $\frac{360}{1080} = \frac{1}{3}$. Both reduce to the same fraction, so this is a clean 3× downsample.
+
+If the destination were $1280 \times 720$ instead: $\frac{1280}{1920} = \frac{2}{3}$, $\frac{720}{1080} = \frac{2}{3}$. Clean 2:3 downsample. The fraction tells the resampler exactly how to schedule its work.
+
+### Gear Trains in Robotics
+
+A planetary gearbox with ratio $\frac{100}{1}$ (100:1 reduction) turns the output 100 times slower than the input but with 100 times the torque (ignoring losses). The fraction is *literally* the ratio of speeds, and *inversely* the ratio of torques.
+
+A drone propeller direct-drive has gear ratio 1:1 — the fraction $\frac{1}{1}$ — and that is why fast brushless motors can swing big props at high RPM.
+
+### Voltage Dividers
+
+A resistor pair $R_1$ on top of $R_2$ to ground, with input $V_{\text{in}}$, outputs $V_{\text{out}} = V_{\text{in}} \cdot \frac{R_2}{R_1 + R_2}$.
+
+If $R_1 = R_2$, the output is $\frac{1}{2}$ of the input. If $R_1 = 9R_2$, the output is $\frac{1}{10}$ — useful for stepping a 10 V signal down to the 1 V range a microcontroller ADC can read.
+
+The voltage divider *is* a fraction-as-operator. This is also the elementary instance of the impedance-divider patterns in AC, signal processing, and antenna matching.
+
+### Computer Graphics: Alpha Blending
+
+When a graphics renderer combines a foreground pixel with a background pixel, it uses the alpha value $\alpha \in [0, 1]$ to weight:
+
+$$\text{output} = \alpha \cdot \text{fg} + (1 - \alpha) \cdot \text{bg}$$
+
+That $\alpha$ is a fraction (usually stored as 8 bits: $\frac{0}{255}, \frac{1}{255}, \ldots, \frac{255}{255}$). Every transparent UI element on your screen, every fade transition in a video, every anti-aliased edge of a rendered shape: a fraction times a color value, summed with another fraction times another color value.
+
+### Probability
+
+A probability is a rational number in $[0, 1]$ (in elementary cases). "Probability of heads is $\frac{1}{2}$" is literally a fraction.
+
+When you do Bayesian updates, you are computing $\frac{P(B|A) P(A)}{P(B)}$ — a ratio of probabilities, which is a ratio of fractions. The rules for manipulating these ratios are exactly the rules for manipulating fractions you are reviewing in this lesson.
+
+## Practice Set
+
+### Identification
+
+State whether each is proper or improper. Convert improper fractions to mixed numbers.
+
+1. $\frac{3}{8}$
+2. $\frac{11}{4}$
+3. $\frac{7}{7}$
+4. $\frac{15}{12}$
+5. $\frac{1}{9}$
+
+### Simplify to Lowest Terms
+
+6. $\frac{8}{12}$
+7. $\frac{18}{24}$
+8. $\frac{45}{60}$
+9. $\frac{100}{250}$
+10. $\frac{144}{216}$
+11. $\frac{1024}{2048}$
+12. $\frac{420}{1050}$
+13. $\frac{91}{143}$ (hint: $91 = 7 \cdot 13$, $143 = 11 \cdot 13$)
+14. $\frac{0}{17}$
+15. $\frac{-12}{18}$ (write with the sign on top, simplified)
+
+### Equivalence
+
+Are these pairs equal? Use the cross-product test.
+
+16. $\frac{2}{3}$ and $\frac{6}{9}$
+17. $\frac{4}{5}$ and $\frac{20}{25}$
+18. $\frac{3}{7}$ and $\frac{15}{36}$
+19. $\frac{-5}{8}$ and $\frac{10}{-16}$
+20. $\frac{0}{4}$ and $\frac{0}{9}$
+
+### Comparison
+
+Order each pair (or set) from smallest to largest.
+
+21. $\frac{2}{3}$ and $\frac{3}{4}$
+22. $\frac{5}{6}$ and $\frac{7}{8}$
+23. $\frac{4}{9}$ and $\frac{3}{7}$
+24. $\frac{11}{14}$ and $\frac{8}{11}$
+25. $\frac{3}{8}, \frac{2}{5}, \frac{7}{20}$ (order all three)
+
+### Mixed and Improper
+
+Convert improper to mixed.
+
+26. $\frac{27}{5}$
+27. $\frac{100}{9}$
+28. $\frac{18}{6}$ (degenerate — what happens?)
+
+Convert mixed to improper.
+
+29. $3\frac{2}{7}$
+30. $11\frac{5}{12}$
+
+### Density / Mediant
+
+Find a rational number strictly between each pair.
+
+31. $\frac{1}{4}$ and $\frac{1}{3}$
+32. $\frac{2}{5}$ and $\frac{3}{7}$
+33. $\frac{1}{1000}$ and $\frac{1}{999}$ (yes, there are infinitely many)
+
+### Number-Line Placement
+
+34. Place these on a number line of $[0, 2]$ in correct order: $\frac{3}{4}, \frac{5}{8}, \frac{1}{2}, \frac{11}{8}, 1, \frac{15}{8}$.
+35. Where is $-\frac{7}{3}$ on the number line? Between which two consecutive integers?
+
+### Applied
+
+36. A 14-bit ADC outputs counts 0–16383 over 0–5 V. What is the conversion fraction (counts to volts)? Reduce.
+37. A drone has 14.8 V battery, 80 Wh, drains at 22 A average. Express the remaining battery fraction after 10 minutes of flight. Simplify.
+38. A camera sensor is $7680 \times 4320$. What is the aspect ratio in lowest terms?
+39. A 200-tooth driver gear meshes with a 350-tooth driven gear. What is the gear ratio in lowest terms? Is the output faster or slower than the input?
+40. A voltage divider has $R_1 = 9.0$ kΩ on top and $R_2 = 1.0$ kΩ to ground. What fraction of the input appears at the output?
+
+### Challenge
+
+41. Prove that if $\frac{a}{b}$ is in lowest terms and $\frac{c}{d}$ is in lowest terms with $\frac{a}{b} = \frac{c}{d}$, then $a = \pm c$ and $b = \pm d$. (Uniqueness of lowest-terms representation.)
+42. Show that between any two distinct rationals $\frac{a}{b}$ and $\frac{c}{d}$ there are infinitely many rationals. (Hint: iterate the mediant.)
+43. The Stern–Brocot tree lists every positive rational exactly once. Starting from $\frac{0}{1}$ and $\frac{1}{0}$ as boundary nodes, each interior node is the mediant of its left and right boundaries. Construct the first three levels and verify that every fraction appearing is in lowest terms.
+44. Show that the rationals are *countable* — there are only as many of them as there are natural numbers. (Hint: list them by $\max(|a|, b)$ for $\frac{a}{b}$ in lowest terms with $b > 0$.)
+45. Find a fraction with denominator at most 10 that is closest to $\sqrt{2} \approx 1.4142$.
+
+### Error Spotting
+
+46. A student writes $\frac{2}{3} + \frac{1}{4} = \frac{3}{7}$. Find the error and predict the right answer's approximate size.
+47. A student claims $\frac{4}{5}$ and $\frac{8}{10}$ are different fractions because "the numbers are different." Address.
+48. A student says $\frac{3}{0}$ equals $0$. Address.
+49. A student says $\frac{6}{8}$ is in lowest terms because both numbers are even, but "even is the simplest case." Address.
+50. A student says $\frac{1}{2} < \frac{1}{3}$ because $2 < 3$. Address.
+
+### Answers
+
+1. Proper.
+2. Improper; $\frac{11}{4} = 2\frac{3}{4}$.
+3. Improper (equal to 1); $\frac{7}{7} = 1$.
+4. Improper; $\frac{15}{12} = 1\frac{3}{12} = 1\frac{1}{4}$.
+5. Proper.
+
+6. $\frac{2}{3}$ (divide by 4).
+7. $\frac{3}{4}$ (divide by 6).
+8. $\frac{3}{4}$ (divide by 15).
+9. $\frac{2}{5}$ (divide by 50).
+10. $\frac{2}{3}$ (gcd = 72).
+11. $\frac{1}{2}$.
+12. $\frac{2}{5}$.
+13. $\frac{7}{11}$ (divide by 13).
+14. $0$ (the fraction is just zero).
+15. $-\frac{2}{3}$.
+
+16. Equal: $2 \cdot 9 = 18 = 3 \cdot 6$. ✓
+17. Equal: $4 \cdot 25 = 100 = 5 \cdot 20$. ✓
+18. Not equal: $3 \cdot 36 = 108$ but $7 \cdot 15 = 105$.
+19. Equal: $-5 \cdot -16 = 80 = 8 \cdot 10$. ✓
+20. Equal (both are 0).
+
+21. $\frac{2}{3} < \frac{3}{4}$ (cross: $8 < 9$).
+22. $\frac{5}{6} < \frac{7}{8}$ (cross: $40 < 42$).
+23. $\frac{4}{9} > \frac{3}{7}$ (cross: $28 > 27$).
+24. $\frac{8}{11} < \frac{11}{14}$ (cross: $112 < 121$).
+25. $\frac{7}{20} < \frac{3}{8} < \frac{2}{5}$. (Common denominator 40: $\frac{14}{40}, \frac{15}{40}, \frac{16}{40}$.)
+
+26. $5\frac{2}{5}$.
+27. $11\frac{1}{9}$.
+28. $\frac{18}{6} = 3$ (a whole number; no fractional part).
+29. $\frac{23}{7}$.
+30. $\frac{137}{12}$.
+
+31. Mediant: $\frac{2}{7}$. (Check: $\frac{1}{4} = 0.25 < 0.286 < 0.333 = \frac{1}{3}$. ✓)
+32. Mediant: $\frac{5}{12}$. ($\frac{2}{5} = 0.4$; $\frac{5}{12} \approx 0.417$; $\frac{3}{7} \approx 0.429$.)
+33. Mediant: $\frac{2}{1999}$ (between $\frac{1}{1000}$ and $\frac{1}{999}$ since $\frac{2}{1999} \approx 0.0010005$).
+
+34. In order: $\frac{1}{2}, \frac{5}{8}, \frac{3}{4}, 1, \frac{11}{8}, \frac{15}{8}$.
+35. Between $-3$ and $-2$ (specifically at $-2.333\ldots$).
+
+36. $\frac{5}{16383}$ V/count. (Or in lowest terms: $\gcd(5, 16383) = 1$, so already in lowest terms.) Decimal: about $0.000305$ V/count.
+37. Power = 14.8 V × 22 A ≈ 325.6 W. In 10 minutes = $\frac{1}{6}$ hour, energy used = $\frac{325.6}{6} \approx 54.3$ Wh. Remaining: $\frac{80 - 54.3}{80} \approx \frac{25.7}{80} = \frac{257}{800}$, about 32%.
+38. $\frac{7680}{4320}$. $\gcd = 480$. $= \frac{16}{9}$. (Same as 1080p — that's why 8K UHD chose this size.)
+39. $\frac{350}{200} = \frac{7}{4}$. Output is slower (driven has more teeth).
+40. $\frac{R_2}{R_1 + R_2} = \frac{1}{10}$. Output is $\frac{1}{10}$ of input.
+
+41. Suppose $\frac{a}{b} = \frac{c}{d}$ with both in lowest terms. Then $ad = bc$. Since $\gcd(c, d) = 1$, $d | ad$ implies $d | b$. Symmetrically $b | d$. So $|b| = |d|$, and then $|a| = |c|$. Up to signs they are identical.
+42. Iterate the mediant. From $\frac{a}{b} < \frac{c}{d}$ get a new rational $\frac{a+c}{b+d}$ strictly between. Now you have *three* rationals $\frac{a}{b} < \frac{a+c}{b+d} < \frac{c}{d}$. Apply mediant to either subinterval to get more. The process never terminates.
+43. Level 0: $\frac{0}{1}, \frac{1}{0}$. Level 1: $\frac{1}{1}$ between them. Level 2: $\frac{1}{2}$ (between $\frac{0}{1}$ and $\frac{1}{1}$), $\frac{2}{1}$ (between $\frac{1}{1}$ and $\frac{1}{0}$). Level 3: $\frac{1}{3}, \frac{2}{3}, \frac{3}{2}, \frac{3}{1}$. All are in lowest terms (this is a theorem about the Stern–Brocot tree).
+44. List pairs $(a, b)$ with $b > 0$ by $\max(|a|, b)$ in increasing order, then within each level by some convention, skipping duplicates not in lowest terms. This enumerates $\mathbb{Q}$ as a sequence indexed by $\mathbb{N}$.
+45. $\frac{7}{5} = 1.4$. $\frac{10}{7} \approx 1.4286$. The closest with denominator $\le 10$ is $\frac{7}{5}$ (error $\approx 0.0142$).
+
+46. The student added numerators and denominators separately, which is wrong. The actual sum is $\frac{8}{12} + \frac{3}{12} = \frac{11}{12} \approx 0.917$, much larger than $\frac{3}{7} \approx 0.429$. (Sums are always larger than either addend for positive fractions.)
+47. By the cross-product test $\frac{4}{5} = \frac{8}{10}$ since $4 \cdot 10 = 40 = 5 \cdot 8$. They are equal — just different representations of the same number.
+48. $\frac{3}{0}$ is undefined, not 0. Division by zero has no answer.
+49. "Even" is not the same as "share a common factor." $\frac{6}{8}$ shares the factor 2. Divide both by 2 to get $\frac{3}{4}$, which is in lowest terms.
+50. Wrong: when numerators are equal, the *larger* denominator gives the *smaller* fraction (each piece is smaller). $\frac{1}{2} > \frac{1}{3}$.
+
+## Build Task
+
+Write a small Python module `rational_numbers.py` (or your language of choice).
+
+Required class/functions:
+
+1. `simplify(a, b)` — return a tuple `(p, q)` where $\frac{p}{q} = \frac{a}{b}$ in lowest terms with $q > 0$. Raise `ValueError` if $b = 0$.
+2. `equal(a, b, c, d)` — return True iff $\frac{a}{b} = \frac{c}{d}$. Use cross-product, but handle signs and zero-denominator gracefully.
+3. `compare(a, b, c, d)` — return $-1, 0, 1$ if $\frac{a}{b} <, =, > \frac{c}{d}$, respectively. Assume positive denominators.
+4. `mediant(a, b, c, d)` — return $\frac{a+c}{b+d}$ as a simplified pair. Verify in tests that the mediant lies strictly between the two inputs (when inputs are ordered).
+5. `to_mixed(a, b)` — return a tuple `(whole, p, q)` for the mixed-number representation. For example, `to_mixed(17, 5)` returns `(3, 2, 5)`.
+6. `from_mixed(whole, p, q)` — inverse of `to_mixed`. Return a simplified pair.
+
+Tests:
+
+- `simplify(36, 60) == (3, 5)`
+- `simplify(0, 4) == (0, 1)`
+- `simplify(-3, 4) == (-3, 4)` (sign on top)
+- `simplify(3, -4) == (-3, 4)` (sign normalized to top)
+- `equal(2, 3, 6, 9) is True`
+- `compare(2, 3, 3, 4) == -1` (because $\frac{2}{3} < \frac{3}{4}$)
+- `mediant(1, 3, 1, 2) == (2, 5)`
+- `to_mixed(47, 8) == (5, 7, 8)`
+- `from_mixed(5, 7, 8) == (47, 8)`
+- `simplify(1920, 1080) == (16, 9)`
+
+Stretch goals:
+
+- Implement a `Rational` class with `__add__`, `__sub__`, `__mul__`, `__truediv__`, `__eq__`, `__lt__`, `__str__`. (This is exactly what Python's `fractions.Fraction` provides; once you build your own, study `fractions.Fraction` and compare implementations.)
+- Build a function `closest_rational(x, max_denom)` that returns the rational closest to a given float `x` with denominator at most `max_denom`. Hint: brute-force is fine for small `max_denom`; the elegant solution uses the Stern–Brocot tree or continued fractions.
+- Implement the Stern–Brocot tree as a tree walker. Given a target rational $\frac{p}{q}$, return the sequence of L/R moves that reach it.
+
+## Quiz
+
+1. State the three meanings of a fraction.
+2. Why must the denominator of a fraction be nonzero?
+3. State the cross-product test for fraction equality.
+4. What does it mean for a fraction to be in lowest terms?
+5. Simplify $\frac{72}{120}$.
+6. Are $\frac{4}{9}$ and $\frac{12}{27}$ equal? Justify.
+7. Find a rational between $\frac{2}{7}$ and $\frac{3}{7}$.
+8. Convert $\frac{29}{4}$ to a mixed number.
+9. Convert $5\frac{3}{8}$ to an improper fraction.
+10. Without computing each decimal, decide which is larger: $\frac{13}{20}$ or $\frac{11}{17}$.
+11. Why do we say the rationals are "dense"?
+12. Why are the rationals nonetheless "incomplete" as a description of the real number line?
+13. Explain how the Q15 fixed-point format uses fractions.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Pass the inline lesson check at 100% on first attempt.
+- Simplify any fraction with at most 3-digit numerator and denominator to lowest terms in under 30 seconds, using the Euclidean algorithm in your head when needed.
+- Decide whether any two fractions are equal or compare them in under 20 seconds without a calculator.
+- Convert any improper fraction (and back) in your head.
+- Run your `rational_numbers.py` module with all listed tests passing.
+- Explain to someone else why $\frac{1}{2} + \frac{1}{3} \ne \frac{2}{5}$, naming the common error and its correct alternative.
+
+## Sources and Further Study
+
+- **MIT OCW 18.01 — Single Variable Calculus**, problem-set warm-ups assume mastery of fraction arithmetic. If this lesson feels hard, work the OCW pre-calculus refreshers first.
+- **Khan Academy — Arithmetic / Fractions**. Excellent free visual treatment of the same content for additional practice.
+- **Sybilla Beckmann, *Mathematics for Elementary Teachers***. Chapters on fractions are unusually careful about the three meanings.
+- **Hardy & Wright, *An Introduction to the Theory of Numbers***, Chapter III: Farey sequences and the Stern–Brocot tree. The cleanest treatment of fraction enumeration.
+- **Python `fractions` module documentation**. Read the source after writing your own `Rational` class — it is short and instructive.
+- **IEEE-754 floating-point standard**. The bridge from rationals to the floats you compute with daily.
+
+## Next Lesson Bridge
+
+You now have the *meaning* of a fraction and the algebra of *equality*. The next lesson, *Fractions: Add, Subtract, Multiply, Divide*, gives you the arithmetic operations: common denominators for $+$ and $-$, multiplication by multiplying across, and division as multiplication by the reciprocal. The "invert and multiply" rule for division will finally have a proper justification — it is not a mnemonic, it is a consequence of how multiplicative inverses work in $\mathbb{Q}$.
+
+After the fraction-arithmetic lesson, the path to decimals (lesson 9) and percentages (lesson 10) is essentially "what happens when the denominator is a power of 10." Then signed numbers and order of operations get re-grounded in $\mathbb{Q}$; then exponents and radicals extend the algebraic toolkit so we can finally write *equations* and solve them with confidence. Fractions are the gateway — and you are walking through it.

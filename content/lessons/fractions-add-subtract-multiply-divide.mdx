@@ -1,0 +1,624 @@
+# Fractions: Add, Subtract, Multiply, Divide
+
+## Re-entry Promise
+
+The previous lesson built the *what* of fractions — what they mean and when two of them are equal. This lesson builds the *how*: the four arithmetic operations on $\mathbb{Q}$. By the end you will know exactly why "to add fractions you need a common denominator" (it is not a rule someone made up — it is forced by what addition means), why "to divide fractions you invert and multiply" (it is a theorem, not a mnemonic), and how to compute any rational expression by hand without making the small errors that ruin so much engineering work.
+
+You should remember the cross-product equality test and the procedure for simplifying a fraction using the GCD; we will use both constantly. You do not need to remember any "rules" from grade school — we will rebuild them from first principles, justify each one, and then practice until they are mechanical.
+
+The reason this lesson matters is that almost every algebraic manipulation you will do later in algebra, calculus, physics, and signal processing reduces, in its last steps, to combining fractions. If you cannot add $\frac{3}{8} + \frac{2}{5}$ without thinking, you will not be able to manipulate transfer functions or solve resistor networks fluently. So we are going to build this very carefully.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Add and subtract any two fractions using the **least common denominator** (LCD), and recognize when two fractions are already over a common denominator.
+- Multiply any two fractions and simplify the result.
+- State the **multiplicative inverse** (reciprocal) of any nonzero rational.
+- Divide fractions using the identity $\frac{a/b}{c/d} = \frac{a}{b} \cdot \frac{d}{c}$, and justify *why* this is correct (not memorize it).
+- Handle **negative** fractions correctly through all four operations.
+- Add, subtract, multiply, and divide **mixed numbers** by converting to improper fractions first.
+- Apply the **order of operations** to expressions involving fractions.
+- Use fractions to model and solve common engineering problems: voltage dividers, gear-train torque calculations, drone weight fractions, mixture problems.
+- Recognize and avoid the common error modes: adding numerators-and-denominators-separately, distributing across the wrong operation, forgetting the sign, and failing to simplify the final answer.
+
+## Why It Matters
+
+Fraction arithmetic is the most heavily-used skill in mathematical work. Every algebra lesson, every calculus problem, every electrical-engineering symbolic computation, every chemistry stoichiometry calculation, and every probabilistic update relies on combining fractions correctly.
+
+A few engineering scenarios where the four operations show up:
+
+1. **Series resistors.** Two resistors in series have total resistance $R_1 + R_2$. If one is $\frac{3}{2}$ kΩ and the other is $\frac{7}{4}$ kΩ, you need $\frac{3}{2} + \frac{7}{4} = \frac{13}{4}$ kΩ = 3.25 kΩ. Fraction addition.
+
+2. **Parallel resistors.** Two resistors in parallel have $\frac{1}{R_{\text{total}}} = \frac{1}{R_1} + \frac{1}{R_2}$. Adding reciprocals everywhere. Fraction addition again, in a deeply pervasive form.
+
+3. **Gear-train output speed.** A 100:1 gearbox followed by a 5:1 chain reduction gives total reduction $\frac{100}{1} \cdot \frac{5}{1} = \frac{500}{1}$. Fraction multiplication.
+
+4. **Drone payload fraction.** A drone weighs $\frac{3}{4}$ kg empty and carries a $\frac{1}{4}$ kg sensor. The sensor is $\frac{1/4}{1} = \frac{1}{4}$ kg, and as a fraction of total weight it is $\frac{1/4}{3/4 + 1/4} = \frac{1/4}{1} = \frac{1}{4}$. Fraction addition and division together.
+
+5. **Probability.** P(A or B) = P(A) + P(B) − P(A and B) for two events. The inclusion–exclusion formula is a sum of fractions in $[0, 1]$.
+
+6. **Calculus.** $\frac{d}{dx}\frac{f(x)}{g(x)} = \frac{f'g - fg'}{g^2}$, the quotient rule. Every term is a fraction; the whole thing simplifies as a fraction.
+
+7. **Stoichiometry.** Mole ratios in chemistry are fractions. To convert grams of hydrogen to grams of water, you multiply by $\frac{1 \text{ mol H}_2}{2 \text{ g H}_2} \cdot \frac{1 \text{ mol H}_2\text{O}}{1 \text{ mol H}_2} \cdot \frac{18 \text{ g H}_2\text{O}}{1 \text{ mol H}_2\text{O}}$. Fraction multiplication chained through unit-conversion factors.
+
+The list is endless. Learning fraction arithmetic well now will pay back for the entire curriculum.
+
+## Why This Idea Exists
+
+The four operations on fractions were *not* obvious historically. Adding two fractions with different denominators required a leap of insight, because at first glance, $\frac{1}{2}$ and $\frac{1}{3}$ are denominated in "halves" and "thirds" — and just as you cannot literally add 3 apples and 2 oranges, you cannot literally add halves and thirds. You first have to convert them to a common unit.
+
+The Egyptians' unit-fraction system avoided this problem awkwardly by always representing fractions in additive unit form: $\frac{2}{5} = \frac{1}{3} + \frac{1}{15}$, and then you could add any two unit fractions by hand. Their multiplication and division procedures were elaborate.
+
+The Greeks treated fraction arithmetic through proportions: to add two proportions you had to use the theory of similar triangles. The Greek approach is unrecognizable as fraction algebra today.
+
+The modern fraction algebra came from **Indian** and **Arab** mathematicians between the 5th and 12th centuries. Brahmagupta (628 CE) gave rules for arithmetic on fractions, including negatives and zero. The Arabs picked up these rules through Indian sources and developed them further. The fraction-bar notation and the modern algorithms passed into Europe through Fibonacci's *Liber Abaci* (1202).
+
+The deepest insight — that division of fractions can be expressed as multiplication by the reciprocal — was likely Indian in origin and made it to Europe via the same path. The fact that *this works* is a consequence of how multiplicative inverses behave in any field, but it took mathematicians until the 19th century to fully axiomatize the structure.
+
+So fraction arithmetic, far from being "elementary," is the product of about 2,000 years of evolution. Knowing why it works is worth the effort.
+
+## Plain-Language Intuition
+
+### Addition and Subtraction
+
+You can only add or subtract fractions when they are denominated in the same unit — that is, when they share a denominator.
+
+Think of $\frac{1}{2}$ as "1 half" and $\frac{1}{4}$ as "1 quarter." You cannot add "1 half + 1 quarter" by lumping the numbers together — they are different sized pieces. But you *can* re-express $\frac{1}{2}$ as $\frac{2}{4}$ (= 2 quarters), and now you have "2 quarters + 1 quarter = 3 quarters" = $\frac{3}{4}$. That is the whole game.
+
+Subtraction is the same: you re-express in a common denominator, then subtract the numerators.
+
+The **common denominator** can be *any* common multiple of the two denominators, but the smallest one (the LCM, or **least common denominator** = LCD) keeps the numbers cleanest. You learned how to compute the LCM in the GCD/LCM lesson.
+
+### Multiplication
+
+Multiplying $\frac{a}{b}$ by $\frac{c}{d}$ means "take $\frac{a}{b}$ of $\frac{c}{d}$."
+
+Take $\frac{1}{2}$ of $\frac{2}{3}$: visually, divide a rectangle into thirds (3 vertical strips), shade two of them ($\frac{2}{3}$), then divide *horizontally* into halves and take the top half. The doubly-shaded region is $\frac{2}{6} = \frac{1}{3}$.
+
+The rule is: multiply the numerators, multiply the denominators.
+
+$$\frac{a}{b} \cdot \frac{c}{d} = \frac{a \cdot c}{b \cdot d}$$
+
+No common denominator needed. Multiplication is the *easy* operation.
+
+### Division
+
+A reciprocal is the multiplicative inverse: the reciprocal of $\frac{a}{b}$ (for $a \ne 0$) is $\frac{b}{a}$, because $\frac{a}{b} \cdot \frac{b}{a} = \frac{ab}{ab} = 1$.
+
+Division is multiplication by the reciprocal:
+
+$$\frac{a/b}{c/d} = \frac{a}{b} \cdot \frac{d}{c}$$
+
+The mnemonic "keep, change, flip" (keep the first fraction, change division to multiplication, flip the second) is correct — but it is a consequence of the algebra, not a separate rule.
+
+Why does this work? Because we can multiply numerator and denominator of any fraction by anything nonzero (the fundamental equivalence theorem):
+
+$$\frac{a/b}{c/d} = \frac{(a/b) \cdot (d/c)}{(c/d) \cdot (d/c)} = \frac{(a/b)(d/c)}{1} = \frac{a}{b} \cdot \frac{d}{c}$$
+
+That is the proof: multiplying top and bottom by the reciprocal of $c/d$ makes the bottom equal 1, leaving the original times the reciprocal.
+
+## Core Theory
+
+### Addition
+
+For fractions $\frac{a}{b}$ and $\frac{c}{d}$:
+
+$$\frac{a}{b} + \frac{c}{d} = \frac{a d + b c}{b d}$$
+
+This always works but does not always give lowest terms. To get the LCD-based form:
+
+1. Compute $L = \text{lcm}(b, d)$.
+2. Rewrite: $\frac{a}{b} = \frac{a \cdot (L/b)}{L}$ and $\frac{c}{d} = \frac{c \cdot (L/d)}{L}$.
+3. Add the numerators: $\frac{a \cdot (L/b) + c \cdot (L/d)}{L}$.
+4. Simplify if possible.
+
+Example: $\frac{3}{4} + \frac{5}{6}$.
+
+LCM(4, 6) = 12. Rewrite: $\frac{3}{4} = \frac{9}{12}$, $\frac{5}{6} = \frac{10}{12}$. Sum: $\frac{19}{12}$. Already in lowest terms (gcd 19 and 12 is 1). As mixed number: $1\frac{7}{12}$.
+
+Cross-multiplication form gives the same answer eventually: $\frac{3 \cdot 6 + 4 \cdot 5}{4 \cdot 6} = \frac{38}{24} = \frac{19}{12}$. ✓
+
+The cross-multiplication form is fine for paper-and-pencil. The LCD form usually keeps numbers smaller and is preferred for hand computation.
+
+### Subtraction
+
+Same idea, with minus:
+
+$$\frac{a}{b} - \frac{c}{d} = \frac{a d - b c}{b d}$$
+
+Example: $\frac{7}{8} - \frac{1}{12}$. LCM(8, 12) = 24. $\frac{7}{8} = \frac{21}{24}$, $\frac{1}{12} = \frac{2}{24}$. Subtract: $\frac{19}{24}$.
+
+### Multiplication
+
+$$\frac{a}{b} \cdot \frac{c}{d} = \frac{ac}{bd}$$
+
+**Pro tip:** cancel common factors *before* multiplying, not after. This keeps numbers small.
+
+$\frac{8}{15} \cdot \frac{25}{16}$: cancel a 5 from 25 and 15; cancel an 8 from 8 and 16. $\frac{1}{3} \cdot \frac{5}{2} = \frac{5}{6}$.
+
+Without cancellation first: $\frac{8 \cdot 25}{15 \cdot 16} = \frac{200}{240}$, which simplifies to $\frac{5}{6}$ but you had to factor 200 and 240. Slower and more error-prone.
+
+### Reciprocal
+
+For $a \ne 0$:
+
+$$\left( \frac{a}{b} \right)^{-1} = \frac{b}{a}$$
+
+The reciprocal swaps numerator and denominator. The reciprocal of 5 is $\frac{1}{5}$. The reciprocal of $\frac{3}{7}$ is $\frac{7}{3}$. The reciprocal of $-\frac{2}{5}$ is $-\frac{5}{2}$. The reciprocal of $0$ does *not* exist (0 has no multiplicative inverse).
+
+Identity: $x \cdot x^{-1} = 1$ for any nonzero $x$.
+
+### Division
+
+$$\frac{a/b}{c/d} = \frac{a}{b} \cdot \frac{d}{c} = \frac{ad}{bc}$$
+
+(provided $c \ne 0$). This is the "invert and multiply" rule. It is *not* a mnemonic; it is a theorem.
+
+**Proof.** Let $q = \frac{a/b}{c/d}$. By definition of division, $q$ satisfies $q \cdot \frac{c}{d} = \frac{a}{b}$. Multiplying both sides by $\frac{d}{c}$ (the reciprocal of $c/d$): $q \cdot 1 = \frac{a}{b} \cdot \frac{d}{c}$, so $q = \frac{ad}{bc}$. ∎
+
+Example: $\frac{2/3}{4/9}$.
+
+Invert and multiply: $\frac{2}{3} \cdot \frac{9}{4} = \frac{18}{12} = \frac{3}{2}$.
+
+Verify: $\frac{3}{2} \cdot \frac{4}{9} = \frac{12}{18} = \frac{2}{3}$. ✓
+
+### Signs
+
+A fraction is positive if numerator and denominator have the same sign; negative if they have different signs. Conventional form keeps the sign on the top:
+
+$$\frac{-a}{b} = \frac{a}{-b} = -\frac{a}{b}$$
+
+For arithmetic with signed fractions, treat the sign as a $\pm 1$ in front and use the same rules as for signed integer arithmetic (lesson 12 of this module). For example: $-\frac{3}{4} \cdot -\frac{5}{6} = +\frac{15}{24} = \frac{5}{8}$.
+
+### Mixed Numbers in Operations
+
+Always convert mixed numbers to improper fractions before computing. The mixed-number form is convenient for display but treacherous for arithmetic.
+
+Example: $2\frac{1}{3} + 1\frac{2}{5}$. Convert: $\frac{7}{3} + \frac{7}{5}$. Common denominator 15: $\frac{35}{15} + \frac{21}{15} = \frac{56}{15} = 3\frac{11}{15}$.
+
+Trying to add mixed numbers directly ("$2 + 1 = 3$, then $\frac{1}{3} + \frac{2}{5}$") works for addition but goes wrong fast for subtraction (borrowing across the whole part), multiplication (impossible to do directly), and division (worse). The improper-fraction-first habit prevents all of this.
+
+### Order of Operations with Fractions
+
+The standard PEMDAS hierarchy applies. Inside fractions, treat the numerator and denominator each as a single grouped expression. So $\frac{2 + 3}{4} = \frac{5}{4}$, not "$2 + \frac{3}{4}$." The fraction bar acts like invisible parentheses.
+
+A common notation pitfall: $\frac{1}{2x}$ — is this $\frac{1}{2x}$ (one over $2x$) or $\frac{x}{2}$? In standard handwritten convention $\frac{1}{2x}$ means $\frac{1}{2x}$. In ASCII/code, $1/2x$ is ambiguous and Python interprets it as $(1/2) \cdot x$. Always parenthesize: write `1/(2*x)` in code.
+
+### Combining All Four
+
+A general rational expression can be evaluated by repeated application of the rules. Example:
+
+$$\frac{2}{3} + \frac{1}{2} \cdot \frac{4}{5} - \frac{1}{6}$$
+
+By order of operations, multiplication first:
+
+$\frac{1}{2} \cdot \frac{4}{5} = \frac{4}{10} = \frac{2}{5}$.
+
+Now: $\frac{2}{3} + \frac{2}{5} - \frac{1}{6}$. Common denominator is LCM(3, 5, 6) = 30. Rewrite: $\frac{20}{30} + \frac{12}{30} - \frac{5}{30} = \frac{27}{30} = \frac{9}{10}$.
+
+### Identity and Inverse Elements
+
+For $+$ and $-$: the additive identity is $0 = \frac{0}{n}$ for any $n$. The additive inverse of $\frac{a}{b}$ is $-\frac{a}{b}$.
+
+For $\cdot$ and $\div$: the multiplicative identity is $1 = \frac{n}{n}$ for any $n \ne 0$. The multiplicative inverse of $\frac{a}{b}$ (for $a \ne 0$) is $\frac{b}{a}$.
+
+These properties make $\mathbb{Q}$ a **field**: a set with $+$, $-$, $\cdot$, $\div$ that behaves nicely. Other fields you'll encounter: $\mathbb{R}$ (real numbers), $\mathbb{C}$ (complex numbers), $\mathbb{Z}_p$ (integers mod $p$ for prime $p$). The fact that you can add and subtract and multiply and (almost always) divide reliably is what *being a field* means.
+
+## Visual or Mental Model
+
+### Addition: "Same-Size Pieces"
+
+Picture a pizza cut into 12 equal slices (you can always cut any pizza into more pieces). The fractions $\frac{1}{2}, \frac{1}{3}, \frac{1}{4}, \frac{1}{6}$ all describe whole-number quantities of those slices: $6, 4, 3, 2$ respectively.
+
+To add: count the slices. $\frac{1}{2} + \frac{1}{3} = 6 + 4 = 10$ slices out of 12 = $\frac{10}{12} = \frac{5}{6}$.
+
+This is exactly what the LCD does mathematically.
+
+### Multiplication: "Area"
+
+To compute $\frac{a}{b} \cdot \frac{c}{d}$: draw a $1 \times 1$ square. Cut it into a $b \times d$ grid (b rows, d columns). The shaded $\frac{a}{b}$ region is the top $a$ rows; the shaded $\frac{c}{d}$ region is the left $c$ columns. Their *intersection* is an $a \times c$ rectangle out of $b \times d$ cells. So the fraction of the unit square that is doubly shaded is $\frac{ac}{bd}$.
+
+This is why multiplication of fractions is *area* of the unit square restricted to the appropriate strip-by-strip intersection.
+
+### Division: "How Many Of?"
+
+$\frac{a}{b} \div \frac{c}{d}$ asks: "how many copies of $\frac{c}{d}$ fit into $\frac{a}{b}$?"
+
+Example: $\frac{3}{4} \div \frac{1}{8}$ asks "how many eighths fit into three-quarters?"
+
+$\frac{3}{4}$ is 6 eighths (since $\frac{3}{4} = \frac{6}{8}$). So 6 eighths fit. Answer: 6.
+
+Verify: $\frac{3/4}{1/8} = \frac{3}{4} \cdot \frac{8}{1} = \frac{24}{4} = 6$. ✓
+
+### Subtraction: "Take Away"
+
+Same as addition but moving the other way on the LCD-grid. Picture a 12-slice pizza with 6 slices (which is $\frac{6}{12} = \frac{1}{2}$). Take away 2 slices ($\frac{1}{6} = \frac{2}{12}$). 4 slices left = $\frac{4}{12} = \frac{1}{3}$.
+
+So $\frac{1}{2} - \frac{1}{6} = \frac{1}{3}$. The visualization makes the arithmetic obvious.
+
+## Worked Examples
+
+### Example 1 — Addition with Small LCD
+
+$\frac{2}{3} + \frac{1}{4}$.
+
+LCM(3, 4) = 12. $\frac{2}{3} = \frac{8}{12}$, $\frac{1}{4} = \frac{3}{12}$. Sum: $\frac{11}{12}$.
+
+### Example 2 — Addition with Larger LCD
+
+$\frac{5}{12} + \frac{7}{18}$.
+
+LCM(12, 18) = 36. $\frac{5}{12} = \frac{15}{36}$, $\frac{7}{18} = \frac{14}{36}$. Sum: $\frac{29}{36}$. Already in lowest terms.
+
+### Example 3 — Three Fractions
+
+$\frac{1}{2} + \frac{1}{3} + \frac{1}{5}$.
+
+LCM(2, 3, 5) = 30. $\frac{1}{2} = \frac{15}{30}$, $\frac{1}{3} = \frac{10}{30}$, $\frac{1}{5} = \frac{6}{30}$. Sum: $\frac{31}{30} = 1\frac{1}{30}$.
+
+### Example 4 — Subtraction with Borrowing
+
+$3 - \frac{2}{7}$.
+
+Rewrite 3 as $\frac{21}{7}$. Subtract: $\frac{21}{7} - \frac{2}{7} = \frac{19}{7} = 2\frac{5}{7}$.
+
+### Example 5 — Multiplication with Cancellation
+
+$\frac{14}{15} \cdot \frac{25}{21}$.
+
+Cancel a 7 from 14 and 21: $\frac{2}{15} \cdot \frac{25}{3}$. Cancel a 5 from 25 and 15: $\frac{2}{3} \cdot \frac{5}{3} = \frac{10}{9}$.
+
+Verify without cancellation: $\frac{14 \cdot 25}{15 \cdot 21} = \frac{350}{315}$. GCD(350, 315) = 35. $\frac{350}{315} = \frac{10}{9}$. ✓
+
+### Example 6 — Division
+
+$\frac{3/8}{5/12}$.
+
+Invert and multiply: $\frac{3}{8} \cdot \frac{12}{5} = \frac{36}{40} = \frac{9}{10}$.
+
+### Example 7 — Mixed-Number Multiplication
+
+$2\frac{1}{2} \cdot 1\frac{3}{4}$.
+
+Convert: $\frac{5}{2} \cdot \frac{7}{4} = \frac{35}{8} = 4\frac{3}{8}$.
+
+### Example 8 — Negative Fractions
+
+$-\frac{3}{4} + \frac{5}{6}$.
+
+LCM(4, 6) = 12. $-\frac{3}{4} = -\frac{9}{12}$, $\frac{5}{6} = \frac{10}{12}$. Sum: $\frac{1}{12}$.
+
+### Example 9 — Combined Operations
+
+$\frac{1}{2} \cdot \left( \frac{3}{4} + \frac{1}{6} \right)$.
+
+Inner sum first. LCM(4, 6) = 12. $\frac{3}{4} = \frac{9}{12}$, $\frac{1}{6} = \frac{2}{12}$. Sum: $\frac{11}{12}$.
+
+Now $\frac{1}{2} \cdot \frac{11}{12} = \frac{11}{24}$.
+
+### Example 10 — Parallel Resistors
+
+Two resistors $R_1 = 6$ Ω and $R_2 = 12$ Ω in parallel:
+
+$\frac{1}{R_{\text{eq}}} = \frac{1}{6} + \frac{1}{12} = \frac{2}{12} + \frac{1}{12} = \frac{3}{12} = \frac{1}{4}$.
+
+So $R_{\text{eq}} = 4$ Ω.
+
+The parallel formula is exactly fraction addition applied to reciprocals.
+
+### Example 11 — Voltage Divider
+
+Battery 9 V drives two resistors in series: 5 kΩ on top, 1 kΩ to ground. Voltage at the midpoint:
+
+$V_{\text{mid}} = 9 \cdot \frac{1}{5 + 1} = 9 \cdot \frac{1}{6} = \frac{9}{6} = \frac{3}{2} = 1.5 \text{ V}$.
+
+Fraction multiplication of the input by the divider ratio.
+
+### Example 12 — Stoichiometric Conversion
+
+Convert 4 grams of hydrogen (H₂, molar mass 2 g/mol) to grams of water (H₂O, molar mass 18 g/mol). Reaction: $2\text{H}_2 + \text{O}_2 \to 2\text{H}_2\text{O}$ (1 mol H₂ → 1 mol H₂O).
+
+$4 \text{ g H}_2 \cdot \frac{1 \text{ mol H}_2}{2 \text{ g H}_2} \cdot \frac{1 \text{ mol H}_2\text{O}}{1 \text{ mol H}_2} \cdot \frac{18 \text{ g H}_2\text{O}}{1 \text{ mol H}_2\text{O}} = 4 \cdot \frac{1}{2} \cdot 18 = 36 \text{ g H}_2\text{O}$.
+
+Three fraction multiplications, each providing a unit conversion.
+
+### Example 13 — Failure Mode: "Add Across"
+
+A student computes $\frac{1}{2} + \frac{1}{3} = \frac{2}{5}$.
+
+Wrong. Correct: LCM(2, 3) = 6. $\frac{1}{2} = \frac{3}{6}$, $\frac{1}{3} = \frac{2}{6}$. Sum: $\frac{5}{6}$.
+
+The student computed the *mediant* instead of the sum. Plausibility check: $\frac{2}{5} = 0.4 < \frac{1}{2}$, so the sum cannot be smaller than $\frac{1}{2}$. The answer $\frac{2}{5}$ is impossibly small.
+
+### Example 14 — Failure Mode: Forgetting to Distribute
+
+A student computes $\frac{1}{2} \cdot (3 + \frac{1}{4}) = \frac{1}{2} \cdot 3 + \frac{1}{4} = \frac{3}{2} + \frac{1}{4} = \frac{7}{4}$.
+
+Wrong: forgot to multiply $\frac{1}{4}$ by $\frac{1}{2}$ also. Correct: $\frac{1}{2} \cdot 3 + \frac{1}{2} \cdot \frac{1}{4} = \frac{3}{2} + \frac{1}{8}$. LCM(2, 8) = 8. $\frac{12}{8} + \frac{1}{8} = \frac{13}{8}$.
+
+### Example 15 — Failure Mode: Forgetting Sign in Division
+
+A student computes $\frac{-3/4}{2/5} = \frac{3}{4} \cdot \frac{5}{2} = \frac{15}{8}$.
+
+Wrong sign: $-\frac{3}{4}$ divided by a positive is negative. Correct: $-\frac{15}{8}$.
+
+### Example 16 — Failure Mode: Reciprocal of Zero
+
+A student tries to compute $\frac{5}{0/3}$, treats $0/3$ as the denominator, then "invert and multiply" gives $\frac{5}{1} \cdot \frac{3}{0}$. The student writes "undefined."
+
+Correct, but for the wrong reason. The expression $\frac{5}{0/3}$ is undefined because $0/3 = 0$, and you cannot divide by zero. The "invert and multiply" step produced a $\frac{3}{0}$ inside, which is also undefined. Both ways spot the same problem.
+
+The lesson: zero in a denominator (whether starting or appearing after operations) means the expression is undefined. Always check.
+
+## Engineering Connections
+
+### Parallel-Series Resistor Networks
+
+The parallel-resistor formula $\frac{1}{R_\text{eq}} = \frac{1}{R_1} + \frac{1}{R_2} + \ldots$ is reciprocal-sum, then reciprocal-of-the-result. Every engineering student should be able to compute $\frac{1}{6} + \frac{1}{8}$ in their head: LCM 24, $\frac{4 + 3}{24} = \frac{7}{24}$, reciprocal $\frac{24}{7} \approx 3.43$ Ω. That's the equivalent resistance of 6 Ω and 8 Ω in parallel.
+
+Multi-resistor parallel networks are just bigger fraction sums. The whole field of electronics rests on fluency here.
+
+### Time-Constant Calculations
+
+An RC low-pass filter has time constant $\tau = RC$. Build a 1 kHz cutoff with $C = 100$ nF: $\tau = \frac{1}{2\pi f_c} = \frac{1}{2\pi \cdot 1000} \approx 159 \mu\text{s}$. $R = \tau/C = \frac{159 \cdot 10^{-6}}{100 \cdot 10^{-9}} = \frac{159}{0.1} = 1590$ Ω.
+
+Every step is fraction arithmetic with scientific notation. Scientific notation is the topic of lesson 15 in this module; learn it after you have fractions cold.
+
+### Gear-Train Total Ratios
+
+A drone or robot drivetrain with multiple gear stages has total ratio = product of individual stage ratios. Two stages of $\frac{4}{1}$ and $\frac{3}{1}$ give total $\frac{12}{1}$, meaning the output is 12 times slower (and 12× the torque before losses). Multiplication of fractions.
+
+If you want the output speed for an input speed of 7200 RPM: $\frac{7200}{12} = 600$ RPM. Division of integers, which is a fraction operation.
+
+### Drone Weight Distribution
+
+A drone has frame mass $\frac{1}{2}$ kg, battery $\frac{3}{4}$ kg, motors and propellers $\frac{1}{4}$ kg, payload $\frac{1}{2}$ kg. Total: LCM is 4. $\frac{2 + 3 + 1 + 2}{4} = \frac{8}{4} = 2$ kg.
+
+The payload fraction: $\frac{1/2}{2} = \frac{1}{4}$. The drone is 25% payload by mass — a reasonable target for an aerial vehicle.
+
+### Voltage Divider Ladder for ADC Reference
+
+A 12-bit ADC has a reference voltage that may need to be divided to match a sensor's output range. A 0-1 V sensor on a 3.3 V ADC reference uses only $\frac{1}{3.3} \approx 30\%$ of the dynamic range, losing about 1.7 bits of resolution. Better: divide the reference by $\frac{1}{3.3}$ using a voltage divider, recovering full range.
+
+The divider design: $V_\text{out}/V_\text{in} = R_2/(R_1 + R_2) = 1/3.3$. Pick $R_1 + R_2 = 33$ kΩ, then $R_2 = 10$ kΩ and $R_1 = 23$ kΩ. Done by fraction algebra.
+
+### Probability Updates (Bayes)
+
+If $P(A) = \frac{1}{4}$ and $P(B|A) = \frac{2}{3}$ and $P(B) = \frac{1}{3}$, then Bayes gives:
+
+$P(A|B) = \frac{P(B|A) P(A)}{P(B)} = \frac{(2/3)(1/4)}{1/3} = \frac{2/12}{1/3} = \frac{1}{6} \cdot \frac{3}{1} = \frac{1}{2}$.
+
+Every Bayesian update is a fraction expression evaluation.
+
+## Practice Set
+
+### Addition
+
+1. $\frac{1}{2} + \frac{1}{3}$
+2. $\frac{2}{5} + \frac{1}{10}$
+3. $\frac{3}{8} + \frac{5}{12}$
+4. $\frac{4}{9} + \frac{2}{15}$
+5. $\frac{7}{12} + \frac{11}{18}$
+6. $\frac{1}{2} + \frac{1}{3} + \frac{1}{4}$
+7. $\frac{2}{3} + 1\frac{1}{2}$ (mixed)
+8. $\frac{1}{2} + \frac{1}{4} + \frac{1}{8} + \frac{1}{16}$
+
+### Subtraction
+
+9. $\frac{5}{6} - \frac{1}{4}$
+10. $\frac{7}{8} - \frac{2}{3}$
+11. $1 - \frac{3}{7}$
+12. $\frac{11}{12} - \frac{5}{8}$
+13. $2\frac{1}{4} - \frac{7}{8}$
+14. $3 - 1\frac{2}{5}$
+
+### Multiplication
+
+15. $\frac{2}{3} \cdot \frac{3}{4}$
+16. $\frac{5}{8} \cdot \frac{4}{15}$
+17. $\frac{7}{10} \cdot \frac{20}{21}$
+18. $\frac{14}{27} \cdot \frac{9}{14}$ (use cancellation)
+19. $2 \cdot \frac{3}{8}$
+20. $\frac{2}{3} \cdot \frac{4}{5} \cdot \frac{15}{16}$
+21. $\left(\frac{3}{4}\right)^2$
+22. $\left(\frac{2}{5}\right)^3$
+
+### Division
+
+23. $\frac{3}{4} \div \frac{1}{2}$
+24. $\frac{2}{3} \div \frac{4}{9}$
+25. $\frac{7}{8} \div \frac{14}{15}$
+26. $5 \div \frac{2}{3}$
+27. $\frac{1}{4} \div 3$
+28. $\frac{a/b}{1} = ?$ (for $b \ne 0$)
+29. $\frac{1}{a/b} = ?$ (for $a, b \ne 0$)
+
+### Mixed-Operation
+
+30. $\frac{1}{2} + \frac{1}{3} \cdot \frac{1}{4}$
+31. $\left(\frac{1}{2} + \frac{1}{3}\right) \cdot \frac{6}{5}$
+32. $\frac{2}{3} \cdot \frac{4}{5} - \frac{1}{2}$
+33. $\frac{\frac{1}{2} + \frac{1}{3}}{\frac{1}{2} - \frac{1}{3}}$ (compound fraction)
+34. $\frac{1}{1 + \frac{1}{2}}$
+35. $1 - \frac{1}{1 + \frac{1}{2}}$
+36. $\frac{2/3 \cdot 5/8}{1/4}$
+
+### Negative Fractions
+
+37. $-\frac{3}{4} + \frac{1}{6}$
+38. $-\frac{2}{5} - \frac{3}{10}$
+39. $-\frac{3}{8} \cdot \frac{4}{9}$
+40. $\frac{-5/6}{2/3}$
+41. $-\frac{3}{4} \cdot -\frac{8}{15}$
+
+### Applied
+
+42. Two resistors $R_1 = 4$ Ω and $R_2 = 6$ Ω in parallel. Find $R_\text{eq}$.
+43. Three resistors $R_1 = 10$ Ω, $R_2 = 20$ Ω, $R_3 = 30$ Ω in parallel. Find $R_\text{eq}$.
+44. A voltage divider: 12 V source, $R_1 = 8$ kΩ on top, $R_2 = 4$ kΩ to ground. Find $V_\text{out}$.
+45. A gear train has stages with reductions $\frac{5}{1}$, $\frac{2}{1}$, $\frac{3}{2}$. Find the total reduction.
+46. A drone burns 25% of its battery in the first 5 minutes. What fraction of total flight time can it expect to deliver? (Assume linear consumption.)
+47. A pizza is divided into 8 slices. You eat $\frac{3}{8}$. A friend eats $\frac{2}{8}$. What fraction is left?
+48. A solar panel produces $\frac{3}{4}$ of its rated power on a partly cloudy day. The rated power is $\frac{200}{1}$ W. What is actual power?
+49. A printer prints a page in $\frac{1}{6}$ minute. How long to print 100 pages?
+50. A motor has gear reduction $\frac{200}{1}$. It spins at 6000 RPM. Output shaft RPM?
+
+### Challenge
+
+51. Compute $\sum_{k=1}^{4} \frac{1}{k(k+1)}$ as a single simplified fraction. (Hint: partial fractions. $\frac{1}{k(k+1)} = \frac{1}{k} - \frac{1}{k+1}$ telescopes.)
+52. Compute the harmonic mean of 6 and 12: HM $= \frac{2}{\frac{1}{6} + \frac{1}{12}}$. Compare to the arithmetic mean.
+53. Express $0.\overline{3}$ (the repeating decimal $0.333\ldots$) as a fraction. (You can argue by setting $x = 0.\overline{3}$, then $10x = 3.\overline{3}$, then subtracting.)
+54. Continued fraction: compute $1 + \frac{1}{1 + \frac{1}{1 + \frac{1}{1}}}$ as a single simplified fraction.
+55. The Egyptian-style decomposition: write $\frac{2}{7}$ as a sum of two distinct unit fractions. (Several decompositions exist.)
+56. Show that $\frac{1}{n(n+1)} = \frac{1}{n} - \frac{1}{n+1}$ for any $n \ne 0, -1$. (Verify with a single fraction sum.)
+
+### Error Spotting
+
+57. A student writes $\frac{1}{2} + \frac{1}{4} = \frac{2}{6} = \frac{1}{3}$. Find both errors.
+58. A student writes $\frac{2}{3} \cdot \frac{3}{4} = \frac{2}{4} = \frac{1}{2}$ (cancelling the 3s vertically). Address.
+59. A student writes $\frac{3}{4} \div \frac{1}{2} = \frac{3}{2}$ by cross-multiplying numerators and denominators in a way that looks like "$\frac{3 \cdot 2}{4 \cdot 1}$." Is the answer right? Is the reasoning right?
+60. A student writes $\frac{1/2}{3} = \frac{3}{2}$. Address.
+
+### Answers
+
+1. $\frac{5}{6}$.
+2. $\frac{1}{2}$ ($\frac{2}{5} + \frac{1}{10} = \frac{4}{10} + \frac{1}{10} = \frac{5}{10}$).
+3. $\frac{19}{24}$ ($\frac{9}{24} + \frac{10}{24}$).
+4. LCM(9, 15) = 45. $\frac{20}{45} + \frac{6}{45} = \frac{26}{45}$.
+5. LCM(12, 18) = 36. $\frac{21}{36} + \frac{22}{36} = \frac{43}{36} = 1\frac{7}{36}$.
+6. LCM(2, 3, 4) = 12. $\frac{6+4+3}{12} = \frac{13}{12} = 1\frac{1}{12}$.
+7. Convert: $\frac{2}{3} + \frac{3}{2}$. LCM 6: $\frac{4+9}{6} = \frac{13}{6} = 2\frac{1}{6}$.
+8. LCM is 16. $\frac{8+4+2+1}{16} = \frac{15}{16}$.
+
+9. LCM(6, 4) = 12. $\frac{10 - 3}{12} = \frac{7}{12}$.
+10. LCM(8, 3) = 24. $\frac{21 - 16}{24} = \frac{5}{24}$.
+11. $\frac{7 - 3}{7} = \frac{4}{7}$.
+12. LCM(12, 8) = 24. $\frac{22 - 15}{24} = \frac{7}{24}$.
+13. $\frac{9}{4} - \frac{7}{8} = \frac{18}{8} - \frac{7}{8} = \frac{11}{8} = 1\frac{3}{8}$.
+14. $3 - \frac{7}{5} = \frac{15-7}{5} = \frac{8}{5} = 1\frac{3}{5}$.
+
+15. $\frac{6}{12} = \frac{1}{2}$.
+16. $\frac{20}{120} = \frac{1}{6}$. (Or cancel 4 and 8: $\frac{5}{2} \cdot \frac{1}{15} = \frac{1}{6}$.)
+17. $\frac{140}{210} = \frac{2}{3}$. (Cancel: $\frac{1}{10} \cdot \frac{20}{3} \cdot 7/7 \to \frac{20}{30} = \frac{2}{3}$.)
+18. Cancel 14: $\frac{1}{27} \cdot 9 / 1 = \frac{9}{27} = \frac{1}{3}$.
+19. $\frac{6}{8} = \frac{3}{4}$.
+20. $\frac{2 \cdot 4 \cdot 15}{3 \cdot 5 \cdot 16} = \frac{120}{240} = \frac{1}{2}$. (Cancel: $2/16 = 1/8$, $4/5 \cdot 15 = 12$, then $12/24 = 1/2$.)
+21. $\frac{9}{16}$.
+22. $\frac{8}{125}$.
+
+23. $\frac{3}{4} \cdot 2 = \frac{6}{4} = \frac{3}{2} = 1\frac{1}{2}$.
+24. $\frac{2}{3} \cdot \frac{9}{4} = \frac{18}{12} = \frac{3}{2}$.
+25. $\frac{7}{8} \cdot \frac{15}{14} = \frac{105}{112} = \frac{15}{16}$.
+26. $5 \cdot \frac{3}{2} = \frac{15}{2}$.
+27. $\frac{1}{4} \cdot \frac{1}{3} = \frac{1}{12}$.
+28. $\frac{a}{b}$.
+29. $\frac{b}{a}$.
+
+30. Mult first: $\frac{1}{3} \cdot \frac{1}{4} = \frac{1}{12}$. Sum: $\frac{1}{2} + \frac{1}{12} = \frac{6+1}{12} = \frac{7}{12}$.
+31. Sum first: $\frac{5}{6}$. Then $\cdot \frac{6}{5} = 1$.
+32. $\frac{8}{15} - \frac{1}{2}$. LCM 30. $\frac{16 - 15}{30} = \frac{1}{30}$.
+33. Top: $\frac{5}{6}$. Bottom: $\frac{1}{6}$. $\frac{5/6}{1/6} = 5$.
+34. $\frac{1}{3/2} = \frac{2}{3}$.
+35. $1 - \frac{2}{3} = \frac{1}{3}$.
+36. $\frac{2 \cdot 5}{3 \cdot 8} = \frac{10}{24} = \frac{5}{12}$. Then $\div \frac{1}{4}$: $\frac{5}{12} \cdot 4 = \frac{20}{12} = \frac{5}{3}$.
+
+37. LCM 12. $-\frac{9}{12} + \frac{2}{12} = -\frac{7}{12}$.
+38. LCM 10. $-\frac{4}{10} - \frac{3}{10} = -\frac{7}{10}$.
+39. $-\frac{12}{72} = -\frac{1}{6}$.
+40. $-\frac{5}{6} \cdot \frac{3}{2} = -\frac{15}{12} = -\frac{5}{4}$.
+41. (negative · negative = positive) $\frac{24}{60} = \frac{2}{5}$.
+
+42. $\frac{1}{4} + \frac{1}{6} = \frac{3+2}{12} = \frac{5}{12}$. $R_\text{eq} = \frac{12}{5} = 2.4$ Ω.
+43. LCM 60. $\frac{6+3+2}{60} = \frac{11}{60}$. $R_\text{eq} = \frac{60}{11} \approx 5.45$ Ω.
+44. $V_\text{out} = 12 \cdot \frac{4}{12} = 4$ V.
+45. $\frac{5}{1} \cdot \frac{2}{1} \cdot \frac{3}{2} = \frac{30}{2} = 15$. So $15:1$ total.
+46. 25% in 5 min means 100% in 20 min. So 20-minute total flight (under this linear-consumption assumption).
+47. Eaten: $\frac{3+2}{8} = \frac{5}{8}$. Left: $\frac{3}{8}$.
+48. $\frac{3}{4} \cdot 200 = 150$ W.
+49. $100 \cdot \frac{1}{6} = \frac{100}{6} = \frac{50}{3} \approx 16.67$ minutes.
+50. $\frac{6000}{200} = 30$ RPM.
+
+51. Telescoping: $(\frac{1}{1} - \frac{1}{2}) + (\frac{1}{2} - \frac{1}{3}) + (\frac{1}{3} - \frac{1}{4}) + (\frac{1}{4} - \frac{1}{5}) = 1 - \frac{1}{5} = \frac{4}{5}$.
+52. Bottom: $\frac{1}{6} + \frac{1}{12} = \frac{3}{12} = \frac{1}{4}$. HM $= \frac{2}{1/4} = 8$. AM $= \frac{6+12}{2} = 9$. HM $\le$ AM (always true).
+53. $9x = 3$ so $x = \frac{1}{3}$.
+54. Innermost: $1$. Then $1 + 1 = 2$. Then $1 + \frac{1}{2} = \frac{3}{2}$. Then $1 + \frac{2}{3} = \frac{5}{3}$.
+55. $\frac{2}{7} = \frac{1}{4} + \frac{1}{28}$, since $\frac{7+1}{28} = \frac{8}{28} = \frac{2}{7}$.
+56. $\frac{1}{n} - \frac{1}{n+1} = \frac{(n+1) - n}{n(n+1)} = \frac{1}{n(n+1)}$. ✓
+
+57. Two errors: (1) cannot add denominators directly — needs LCD; (2) "$\frac{2}{6} = \frac{1}{3}$" is correct simplification but applied to the wrong intermediate. Correct: $\frac{1}{2} + \frac{1}{4} = \frac{2}{4} + \frac{1}{4} = \frac{3}{4}$.
+58. The cancellation across the multiplication sign is fine: $\frac{2}{3} \cdot \frac{3}{4} = \frac{2 \cdot 3}{3 \cdot 4}$, and the 3 in the numerator and the 3 in the denominator do cancel, leaving $\frac{2}{4} = \frac{1}{2}$. The answer is correct.
+59. Answer is correct: $\frac{3}{4} \div \frac{1}{2} = \frac{3}{4} \cdot \frac{2}{1} = \frac{6}{4} = \frac{3}{2}$. The reasoning is also correct, just unconventionally described. The pattern "$\frac{a \cdot d}{b \cdot c}$" *is* the result of inverting and multiplying.
+60. Wrong: $\frac{1/2}{3}$ means $\frac{1}{2} \div 3 = \frac{1}{2} \cdot \frac{1}{3} = \frac{1}{6}$. The student inverted the *wrong* fraction.
+
+## Build Task
+
+Extend your `rational_numbers.py` (or equivalent) module with the four arithmetic operations.
+
+Required additions to the `Rational` class:
+
+1. `__add__` — implementing $\frac{a}{b} + \frac{c}{d} = \frac{ad + bc}{bd}$, simplified.
+2. `__sub__` — using addition and the additive inverse.
+3. `__mul__` — $\frac{a}{b} \cdot \frac{c}{d} = \frac{ac}{bd}$, simplified.
+4. `__truediv__` — invert and multiply; raise `ZeroDivisionError` if dividing by zero.
+5. `__neg__` — additive inverse.
+6. `reciprocal()` — multiplicative inverse; raise if zero.
+7. `__pow__(n)` for integer $n$ — repeated multiplication; for negative $n$, use the reciprocal.
+
+Tests:
+
+- `Rational(1,2) + Rational(1,3) == Rational(5,6)`
+- `Rational(1,2) - Rational(1,3) == Rational(1,6)`
+- `Rational(2,3) * Rational(3,4) == Rational(1,2)`
+- `Rational(3,4) / Rational(1,2) == Rational(3,2)`
+- `Rational(2,3)**3 == Rational(8,27)`
+- `Rational(2,3)**(-1) == Rational(3,2)`
+- `-Rational(3,4) + Rational(1,4) == Rational(-1,2)`
+
+Stretch goals:
+
+- Build a function `parallel_resistance(rs)` that takes a list of resistances (as floats or `Rational`s) and returns the equivalent parallel resistance using your `Rational` class, returning an exact rational when inputs are integer-valued.
+- Implement `continued_fraction(rational)` that returns the continued-fraction expansion of any rational. (Hint: it terminates for rationals; use the Euclidean algorithm.) For example, $\frac{45}{16}$ has continued fraction $[2; 1, 4, 3]$.
+- Implement `convergents(continued_fraction_terms)` that yields the rational approximations from a (possibly infinite) continued fraction. Test on the golden ratio's continued fraction $[1; 1, 1, 1, \ldots]$ — the convergents are ratios of consecutive Fibonacci numbers.
+
+## Quiz
+
+1. What is the LCD (least common denominator) and how do you compute it from two denominators?
+2. State the addition formula for fractions in cross-product form.
+3. What is the multiplicative inverse of $\frac{7}{3}$?
+4. State the division rule for fractions and explain why it is valid.
+5. Compute $\frac{2}{5} + \frac{1}{6}$.
+6. Compute $\frac{3}{4} - \frac{1}{6}$.
+7. Compute $\frac{2}{3} \cdot \frac{9}{14}$.
+8. Compute $\frac{5}{6} \div \frac{10}{9}$.
+9. Compute the parallel resistance of three resistors: 6 Ω, 12 Ω, 4 Ω.
+10. Why is $\frac{2}{3} + \frac{1}{4}$ not equal to $\frac{3}{7}$?
+11. A drone payload weighs $\frac{1}{4}$ of the total mass. The frame weighs $\frac{1}{3}$ of the total. What fraction of the total mass is everything else (motors, battery, etc.)?
+12. What is $\left(-\frac{2}{3}\right)^3$?
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Pass the inline lesson check at 100% on first attempt.
+- Add, subtract, multiply, or divide any pair of fractions with denominators under 20 in under 20 seconds, in your head if needed.
+- Compute the parallel resistance of two arbitrary integer-valued resistors in under 30 seconds.
+- Convert a mixed-number expression to improper, evaluate, and convert back to mixed in under a minute.
+- Run your extended `rational_numbers.py` module with all listed tests passing.
+- Explain to someone else *why* you "invert and multiply" — including the algebraic reason, not just the mnemonic.
+
+## Sources and Further Study
+
+- **MIT OCW 18.01 Calculus** problem sets routinely require fraction arithmetic without comment. If you stumble on a fraction step during a calculus problem, return here.
+- **Khan Academy — Fraction Arithmetic**. Animated walkthroughs of every operation; useful for spot-practice.
+- **Strang, *Calculus*** (free online from MIT). Appendix A reviews algebra including fraction arithmetic in a compact engineer-friendly form.
+- **The MIT EECS resistor-network worksheets** (linked from 6.002 / 6.004 OpenCourseWare). Practice fraction skills on actual circuits.
+- **Python documentation: `fractions.Fraction`**. The CPython implementation of `Fraction.__add__` is exactly the algorithm in this lesson; study it after writing your own.
+
+## Next Lesson Bridge
+
+You now have full fraction arithmetic. The next big move is **decimals**: writing fractions as decimal expansions and doing arithmetic in that form. Decimals are not a different number system — every terminating or repeating decimal is a rational number — but they have computational advantages (and floating-point pitfalls) that justify a full lesson.
+
+After decimals (lesson 9) comes **percentages** (lesson 10), which are nothing more than fractions with denominator 100, and **negative numbers / number line** (lesson 11), which extends ordering and arithmetic to all of $\mathbb{Q}$. Then signed numbers and order of operations (lesson 12, already deep), then integer exponents (lesson 13), and so on.
+
+The bottom of the stack is being laid down brick by brick. Every later lesson assumes you can do everything on this page.
