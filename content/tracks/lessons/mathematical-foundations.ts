@@ -228,33 +228,53 @@ const engineeringAlgebraGeometry: Lesson[] = [
       prerequisites: ["signed-numbers-and-order-of-operations"],
     },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     2,
     "solving-multi-step-linear-equations",
     "Solving Multi-Step Linear Equations",
     "Combining like terms, distributing, multi-step isolation of a variable, and using checks to catch arithmetic mistakes.",
+    {
+      estimatedMinutes: 75,
+      prerequisites: ["solving-equations-from-zero"],
+      checkId: "solving-multi-step-linear-equations-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     3,
     "equations-with-variables-on-both-sides",
     "Equations with Variables on Both Sides",
     "Collecting variables to one side, eliminating fractions and decimals, and recognizing identities and no-solution equations.",
+    {
+      estimatedMinutes: 75,
+      prerequisites: ["solving-multi-step-linear-equations"],
+      checkId: "equations-with-variables-on-both-sides-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     4,
     "rearranging-engineering-formulas",
     "Rearranging Engineering Formulas",
     "Algebraic manipulation of physical formulas (V = IR, F = ma, P = VI) to solve for any variable, including with units carried through.",
+    {
+      estimatedMinutes: 85,
+      prerequisites: ["equations-with-variables-on-both-sides"],
+      checkId: "rearranging-engineering-formulas-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     5,
     "word-problems-to-equations",
     "Translating Word Problems into Equations",
     "A systematic method for turning English-language problems into algebra: identify unknowns, name them, write relationships, solve, and check.",
+    {
+      estimatedMinutes: 90,
+      prerequisites: ["rearranging-engineering-formulas"],
+      checkId: "word-problems-to-equations-check",
+    },
   ),
   available(
     "equations-units-and-graphs",
