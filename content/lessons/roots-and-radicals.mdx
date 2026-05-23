@@ -1,0 +1,851 @@
+# Roots and Radicals
+
+## Re-entry Promise
+
+A *root* is the inverse of a power. If $x^2 = 9$, then $\sqrt{9}$ should give back $x = 3$. Just as subtraction undoes addition and division undoes multiplication, roots undo exponentiation. The square root, cube root, and higher roots are the foundation for the **fractional exponents** that complete the algebraic toolkit started in the previous lesson.
+
+This lesson assumes you have mastered integer exponents and their rules (lesson 13), signed numbers (lessons 11–12), and fraction and decimal arithmetic (lessons 6–10). It does not assume you remember radical simplification, rationalization, or the connection between $a^{1/n}$ and $\sqrt[n]{a}$ — we will rebuild all of that.
+
+The reason roots get their own lesson — and a careful one — is that they introduce a genuinely new question into algebra: *which* root? The equation $x^2 = 9$ has two solutions, $x = +3$ and $x = -3$. The symbol $\sqrt{9}$ refers, by convention, to *only the positive* one. That convention is essential but it traps almost every student who hasn't been forced to think about it. We will be precise about it here.
+
+By the end of this lesson, fractional and root notation will be a single coherent system: $\sqrt[n]{a^m} = a^{m/n}$ when defined, and the exponent rules of lesson 13 extend to all rational exponents. This is the algebraic apparatus you will use for the rest of the curriculum, especially in lessons 15 (scientific notation), 22 (the exponential function), and onward into calculus and physics.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Define **the square root** $\sqrt{x}$ and **the $n$-th root** $\sqrt[n]{x}$ precisely, including the sign convention (the *principal* root).
+- Distinguish "$\sqrt{9}$" (single value, +3) from "the solutions of $x^2 = 9$" (two values, $\pm 3$).
+- State and prove the equivalence $a^{1/n} = \sqrt[n]{a}$ for $a > 0$.
+- Extend the laws of exponents to **fractional and rational exponents**.
+- Simplify radical expressions: factor out perfect squares (or cubes, etc.) under the radical sign.
+- Rationalize denominators (remove radicals from the denominator of a fraction).
+- Recognize when an expression has a real-valued root and when it does not (especially even roots of negatives).
+- Apply roots to engineering: RMS values, root-mean-square error in ML, the Euclidean distance formula, geometric mean, signal amplitude vs power, drag and resistance formulas, and standard deviation.
+- Avoid the most common errors: $\sqrt{a^2} = a$ (not always; should be $|a|$), $\sqrt{a + b} \ne \sqrt{a} + \sqrt{b}$, treating an expression like $\sqrt{x}$ as if it were $\pm$ valued.
+
+## Why It Matters
+
+Roots are foundational across engineering, physics, statistics, and computing. A short tour:
+
+1. **Pythagorean theorem and Euclidean distance.** The hypotenuse of a right triangle with legs $a$ and $b$ has length $\sqrt{a^2 + b^2}$. Distance between any two points in any dimension is a square root of a sum of squares. Every GPS calculation, every robot motion plan, every neural network "distance metric" uses this.
+
+2. **Root-mean-square (RMS) values.** The RMS voltage of a sinusoidal AC signal is $\frac{V_\text{peak}}{\sqrt{2}}$. The "120 V AC" supply in a US wall outlet is actually a 170 V peak sinusoid; the 120 is the RMS value, which represents the equivalent DC power-delivering capability.
+
+3. **Standard deviation.** The standard deviation is the square root of the variance. The notation $\sigma$ versus $\sigma^2$ shows up in every statistical formula.
+
+4. **Loss functions in ML.** Mean squared error (MSE) is averaged squared error. Root mean squared error (RMSE) is its square root, used to give units that match the data ("$5$ m RMSE for a localization model" is intuitive; "$25$ m² MSE" is not).
+
+5. **Signal processing.** Amplitude and power of a signal are related by a square (power $\propto$ amplitude²). To convert between them, you take a square root. dB calculations use $20 \log_{10}$ for voltage ratios and $10 \log_{10}$ for power ratios — the factor of 2 difference comes from the square between voltage and power.
+
+6. **Geometry of circles and spheres.** Radius of a circle of area $A$ is $r = \sqrt{A/\pi}$. Volume of a sphere of radius $r$ is $\frac{4}{3} \pi r^3$, so radius from volume is $r = \sqrt[3]{3V/(4\pi)}$.
+
+7. **Physics: kinematics.** From $v^2 = u^2 + 2as$, you compute final velocity $v = \sqrt{u^2 + 2as}$. From projectile motion: time of flight $t = \sqrt{2h/g}$.
+
+8. **Drag and friction.** Terminal velocity of a falling object is $v_t = \sqrt{2mg/(C \rho A)}$ — a square root of mass-gravity-area-drag-coefficient. Drone designers use this constantly.
+
+9. **Quadratic formula.** The roots of $ax^2 + bx + c = 0$ are $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$. Square roots appear in the closed-form solution of every quadratic equation.
+
+10. **Geometric mean and growth rates.** The compound annual growth rate (CAGR) over $n$ years is $\sqrt[n]{\text{final}/\text{initial}} - 1$. The geometric mean of a list of numbers is the $n$-th root of their product. Used in finance, biology, and many performance metrics.
+
+11. **Number theory.** Trial division for primality checking only needs to go up to $\sqrt{n}$. This is the basis of nearly every elementary primality test.
+
+12. **Computer graphics / shaders.** Lighting calculations frequently take square roots for distance attenuation, surface normals, and reflection vectors. GPUs have hardware for fast `sqrt` and `rsqrt` (reciprocal square root); a famous 1999 game engine, *Quake III Arena*, used a notoriously clever bit-manipulation trick for fast `1/sqrt(x)` because it was the per-frame bottleneck.
+
+Roots are everywhere — and the conventions around them (especially the sign convention and the rules for simplifying) are easy to fumble. So let's get them right.
+
+## Why This Idea Exists
+
+The square root concept goes back at least to the Babylonians. Clay tablet YBC 7289 (around 1700 BCE) contains a calculation of $\sqrt{2}$ accurate to *seven decimal places* — they got $\sqrt{2} \approx 1.41421296\ldots$ versus the true value $\sqrt{2} \approx 1.41421356\ldots$. The Babylonians used a method essentially equivalent to Newton's iteration $x \mapsto \frac{1}{2}(x + 2/x)$, which converges in a few steps.
+
+The Greeks made the dramatic discovery that **$\sqrt{2}$ is irrational** — not expressible as a ratio of integers. This was attributed to **Hippasus of Metapontum** (around 500 BCE), a Pythagorean. The story goes that Hippasus proved $\sqrt{2}$ irrational while studying the diagonal of a unit square. The Pythagoreans, whose entire philosophy held that "all is number" (meaning all is rational), were so distressed that — according to legend — they drowned Hippasus at sea to suppress the result. Whether or not the story is true, it conveys how genuinely shocking the irrationality of $\sqrt{2}$ was to a culture that had elevated rational numbers to a near-mystical status.
+
+The proof: assume $\sqrt{2} = p/q$ in lowest terms. Then $2 q^2 = p^2$, so $p^2$ is even, so $p$ is even (write $p = 2k$). Then $2q^2 = 4k^2$, so $q^2 = 2k^2$, so $q$ is also even. But then $p$ and $q$ share the common factor 2, contradicting "lowest terms." So no such $p, q$ exist. ∎
+
+This was a foundational moment: it showed that the *rationals are incomplete*. To describe the length of the diagonal of a unit square, you need a richer number system — the reals. The full rigorous construction took until **Dedekind** (1858) with his "Dedekind cuts" and **Cantor** (1872) with his Cauchy sequences. But all the modern apparatus of real analysis grew from the question "what is $\sqrt{2}$?"
+
+**The radical sign $\sqrt{\,}$** itself is medieval. It first appeared in **Christoph Rudolff**'s 1525 algebra book *Coss*, as a stylized "r" (for *radix*, "root"). The vinculum (the horizontal bar over the radicand) was added by **Descartes** in 1637 to group what is under the root.
+
+**Fractional exponent notation** was introduced by **John Wallis** and **Isaac Newton** in the 17th century. Newton in particular pushed the idea that $a^{1/2}$ should mean the same as $\sqrt{a}$, because then the exponent laws of his predecessor Descartes extend cleanly to fractional powers. This is yet another instance of "the rules force the definition."
+
+**Newton's method for square roots** (and roots in general) is from the same era: to compute $\sqrt{N}$, iterate $x \mapsto \frac{1}{2}(x + N/x)$. The iteration *quadruples* the number of correct decimal digits each step — astonishingly fast. Every modern `sqrt` library function uses essentially this idea (with refinements).
+
+## Plain-Language Intuition
+
+### Square Root as Inverse
+
+If $x^2 = 25$, then $x = 5$ or $x = -5$. The *square root function* $\sqrt{25}$ refers, by convention, to the nonnegative one: $\sqrt{25} = 5$.
+
+To find the negative solution explicitly, write $-\sqrt{25} = -5$. To denote *both* solutions, write $\pm \sqrt{25}$, which means "$+5$ or $-5$."
+
+This convention seems pedantic but it matters: $\sqrt{x}$ as a function must have one output for one input. Without the convention, $\sqrt{x}$ would be a "multivalued" function, and that breaks ordinary algebra.
+
+### Higher Roots
+
+The **cube root** $\sqrt[3]{x}$ is the number whose cube is $x$. $\sqrt[3]{8} = 2$ because $2^3 = 8$. $\sqrt[3]{-8} = -2$ because $(-2)^3 = -8$. *Odd* roots of negatives are real numbers.
+
+The **$n$-th root** $\sqrt[n]{x}$ is the number whose $n$-th power is $x$. For odd $n$, there is always a unique real root. For even $n$ with positive $x$, there are two real roots ($\pm$), and the radical refers to the positive one. For even $n$ with negative $x$, *there is no real root* (you have to extend to complex numbers).
+
+### Roots as Fractional Powers
+
+$\sqrt{x} = x^{1/2}$. This is forced by the exponent rules: if we want $(x^{1/2})^2 = x^{1/2 \cdot 2} = x^1 = x$, then $x^{1/2}$ must be the square root. The fractional-exponent notation unifies everything.
+
+Generalization: $\sqrt[n]{x} = x^{1/n}$, and $\sqrt[n]{x^m} = x^{m/n}$.
+
+### Common Patterns
+
+You should recognize on sight:
+
+- $\sqrt{4} = 2$, $\sqrt{9} = 3$, $\sqrt{16} = 4$, $\sqrt{25} = 5$, $\sqrt{36} = 6$, $\sqrt{49} = 7$, $\sqrt{64} = 8$, $\sqrt{81} = 9$, $\sqrt{100} = 10$.
+- $\sqrt{144} = 12$, $\sqrt{169} = 13$, $\sqrt{196} = 14$, $\sqrt{225} = 15$, $\sqrt{256} = 16$.
+- $\sqrt[3]{8} = 2$, $\sqrt[3]{27} = 3$, $\sqrt[3]{64} = 4$, $\sqrt[3]{125} = 5$.
+- $\sqrt{2} \approx 1.414$, $\sqrt{3} \approx 1.732$, $\sqrt{5} \approx 2.236$, $\sqrt{10} \approx 3.162$.
+
+The diagonal of a unit square is $\sqrt{2}$; that of a unit cube is $\sqrt{3}$. The "1, 2, $\sqrt{3}$" or "1, 1, $\sqrt{2}$" sides of special triangles will become familiar in trigonometry.
+
+## Core Theory
+
+### The Principal Square Root
+
+For $x \ge 0$:
+
+$$\sqrt{x} = \text{the unique nonnegative } y \text{ such that } y^2 = x.$$
+
+Examples:
+
+- $\sqrt{16} = 4$ (not $-4$, even though $(-4)^2 = 16$).
+- $\sqrt{0} = 0$.
+- $\sqrt{2} = 1.4142\ldots$ (irrational; the decimal expansion never terminates and never repeats).
+
+For $x < 0$, $\sqrt{x}$ is *not* a real number; it is an imaginary number (covered in a later complex-numbers lesson).
+
+### The Square-Root Function
+
+Treating $\sqrt{\,}$ as a function $f(x) = \sqrt{x}$ with domain $[0, \infty)$:
+
+- Domain: $x \ge 0$.
+- Range: $f(x) \ge 0$.
+- Strictly increasing (larger inputs give larger outputs).
+- $f(0) = 0$, $f(1) = 1$, $f(\infty) \to \infty$ (slowly — roughly proportional to $\sqrt{x}$, which grows much slower than $x$).
+
+Graph (sketch in your head): starts at the origin, rises quickly at first, then flattens out. It is the upper half of a sideways parabola.
+
+### $n$-th Roots
+
+For positive integer $n$:
+
+If $n$ is **odd**: $\sqrt[n]{x}$ is the *unique real* $y$ such that $y^n = x$. Defined for all real $x$ (positive, negative, or zero).
+
+If $n$ is **even**: $\sqrt[n]{x}$ is the *nonnegative real* $y$ such that $y^n = x$. Defined only for $x \ge 0$.
+
+Examples:
+
+- $\sqrt[3]{27} = 3$.
+- $\sqrt[3]{-27} = -3$ (odd root of negative is real).
+- $\sqrt[4]{16} = 2$ (not $-2$, by convention).
+- $\sqrt[4]{-16}$ is not a real number.
+
+### Fractional Exponents
+
+For $a > 0$ and positive integer $n$:
+
+$$a^{1/n} = \sqrt[n]{a}$$
+
+This is the definition. It is *forced* by demanding the power-of-a-power rule extend to fractional exponents:
+
+$$(a^{1/n})^n = a^{(1/n) \cdot n} = a^1 = a$$
+
+So $a^{1/n}$ must be the $n$-th root.
+
+More generally, for a positive base $a$ and any rational $p/q$ in lowest terms:
+
+$$a^{p/q} = \sqrt[q]{a^p} = (\sqrt[q]{a})^p$$
+
+These two forms are equal for $a > 0$. (For $a < 0$, the situation is delicate; fractional-power notation is usually restricted to nonnegative bases.)
+
+### The Rules of Exponents Extend to Fractional Powers
+
+For $a, b > 0$ and any rational exponents $r, s$:
+
+1. $a^r \cdot a^s = a^{r+s}$
+2. $a^r / a^s = a^{r-s}$
+3. $(a^r)^s = a^{rs}$
+4. $(ab)^r = a^r \cdot b^r$
+5. $(a/b)^r = a^r / b^r$
+6. $a^0 = 1$
+7. $a^{-r} = 1/a^r$
+
+All seven laws from lesson 13 carry over.
+
+### Properties of Square Roots
+
+For $a, b \ge 0$:
+
+- $\sqrt{ab} = \sqrt{a} \cdot \sqrt{b}$ (multiplicativity).
+- $\sqrt{a/b} = \sqrt{a}/\sqrt{b}$ for $b > 0$ (divisibility).
+- $\sqrt{a^2} = a$ if $a \ge 0$, but $\sqrt{a^2} = |a|$ in general (for any real $a$).
+- $\sqrt{a + b} \ne \sqrt{a} + \sqrt{b}$ in general. (This does NOT distribute over addition.)
+
+The last two are critical:
+
+**$\sqrt{x^2} = |x|$, not $x$.** Because the square-root function is always nonnegative, you can't recover negative inputs through a square-then-root operation. If $x = -5$: $x^2 = 25$, $\sqrt{25} = 5 = |x| = -x$. Always use the absolute value to be safe.
+
+**$\sqrt{a + b} \ne \sqrt{a} + \sqrt{b}$.** Counterexample: $a = 9$, $b = 16$. $\sqrt{9 + 16} = \sqrt{25} = 5$, but $\sqrt{9} + \sqrt{16} = 3 + 4 = 7$. Different.
+
+### Simplification: Factoring Out Perfect Squares
+
+To simplify $\sqrt{N}$ where $N$ has a square factor:
+
+$$\sqrt{N} = \sqrt{a^2 \cdot b} = a \cdot \sqrt{b}$$
+
+where $a^2$ is the largest perfect square dividing $N$.
+
+Examples:
+
+- $\sqrt{18} = \sqrt{9 \cdot 2} = 3\sqrt{2}$.
+- $\sqrt{72} = \sqrt{36 \cdot 2} = 6\sqrt{2}$.
+- $\sqrt{50} = \sqrt{25 \cdot 2} = 5\sqrt{2}$.
+- $\sqrt{200} = \sqrt{100 \cdot 2} = 10\sqrt{2}$.
+- $\sqrt{45} = \sqrt{9 \cdot 5} = 3\sqrt{5}$.
+
+To find the largest perfect square: factor $N$ into primes (lesson 5's prime factorization), then group each prime in pairs. The pairs come out of the radical as single factors; the leftovers stay inside.
+
+$\sqrt{180} = ?$. Prime factorization: $180 = 2^2 \cdot 3^2 \cdot 5$. Pairs: $2, 3$ come out; 5 stays inside. So $\sqrt{180} = 2 \cdot 3 \cdot \sqrt{5} = 6\sqrt{5}$.
+
+For cube roots, group in triples. $\sqrt[3]{54} = \sqrt[3]{27 \cdot 2} = 3 \sqrt[3]{2}$.
+
+### Simplification: Pull Variables Out
+
+For algebraic radicals: $\sqrt{x^3} = \sqrt{x^2 \cdot x} = x \sqrt{x}$ (for $x \ge 0$).
+
+$\sqrt{x^5} = \sqrt{x^4 \cdot x} = x^2 \sqrt{x}$.
+
+$\sqrt{x^{10}} = x^5$ (no leftover).
+
+For odd powers: pull out the largest even power; the remainder stays inside.
+
+### Rationalizing the Denominator
+
+A fraction with a radical in the denominator can be re-written without one. This was historically important when long division by an irrational was annoying; today it's mostly for aesthetic standardization, though it still helps with exact arithmetic.
+
+To rationalize $\frac{1}{\sqrt{a}}$: multiply numerator and denominator by $\sqrt{a}$:
+
+$$\frac{1}{\sqrt{a}} = \frac{\sqrt{a}}{(\sqrt{a})^2} = \frac{\sqrt{a}}{a}$$
+
+To rationalize $\frac{1}{\sqrt{a} + \sqrt{b}}$: multiply numerator and denominator by the **conjugate** $\sqrt{a} - \sqrt{b}$:
+
+$$\frac{1}{\sqrt{a} + \sqrt{b}} \cdot \frac{\sqrt{a} - \sqrt{b}}{\sqrt{a} - \sqrt{b}} = \frac{\sqrt{a} - \sqrt{b}}{a - b}$$
+
+The denominator is now rational. This uses the algebraic identity $(p + q)(p - q) = p^2 - q^2$ (difference of squares).
+
+### Real vs Complex
+
+For even roots, **only nonnegative numbers have real $n$-th roots**. If you encounter $\sqrt{-4}$ in real-valued math, you have either made an error or you need to extend to complex numbers.
+
+In code (Python):
+- `import math; math.sqrt(-4)` raises a `ValueError`.
+- `import cmath; cmath.sqrt(-4)` returns `2j` (complex number).
+- `math.pow(-4, 0.5)` raises (Python explicitly forbids non-integer powers of negatives).
+
+This is your software-level reminder that even roots of negatives are not real.
+
+## Visual or Mental Model
+
+### Model 1: Inverse Mapping
+
+Picture the squaring function $f(x) = x^2$. It maps both $+3$ and $-3$ to $+9$. It is *not one-to-one*. To invert it, you must restrict the domain — usually to $[0, \infty)$. The inverse function on this restricted domain is $\sqrt{\,}$.
+
+This is why $\sqrt{9} = 3$ (only) and not $\pm 3$. The radical is the inverse of the *restricted* squaring function.
+
+### Model 2: Geometric Picture
+
+$\sqrt{A}$ is the side length of a square with area $A$. So:
+
+- $\sqrt{4} = 2$: a square of area 4 has side length 2.
+- $\sqrt{2} \approx 1.414$: a square of area 2 has side length about 1.414.
+- $\sqrt{N}$: a square of area $N$ has side length $\sqrt{N}$.
+
+For cube roots: $\sqrt[3]{V}$ is the side length of a cube with volume $V$.
+
+### Model 3: Number-Line Picture
+
+On the number line, $\sqrt{x}$ for $x \ge 0$ is the position such that the *square* of that position equals $x$. Visually: from the origin, walk to the right until your distance squared equals $x$.
+
+For $x = 9$: walk 3 units (since $3^2 = 9$). For $x = 100$: walk 10 units. For $x = 2$: walk about 1.414 units.
+
+The square root function "compresses" large values: $\sqrt{10000} = 100$. A million's square root is a thousand. A billion's is about 31,623. This is the "slow growth" of $\sqrt{N}$ versus $N$.
+
+### Model 4: Newton's Iteration
+
+To compute $\sqrt{N}$ for any $N > 0$:
+
+1. Guess any positive starting value $x_0$. (For example, $x_0 = N/2$, or just 1.)
+2. Update: $x_{k+1} = \frac{1}{2}\left(x_k + \frac{N}{x_k}\right)$.
+3. Iterate until $x_k$ stops changing meaningfully.
+
+This is Newton's method for solving $x^2 - N = 0$. It converges blazingly fast: roughly the number of correct digits *doubles* each iteration.
+
+To compute $\sqrt{2}$ from $x_0 = 1$:
+
+- $x_1 = \frac{1}{2}(1 + 2) = 1.5$. (1 correct digit.)
+- $x_2 = \frac{1}{2}(1.5 + 2/1.5) = \frac{1}{2}(1.5 + 1.333\ldots) \approx 1.41666\ldots$. (3 correct digits.)
+- $x_3 = \frac{1}{2}(1.41666 + 2/1.41666) \approx 1.4142156\ldots$. (6 correct digits.)
+- $x_4 \approx 1.41421356237\ldots$. (12 correct digits.)
+
+Four iterations from a guess of 1 gets you 12 digits of accuracy. This is the algorithm every `sqrt` library function uses internally (with some additional cleverness for the initial guess).
+
+## Worked Examples
+
+### Example 1 — Simplest Roots
+
+$\sqrt{36} = 6$. $\sqrt{49} = 7$. $\sqrt{121} = 11$.
+
+### Example 2 — Higher Roots
+
+$\sqrt[3]{125} = 5$ (since $5^3 = 125$).
+
+$\sqrt[3]{-64} = -4$ (since $(-4)^3 = -64$).
+
+$\sqrt[4]{81} = 3$ (since $3^4 = 81$).
+
+### Example 3 — Simplifying with Factoring
+
+$\sqrt{50} = \sqrt{25 \cdot 2} = 5\sqrt{2}$.
+
+$\sqrt{75} = \sqrt{25 \cdot 3} = 5\sqrt{3}$.
+
+$\sqrt{162} = \sqrt{81 \cdot 2} = 9\sqrt{2}$.
+
+### Example 4 — Larger Number
+
+$\sqrt{288} = ?$
+
+Factor: $288 = 2^5 \cdot 3^2 = 32 \cdot 9$.
+
+Largest perfect square: $144 = 12^2$ ($288 = 144 \cdot 2$).
+
+So $\sqrt{288} = 12\sqrt{2}$.
+
+(Alternative: $\sqrt{288} = \sqrt{144 \cdot 2} = 12\sqrt{2}$ directly.)
+
+### Example 5 — With Variables
+
+$\sqrt{12 x^3}$ for $x \ge 0$.
+
+$12 = 4 \cdot 3$. $x^3 = x^2 \cdot x$. So $\sqrt{12 x^3} = \sqrt{4 \cdot 3 \cdot x^2 \cdot x} = 2 x \sqrt{3x}$.
+
+### Example 6 — Cube Roots
+
+$\sqrt[3]{54}$.
+
+$54 = 2 \cdot 27 = 2 \cdot 3^3$. The 27 is a perfect cube.
+
+$\sqrt[3]{54} = 3 \sqrt[3]{2}$.
+
+### Example 7 — Adding and Subtracting Radicals
+
+$3\sqrt{2} + 5\sqrt{2} = 8\sqrt{2}$. (Combine like radicals — analogous to combining like terms.)
+
+$\sqrt{8} + \sqrt{18}$: simplify both first.
+
+$\sqrt{8} = 2\sqrt{2}$. $\sqrt{18} = 3\sqrt{2}$. Sum: $5\sqrt{2}$.
+
+### Example 8 — Multiplying Radicals
+
+$\sqrt{6} \cdot \sqrt{15} = \sqrt{90} = \sqrt{9 \cdot 10} = 3\sqrt{10}$.
+
+### Example 9 — Dividing Radicals
+
+$\frac{\sqrt{200}}{\sqrt{8}} = \sqrt{\frac{200}{8}} = \sqrt{25} = 5$.
+
+### Example 10 — Rationalizing
+
+$\frac{3}{\sqrt{5}} = \frac{3}{\sqrt{5}} \cdot \frac{\sqrt{5}}{\sqrt{5}} = \frac{3\sqrt{5}}{5}$.
+
+### Example 11 — Rationalizing with Conjugate
+
+$\frac{1}{1 + \sqrt{2}}$: multiply numerator and denominator by the conjugate $1 - \sqrt{2}$.
+
+$\frac{1}{1 + \sqrt{2}} \cdot \frac{1 - \sqrt{2}}{1 - \sqrt{2}} = \frac{1 - \sqrt{2}}{1 - 2} = \frac{1 - \sqrt{2}}{-1} = \sqrt{2} - 1$.
+
+So $\frac{1}{1 + \sqrt{2}} = \sqrt{2} - 1 \approx 0.414$.
+
+### Example 12 — Fractional Exponent
+
+$16^{1/4} = \sqrt[4]{16} = 2$.
+
+$8^{2/3} = \sqrt[3]{8^2} = \sqrt[3]{64} = 4$, or equivalently $(\sqrt[3]{8})^2 = 2^2 = 4$. Same answer.
+
+$27^{4/3} = (\sqrt[3]{27})^4 = 3^4 = 81$.
+
+### Example 13 — Negative Fractional Exponent
+
+$16^{-1/2} = \frac{1}{16^{1/2}} = \frac{1}{4}$.
+
+$8^{-2/3} = \frac{1}{8^{2/3}} = \frac{1}{4}$.
+
+### Example 14 — Pythagorean Distance
+
+A right triangle has legs 3 and 4. Hypotenuse?
+
+$c = \sqrt{3^2 + 4^2} = \sqrt{9 + 16} = \sqrt{25} = 5$.
+
+Legs 5 and 12: $c = \sqrt{25 + 144} = \sqrt{169} = 13$.
+
+Legs 1 and 1 (unit-square diagonal): $c = \sqrt{1 + 1} = \sqrt{2}$.
+
+### Example 15 — RMS of a Sinusoid
+
+The peak-to-peak voltage of a sinusoid is the difference between max and min: $V_{pp} = 2 V_\text{peak}$. The RMS value is $V_\text{peak}/\sqrt{2} = V_\text{peak} \cdot \frac{\sqrt{2}}{2} \approx 0.707 \cdot V_\text{peak}$.
+
+A 170 V peak sinusoid has RMS $170/\sqrt{2} = 170 \cdot 0.707 \approx 120.2$ V. (That's why US wall power is labeled "120 V AC.")
+
+### Example 16 — Standard Deviation
+
+Five test scores: 70, 75, 80, 85, 90. Mean: 80.
+
+Deviations: $-10, -5, 0, 5, 10$. Squared deviations: $100, 25, 0, 25, 100$. Sum: 250.
+
+Variance (using $n$, not $n-1$, for simplicity): $250 / 5 = 50$.
+
+Standard deviation: $\sqrt{50} = 5\sqrt{2} \approx 7.07$.
+
+The standard deviation has the same units as the original data (test points), while variance has *squared* units.
+
+### Example 17 — Failure Mode: $\sqrt{a^2} = a$ Without Absolute Value
+
+A student writes $\sqrt{(-5)^2} = -5$.
+
+Wrong. $\sqrt{(-5)^2} = \sqrt{25} = 5$. The general rule is $\sqrt{x^2} = |x|$.
+
+### Example 18 — Failure Mode: Distributing Over Addition
+
+A student computes $\sqrt{9 + 16} = \sqrt{9} + \sqrt{16} = 3 + 4 = 7$.
+
+Wrong. $\sqrt{9 + 16} = \sqrt{25} = 5$. Roots do not distribute over addition.
+
+### Example 19 — Failure Mode: Forgetting the Sign
+
+A student writes "$x = \sqrt{49} = 7$" as the solution to $x^2 = 49$.
+
+Incomplete: there are *two* solutions, $x = +7$ and $x = -7$. Write $x = \pm \sqrt{49} = \pm 7$.
+
+### Example 20 — Failure Mode: Taking Even Root of Negative
+
+A student writes $\sqrt{-25} = -5$.
+
+Wrong in real arithmetic. $(-5)^2 = +25$, not $-25$. There is no real number whose square is $-25$. In complex arithmetic, $\sqrt{-25} = 5i$, but the real-valued square root is undefined.
+
+## Engineering Connections
+
+### Pythagorean Distance
+
+Distance between two points $(x_1, y_1)$ and $(x_2, y_2)$ in the plane:
+
+$$d = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$$
+
+In 3D, add a $z$ term. In $n$ dimensions: $d = \sqrt{\sum_i (x_i - y_i)^2}$.
+
+This is the Euclidean distance, also called the $\ell^2$ norm. It is the default distance measure in robotics, computer vision, GPS, and most machine learning.
+
+### Magnitude of a Vector
+
+The magnitude of a 3D vector $\vec{v} = (v_x, v_y, v_z)$ is:
+
+$$|\vec{v}| = \sqrt{v_x^2 + v_y^2 + v_z^2}$$
+
+This shows up in: drone speed from velocity components, force magnitude from x/y/z components, light intensity, sound pressure level, etc.
+
+### RMS in Electrical Engineering
+
+For a periodic signal $v(t)$:
+
+$$V_\text{RMS} = \sqrt{\frac{1}{T} \int_0^T v(t)^2 \, dt}$$
+
+The RMS value is the DC equivalent: a $V_\text{RMS}$ DC voltage delivers the same average power to a resistor as the time-varying signal does. For a sinusoid $V_\text{peak} \sin(\omega t)$: $V_\text{RMS} = V_\text{peak}/\sqrt{2}$.
+
+For a square wave between $+V_0$ and $-V_0$: $V_\text{RMS} = V_0$ (the squared value is constant).
+
+### Decibels and Voltage vs Power
+
+A power ratio of 100× is 20 dB. A voltage ratio of 10× corresponds to a power ratio of 100× (since $P \propto V^2$), so 10× voltage is also 20 dB.
+
+The formulas:
+
+$$\text{dB}_\text{power} = 10 \log_{10}\frac{P_2}{P_1}, \quad \text{dB}_\text{voltage} = 20 \log_{10}\frac{V_2}{V_1}$$
+
+The factor-of-2 difference is the *square* relating voltage and power. The square root undoes it.
+
+### Loss Functions in ML
+
+**Mean Squared Error (MSE)**: $\frac{1}{n}\sum_i (y_i - \hat{y}_i)^2$. Units of (data)².
+
+**Root Mean Squared Error (RMSE)**: $\sqrt{\text{MSE}}$. Units match the data — easier to interpret.
+
+For a model predicting house prices in dollars: RMSE of \$15,000 is interpretable. MSE of $2.25 \times 10^8$ dollars² is harder to feel.
+
+### Standard Deviation vs Variance
+
+In statistics: $\sigma^2$ is variance, $\sigma$ is standard deviation. The standard deviation has the same units as the data; variance has squared units. The "$\pm 1\sigma$" bands on a Gaussian show one standard deviation, in the data's units.
+
+### Terminal Velocity
+
+A drone in free fall reaches terminal velocity when drag equals gravity:
+
+$$v_t = \sqrt{\frac{2 m g}{C_d \rho A}}$$
+
+where $m$ is mass, $g$ is gravity, $C_d$ is drag coefficient, $\rho$ is air density, $A$ is cross-sectional area.
+
+For a small consumer drone: $m \approx 0.4$ kg, $A \approx 0.05$ m², $C_d \approx 1$ (rough estimate). $v_t = \sqrt{\frac{2 \cdot 0.4 \cdot 9.81}{1 \cdot 1.2 \cdot 0.05}} = \sqrt{\frac{7.85}{0.06}} \approx \sqrt{131} \approx 11.4$ m/s.
+
+So a small drone in free fall hits the ground at about 11 m/s (~25 mph) — fast enough to destroy itself. This is why fail-safes matter.
+
+### Quadratic Formula
+
+For $ax^2 + bx + c = 0$:
+
+$$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
+
+The expression under the radical ($b^2 - 4ac$) is the **discriminant**. It tells you:
+- $> 0$: two distinct real solutions.
+- $= 0$: one repeated real solution.
+- $< 0$: no real solutions (two complex solutions).
+
+Used to find roots of polynomials, ballistic trajectories, electrical circuit response times, and structural resonance frequencies.
+
+### Trial Division for Primality
+
+To check if $n$ is prime, divide by every integer $2, 3, 4, \ldots, \sqrt{n}$. If none divides cleanly, $n$ is prime. The reason: if $n = ab$ with $a \le b$, then $a \le \sqrt{n}$. So you only need to check divisors up to $\sqrt{n}$.
+
+For $n = 10^9$, you check up to $\sqrt{10^9} \approx 31623$ — a few microseconds of computation. Without the square-root bound, you'd be doing a billion divisions.
+
+This optimization is the basis of every elementary prime check, including the inner loops of the Sieve of Eratosthenes.
+
+### Resonant Frequency of LC Circuits
+
+An $LC$ circuit (inductor $L$ and capacitor $C$) oscillates at:
+
+$$f = \frac{1}{2\pi \sqrt{LC}}$$
+
+For $L = 100$ µH and $C = 100$ pF: $\sqrt{LC} = \sqrt{10^{-4} \cdot 10^{-10}} = \sqrt{10^{-14}} = 10^{-7}$. $f = \frac{1}{2\pi \cdot 10^{-7}} \approx 1.59 \times 10^6$ Hz ≈ 1.59 MHz.
+
+This is in the AM radio band, which is why AM broadcast antennas tune to such resonances.
+
+### Fast Inverse Square Root (Quake III)
+
+A 1999 trick for computing $1/\sqrt{x}$ quickly: interpret the float's bits as an integer, manipulate them with a magic constant, then convert back. The result is accurate to about 1% and serves as an initial guess for one Newton iteration, which makes it accurate to high precision very fast.
+
+```c
+float Q_rsqrt(float number) {
+    long i;
+    float x2, y;
+    const float threehalfs = 1.5F;
+    x2 = number * 0.5F;
+    y = number;
+    i = *(long*)&y;             // floating-point bit-level hack
+    i = 0x5f3759df - (i >> 1);  // what the?
+    y = *(float*)&i;
+    y = y * (threehalfs - (x2 * y * y));  // 1st iter of Newton
+    return y;
+}
+```
+
+This was famously used in the *Quake III Arena* game engine to make lighting and physics calculations fast. The magic constant `0x5f3759df` and the bit-level reinterpretation are an artifact of how IEEE 754 floats are laid out: the exponent and mantissa fields look like a *logarithm* (approximately) of the value, and the inverse-square-root operation becomes a near-linear manipulation of the bit pattern. Modern CPUs have a hardware `rsqrt` instruction that is faster still, but the Quake trick is a beautiful artifact of programmer ingenuity.
+
+## Practice Set
+
+### Evaluate
+
+Compute each (state the principal/real value).
+
+1. $\sqrt{64}$
+2. $\sqrt{144}$
+3. $\sqrt{0}$
+4. $\sqrt{1}$
+5. $\sqrt[3]{27}$
+6. $\sqrt[3]{-8}$
+7. $\sqrt[4]{16}$
+8. $\sqrt[5]{32}$
+9. $\sqrt{225}$
+10. $\sqrt[3]{1000}$
+
+### Simplify Radicals
+
+11. $\sqrt{20}$
+12. $\sqrt{32}$
+13. $\sqrt{48}$
+14. $\sqrt{72}$
+15. $\sqrt{98}$
+16. $\sqrt{200}$
+17. $\sqrt{300}$
+18. $\sqrt{500}$
+19. $\sqrt[3]{16}$
+20. $\sqrt[3]{250}$
+
+### Combining Radicals
+
+21. $2\sqrt{5} + 3\sqrt{5}$
+22. $7\sqrt{3} - 4\sqrt{3}$
+23. $\sqrt{8} + \sqrt{18}$
+24. $\sqrt{12} - \sqrt{75}$
+25. $3\sqrt{2} + 2\sqrt{8}$
+
+### Multiplying Radicals
+
+26. $\sqrt{6} \cdot \sqrt{24}$
+27. $\sqrt{5} \cdot \sqrt{20}$
+28. $\sqrt{2} \cdot \sqrt{50}$
+29. $\sqrt{3} \cdot \sqrt{12}$
+30. $(2\sqrt{5})(3\sqrt{2})$
+31. $(\sqrt{2} + 1)^2$
+32. $(\sqrt{3} - 2)(\sqrt{3} + 2)$ (difference of squares)
+
+### Dividing and Rationalizing
+
+33. $\sqrt{72}/\sqrt{8}$
+34. $\frac{6}{\sqrt{3}}$
+35. $\frac{2}{\sqrt{5}}$
+36. $\frac{1}{2 + \sqrt{3}}$
+37. $\frac{\sqrt{2}}{\sqrt{2} - 1}$
+
+### Fractional Exponents
+
+38. $9^{1/2}$
+39. $27^{1/3}$
+40. $16^{3/4}$
+41. $8^{4/3}$
+42. $32^{2/5}$
+43. $4^{-1/2}$
+44. $\left(\frac{1}{4}\right)^{-3/2}$
+45. $(2^{1/2})^4$
+
+### Variable Radicals (assume $x, y \ge 0$)
+
+46. $\sqrt{x^2}$
+47. $\sqrt{x^6}$
+48. $\sqrt{x^7}$
+49. $\sqrt{50 x^4}$
+50. $\sqrt{8 x^3 y^5}$
+
+### Pythagorean / Distance
+
+51. Right triangle, legs 6 and 8. Hypotenuse?
+52. Right triangle, legs 5 and 12. Hypotenuse?
+53. Distance between $(0, 0)$ and $(3, 4)$.
+54. Distance between $(1, 2)$ and $(4, 6)$.
+55. Distance between $(0, 0, 0)$ and $(1, 2, 2)$ in 3D.
+
+### Applied
+
+56. A square has area 196 m². Side length?
+57. A cube has volume 729 m³. Side length?
+58. A drone propeller produces 5 N of thrust with diameter $d$. Thrust scales as $\sqrt{P}$ for input power $P$. If power doubles, by what factor does thrust increase?
+59. A capacitor stores energy $E = \frac{1}{2} C V^2$. If $C = 100$ µF and $E = 0.5$ J, what is $V$?
+60. RMS value of a 5 V peak sinusoid?
+61. Standard deviation of $\{2, 4, 4, 4, 5, 5, 7, 9\}$ (population SD).
+62. The kinetic energy formula $KE = \frac{1}{2} m v^2$. Solving for $v$: $v = \sqrt{2 KE/m}$. A 0.5 kg drone has 100 J of kinetic energy. What is its speed?
+63. The Schwarzschild radius of a black hole: $r_s = \frac{2GM}{c^2}$. (No root here, but the related orbital velocity at radius $r$ has $v = \sqrt{GM/r}$.) For the Sun ($M = 2 \times 10^{30}$ kg, $G = 6.674 \times 10^{-11}$), compute $\sqrt{GM/r}$ at Earth's orbit ($r = 1.5 \times 10^{11}$ m).
+
+### Newton's Method
+
+64. Compute $\sqrt{10}$ using Newton's method starting from $x_0 = 3$. Take 3 iterations and compare to the calculator value $\sqrt{10} \approx 3.1623$.
+65. Compute $\sqrt{50}$ using Newton's method from $x_0 = 7$. Two iterations.
+
+### Challenge
+
+66. Prove that $\sqrt{2}$ is irrational. (Outline given in the lesson; reproduce the argument.)
+67. Show that $\sqrt{a^2} = |a|$ for all real $a$. (Consider both cases.)
+68. Show that the geometric mean $\sqrt[n]{a_1 a_2 \cdots a_n}$ of $n$ positive numbers is always at most their arithmetic mean (AM-GM inequality). Verify for $n=2$: $\sqrt{ab} \le (a+b)/2$.
+69. The Babylonian approximation $\sqrt{2} \approx \frac{577}{408}$. How many decimal places is this accurate to?
+70. Show that $\sqrt{n}$ is irrational for any positive integer $n$ that is not a perfect square. (Generalize the $\sqrt{2}$ proof.)
+71. Compute $i^i$ where $i = \sqrt{-1}$. (Hint: use Euler's formula. This is a famously surprising real number.) (Stretch — complex analysis.)
+72. Express $(\sqrt{3} + \sqrt{2})(\sqrt{3} - \sqrt{2})$ without radicals.
+
+### Error Spotting
+
+73. A student writes $\sqrt{16 + 9} = 4 + 3 = 7$. Address.
+74. A student writes $\sqrt{x^2} = x$ for $x = -4$ and gets $-4$. Address.
+75. A student writes $\sqrt{-9} = -3$. Address.
+76. A student claims $\sqrt{9} = \pm 3$. Address.
+77. A student writes $(\sqrt{2})^2 = 2\sqrt{2}$. Address.
+78. A student writes $\sqrt{8} + \sqrt{2} = \sqrt{10}$. Address.
+79. A student computes $\frac{1}{\sqrt{2}} = \sqrt{\frac{1}{2}}$ and stops. Find the (small) issue.
+
+### Answers
+
+1. 8.
+2. 12.
+3. 0.
+4. 1.
+5. 3.
+6. $-2$.
+7. 2.
+8. 2.
+9. 15.
+10. 10.
+
+11. $2\sqrt{5}$.
+12. $4\sqrt{2}$.
+13. $4\sqrt{3}$.
+14. $6\sqrt{2}$.
+15. $7\sqrt{2}$.
+16. $10\sqrt{2}$.
+17. $10\sqrt{3}$.
+18. $10\sqrt{5}$.
+19. $2\sqrt[3]{2}$.
+20. $5\sqrt[3]{2}$.
+
+21. $5\sqrt{5}$.
+22. $3\sqrt{3}$.
+23. $2\sqrt{2} + 3\sqrt{2} = 5\sqrt{2}$.
+24. $2\sqrt{3} - 5\sqrt{3} = -3\sqrt{3}$.
+25. $3\sqrt{2} + 4\sqrt{2} = 7\sqrt{2}$.
+
+26. $\sqrt{144} = 12$.
+27. $\sqrt{100} = 10$.
+28. $\sqrt{100} = 10$.
+29. $\sqrt{36} = 6$.
+30. $6\sqrt{10}$.
+31. $2 + 2\sqrt{2} + 1 = 3 + 2\sqrt{2}$.
+32. $3 - 4 = -1$.
+
+33. $\sqrt{9} = 3$.
+34. $\frac{6}{\sqrt{3}} \cdot \frac{\sqrt{3}}{\sqrt{3}} = \frac{6\sqrt{3}}{3} = 2\sqrt{3}$.
+35. $\frac{2\sqrt{5}}{5}$.
+36. $\frac{2 - \sqrt{3}}{(2)^2 - (\sqrt{3})^2} = \frac{2 - \sqrt{3}}{1} = 2 - \sqrt{3}$.
+37. $\frac{\sqrt{2}(\sqrt{2}+1)}{(\sqrt{2})^2 - 1^2} = \frac{2 + \sqrt{2}}{1} = 2 + \sqrt{2}$.
+
+38. 3.
+39. 3.
+40. $(\sqrt[4]{16})^3 = 2^3 = 8$.
+41. $(\sqrt[3]{8})^4 = 2^4 = 16$.
+42. $(\sqrt[5]{32})^2 = 2^2 = 4$.
+43. $\frac{1}{4^{1/2}} = \frac{1}{2}$.
+44. $\left(\frac{4}{1}\right)^{3/2} = 4^{3/2} = (\sqrt{4})^3 = 2^3 = 8$.
+45. $2^{1/2 \cdot 4} = 2^2 = 4$.
+
+46. $x$ (for $x \ge 0$; in general $|x|$).
+47. $x^3$.
+48. $x^3 \sqrt{x}$ ($x^7 = x^6 \cdot x$; $\sqrt{x^6} = x^3$).
+49. $5 x^2 \sqrt{2}$.
+50. $2 x y^2 \sqrt{2 x y}$ ($8 = 4 \cdot 2$, $x^3 = x^2 \cdot x$, $y^5 = y^4 \cdot y$, then $\sqrt{4 x^2 y^4 \cdot 2xy}$).
+
+51. 10.
+52. 13.
+53. 5.
+54. $\sqrt{9 + 16} = 5$.
+55. $\sqrt{1 + 4 + 4} = 3$.
+
+56. $\sqrt{196} = 14$ m.
+57. $\sqrt[3]{729} = 9$ m.
+58. Thrust factor: $\sqrt{2} \approx 1.414$ times original. (Doubling power gives $\sqrt{2}$ times the thrust.)
+59. $V = \sqrt{2E/C} = \sqrt{2 \cdot 0.5 / (100 \times 10^{-6})} = \sqrt{10^4} = 100$ V.
+60. $5/\sqrt{2} \approx 3.54$ V.
+61. Mean: $(2+4+4+4+5+5+7+9)/8 = 40/8 = 5$. Squared deviations: $9, 1, 1, 1, 0, 0, 4, 16$. Sum: 32. Variance: $32/8 = 4$. SD: 2.
+62. $v = \sqrt{2 \cdot 100 / 0.5} = \sqrt{400} = 20$ m/s.
+63. $\sqrt{GM/r} = \sqrt{6.674 \times 10^{-11} \cdot 2 \times 10^{30} / (1.5 \times 10^{11})} = \sqrt{(13.348 \times 10^{19})/(1.5 \times 10^{11})} = \sqrt{8.9 \times 10^8} \approx 2.98 \times 10^4$ m/s. (Earth's orbital velocity is about 29.8 km/s. ✓)
+
+64. $x_0 = 3$. $x_1 = (3 + 10/3)/2 = (3 + 3.333)/2 = 3.1667$. $x_2 = (3.1667 + 10/3.1667)/2 = (3.1667 + 3.1579)/2 = 3.1623$. $x_3 \approx 3.1623$ (converged). ✓
+65. $x_0 = 7$. $x_1 = (7 + 50/7)/2 = (7 + 7.143)/2 = 7.0714$. $x_2 = (7.0714 + 50/7.0714)/2 = (7.0714 + 7.0707)/2 = 7.0711$. (True: $\sqrt{50} \approx 7.0711$.) ✓
+
+66. Assume $\sqrt{2} = p/q$ in lowest terms. Then $2q^2 = p^2$, so $p^2$ is even, so $p$ is even ($p = 2k$). Then $2q^2 = 4k^2$, so $q^2 = 2k^2$, so $q^2$ is even, so $q$ is even. But $p$ and $q$ even contradicts "lowest terms." ∎
+67. $a \ge 0$: $\sqrt{a^2} = a = |a|$. $a < 0$: $a^2 > 0$, $\sqrt{a^2} = $ (positive value with square $a^2$) $= -a = |a|$. Either way: $\sqrt{a^2} = |a|$. ∎
+68. AM-GM, $n=2$: $\frac{a+b}{2} \ge \sqrt{ab} \iff (a+b)^2 \ge 4ab \iff a^2 - 2ab + b^2 \ge 0 \iff (a-b)^2 \ge 0$. ✓ (True with equality iff $a = b$.)
+69. $577/408 = 1.414215686\ldots$. True $\sqrt{2} = 1.414213562\ldots$. Difference $\approx 2 \times 10^{-6}$. Accurate to about 6 decimal places.
+70. The same parity-of-prime argument generalizes. If $n = p_1^{a_1} \cdots p_k^{a_k}$ has any odd exponent $a_i$, then $\sqrt{n}$ is irrational. (Proof: similar to $\sqrt{2}$, working with prime $p_i$ instead of 2.) Perfect squares have all $a_i$ even.
+71. $i^i = e^{i \cdot \pi/2 \cdot i} = e^{-\pi/2} \approx 0.2079$ (real and surprising). Requires complex analysis for full justification.
+72. $(\sqrt{3})^2 - (\sqrt{2})^2 = 3 - 2 = 1$.
+
+73. Roots do not distribute over addition. $\sqrt{16 + 9} = \sqrt{25} = 5$, not 7.
+74. $\sqrt{(-4)^2} = \sqrt{16} = 4$, not $-4$. The general rule is $\sqrt{x^2} = |x|$.
+75. $\sqrt{-9}$ is not a real number (since no real number squared gives $-9$). In complex arithmetic, it's $3i$.
+76. By the principal-root convention, $\sqrt{9} = 3$ only (the nonnegative root). $\pm 3$ would be written $\pm\sqrt{9}$ or as "the solutions of $x^2 = 9$."
+77. $(\sqrt{2})^2 = 2$, not $2\sqrt{2}$. The square of the square root undoes the square root.
+78. Roots do not distribute. $\sqrt{8} + \sqrt{2} = 2\sqrt{2} + \sqrt{2} = 3\sqrt{2} \approx 4.24$. Not $\sqrt{10} \approx 3.16$.
+79. Both forms are equal; $\frac{1}{\sqrt{2}} = \sqrt{\frac{1}{2}}$. But "standard form" usually rationalizes the denominator: $\frac{1}{\sqrt{2}} = \frac{\sqrt{2}}{2}$. The student should at least acknowledge the convention.
+
+## Build Task
+
+Write `roots_and_radicals.py` (or your language's equivalent).
+
+Required functions:
+
+1. `square_root(x)` — implement Newton's iteration to compute $\sqrt{x}$ for $x \ge 0$. Stop when successive iterates agree to within $10^{-12}$.
+2. `cube_root(x)` — same idea for cube roots; works for all real $x$. Use the iteration $x \mapsto \frac{1}{3}(2x + N/x^2)$.
+3. `nth_root(x, n)` — generalize to $\sqrt[n]{x}$ for any positive integer $n$. Use Newton's iteration for $x^n - N = 0$.
+4. `simplify_sqrt(n)` — for a positive integer $n$, return a tuple `(a, b)` such that $\sqrt{n} = a\sqrt{b}$ with $b$ square-free. Example: `simplify_sqrt(72) == (6, 2)`.
+5. `is_perfect_square(n)` — return True iff $n$ is a perfect square.
+6. `euclidean_distance(p, q)` — given two same-length point tuples, return the Euclidean distance.
+
+Tests:
+
+- `abs(square_root(2) - 1.41421356237) < 1e-9`
+- `abs(square_root(100) - 10) < 1e-9`
+- `square_root(0) == 0`
+- `abs(cube_root(27) - 3) < 1e-9`
+- `abs(cube_root(-8) - (-2)) < 1e-9`
+- `abs(nth_root(32, 5) - 2) < 1e-9`
+- `simplify_sqrt(72) == (6, 2)`
+- `simplify_sqrt(50) == (5, 2)`
+- `simplify_sqrt(7) == (1, 7)` (already simplest)
+- `is_perfect_square(144) is True`
+- `is_perfect_square(150) is False`
+- `abs(euclidean_distance((0,0), (3,4)) - 5) < 1e-9`
+- `abs(euclidean_distance((1,2,3), (4,6,3)) - 5) < 1e-9`
+
+Stretch goals:
+
+- Implement the **Quake III fast inverse square root** in Python using `struct.pack` / `unpack` to manipulate the bit representation. Compare its accuracy and timing to `1/math.sqrt(x)`.
+- Implement **AM-GM**: given a list of positive numbers, compute both the arithmetic mean and the geometric mean. Verify AM ≥ GM for several test cases.
+- Build a **standard deviation calculator** that handles sample SD (using $n-1$ in the denominator) and population SD (using $n$). Test on classroom-grade datasets.
+
+## Quiz
+
+1. State the definition of the principal square root.
+2. Why is $\sqrt{9} = 3$ and not $\pm 3$?
+3. What is $\sqrt{x^2}$ for general real $x$?
+4. Simplify $\sqrt{72}$.
+5. Compute $8^{2/3}$.
+6. Rationalize the denominator: $\frac{3}{\sqrt{5}}$.
+7. What is the distance between $(0, 0)$ and $(5, 12)$?
+8. Why does $\sqrt{a + b} \ne \sqrt{a} + \sqrt{b}$?
+9. State the RMS value of a sinusoid with peak amplitude $V_p$.
+10. Compute $\sqrt[3]{-125}$.
+11. What is $25^{-1/2}$?
+12. State Newton's iteration for computing $\sqrt{N}$.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Pass the inline lesson check at 100% on first attempt.
+- Compute square roots of any perfect square up to $20^2 = 400$ instantly.
+- Simplify any radical involving small integers in under 30 seconds.
+- Apply the Pythagorean theorem to small integer triples (3-4-5, 5-12-13, 8-15-17, 7-24-25, 20-21-29) without a calculator.
+- Convert between radical and fractional-exponent notation fluently.
+- Avoid every common error from the practice set.
+- Implement Newton's iteration to compute square roots to 10 decimal places.
+- Run your `roots_and_radicals.py` module with all listed tests passing.
+
+## Sources and Further Study
+
+- **MIT OCW 18.01 — Single Variable Calculus**. Newton's method, applied to roots, is the basis of many root-finding algorithms; this lesson is the warm-up.
+- **George Pólya, *Mathematics and Plausible Reasoning***. Chapter on Newton's method and the geometric interpretation of root-finding.
+- **Khan Academy — Radicals and Rational Exponents**. Excellent step-by-step drills.
+- **Donald Knuth, *The Art of Computer Programming, Vol. 2*, Section 4.5.4**. Computing square roots in computers; the basis of how `math.sqrt` is actually implemented.
+- **William Kahan, "How to Compute Functions Accurately"**. Available online; the gold standard reference on robust numerical implementations.
+- **"Fast Inverse Square Root" — Wikipedia and various tech writeups**. Read the original Quake source code and the magic-constant analysis.
+
+## Next Lesson Bridge
+
+You now have integer exponents (lesson 13), fractional exponents and roots (this lesson), and the algebraic apparatus for all real-valued exponents.
+
+Lesson 15 — *Scientific Notation* — applies powers of 10 systematically to compact and arithmetic with very large and very small numbers. This is the engineering-fluency lesson; you have done the math behind it twice over already.
+
+Lesson 16 — *Significant Figures and Measurement Uncertainty* — combines the rounding rules of lesson 9 with the scientific notation of lesson 15 to determine how many digits of an answer you are *allowed* to report.
+
+Lessons 17-20 wrap up the Math Re-entry module with Fermi estimation, data literacy, basic probability intuition, and basic statistics.
+
+Then the rest of the math track follows: pre-calculus, calculus, linear algebra, differential equations, probability and statistics, optimization, real analysis, complex analysis, abstract algebra, and so on — everything you need to read frontier papers in Physical AI. Roots will appear in calculus (chain rule with square roots), in linear algebra (vector norms), in differential equations (characteristic equations with discriminants), in statistics (standard deviations everywhere), in physics (kinematics, oscillators, wave equations), and in machine learning (loss functions, regularization, gradient norms).
+
+You will use this lesson every day for the rest of the curriculum.
