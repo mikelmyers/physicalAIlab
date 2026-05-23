@@ -1,0 +1,553 @@
+# Polynomial Factoring Techniques
+
+## Re-entry Promise
+
+This lesson assumes you can multiply expressions like $(x+2)(x-3)$ and recognize polynomial terms. It does not assume factoring feels automatic.
+
+Factoring is reverse multiplication. It rewrites a polynomial as a product of simpler pieces. That rewrite matters because products reveal zeros, cancellations, domain restrictions, and structure that expanded form hides.
+
+By the end, you should be able to factor common polynomial patterns and explain why factoring is useful for solving equations, simplifying formulas, and understanding system behavior.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Explain factoring as reverse distribution.
+- Factor out a greatest common factor.
+- Factor by grouping.
+- Factor simple trinomials $x^2+bx+c$.
+- Factor trinomials with leading coefficient not equal to 1.
+- Recognize difference of squares.
+- Recognize perfect-square trinomials.
+- Use factoring to solve polynomial equations.
+- Connect factors to roots and zero-product logic.
+- Use factoring in engineering algebra, transfer functions, calibration models, and stability reasoning.
+
+## Plain-Language Intuition
+
+Expanded form shows how terms add. Factored form shows what can make the whole expression zero.
+
+Compare:
+
+$$
+x^2-5x+6
+$$
+
+and:
+
+$$
+(x-2)(x-3)
+$$
+
+They are the same polynomial, but the second form immediately reveals roots 2 and 3.
+
+Factoring is like taking a machine apart so you can see its modules.
+
+## Why This Idea Exists
+
+Factoring lets us solve equations and simplify structure:
+
+- A projectile equation can be factored to find launch and landing times.
+- A transfer function can be factored to reveal poles and zeros.
+- A robot trajectory polynomial can be factored to identify boundary times.
+- A circuit formula can be simplified by canceling common factors.
+- A numerical method can exploit factored form for stability and speed.
+
+Factoring is not just school algebra. It is structural debugging.
+
+## Core Theory
+
+### Zero Product Property
+
+If:
+
+$$
+AB=0
+$$
+
+then:
+
+$$
+A=0 \quad \text{or} \quad B=0
+$$
+
+This is why factoring solves equations.
+
+If:
+
+$$
+(x-2)(x+5)=0
+$$
+
+then:
+
+$$
+x=2 \quad \text{or} \quad x=-5
+$$
+
+### Greatest Common Factor
+
+Always check for a greatest common factor first.
+
+Example:
+
+$$
+6x^3+9x^2=3x^2(2x+3)
+$$
+
+The shared factor is $3x^2$.
+
+### Factoring By Grouping
+
+Group terms so each pair has a common factor.
+
+Example:
+
+$$
+x^3+2x^2+3x+6
+$$
+
+Group:
+
+$$
+(x^3+2x^2)+(3x+6)
+$$
+
+Factor each group:
+
+$$
+x^2(x+2)+3(x+2)
+$$
+
+Factor common binomial:
+
+$$
+(x+2)(x^2+3)
+$$
+
+### Trinomials With Leading Coefficient 1
+
+For:
+
+$$
+x^2+bx+c
+$$
+
+find two numbers that multiply to $c$ and add to $b$.
+
+Example:
+
+$$
+x^2+5x+6
+$$
+
+Numbers 2 and 3 multiply to 6 and add to 5:
+
+$$
+(x+2)(x+3)
+$$
+
+### Trinomials With Leading Coefficient Not 1
+
+Example:
+
+$$
+2x^2+7x+3
+$$
+
+Use trial factors or the $ac$ method. Here:
+
+$$
+2x^2+7x+3=(2x+1)(x+3)
+$$
+
+Check:
+
+$$
+2x^2+6x+x+3=2x^2+7x+3
+$$
+
+### Difference Of Squares
+
+Pattern:
+
+$$
+a^2-b^2=(a-b)(a+b)
+$$
+
+Examples:
+
+$$
+x^2-9=(x-3)(x+3)
+$$
+
+$$
+4x^2-25=(2x-5)(2x+5)
+$$
+
+### Perfect-Square Trinomials
+
+Patterns:
+
+$$
+a^2+2ab+b^2=(a+b)^2
+$$
+
+$$
+a^2-2ab+b^2=(a-b)^2
+$$
+
+Examples:
+
+$$
+x^2+6x+9=(x+3)^2
+$$
+
+$$
+x^2-10x+25=(x-5)^2
+$$
+
+### Solving By Factoring
+
+Solve:
+
+$$
+x^2-5x+6=0
+$$
+
+Factor:
+
+$$
+(x-2)(x-3)=0
+$$
+
+So:
+
+$$
+x=2,\quad x=3
+$$
+
+## Visual Or Mental Model
+
+Factoring asks: "What reusable pieces could have been multiplied to produce this?"
+
+For roots, imagine each factor as a switch. If any factor becomes zero, the whole product becomes zero. Expanded form hides the switches. Factored form exposes them.
+
+## Worked Examples
+
+### Example 1: GCF
+
+Factor:
+
+$$
+12x^4-8x^3
+$$
+
+Shared factor is $4x^3$:
+
+$$
+4x^3(3x-2)
+$$
+
+### Example 2: Simple Trinomial
+
+Factor:
+
+$$
+x^2-7x+12
+$$
+
+Numbers multiply to 12 and add to -7: -3 and -4.
+
+$$
+(x-3)(x-4)
+$$
+
+### Example 3: Leading Coefficient
+
+Factor:
+
+$$
+3x^2+10x+3
+$$
+
+$$
+(3x+1)(x+3)
+$$
+
+Check:
+
+$$
+3x^2+9x+x+3=3x^2+10x+3
+$$
+
+### Example 4: Difference Of Squares
+
+$$
+9x^2-16=(3x-4)(3x+4)
+$$
+
+### Example 5: Perfect Square
+
+$$
+x^2+12x+36=(x+6)^2
+$$
+
+### Example 6: Grouping
+
+$$
+xy+2x+3y+6
+$$
+
+Group:
+
+$$
+x(y+2)+3(y+2)=(x+3)(y+2)
+$$
+
+### Example 7: Solve A Factored Equation
+
+$$
+2x(x-5)=0
+$$
+
+So:
+
+$$
+x=0,\quad x=5
+$$
+
+### Example 8: Projectile Landing Time
+
+Height:
+
+$$
+h(t)=-5t^2+20t
+$$
+
+Factor:
+
+$$
+h(t)=-5t(t-4)
+$$
+
+Ground occurs when $h(t)=0$:
+
+$$
+t=0,\quad t=4
+$$
+
+The object launches at 0 s and lands at 4 s.
+
+## Engineering Connections
+
+### Projectiles
+
+Factoring height equations reveals launch and landing times when ground height is zero.
+
+### Transfer Functions
+
+Factored numerator and denominator polynomials reveal zeros and poles, central to control systems and filters.
+
+### Circuits
+
+Factoring can simplify symbolic impedance or gain expressions before numerical evaluation.
+
+### Calibration
+
+Polynomial calibration equations may factor to reveal physically meaningful operating points.
+
+### Robotics Trajectories
+
+Boundary constraints often create polynomial factors like $t(T-t)$ that enforce zero at endpoints.
+
+## Common Failure Modes
+
+1. Forgetting to factor out the GCF first.
+2. Getting signs wrong in trinomials.
+3. Confusing difference of squares with sum of squares.
+4. Factoring $x^2+9$ over the reals as if it were difference of squares.
+5. Dropping a factor.
+6. Not checking by multiplying back.
+7. Using zero-product property before setting the equation equal to zero.
+8. Dividing by a variable factor and losing a root.
+9. Treating irreducible over the reals as impossible or wrong.
+10. Forgetting units or physical domain after solving.
+
+## Practice Problems
+
+### GCF
+
+1. Factor $6x+9$.
+2. Factor $12x^2-8x$.
+3. Factor $15a^3+10a^2$.
+4. Factor $21xy-14x$.
+5. Factor $-4x^3+8x^2$.
+6. Factor $9m^2n+6mn^2$.
+7. Factor $5x(x+2)+3(x+2)$.
+8. Why check GCF first?
+9. What is the GCF of $18x^4$ and $12x^3$?
+10. Factor $18x^4-12x^3$.
+
+### Trinomials
+
+11. Factor $x^2+5x+6$.
+12. Factor $x^2-7x+12$.
+13. Factor $x^2+x-6$.
+14. Factor $x^2-9x+20$.
+15. Factor $x^2+2x-15$.
+16. Factor $2x^2+7x+3$.
+17. Factor $3x^2+10x+3$.
+18. Factor $2x^2-5x-3$.
+19. Factor $6x^2+x-2$.
+20. Factor $4x^2-12x+9$.
+
+### Special Patterns
+
+21. Factor $x^2-9$.
+22. Factor $4x^2-25$.
+23. Factor $9x^2-16$.
+24. Factor $x^2+6x+9$.
+25. Factor $x^2-10x+25$.
+26. Factor $16x^2+24x+9$.
+27. Can $x^2+9$ factor over the reals as difference of squares?
+28. Factor $25y^2-1$.
+29. Factor $a^2-4b^2$.
+30. Factor $x^4-16$.
+
+### Solving
+
+31. Solve $(x-2)(x+5)=0$.
+32. Solve $x^2-5x+6=0$.
+33. Solve $x^2+5x=0$.
+34. Solve $2x^2-8x=0$.
+35. Solve $x^2-9=0$.
+36. Solve $4x^2-25=0$.
+37. Solve $x^2+6x+9=0$.
+38. Solve $-5t^2+20t=0$.
+39. Solve $3x^2+10x+3=0$.
+40. Why must the equation equal zero before using zero-product property?
+
+### Challenge And Error Spotting
+
+41. A student factors $x^2-9$ as $(x-9)(x+9)$. Correct it.
+42. A student factors $x^2+6x+9$ as $(x+6)(x+3)$. Correct it.
+43. A student divides $x^2-5x=0$ by $x$ and gets only $x=5$. What root did they lose?
+44. Explain why checking by multiplying back catches most factoring errors.
+45. Factor by grouping: $x^3+2x^2+3x+6$.
+46. Factor by grouping: $xy+2x+3y+6$.
+47. Give a polynomial with roots 0 and 4.
+48. Give a factored expression for launch at $t=0$ and landing at $t=6$.
+49. Why might a control engineer care about factoring a denominator polynomial?
+50. Give one physical reason a mathematically valid root might be rejected.
+
+## Answer Key
+
+1. $3(2x+3)$.
+2. $4x(3x-2)$.
+3. $5a^2(3a+2)$.
+4. $7x(3y-2)$.
+5. $-4x^2(x-2)$.
+6. $3mn(3m+2n)$.
+7. $(x+2)(5x+3)$.
+8. It simplifies the remaining factoring and prevents missed common factors.
+9. $6x^3$.
+10. $6x^3(3x-2)$.
+11. $(x+2)(x+3)$.
+12. $(x-3)(x-4)$.
+13. $(x+3)(x-2)$.
+14. $(x-4)(x-5)$.
+15. $(x+5)(x-3)$.
+16. $(2x+1)(x+3)$.
+17. $(3x+1)(x+3)$.
+18. $(2x+1)(x-3)$.
+19. $(3x+2)(2x-1)$.
+20. $(2x-3)^2$.
+21. $(x-3)(x+3)$.
+22. $(2x-5)(2x+5)$.
+23. $(3x-4)(3x+4)$.
+24. $(x+3)^2$.
+25. $(x-5)^2$.
+26. $(4x+3)^2$.
+27. No.
+28. $(5y-1)(5y+1)$.
+29. $(a-2b)(a+2b)$.
+30. $(x^2-4)(x^2+4)=(x-2)(x+2)(x^2+4)$ over the reals.
+31. $x=2,-5$.
+32. $x=2,3$.
+33. $x=0,-5$.
+34. $x=0,4$.
+35. $x=\pm3$.
+36. $x=\pm5/2$.
+37. $x=-3$.
+38. $t=0,4$.
+39. $x=-1/3,-3$.
+40. Zero-product property applies to products equal to zero.
+41. $(x-3)(x+3)$.
+42. $(x+3)^2$.
+43. $x=0$.
+44. Multiplication should recover the original expression exactly.
+45. $(x+2)(x^2+3)$.
+46. $(x+3)(y+2)$.
+47. $x(x-4)$.
+48. $k\,t(t-6)$ for any nonzero scale $k$.
+49. Denominator factors reveal poles, which influence stability and response.
+50. Negative time, negative distance, outside sensor range, or violates physical constraints.
+
+## Build Task
+
+Create a "factoring and root finder" as a script, spreadsheet, notebook, or careful worksheet.
+
+Minimum requirements:
+
+1. Factor at least five expressions by GCF.
+2. Factor at least five trinomials.
+3. Factor at least three difference-of-squares expressions.
+4. Solve at least five equations by factoring.
+5. Check each factorization by multiplying back.
+6. Include one projectile landing-time example.
+7. Include one example where a root is rejected for physical-domain reasons.
+8. Write a short note explaining zero-product property.
+
+Stretch:
+
+- Implement simple integer-root testing.
+- Add symbolic expansion checks in Python with `sympy`.
+- Relate factored roots to a plotted graph.
+
+## Quiz
+
+1. What is factoring?
+2. Why should you check for a GCF first?
+3. State the zero-product property.
+4. Factor $x^2-16$.
+5. Factor $x^2+8x+16$.
+6. Why is $x^2+16$ not a difference of squares over the reals?
+7. How does factored form reveal roots?
+8. What root is lost if you divide $x^2-4x=0$ by $x$?
+9. Give one engineering use of factoring.
+10. Why can a valid algebraic root be physically invalid?
+11. What is factoring by grouping?
+12. Why multiply back after factoring?
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 40 practice problems, including all challenge/error-spotting problems.
+- A factoring/root-finder artifact with checks.
+- One projectile or trajectory equation solved by factoring.
+- One note explaining a lost-root mistake.
+- One paragraph connecting factors to roots and physical interpretation.
+
+## Sources And Further Study
+
+- OpenStax, *Precalculus 2e*, factoring polynomial expressions.
+- Khan Academy, factoring quadratics and special products.
+- MIT OCW calculus prerequisite algebra review.
+- Control systems references on poles, zeros, and factored transfer functions.
+- Physics references on projectile equations and zero crossings.
+
+## Next Lesson Bridge
+
+Factoring exposes roots when the factors are friendly. The next lesson studies polynomial division and the factor theorem, which give you a systematic way to test whether a candidate root is truly a factor and to reduce higher-degree polynomials.
