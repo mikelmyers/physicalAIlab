@@ -1,0 +1,651 @@
+# Domain, Range, and Function Types
+
+## Re-entry Promise
+
+This lesson assumes you have finished lessons 1 through 7 of the Engineering Algebra and Geometry module. You can rearrange formulas symbolically, you understand the balance-scale view of equations, you can plot a point in the Cartesian plane, and — most importantly — you finished lesson 7 (*Functions: Definition and Notation*), so you know what a function *is*. A function is a rule that pairs each input with exactly one output, written $f(x)$, and it passes the vertical-line test when you graph it.
+
+What lesson 7 left informal is the question of *which inputs are allowed* and *which outputs actually appear*. A function written as $f(x) = 1/x$ looks like it should accept any real number, but it cannot accept $x = 0$. A function written as $f(t) = 2t + 3$ accepts any real $t$ mathematically, but if $t$ is "time after launch" then negative values are physically meaningless. The set of allowed inputs is the **domain**. The set of actually-produced outputs is the **range**. Pinning these down is the difference between a function that works and a function that crashes the second time you call it.
+
+The second job of this lesson is to give you a *catalog* of the function types you will meet over and over again in engineering. You already know how a function behaves abstractly. Now you need to recognize the common shapes: constant, linear, absolute value, piecewise, step, signum, floor, ceiling. Most engineering signals, in most engineering systems, are built out of these pieces. The Heaviside step function alone is the foundation of every control-system input you will ever analyze.
+
+By the end of this lesson you should be able to (a) determine the natural domain of a formula by the three classic rules, (b) restrict that domain further using physical reasoning, (c) describe the range either analytically or from a graph, and (d) identify which of the common function types fits an engineering situation. Lessons 9 and 10 will then zoom into the single most important function type — linear — and extract its two parameters, *slope* and *y-intercept*.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Determine the **natural domain** of a function from its formula, applying the three classical rules: no division by zero, no even root of a negative number, no logarithm of zero or a negative number.
+- **Restrict the domain** further based on physical reasonableness — no negative time, no negative mass, no current beyond the rated maximum, no voltage outside the supply rails.
+- Distinguish **codomain** (the declared output set) from **range** (the set of outputs actually achieved).
+- Determine the range of a function either analytically (from the formula and known bounds, e.g., $x^2 \ge 0$) or graphically (from a sketch or table).
+- Recognize, sketch, and evaluate the following function types: **constant**, **linear**, **absolute value**, **piecewise**, **step (Heaviside)**, **signum**, **floor**, **ceiling**, and **rectangular pulse**.
+- Identify which function type best models a given engineering scenario — a saturating amplifier, a quantizing ADC, a switched control input, a tax bracket, a diode I-V curve.
+- Name (without yet studying in depth) the function families you will meet in later lessons: polynomial, rational, exponential, logarithmic, trigonometric.
+- Diagnose the most common errors: forgetting to exclude zeros in a denominator, missing a domain restriction inside a square root, confusing the range with the codomain, miscounting where a piecewise function changes branches.
+
+## Why It Matters
+
+Domain, range, and function type are not abstract bookkeeping. They are the engineering specification of *what your function can do and what it must not be asked to do*. Ten contexts where this matters every day:
+
+1. **GPS time-to-fix.** A GPS receiver reports the time between power-on and the first valid position fix. That time $t_\text{fix}$ is non-negative — there is no such thing as fixing a position before you turned the radio on. The domain of any function $f(t_\text{fix})$ is the half-line $t_\text{fix} \ge 0$. Forgetting that restriction is how you write a log file with a negative timestamp and confuse the post-flight analysis tool.
+
+2. **Drone altitude.** A quadcopter's altimeter outputs an altitude $h$ that is physically constrained: at the bottom, $h \ge 0$ (the rotor can't go below the ground without crashing); at the top, $h \le h_\text{max}$ where $h_\text{max}$ is the rated ceiling, often 120 m for hobby drones by regulation. The *range* of the altitude sensor is the closed interval $[0,\, h_\text{max}]$. Anything outside means the sensor is broken or the drone is.
+
+3. **Voltage across a sensor.** A datasheet for an MCP9700A temperature sensor states the operating range as $V_\text{in} \in [2.3\,\text{V},\, 5.5\,\text{V}]$. That is the *domain* of any function that takes the supply voltage and predicts sensor behaviour. Asking the formula about $V_\text{in} = 0.5$ V is asking about a regime where the manufacturer does not guarantee anything.
+
+4. **Step input in control systems.** When you test a motor controller, you typically apply a **step input**: command zero rpm, then at $t = 0$ suddenly command 1000 rpm. The commanded speed is exactly the Heaviside step function $u(t)$ scaled by 1000. The closed-loop response to a step is the single most-used diagnostic in control engineering.
+
+5. **PWM signal.** A pulse-width-modulated motor drive signal is a periodic step function: a square wave with adjustable duty cycle. Mathematically, it is a sum of shifted rectangular pulses — exactly the building block we construct from two Heaviside steps below. A later Fourier-series lesson will decompose it into sines and cosines.
+
+6. **Absolute-value error in ML.** The mean absolute error metric $\mathrm{MAE} = \tfrac{1}{n}\sum_i |y_i - \hat{y}_i|$ uses the absolute value function on every prediction error. The absolute value is a piecewise function: linear on each side of zero, with a corner at the origin where it is not differentiable. That corner has practical consequences for optimization.
+
+7. **Floor function in time quantization.** Every sample-and-hold ADC implements the floor function in time: the analog input at sample time $n T_s$ is held until $(n+1) T_s$. The output as a function of continuous time $t$ is the input evaluated at $\lfloor t / T_s \rfloor \cdot T_s$. A nontrivial fraction of "weird ADC bugs" trace to misunderstanding floor behaviour.
+
+8. **Piecewise rate functions in tax, billing, and utility codes.** Electricity rates often jump at fixed usage thresholds: 12 cents per kWh up to 500 kWh per month, 16 cents per kWh from 500 to 1000, 22 cents per kWh above 1000. The bill as a function of usage is a piecewise-linear function with two corners. Modelling such schedules cleanly requires the piecewise notation introduced in this lesson.
+
+9. **Saturation in control systems.** A real op-amp cannot output a voltage larger than its supply rail. If the supply is $\pm 5$ V, the output saturates at $\pm 5$ V no matter how much the input asks for more. The output-versus-input relationship is the canonical piecewise function: linear in the middle, flat (clamped) at the top and bottom. Every analog circuit you build has this behaviour somewhere.
+
+10. **Diode I-V curve.** A silicon diode passes essentially zero current below about 0.7 V forward voltage and rises exponentially above. The simplest engineering model is piecewise: $I = 0$ for $V < 0.7$, and $I$ grows steeply for $V \ge 0.7$. The piecewise model is wrong in detail but extraordinarily useful for circuit design.
+
+If you can identify the function type in each of these ten situations cold, you have the conceptual vocabulary for the next year of engineering coursework.
+
+## Why This Idea Exists
+
+The concepts of domain and range, as we use them today, are surprisingly young. For most of the history of mathematics, formulas were just *written*, and the question "for which inputs does this formula make sense?" was answered case by case if at all.
+
+The push for rigour came with the 19th-century reform of calculus. **Augustin-Louis Cauchy** (1789–1857), in his *Cours d'analyse* (1821), was the first to insist on precise statements of where a function is defined before discussing its continuity or its derivative. Before Cauchy, a calculus textbook might confidently differentiate $1/x$ without ever mentioning that the function is undefined at $x = 0$ — and would then produce paradoxes that no one could resolve. Cauchy's discipline of *first say where you live, then state what you do* is what made modern analysis possible.
+
+**Bernard Bolzano** (1781–1848), working in Prague and largely unrecognized in his lifetime, independently developed similar standards of rigour. **Karl Weierstrass** (1815–1897) in Berlin then completed the program: the modern $\epsilon$–$\delta$ definition of a limit, which depends crucially on a clearly-specified domain, is Weierstrass's. The trio Cauchy–Bolzano–Weierstrass is the reason every modern textbook starts a function discussion by naming the domain.
+
+The most dramatic demonstration of why domains matter is **Dirichlet's function** (Peter Gustav Lejeune Dirichlet, 1829):
+
+$$D(x) = \begin{cases} 1 & \text{if } x \text{ is rational}, \\ 0 & \text{if } x \text{ is irrational}. \end{cases}$$
+
+This function is *defined for every real number* but is discontinuous at every point. Its existence forced mathematicians to admit that a function is not a formula or a curve — it is, fundamentally, a *rule* from a domain to a codomain. The whole language of "domain, codomain, range" exists to make sense of objects like $D$.
+
+For function *types*, the history is older and more uneven. Linear functions and proportions are ancient — the Pythagoreans (6th century BCE) and Euclid (~300 BCE) worked with proportions, and most of classical geometry is implicitly a study of linear maps. **Step and piecewise functions** entered the scene with 19th-century signal processing and the development of integration: an integral has to make sense of a function that jumps, not just one that is smooth.
+
+The **Heaviside step function**, the building block of every modern control-systems course, is named for the English engineer **Oliver Heaviside** (1850–1925). Heaviside used the step function freely in his work on telegraph cables and electromagnetic theory in the 1890s. He worked without the modern theory of distributions; mathematicians considered his methods unrigorous; engineers found that they worked. The eventual rigorization came with **Laurent Schwartz**'s theory of distributions in the 1940s.
+
+The **floor function** in its modern notation $\lfloor x \rfloor$ is even younger. The notation was introduced by **Kenneth Iverson** in his 1962 book *A Programming Language* (APL). Before Iverson, mathematicians wrote $[x]$ — a notation due to **Carl Friedrich Gauss** — but the brackets clashed with too many other uses. Iverson's $\lfloor x \rfloor$ and $\lceil x \rceil$ are now universal.
+
+Why do engineers care about all this? Because every physical quantity has limits. A temperature sensor only reads from $-40$°C to $125$°C. A voltage regulator only sources up to its rated current. A radio only tunes within its band. Every digital signal is quantized — a number with finite precision is, in effect, a number passed through the floor function. Every saturating amplifier has a piecewise response. The vocabulary of domain, range, and function type is exactly the vocabulary you need to write down what a device does and does not do.
+
+## Plain-Language Intuition
+
+Picture a function as the machine model from lesson 7: inputs go in one side, outputs come out the other. With that picture in mind:
+
+- The **domain** is the set of inputs the machine is willing to accept. Some inputs cause the machine to refuse — to throw an error, to crash, to give a meaningless answer. Those inputs are *outside the domain*.
+- The **range** is the set of outputs the machine actually produces, across all the legal inputs. The machine might never produce certain output values no matter what you feed it.
+- The **function type** is the *shape* of the input-to-output mapping. Some machines are linear: doubling the input doubles the output. Some are saturating: past a certain input, the output stops increasing. Some are quantizing: smooth inputs come out as a staircase.
+
+A real engineering example: a Hall-effect current sensor. You hand it a current in amps, it hands you back a voltage in volts. The machine has a domain (it works between $-50$ A and $+50$ A; outside that, it gives nonsense), a range (the output voltage lives between 0.5 V and 4.5 V), and a function type (it's linear in the middle, then saturates flat at the rails).
+
+Three things to keep apart in your head:
+
+- **Natural domain**: where the formula gives a real answer at all (math rules).
+- **Physical domain**: where the answer also makes sense as a real-world quantity (engineering rules).
+- **Codomain vs. range**: the codomain is the box we *declare* the outputs live in (usually $\mathbb{R}$); the range is the smaller set the function *actually* hits.
+
+The rest of this lesson makes these informal pictures precise.
+
+## Core Theory
+
+### Natural Domain: Three Rules
+
+The **natural domain** (sometimes *mathematical domain* or *implicit domain*) of a real-valued function defined by a formula is the largest subset of $\mathbb{R}$ for which the formula returns a real number. There are three operations that can restrict the natural domain:
+
+1. **Division by zero is forbidden.** If the formula contains $g(x)/h(x)$, the natural domain excludes every $x$ for which $h(x) = 0$.
+2. **Even roots of negative numbers are forbidden** (in the reals). If the formula contains $\sqrt{g(x)}$ or $\sqrt[4]{g(x)}$ or any even root of $g(x)$, the natural domain requires $g(x) \ge 0$.
+3. **Logarithms of zero or negative numbers are forbidden.** If the formula contains $\ln(g(x))$ or $\log(g(x))$, the natural domain requires $g(x) > 0$.
+
+You will meet a few more rules in later lessons (the argument of $\arcsin$ and $\arccos$ must lie in $[-1, 1]$, for instance), but these three account for the vast majority of cases in engineering. Combine them when a formula has multiple offending operations.
+
+### Physical Domain
+
+The **physical** or **engineering domain** is the natural domain intersected with the set of values that make physical sense in context. The function $f(t) = 2t + 3$ has natural domain $\mathbb{R}$, but if $t$ means "time after launch in seconds," then the physical domain is $\{t : t \ge 0\}$. If $t$ further means "time during a 30-second flight," the physical domain is $\{t : 0 \le t \le 30\}$.
+
+The physical domain is always a subset of the natural domain. An input outside the natural domain is *mathematically* meaningless; an input outside the physical domain may be mathematically fine but *physically* meaningless. Both deserve to be excluded, and a well-written engineering function should refuse both.
+
+### Codomain and Range
+
+The **codomain** of a function is the set we declare the outputs to live in. In an introductory lesson the codomain is almost always $\mathbb{R}$, and we will not belabour the distinction. In more advanced settings the codomain might be $\mathbb{R}^n$, a finite set $\{0, 1\}$, or anything else.
+
+The **range** (sometimes *image*) is the set of outputs the function actually produces:
+
+$$\text{range}(f) = \{f(x) : x \in \text{domain}(f)\}.$$
+
+The set-builder notation $\{f(x) : x \in \text{domain}(f)\}$ reads "the set of all $f(x)$ such that $x$ lies in the domain of $f$." The range is always a subset of the codomain. For $f(x) = x^2$ with domain $\mathbb{R}$ and codomain $\mathbb{R}$, the range is $[0, \infty)$ — squares are never negative.
+
+### Determining the Range
+
+Two practical techniques:
+
+- **Analytic.** Use known inequalities and the structure of the formula. For $f(x) = x^2 + 3$, you know $x^2 \ge 0$, so $x^2 + 3 \ge 3$, so the range is $[3, \infty)$.
+- **Graphical or tabular.** Sketch the graph or build a table of values. The range is the set of $y$-values the graph covers. This is the right approach when you cannot bound the formula by inspection.
+
+For most engineering functions a sketch plus a moment of analytic thought is enough. Calculus (the *extreme value theorem*) gives you a more systematic tool, but that is a later lesson.
+
+### A Catalog of Function Types
+
+Engineering work is built out of a handful of standard function types. Memorize their shapes.
+
+**Constant.** $f(x) = c$ for some fixed real $c$. Graph: a horizontal line at height $c$. Domain $\mathbb{R}$; range $\{c\}$. Example: a reference voltage $V_\text{ref} = 2.5$ V is modelled as the constant function.
+
+**Linear.** $f(x) = mx + b$ for constants $m$ and $b$. Graph: a straight line. Domain $\mathbb{R}$; range $\mathbb{R}$ if $m \ne 0$, otherwise $\{b\}$ (degenerate to constant). Linear functions are the next two lessons; here we just introduce them as one type among many. They have *two parameters* ($m$ and $b$) — lesson 9 names them slope and y-intercept.
+
+**Absolute value.** $f(x) = |x|$, defined as $x$ for $x \ge 0$ and $-x$ for $x < 0$. Graph: a V-shape with its corner at the origin. Domain $\mathbb{R}$; range $[0, \infty)$. The absolute value is a piecewise combination of two linear functions; it is the prototype of "two-sided distance."
+
+**Piecewise.** A function defined by different formulas on different intervals:
+
+$$f(x) = \begin{cases} \text{expression}_1 & \text{if condition}_1, \\ \text{expression}_2 & \text{if condition}_2, \\ \vdots \end{cases}$$
+
+The conditions must partition the domain (no gaps, no overlaps) for the definition to be well-formed. Engineering examples: a saturating amplifier, an electricity rate schedule, a thermostat with hysteresis.
+
+**Step (Heaviside).** The unit step function
+
+$$u(t) = \begin{cases} 0 & \text{if } t < 0, \\ 1 & \text{if } t \ge 0. \end{cases}$$
+
+Some authors set $u(0) = 1/2$ for symmetry; engineers usually take $u(0) = 1$ and don't worry. Domain $\mathbb{R}$; range $\{0, 1\}$. The Heaviside step is the foundational input signal in control and signals theory.
+
+**Signum.** The sign function
+
+$$\operatorname{sgn}(x) = \begin{cases} -1 & \text{if } x < 0, \\ 0 & \text{if } x = 0, \\ +1 & \text{if } x > 0. \end{cases}$$
+
+Domain $\mathbb{R}$; range $\{-1, 0, +1\}$. Engineering use: bang-bang controllers (a thermostat that turns full on or full off based on the sign of the error).
+
+**Floor.** $\lfloor x \rfloor$ is the largest integer less than or equal to $x$. So $\lfloor 3.7 \rfloor = 3$, $\lfloor -2.3 \rfloor = -3$. Domain $\mathbb{R}$; range $\mathbb{Z}$. Graph: a staircase, each step of width 1 and height 1, with a filled dot on the left and an open dot on the right of each step.
+
+**Ceiling.** $\lceil x \rceil$ is the smallest integer greater than or equal to $x$. So $\lceil 3.2 \rceil = 4$, $\lceil -2.3 \rceil = -2$. Domain $\mathbb{R}$; range $\mathbb{Z}$. A staircase like floor but with the dots on the other end of each step.
+
+**Rectangular pulse.** A pulse of height 1, starting at $t = a$ and ending at $t = b$, can be written as a difference of two shifted steps:
+
+$$\operatorname{rect}_{[a,b]}(t) = u(t - a) - u(t - b).$$
+
+This is the prototype of every finite-duration signal in engineering. PWM, packet transmissions, control test inputs — all are sums of shifted rectangular pulses.
+
+### Foreshadow: Function Families You Will Meet Later
+
+Later lessons in the curriculum will give the following families their own chapters. For now, just know they exist:
+
+- **Polynomial.** $f(x) = a_n x^n + \cdots + a_1 x + a_0$. Generalizes linear ($n=1$) and quadratic ($n=2$).
+- **Rational.** $f(x) = p(x)/q(x)$ with $p, q$ polynomials. Domain excludes the zeros of $q$.
+- **Exponential.** $f(x) = a \cdot b^x$. Models growth and decay.
+- **Logarithmic.** $f(x) = \log_b(x)$. The inverse of the exponential; domain $(0, \infty)$.
+- **Trigonometric.** $\sin x$, $\cos x$, $\tan x$, and friends. Periodic; bounded between $-1$ and $1$ for sine and cosine; vertical asymptotes for tangent.
+
+You will use this catalog, plus the engineering types above, to describe essentially every signal in your future work.
+
+### Saturation: The Canonical Engineering Piecewise
+
+The **saturation** function is so important in engineering that it earns its own name. With lower limit $L$ and upper limit $U$:
+
+$$\operatorname{sat}_{L,U}(x) = \begin{cases} L & \text{if } x < L, \\ x & \text{if } L \le x \le U, \\ U & \text{if } x > U. \end{cases}$$
+
+This is the input-output relationship of every real-world amplifier, actuator, and control surface. The op-amp output saturates at the supply rail. The motor cannot spin faster than its no-load speed. The control surface cannot deflect past its mechanical stop. Any control system that ignores saturation is, sooner or later, going to wind up its integrator and crash.
+
+## Visual or Mental Model
+
+Diagrams help these function types stick. Below are text sketches; copy them into a notebook and redraw each one by hand.
+
+**Absolute value $f(x) = |x|$:**
+
+```
+       y
+       |
+     3 +    \           /
+     2 +     \         /
+     1 +      \       /
+       +-------\-----/-----> x
+      -3 -2 -1 \   / 1  2  3
+                \ /
+                 V (corner at origin)
+```
+
+The two halves are linear; the corner at the origin is where the function is not differentiable.
+
+**Heaviside step $u(t)$:**
+
+```
+       y
+       |
+     1 +          o-----------
+       |          |
+       |          |
+     0 +----------o-----------> t
+                  0
+```
+
+Sharp jump at $t = 0$. The closed dot indicates which side the value of $u(0)$ belongs to (here, the upper one).
+
+**Floor $\lfloor x \rfloor$, the staircase:**
+
+```
+       y
+       |
+     2 +              o-----
+     1 +        o-----
+     0 +  o-----
+    -1 +-----
+       +--+-----+-----+-----+----> x
+         -1     0     1     2
+```
+
+Each step is width 1, height 1. Closed dot on the left of each step (the function takes that value), open dot on the right.
+
+**Saturation $\operatorname{sat}_{-5,5}(x)$:**
+
+```
+       y
+       |
+     5 +___________
+       |          /
+       |         /
+       |        /
+       +-------/--------> x
+       |      /
+       |     /
+       |    /
+    -5 +___/_______
+```
+
+Flat at the top above $x = 5$, flat at the bottom below $x = -5$, perfectly linear in between. This is the shape your op-amp draws.
+
+**Domain restriction visualized — $f(x) = 1/x$ at $x = 0$:**
+
+```
+       y
+       |     |
+       |     | (asymptote)
+       |     |  ____
+       |     | /
+       +-----o------> x
+            /|
+       ____/ |
+            |
+            |
+```
+
+The vertical line at $x = 0$ is *not* part of the graph; the function blows up as $x \to 0^+$ (to $+\infty$) and as $x \to 0^-$ (to $-\infty$). The point $x = 0$ is excluded from the domain. When you graph $1/x$ in Matplotlib, the line that gets drawn across the asymptote is an artifact of connecting the dots — it does not represent the function.
+
+## Worked Examples
+
+### Example (a) — Natural Domain of $f(x) = 1/(x - 5)$
+
+The only forbidden operation is division by zero. The denominator $x - 5$ is zero exactly when $x = 5$. So the natural domain is
+
+$$\text{domain}(f) = \{x \in \mathbb{R} : x \ne 5\} = (-\infty, 5) \cup (5, \infty).$$
+
+In interval notation, the set is the union of two open rays. The "hole" at $x = 5$ is a vertical asymptote: as $x$ approaches $5$ from below, $f(x) \to -\infty$; as $x$ approaches from above, $f(x) \to +\infty$.
+
+### Example (b) — Natural Domain of $g(x) = \sqrt{x - 2}$
+
+The square root requires its argument to be non-negative:
+
+$$x - 2 \ge 0 \quad\Longleftrightarrow\quad x \ge 2.$$
+
+The natural domain is $\{x \in \mathbb{R} : x \ge 2\} = [2, \infty)$. Note that $x = 2$ *is* in the domain — $\sqrt{0} = 0$ is a perfectly valid output. The bracket is square, not round.
+
+The range of $g$ is $[0, \infty)$ because the square root of a non-negative number is non-negative, and as $x$ ranges over $[2, \infty)$, $\sqrt{x - 2}$ takes every value from $0$ upward.
+
+### Example (c) — Natural Domain of $h(x) = 1/\sqrt{x^2 - 4}$
+
+Two restrictions stack here. The square root needs $x^2 - 4 \ge 0$. The denominator needs $\sqrt{x^2 - 4} \ne 0$, which is the same as $x^2 - 4 \ne 0$. Combining, we need
+
+$$x^2 - 4 > 0 \quad\Longleftrightarrow\quad x^2 > 4 \quad\Longleftrightarrow\quad |x| > 2.$$
+
+The natural domain is $\{x \in \mathbb{R} : |x| > 2\} = (-\infty, -2) \cup (2, \infty)$. The values $x = -2$ and $x = +2$ are excluded — at those points the denominator is zero. Values in $(-2, 2)$ are also excluded — there the expression under the root is negative.
+
+This is a good example of why you must check *every* restriction. If you only check "no negative under the root" you let $x = 2$ slip in, and $1/\sqrt{0}$ blows up.
+
+### Example (d) — Range of $f(x) = x^2 + 3$
+
+The domain is $\mathbb{R}$ — no restrictions. To find the range, use the inequality $x^2 \ge 0$ for all real $x$:
+
+$$x^2 + 3 \ge 0 + 3 = 3,$$
+
+with equality when $x = 0$. The minimum value $3$ is achieved. As $|x| \to \infty$, $f(x) \to \infty$, and the function is continuous, so it takes every value $y \ge 3$. The range is $[3, \infty)$.
+
+### Example (e) — Sensor Calibration: Natural vs. Physical Domain
+
+A temperature sensor outputs a voltage $V$ between $0$ V and $5$ V, calibrated so that temperature is given by
+
+$$T(V) = 33 V - 40, \qquad V \in [0, 5].$$
+
+The natural domain of the formula $33V - 40$ is all of $\mathbb{R}$. But the sensor specifications restrict the *physical* domain to $V \in [0, 5]$. Outside that range, the output voltage cannot occur, and asking the formula about it is meaningless.
+
+The physical range of $T$ is what the formula produces over the allowed $V$:
+
+$$T(0) = 33 \cdot 0 - 40 = -40 \text{ °C}, \qquad T(5) = 33 \cdot 5 - 40 = 125 \text{ °C}.$$
+
+So the physical range is $[-40, 125]$ degrees Celsius. This is exactly the operating range you would read on the datasheet — and it is the same example we used in the "Why It Matters" list.
+
+### Example (f) — Heaviside Step Manipulations
+
+Sketch and use the Heaviside step.
+
+**The basic step $u(t)$:** zero for $t < 0$, one for $t \ge 0$.
+
+**A delayed step $u(t - 2)$:** the same jump, shifted to the right by 2 units. Zero for $t < 2$, one for $t \ge 2$. To check: at $t = 2$, the argument $t - 2 = 0$, and $u(0) = 1$. At $t = 1$, $t - 2 = -1$, so $u(-1) = 0$. Correct.
+
+**A rectangular pulse of width 3 starting at $t = 1$:** this is "on" for $t \in [1, 4)$ and "off" otherwise. Build it as the difference of two shifted steps:
+
+$$p(t) = u(t - 1) - u(t - 4).$$
+
+Check three regions:
+
+- For $t < 1$: $u(t-1) = 0$ and $u(t-4) = 0$, so $p(t) = 0$. Correct.
+- For $1 \le t < 4$: $u(t-1) = 1$ and $u(t-4) = 0$, so $p(t) = 1$. Correct.
+- For $t \ge 4$: $u(t-1) = 1$ and $u(t-4) = 1$, so $p(t) = 0$. Correct.
+
+This recipe — *pulse equals first step minus second step* — is the foundation of every signal construction you will do in a signals course.
+
+### Example (g) — Absolute Value Shifted: $f(x) = |x - 3|$
+
+The graph of $|x|$ is a V centred at the origin. Replacing $x$ by $x - 3$ shifts the V horizontally by $+3$, so the corner is at $x = 3$. The two branches are:
+
+$$f(x) = \begin{cases} -(x - 3) = 3 - x & \text{if } x < 3, \\ x - 3 & \text{if } x \ge 3. \end{cases}$$
+
+Domain: $\mathbb{R}$. Range: $[0, \infty)$ (absolute values are non-negative). The corner at $x = 3$ is the *only* place where the function is not differentiable. A glance at the graph shows why: the slope is $-1$ just to the left of $x = 3$ and $+1$ just to the right; the derivative jumps. This is a foreshadow of what differentiability means — calculus arrives later.
+
+### Example (h) — Saturating Amplifier $y = \operatorname{sat}_{-5, 5}(x)$
+
+The output clamps at $\pm 5$ V. As a piecewise function:
+
+$$y(x) = \begin{cases} -5 & \text{if } x < -5, \\ x & \text{if } -5 \le x \le 5, \\ +5 & \text{if } x > 5. \end{cases}$$
+
+Domain: $\mathbb{R}$. Range: $[-5, 5]$. Three regimes:
+
+- *Below saturation* (linear, unity gain): $y = x$.
+- *Above positive saturation*: output stuck at $+5$.
+- *Below negative saturation*: output stuck at $-5$.
+
+You will see this exact diagram in every op-amp datasheet. The "input-referred range" $[-5, 5]$ is the largest input that the amplifier can faithfully pass.
+
+### Example (i) — Failure Mode: Forgetting to Restrict the Domain
+
+A student is asked for the natural domain of
+
+$$f(x) = \sqrt{x^2 - 4}.$$
+
+They reason: "The thing inside the square root is $x^2 - 4$. Squares are always non-negative, so $x^2 \ge 0$, so $x^2 - 4 \ge -4$ — wait, that's negative. Hmm. Well, $x^2$ is non-negative, so the expression is *always* non-negative — no, that's $x^2$, not $x^2 - 4$." They conclude in confusion that the domain is all of $\mathbb{R}$.
+
+**Diagnosis.** The student conflated "$x^2 \ge 0$" with "$x^2 - 4 \ge 0$." Subtracting 4 makes a meaningful difference. The expression $x^2 - 4$ is negative precisely when $|x| < 2$: try $x = 1$ to get $1 - 4 = -3 < 0$. So the natural domain is $\{x : x^2 - 4 \ge 0\} = \{x : |x| \ge 2\} = (-\infty, -2] \cup [2, \infty)$. The values $\pm 2$ *are* included this time, because $\sqrt{0} = 0$ is allowed (unlike Example (c), where $\sqrt{0}$ landed in a denominator).
+
+The lesson is general: always *solve the inequality* the formula imposes, never wave hands about whether "things are positive."
+
+## Engineering Connections
+
+The function-type catalog is not abstract decoration — it is the working vocabulary of real systems.
+
+- **Operating range of an op-amp.** A 741 op-amp running on $\pm 15$ V rails can output roughly $\pm 13$ V before saturating (the rails reserved 2 V for internal headroom). Its transfer function is exactly $\operatorname{sat}_{-13, 13}(A_v \cdot v_\text{in})$ where $A_v$ is the open-loop gain.
+- **Digital filter sample-and-hold.** Every digital filter samples at discrete times. The sampled signal $x[n]$ extended to continuous time by a zero-order hold is $x(\lfloor t / T_s \rfloor \cdot T_s)$. The floor function is doing the sampling.
+- **PWM duty cycle.** A PWM signal with period $T$ and duty cycle $D$ is the periodic extension of a rectangular pulse of width $D T$ starting at the period boundary. In one period: $\operatorname{rect}_{[0, DT]}(t) = u(t) - u(t - DT)$. The output of a motor driver looks exactly like this, switching between 0 and the supply voltage.
+- **Diode I-V curve.** A piecewise model: $I(V) = 0$ for $V < V_\gamma$ (the threshold, about 0.7 V for silicon), and $I(V) \approx I_S \cdot e^{V/V_T}$ for $V \ge V_\gamma$. The exponential half is the foreshadow of the exponential function family.
+- **ReLU activation in neural networks.** The Rectified Linear Unit is $\text{ReLU}(x) = \max(0, x)$, which is exactly a piecewise function: $0$ for $x < 0$, $x$ for $x \ge 0$. It is the most-used activation in modern deep learning. The "corner" at the origin is structurally the same corner as the absolute value's, and it has the same consequence: not differentiable at one point.
+- **Sigmoid activation.** $\sigma(x) = 1 / (1 + e^{-x})$ is a smooth (everywhere differentiable) saturating function. It approaches $0$ as $x \to -\infty$ and $1$ as $x \to +\infty$. The range is $(0, 1)$. Engineers think of sigmoid as a smooth Heaviside step — useful when you want saturation but also derivatives for backpropagation.
+- **Quantization noise.** A perfect $N$-bit ADC with full-scale range $[V_\text{min}, V_\text{max}]$ implements
+
+$$y(V) = \lfloor 2^N \cdot (V - V_\text{min}) / (V_\text{max} - V_\text{min}) \rfloor.$$
+
+The output is an integer index; the conversion error is bounded by one bit, and the spectrum of that error is what we call *quantization noise*.
+
+When you read a circuit datasheet, you can now translate every functional spec — "saturates above 4.5 V," "monotonic," "12-bit resolution" — into the language of domain, range, and function type.
+
+## Practice Set
+
+### Warmups — Find the Natural Domain
+
+For each, state the natural domain in interval notation.
+
+1. $f(x) = 1/(x + 7)$ — *Answer:* $(-\infty, -7) \cup (-7, \infty)$.
+2. $g(x) = \sqrt{2x - 8}$ — *Answer:* $[4, \infty)$.
+3. $h(x) = \sqrt{9 - x^2}$ — *Answer:* $[-3, 3]$.
+4. $k(x) = 1/(x^2 - 9)$ — *Answer:* $(-\infty, -3) \cup (-3, 3) \cup (3, \infty)$.
+5. $p(x) = \ln(x - 1)$ — *Answer:* $(1, \infty)$.
+6. $q(x) = 1/\ln(x)$ — *Answer:* $(0, 1) \cup (1, \infty)$ (excludes $x \le 0$ and $x = 1$ where the log is zero).
+7. $r(x) = \sqrt{x}/(x - 2)$ — *Answer:* $[0, 2) \cup (2, \infty)$.
+8. $s(x) = 1/\sqrt{4 - x}$ — *Answer:* $(-\infty, 4)$ (open at 4 because the denominator would be zero there).
+
+### Applied — Engineering Scenarios
+
+For each scenario, state both the natural and the physical domain.
+
+1. A wheel rolls at angular speed $\omega$ (rad/s) and linear speed $v = R\omega$. Natural domain of $v(\omega)$: ___. Physical domain if the motor rates $\omega$ up to $300$ rad/s: ___.
+2. A thermistor reads resistance $R(T)$ where $T$ is in kelvin. Natural domain of any formula in $T$: ___. Physical domain if the thermistor is rated $-40$°C to $125$°C ($233$ K to $398$ K): ___.
+3. A drone's flight time at battery voltage $V_b$ is $t(V_b) = 60 (V_b - 13.5)$ minutes. Natural domain: ___. Physical: $V_b$ between $13.5$ V (cutoff) and $16.8$ V (fully charged 4S Lithium).
+4. A radio's tuning function $f(D) = 88 + 0.1 D$ MHz, where $D$ is the dial setting. Physical domain: $D \in [0, 200]$ (the FM band 88–108 MHz).
+5. Object falls from height $h$; time-to-ground $t(h) = \sqrt{2h/g}$. Natural domain: $h \ge 0$. Physical: also $h \le$ initial-release height.
+6. A speaker's output power $P = V^2/R$. If the amplifier supplies $V \in [-30, 30]$ V to an $8$ ohm speaker, what is the physical range of $P$? *Answer:* $[0, 112.5]$ W.
+
+### Function-Type Identification
+
+Given each description, name the function type.
+
+1. "Output is zero for inputs below a threshold; rises proportionally to the input above it. (Approximately.)" — *Answer:* piecewise; specifically a rectified-linear (ReLU) shape.
+2. "Output is identical to the input except clipped to a fixed maximum and minimum." — *Answer:* saturation (piecewise).
+3. "Output jumps from zero to one at a single point and stays at one forever after." — *Answer:* (Heaviside) step.
+
+### Error-Spotting
+
+Find and explain the error in each.
+
+1. "$f(x) = \sqrt{x - 3} \cdot \sqrt{3 - x}$ has natural domain $\mathbb{R}$ because the two square roots cancel symbolically." — *Diagnosis:* You can't cancel before checking the domain. Each root needs its argument non-negative: $x \ge 3$ and $x \le 3$. The only $x$ satisfying both is $x = 3$. Natural domain: $\{3\}$.
+2. "The range of $f(x) = 1/x$ is $\mathbb{R}$ because every real number $y$ equals $1/(1/y)$." — *Diagnosis:* $y = 0$ has no $x$ with $1/x = 0$. Range is $\mathbb{R} \setminus \{0\}$.
+3. "$\lfloor 1.5 \rfloor = 2$ because we round to nearest." — *Diagnosis:* Floor is *not* round. $\lfloor 1.5 \rfloor = 1$. (Round-to-nearest is a different function.)
+
+### Challenge
+
+1. **Compound restrictions.** Find the natural domain of $f(x) = \ln(x - 1)/\sqrt{5 - x}$. *Answer:* The numerator requires $x > 1$; the denominator requires $5 - x > 0$, so $x < 5$ (strict, to avoid divide-by-zero from the root). Combined: $(1, 5)$.
+2. **Range from a complicated formula.** Find the range of $g(x) = \dfrac{x^2}{x^2 + 1}$ for $x \in \mathbb{R}$. *Answer:* Rewrite as $g = 1 - 1/(x^2 + 1)$. Since $x^2 + 1 \ge 1$, the term $1/(x^2 + 1)$ is in $(0, 1]$, so $g$ is in $[0, 1)$. The value $0$ is achieved at $x = 0$; $1$ is approached but never reached.
+
+## Build Task
+
+Extend the `Function` class you built in lesson 7 to track domain, and add a small library of the standard function types from this lesson. Save the file as `function_library.py`.
+
+```python
+"""function_library.py — Function class with domain/range and a catalog of standard types.
+
+Extends the Function class from lesson 7 (functions-definition-and-notation).
+Domain is represented as a predicate `in_domain(x) -> bool`.
+"""
+
+import math
+import matplotlib.pyplot as plt
+
+
+class Function:
+    """A real-valued function with an explicit domain predicate."""
+
+    def __init__(self, rule, in_domain=None, name="f"):
+        self.rule = rule
+        self.in_domain = in_domain if in_domain is not None else (lambda x: True)
+        self.name = name
+
+    def evaluate(self, x):
+        if not self.in_domain(x):
+            raise ValueError(f"{x} is not in the domain of {self.name}")
+        return self.rule(x)
+
+    def __call__(self, x):
+        return self.evaluate(x)
+
+
+# --- Standard function types ----------------------------------------------
+
+class Constant(Function):
+    def __init__(self, c):
+        super().__init__(lambda x: c, name=f"const({c})")
+
+
+class Linear(Function):
+    """f(x) = m*x + b.  Two parameters — lesson 9 names them slope and y-intercept."""
+    def __init__(self, m, b):
+        super().__init__(lambda x: m * x + b, name=f"linear({m},{b})")
+        self.m = m
+        self.b = b
+
+
+class AbsoluteValue(Function):
+    def __init__(self):
+        super().__init__(abs, name="abs")
+
+
+class Heaviside(Function):
+    """Unit step shifted by `shift`: u(t - shift)."""
+    def __init__(self, shift=0.0):
+        super().__init__(lambda t: 1.0 if t >= shift else 0.0,
+                         name=f"u(t-{shift})")
+        self.shift = shift
+
+
+class Signum(Function):
+    def __init__(self):
+        super().__init__(lambda x: (x > 0) - (x < 0), name="sgn")
+
+
+class Floor(Function):
+    def __init__(self):
+        super().__init__(math.floor, name="floor")
+
+
+class Ceiling(Function):
+    def __init__(self):
+        super().__init__(math.ceil, name="ceil")
+
+
+class Saturation(Function):
+    def __init__(self, lower, upper):
+        if lower > upper:
+            raise ValueError("lower must be <= upper")
+        super().__init__(lambda x: max(lower, min(upper, x)),
+                         name=f"sat[{lower},{upper}]")
+        self.lower = lower
+        self.upper = upper
+
+
+class Piecewise(Function):
+    """Piecewise function defined by (predicate, rule) pairs, checked in order."""
+    def __init__(self, branches):
+        def rule(x):
+            for pred, expr in branches:
+                if pred(x):
+                    return expr(x)
+            raise ValueError(f"{x} matched no branch")
+        super().__init__(rule, name="piecewise")
+        self.branches = branches
+
+
+# --- Demo: plot the catalog -----------------------------------------------
+
+def demo():
+    import numpy as np
+    x = np.linspace(-6, 6, 1001)
+
+    fns = [
+        ("Constant 2", Constant(2)),
+        ("Linear m=1.5, b=-1", Linear(1.5, -1)),
+        ("Absolute value", AbsoluteValue()),
+        ("Heaviside u(t-1)", Heaviside(shift=1)),
+        ("Floor", Floor()),
+        ("Saturation [-3,3]", Saturation(-3, 3)),
+    ]
+
+    fig, axes = plt.subplots(2, 3, figsize=(12, 7))
+    for ax, (label, fn) in zip(axes.flat, fns):
+        y = [fn(xi) for xi in x]
+        ax.plot(x, y)
+        ax.set_title(label)
+        ax.axhline(0, color="gray", linewidth=0.5)
+        ax.axvline(0, color="gray", linewidth=0.5)
+        ax.grid(alpha=0.3)
+    plt.tight_layout()
+    plt.savefig("function_catalog.png", dpi=120)
+    print("Saved function_catalog.png")
+
+
+def tests():
+    assert Constant(5)(1.7) == 5
+    assert Linear(2, 3)(4) == 11
+    assert AbsoluteValue()(-3.2) == 3.2
+    assert Heaviside()(0) == 1.0 and Heaviside()(-0.1) == 0.0
+    assert Signum()(-7) == -1 and Signum()(0) == 0 and Signum()(7) == 1
+    assert Floor()(3.7) == 3 and Floor()(-2.3) == -3
+    assert Ceiling()(3.2) == 4 and Ceiling()(-2.3) == -2
+    assert Saturation(-5, 5)(100) == 5 and Saturation(-5, 5)(-100) == -5
+    pw = Piecewise([
+        (lambda x: x < 0, lambda x: -x),
+        (lambda x: x >= 0, lambda x: x * x),
+    ])
+    assert pw(-3) == 3 and pw(2) == 4
+    # Domain enforcement
+    sqrt2plus = Function(lambda x: math.sqrt(x - 2),
+                         in_domain=lambda x: x >= 2,
+                         name="sqrt(x-2)")
+    assert sqrt2plus(11) == 3
+    try:
+        sqrt2plus(1)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Expected domain rejection")
+    print("All tests pass.")
+
+
+if __name__ == "__main__":
+    tests()
+    demo()
+```
+
+Run it with `python function_library.py`. You should see "All tests pass." printed and a 6-panel plot saved as `function_catalog.png`. Open the plot and confirm each subplot matches the mental picture you built in the *Visual or Mental Model* section.
+
+## Quiz
+
+1. **What is the difference between the codomain and the range of a function?** *Answer:* The codomain is the set we declare the outputs to live in; the range is the subset of the codomain the function actually hits. Range $\subseteq$ codomain, often strictly.
+2. **When does the natural domain differ from the physical domain?** *Answer:* When the formula returns real numbers for inputs that are physically meaningless — e.g., the formula $T(V) = 33V - 40$ is defined for all real $V$, but the sensor only outputs $V \in [0, 5]$, so the physical domain is the smaller interval.
+3. **What makes the Heaviside step function different from any continuous function?** *Answer:* It has a jump discontinuity at $t = 0$. No continuous function can take value $0$ on one side of a point and $1$ on the other.
+4. **Why is the floor function neither one-to-one nor onto $\mathbb{R}$?** *Answer:* Not one-to-one because many different inputs (e.g., $3.1$, $3.5$, $3.99$) map to the same output ($3$). Not onto $\mathbb{R}$ because non-integer reals like $2.5$ are never produced as outputs — the range is $\mathbb{Z}$.
+5. **State the three classical natural-domain rules.** *Answer:* No division by zero, no even root of a negative number, no logarithm of zero or a negative number.
+6. **Write the rectangular pulse "on between $t = 2$ and $t = 7$, off elsewhere" as a difference of Heaviside steps.** *Answer:* $u(t - 2) - u(t - 7)$.
+7. **What is the range of $f(x) = -x^2 + 4$ over the domain $\mathbb{R}$?** *Answer:* $(-\infty, 4]$. Maximum value $4$ at $x = 0$; unbounded below as $|x| \to \infty$.
+8. **A saturating amplifier has $\operatorname{sat}_{-10, 10}$. Is it a function? What is its range?** *Answer:* Yes — every real input produces exactly one real output. The range is $[-10, 10]$.
+
+## Proof of Completion
+
+Commit the file `function_library.py` from the Build Task to your study repository. The commit must include the `tests()` function and the `demo()` plot generator. Run `python function_library.py` and check in the resulting `function_catalog.png`.
+
+A complete proof of completion looks like this:
+
+```
+study-repo/
+  algebra-geometry/
+    08-domain-range-types/
+      function_library.py
+      function_catalog.png
+      notes.md     (your handwritten notes from the Practice Set)
+```
+
+If `python function_library.py` prints "All tests pass." and the plot shows six distinct function shapes, you have completed the lesson.
+
+## Sources and Further Study
+
+- **Serge Lang**, *Basic Mathematics* (Springer), chapters 3–4 on functions and graphs. The cleanest no-frills presentation of domain and range in print.
+- **James Stewart**, *Calculus: Early Transcendentals*, chapter 1. Standard university calculus treatment of function types, with engineering-friendly examples.
+- **Howard Anton**, *Calculus*, chapter 1. Alternative standard calculus textbook; similar coverage with different problem sets.
+- **Augustin-Louis Cauchy**, *Cours d'analyse* (1821), in the translation by Bradley and Sandifer (Springer, 2009). The historical origin of the modern domain/range discipline. Worth dipping into to see how recently the rigorous concepts appeared.
+- **Alan Oppenheim and Ronald Schafer**, *Discrete-Time Signal Processing* (Pearson). The graduate-level reference for engineering uses of step, floor, and rectangular-pulse functions in signal processing.
+- **MIT OCW 18.01** *Single Variable Calculus*, lectures 1 and 2 (Prof. David Jerison). Free online; the function definitions and domain examples are pitched at exactly this level.
+- **MIT OCW 6.003** *Signals and Systems* (Prof. Alan Oppenheim). The Heaviside step and its companion the Dirac delta are the foundational signals of this course — everything you do here pays off there.
+- **Donald Knuth**, *Concrete Mathematics* (Addison-Wesley), chapter 3, for an authoritative treatment of floor and ceiling and their identities.
+
+## Next Lesson Bridge
+
+You now know that functions come in many types — constant, linear, absolute value, piecewise, step, signum, floor, ceiling — and that each has its own domain restrictions and its own characteristic shape. Of all these types, the **linear** function
+
+$$f(x) = m x + b$$
+
+is the simplest one with a non-trivial graph. It is also the most ubiquitous: Ohm's law, the equation of motion at constant velocity, the calibration curve of nearly every sensor, the gain of an amplifier in its linear region — all are linear functions.
+
+A linear function has exactly **two parameters**: $m$ and $b$. Lesson 9 (*Slope and y-Intercept*) gives those two parameters their names and the geometric meaning behind them — $m$ is the *slope* (the rise over the run), and $b$ is the *y-intercept* (where the line meets the vertical axis). Once you can extract slope and intercept from any line, you can fit a line to data, predict from a sensor calibration, and read engineering plots like a working engineer. Lesson 10 (*Linear Functions in Engineering*) then puts the parameters to work on real datasheets.
+
+The arc 7-8-9-10 thus moves from *what a function is* (lesson 7), to *what types of functions there are and what inputs they accept* (this lesson), to *the simplest non-constant type and its parameters* (lesson 9), to *applying that type to real engineering* (lesson 10). With all four lessons in hand, you will read a sensor datasheet, model a motor controller, or design a linear filter without confusion about what the equations mean.
