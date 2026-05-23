@@ -335,19 +335,29 @@ const engineeringAlgebraGeometry: Lesson[] = [
       checkId: "slope-intercept-form-check",
     },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     11,
     "point-slope-and-standard-forms",
     "Point-Slope and Standard Forms of a Line",
     "Two more linear equation forms, when each is convenient, and converting between slope-intercept, point-slope, and standard form.",
+    {
+      estimatedMinutes: 75,
+      prerequisites: ["slope-intercept-form"],
+      checkId: "point-slope-and-standard-forms-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     12,
     "parallel-and-perpendicular-lines",
     "Parallel and Perpendicular Lines",
     "Slopes of parallel and perpendicular lines, and using them to construct geometric arguments and engineering layouts.",
+    {
+      estimatedMinutes: 70,
+      prerequisites: ["point-slope-and-standard-forms"],
+      checkId: "parallel-and-perpendicular-lines-check",
+    },
   ),
   available(
     "equations-units-and-graphs",
