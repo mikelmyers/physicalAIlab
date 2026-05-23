@@ -1,0 +1,706 @@
+# Polynomial Division and the Factor Theorem
+
+## Re-entry Promise
+
+This lesson assumes you can factor friendly polynomials and multiply polynomials. It does not assume polynomial long division or synthetic division is in memory.
+
+Factoring is powerful when the factors are visible. Polynomial division is what you use when they are not visible yet. It lets you test candidate roots, reduce a polynomial's degree, and rewrite rational expressions in more revealing forms.
+
+By the end, you should be able to divide polynomials, use the remainder theorem, use the factor theorem, and explain why these tools matter for roots, models, and transfer functions.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Divide polynomials using long division.
+- Divide by a linear factor using synthetic division.
+- Interpret quotient and remainder.
+- State and use the remainder theorem.
+- State and use the factor theorem.
+- Use the rational root theorem to build a finite candidate list for integer/rational roots.
+- Test whether $x-a$ is a factor of a polynomial.
+- Reduce a polynomial after finding one root.
+- Use division to rewrite improper rational expressions.
+- Connect polynomial division to roots, system factors, calibration models, and transfer functions.
+
+## Plain-Language Intuition
+
+Polynomial division is ordinary division with powers of $x$.
+
+When you divide 17 by 5, you get:
+
+$$
+17=5(3)+2
+$$
+
+When you divide a polynomial $P(x)$ by another polynomial $D(x)$, you get:
+
+$$
+P(x)=D(x)Q(x)+R(x)
+$$
+
+The quotient $Q(x)$ is the main result. The remainder $R(x)$ is what is left over.
+
+If you divide by $x-a$ and the remainder is zero, then $x-a$ is a factor and $a$ is a root.
+
+## Why This Idea Exists
+
+Polynomial division gives structure when expanded form hides it:
+
+- It turns one known root into a smaller polynomial to solve.
+- It tests candidate roots without full factoring.
+- It rewrites rational functions into polynomial plus remainder form.
+- It reveals slant asymptotes.
+- It appears in control systems when analyzing transfer functions.
+- It supports numerical methods that find roots one at a time.
+
+The key idea: division connects values, roots, and factors.
+
+## Core Theory
+
+### Division Algorithm
+
+For polynomials $P(x)$ and $D(x)$ with $D(x)\ne0$:
+
+$$
+P(x)=D(x)Q(x)+R(x)
+$$
+
+where either $R(x)=0$ or the degree of $R$ is less than the degree of $D$.
+
+### Long Division
+
+Divide:
+
+$$
+x^2+5x+6
+$$
+
+by:
+
+$$
+x+2
+$$
+
+Ask what multiplies $x$ to get $x^2$: answer $x$. Multiply:
+
+$$
+x(x+2)=x^2+2x
+$$
+
+Subtract:
+
+$$
+(x^2+5x+6)-(x^2+2x)=3x+6
+$$
+
+Ask what multiplies $x$ to get $3x$: answer 3. Multiply:
+
+$$
+3(x+2)=3x+6
+$$
+
+Subtract to get 0. Quotient:
+
+$$
+x+3
+$$
+
+### Synthetic Division
+
+Synthetic division is a shortcut for dividing by $x-a$.
+
+For:
+
+$$
+x^2+5x+6
+$$
+
+divided by $x+2$, use $a=-2$. Coefficients:
+
+$$
+1,\ 5,\ 6
+$$
+
+Bring down 1, multiply by -2, add, repeat:
+
+$$
+1,\ 3,\ 0
+$$
+
+Quotient coefficients are $1,3$, so quotient is $x+3$, remainder 0.
+
+### Why Synthetic Division Works
+
+Synthetic division is not a separate kind of algebra. It is long division with the repeated powers of $x$ hidden so you can focus on coefficients.
+
+When dividing by $x-a$, every step asks:
+
+1. What leading term cancels the current leading term?
+2. What new coefficient remains after subtracting?
+3. How does multiplication by $a$ affect the next coefficient?
+
+The compact table works only because the divisor is linear and has leading coefficient 1. If you are dividing by $2x-3$, ordinary synthetic division does not apply directly unless you rewrite the root as $x-\frac32$ and handle the scale carefully. When in doubt, use long division.
+
+### Remainder Theorem
+
+When $P(x)$ is divided by $x-a$, the remainder is:
+
+$$
+P(a)
+$$
+
+Example:
+
+$$
+P(x)=x^2+5x+6
+$$
+
+Divide by $x+2=x-(-2)$. Remainder is:
+
+$$
+P(-2)=4-10+6=0
+$$
+
+### Factor Theorem
+
+$x-a$ is a factor of $P(x)$ if and only if:
+
+$$
+P(a)=0
+$$
+
+This is the root-factor connection.
+
+### Rational Root Theorem
+
+The rational root theorem gives a finite list of rational roots worth testing.
+
+For a polynomial with integer coefficients:
+
+$$
+P(x)=a_nx^n+\cdots+a_1x+a_0
+$$
+
+any rational root $\frac{p}{q}$ in lowest terms must have:
+
+- $p$ dividing the constant term $a_0$,
+- $q$ dividing the leading coefficient $a_n$.
+
+Example:
+
+$$
+P(x)=2x^3-3x^2-8x+12
+$$
+
+Constant term is 12. Leading coefficient is 2.
+
+Possible rational roots:
+
+$$
+\pm1,\pm2,\pm3,\pm4,\pm6,\pm12,\pm\frac12,\pm\frac32
+$$
+
+This theorem does not guarantee that every candidate works. It only says every rational root must be on the list. You still test candidates with evaluation or synthetic division.
+
+Why this matters: without the theorem, guessing roots is open-ended. With it, root hunting becomes a bounded procedure.
+
+### Reducing Degree
+
+If $P(x)$ has root $a$, divide by $x-a$ to reduce its degree.
+
+Example:
+
+$$
+P(x)=x^3-6x^2+11x-6
+$$
+
+Test $x=1$:
+
+$$
+P(1)=1-6+11-6=0
+$$
+
+So $x-1$ is a factor. Dividing gives:
+
+$$
+x^2-5x+6
+$$
+
+Then:
+
+$$
+x^2-5x+6=(x-2)(x-3)
+$$
+
+So:
+
+$$
+P(x)=(x-1)(x-2)(x-3)
+$$
+
+## Visual Or Mental Model
+
+Think of a polynomial as a composite machine. A root tells you one removable module: $x-a$. Division removes that module and exposes the remaining machine.
+
+The remainder is a diagnostic. Remainder zero means exact fit. Nonzero remainder means the candidate was not a factor.
+
+## Worked Examples
+
+### Example 1: Long Division
+
+Divide:
+
+$$
+x^3+2x^2-5x-6
+$$
+
+by:
+
+$$
+x+1
+$$
+
+Synthetic division with $a=-1$ and coefficients $1,2,-5,-6$:
+
+Bring down 1. Multiply by -1, add to 2 -> 1. Multiply by -1, add to -5 -> -6. Multiply by -1, add to -6 -> 0.
+
+Quotient:
+
+$$
+x^2+x-6
+$$
+
+Remainder 0.
+
+### Example 2: Remainder Theorem
+
+Find the remainder when:
+
+$$
+P(x)=2x^3-x+4
+$$
+
+is divided by $x-2$.
+
+Remainder:
+
+$$
+P(2)=2(8)-2+4=18
+$$
+
+### Example 3: Factor Theorem
+
+Is $x-3$ a factor of:
+
+$$
+P(x)=x^3-4x^2+x+6?
+$$
+
+Compute:
+
+$$
+P(3)=27-36+3+6=0
+$$
+
+Yes.
+
+### Example 4: Find All Roots After One Root
+
+For:
+
+$$
+P(x)=x^3-4x^2+x+6
+$$
+
+we know $x=3$ is a root. Divide by $x-3$ to get:
+
+$$
+x^2-x-2
+$$
+
+Factor:
+
+$$
+x^2-x-2=(x-2)(x+1)
+$$
+
+Roots:
+
+$$
+3,\ 2,\ -1
+$$
+
+### Example 4B: Rational Root Theorem In Use
+
+Find rational roots of:
+
+$$
+P(x)=2x^3-3x^2-8x+12
+$$
+
+Possible rational roots:
+
+$$
+\pm1,\pm2,\pm3,\pm4,\pm6,\pm12,\pm\frac12,\pm\frac32
+$$
+
+Test $x=2$:
+
+$$
+P(2)=16-12-16+12=0
+$$
+
+So $x-2$ is a factor. Synthetic division by 2 gives quotient:
+
+$$
+2x^2+x-6
+$$
+
+Factor:
+
+$$
+2x^2+x-6=(2x-3)(x+2)
+$$
+
+So:
+
+$$
+P(x)=(x-2)(2x-3)(x+2)
+$$
+
+Roots:
+
+$$
+x=2,\quad x=\frac32,\quad x=-2
+$$
+
+Notice how the theorem turned a cubic into a finite search, and division reduced it to a quadratic.
+
+### Example 5: Improper Rational Expression
+
+Divide:
+
+$$
+\frac{x^2+3x+5}{x+1}
+$$
+
+Long division gives quotient $x+2$, remainder 3:
+
+$$
+\frac{x^2+3x+5}{x+1}=x+2+\frac{3}{x+1}
+$$
+
+This form reveals the slant asymptote $y=x+2$.
+
+### Example 6: Missing Terms
+
+Divide:
+
+$$
+x^3+1
+$$
+
+by $x+1$. Include missing terms:
+
+$$
+x^3+0x^2+0x+1
+$$
+
+Synthetic division by -1 gives quotient:
+
+$$
+x^2-x+1
+$$
+
+remainder 0.
+
+### Example 7: Candidate Not A Factor
+
+For:
+
+$$
+P(x)=x^3+x+1
+$$
+
+test $x=1$:
+
+$$
+P(1)=3
+$$
+
+So $x-1$ is not a factor.
+
+### Example 8: Control-Style Interpretation
+
+A transfer-function denominator might be:
+
+$$
+s^3+6s^2+11s+6
+$$
+
+Factoring reveals:
+
+$$
+(s+1)(s+2)(s+3)
+$$
+
+The factors expose poles at $s=-1,-2,-3$, which strongly influence system response.
+
+### Example 9: Failure Mode From A Missing Zero Coefficient
+
+Divide:
+
+$$
+P(x)=x^4-3x+2
+$$
+
+by $x-1$.
+
+The coefficient list is not:
+
+$$
+1,\ -3,\ 2
+$$
+
+That would describe $x^2-3x+2$, a completely different polynomial.
+
+The correct list is:
+
+$$
+1,\ 0,\ 0,\ -3,\ 2
+$$
+
+for:
+
+$$
+x^4+0x^3+0x^2-3x+2
+$$
+
+Synthetic division by 1 gives quotient coefficients:
+
+$$
+1,\ 1,\ 1,\ -2
+$$
+
+and remainder 0. So:
+
+$$
+x^4-3x+2=(x-1)(x^3+x^2+x-2)
+$$
+
+The placeholder zeros are not bookkeeping decoration. They preserve the power structure.
+
+## Engineering Connections
+
+### Control Systems
+
+Denominator factors reveal poles. Numerator factors reveal zeros. Division and factor testing help uncover both.
+
+### Signal Processing
+
+Filter transfer functions are rational expressions. Polynomial division and factoring help analyze long-term behavior and stability.
+
+### Numerical Modeling
+
+If a model has a known root or boundary condition, division reduces complexity.
+
+### Calibration
+
+Polynomial calibration models can be tested for known zeros or offsets.
+
+### Robotics Trajectories
+
+Boundary-time factors like $t$ or $(t-T)$ ensure a trajectory has specified zero values at start or finish.
+
+## Common Failure Modes
+
+1. Forgetting placeholder zeros for missing powers.
+2. Using synthetic division with the wrong sign.
+3. Confusing divisor $x+2$ with $a=2$ instead of $a=-2$.
+4. Forgetting the remainder.
+5. Thinking nonzero remainder means division failed.
+6. Applying the factor theorem to divisors not of form $x-a$ without rewriting.
+7. Dropping degree after division incorrectly.
+8. Not checking by multiplication.
+9. Treating a root as a factor directly instead of $x-a$.
+10. Forgetting physical constraints after finding roots.
+
+## Practice Problems
+
+### Remainders And Factors
+
+1. Find the remainder when $P(x)=x^2+5x+6$ is divided by $x+2$.
+2. Is $x+2$ a factor of $x^2+5x+6$?
+3. Find the remainder when $P(x)=2x^3-x+4$ is divided by $x-2$.
+4. Is $x-2$ a factor of $2x^3-x+4$?
+5. Test whether $x-3$ is a factor of $x^3-4x^2+x+6$.
+6. Test whether $x-1$ is a factor of $x^3+x+1$.
+7. What theorem says the remainder after division by $x-a$ is $P(a)$?
+8. What theorem connects $P(a)=0$ to factor $x-a$?
+9. If $P(5)=0$, name a factor of $P(x)$.
+10. If $x+7$ is a factor, what root does that imply?
+
+### Division
+
+11. Divide $x^2+5x+6$ by $x+2$.
+12. Divide $x^2-5x+6$ by $x-2$.
+13. Divide $x^3-6x^2+11x-6$ by $x-1$.
+14. Divide $x^3-4x^2+x+6$ by $x-3$.
+15. Divide $x^3+1$ by $x+1$.
+16. Divide $x^3-8$ by $x-2$.
+17. Divide $2x^3+3x^2-2x$ by $x+2$.
+18. Divide $x^4-1$ by $x-1$.
+19. Divide $x^4-1$ by $x+1$.
+20. Why must missing powers be written with zero coefficients?
+
+### Roots
+
+21. Given root 1 of $x^3-6x^2+11x-6$, find remaining quadratic.
+22. Factor $x^3-6x^2+11x-6$ completely.
+23. Given root 3 of $x^3-4x^2+x+6$, find remaining quadratic.
+24. Factor $x^3-4x^2+x+6$ completely.
+25. Find roots of $x^3+1$.
+26. Find roots of $x^3-8$.
+27. If quotient is $x^2+x-6$, factor it.
+28. If quotient is $x^2-x-2$, factor it.
+29. What does repeated division by known linear factors accomplish?
+30. Why might not every polynomial factor nicely over the integers?
+
+### Rational Rewriting
+
+31. Rewrite $(x^2+3x+5)/(x+1)$ as quotient plus remainder term.
+32. Rewrite $(x^2-1)/(x-1)$ for $x\ne1$.
+33. Rewrite $(x^3+1)/(x+1)$.
+34. What is the quotient of $(x^2+3x+5)/(x+1)$?
+35. What is the remainder in problem 34?
+36. What asymptote does quotient $x+2$ suggest?
+37. Why is $x=1$ still excluded in $(x^2-1)/(x-1)$ even after cancellation?
+38. What does a zero remainder mean in rational simplification?
+39. What does a nonzero remainder mean?
+40. How can division reveal slant asymptotes?
+
+### Challenge And Error Spotting
+
+41. A student divides by $x+2$ using synthetic value 2. Correct them.
+42. A student omits the $0x^2$ term when dividing $x^3+1$. What goes wrong?
+43. A student says remainder 18 means division is impossible. Correct them.
+44. A student says if $P(3)=0$, the factor is $x+3$. Correct them.
+45. Use the factor theorem to prove $x-4$ is a factor if $P(4)=0$.
+46. Show why $P(x)=D(x)Q(x)+R(x)$ reduces to $P(a)=R$ when $D(x)=x-a$ and $x=a$.
+47. Give a polynomial with factor $x-2$ and another factor $x+5$.
+48. Give a physical reason a root might be mathematically valid but ignored.
+49. Why do control engineers care about denominator roots?
+50. Name one situation where quotient-plus-remainder form is more useful than original expanded form.
+
+## Answer Key
+
+1. 0.
+2. Yes.
+3. 18.
+4. No.
+5. Yes.
+6. No.
+7. Remainder theorem.
+8. Factor theorem.
+9. $x-5$.
+10. $x=-7$.
+11. $x+3$.
+12. $x-3$.
+13. $x^2-5x+6$.
+14. $x^2-x-2$.
+15. $x^2-x+1$.
+16. $x^2+2x+4$.
+17. $2x^2-x$ with remainder 0.
+18. $x^3+x^2+x+1$.
+19. $x^3-x^2+x-1$.
+20. They preserve place value for each power during division.
+21. $x^2-5x+6$.
+22. $(x-1)(x-2)(x-3)$.
+23. $x^2-x-2$.
+24. $(x-3)(x-2)(x+1)$.
+25. $x=-1$ over the reals; remaining quadratic has complex roots.
+26. $x=2$ over the reals; remaining quadratic has complex roots.
+27. $(x+3)(x-2)$.
+28. $(x-2)(x+1)$.
+29. It reduces degree until the polynomial is easier to solve.
+30. Some roots are irrational or complex.
+31. $x+2+3/(x+1)$.
+32. $x+1$, with $x\ne1$.
+33. $x^2-x+1$.
+34. $x+2$.
+35. 3.
+36. $y=x+2$.
+37. The original denominator was zero at $x=1$.
+38. The divisor is an exact factor.
+39. There is leftover term after division.
+40. The quotient gives the long-run line when the remainder term shrinks.
+41. For $x+2=x-(-2)$, use -2.
+42. Coefficients shift into the wrong powers.
+43. Division still works; 18 is the remainder.
+44. If $P(3)=0$, factor is $x-3$.
+45. By the factor theorem, $P(4)=0$ iff $x-4$ divides $P(x)$.
+46. Since $D(a)=a-a=0$, $P(a)=0\cdot Q(a)+R=R$.
+47. $(x-2)(x+5)$ or any nonzero multiple.
+48. Negative time, outside domain, or outside sensor operating range.
+49. They are poles, which govern stability and response.
+50. Slant asymptotes, simplification, or separating dominant behavior from correction.
+
+## Build Task
+
+Create a "polynomial division lab" as a script, spreadsheet, notebook, or careful worksheet.
+
+Minimum requirements:
+
+1. Implement or demonstrate long division for three examples.
+2. Implement or demonstrate synthetic division for five linear divisors.
+3. Use the remainder theorem on five candidate roots.
+4. Use the factor theorem to identify at least three factors.
+5. Reduce a cubic to a quadratic after finding one root.
+6. Rewrite one improper rational expression as quotient plus remainder term.
+7. Include one engineering example involving poles, roots, or trajectory times.
+8. Check at least one division by multiplying divisor and quotient plus remainder.
+
+Stretch:
+
+- Write a small synthetic-division function.
+- Add candidate-root testing.
+- Plot a rational function and its slant asymptote.
+
+## Quiz
+
+1. State the polynomial division algorithm.
+2. What does the remainder theorem say?
+3. What does the factor theorem say?
+4. What synthetic value do you use for divisor $x+4$?
+5. Why are placeholder zero coefficients important?
+6. What does remainder zero mean?
+7. If $P(2)=0$, what factor does $P$ have?
+8. How can one root help solve a cubic?
+9. Why does quotient-plus-remainder form reveal slant asymptotes?
+10. Give one control-system use of polynomial factors.
+11. Why should roots be checked against physical domain?
+12. What is one common sign mistake in synthetic division?
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 40 practice problems, including all challenge/error-spotting problems.
+- A polynomial division lab artifact.
+- One synthetic division table.
+- One use of the factor theorem.
+- One rational expression rewritten as quotient plus remainder.
+- One paragraph explaining the difference between root, factor, quotient, and remainder.
+
+## Sources And Further Study
+
+- OpenStax, *Precalculus 2e*, polynomial division and factor theorem.
+- Khan Academy, polynomial division and synthetic division.
+- MIT OCW calculus prerequisite algebra review.
+- Control systems references on characteristic polynomials and poles.
+- Numerical methods references on root finding and deflation.
+
+## Next Lesson Bridge
+
+Polynomial division lets us analyze ratios of polynomials. The next lesson studies those ratios directly: rational functions, asymptotes, holes, domains, and the way denominator behavior shapes a graph or transfer function.

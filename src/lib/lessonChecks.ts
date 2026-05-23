@@ -3420,6 +3420,122 @@ export const lessonChecks: LessonCheck[] = [
       },
     ],
   },
+  {
+    id: "polynomial-division-and-factor-theorem-check",
+    title: "Polynomial Division and Factor Theorem Check",
+    description:
+      "Quick checks on remainder theorem, factor theorem, synthetic division, rational root candidates, and quotient-plus-remainder form.",
+    questions: [
+      {
+        id: "remainder-theorem",
+        kind: "numeric",
+        prompt: "For P(x)=2x^3-x+4, what is the remainder when divided by x-2?",
+        value: 18,
+        tolerance: 0,
+        explanation: "By the remainder theorem, the remainder is P(2)=2*8-2+4=18.",
+      },
+      {
+        id: "factor-theorem",
+        kind: "text",
+        prompt: "If P(3)=0, what linear factor does P(x) have?",
+        acceptedAnswers: ["x-3", "x - 3", "(x-3)", "(x - 3)"],
+        explanation: "By the factor theorem, P(3)=0 means x-3 is a factor.",
+      },
+      {
+        id: "synthetic-sign",
+        kind: "numeric",
+        prompt: "For divisor x+2, what synthetic division value should be used?",
+        value: -2,
+        tolerance: 0,
+        explanation: "x+2 = x-(-2), so the synthetic value is -2.",
+      },
+      {
+        id: "cubic-quotient",
+        kind: "text",
+        prompt: "Divide x^3-6x^2+11x-6 by x-1. What is the quotient?",
+        acceptedAnswers: ["x^2-5x+6", "x^2 - 5x + 6"],
+        explanation: "Synthetic division by 1 gives quotient x^2-5x+6.",
+      },
+      {
+        id: "rational-root-candidate",
+        kind: "text",
+        prompt: "For 2x^3-3x^2-8x+12, is 1/2 a rational-root-theorem candidate? Answer yes or no.",
+        acceptedAnswers: ["yes", "true", "yes it is"],
+        explanation: "The numerator 1 divides constant term 12 and denominator 2 divides leading coefficient 2.",
+      },
+      {
+        id: "quotient-remainder",
+        kind: "text",
+        prompt: "Rewrite (x^2+3x+5)/(x+1) as quotient plus remainder term.",
+        acceptedAnswers: ["x+2+3/(x+1)", "x + 2 + 3/(x + 1)", "x+2 + 3/(x+1)"],
+        explanation: "Division gives quotient x+2 and remainder 3, so the expression is x+2+3/(x+1).",
+      },
+      {
+        id: "missing-zero-coefficients",
+        kind: "text",
+        prompt: "When dividing x^3+1 synthetically, should the missing x^2 and x terms be represented by zero coefficients? Answer yes or no.",
+        acceptedAnswers: ["yes", "true", "yes they should"],
+        explanation: "Use coefficients 1,0,0,1 so every power has a place.",
+      },
+    ],
+  },
+  {
+    id: "rational-functions-and-asymptotes-check",
+    title: "Rational Functions and Asymptotes Check",
+    description:
+      "Quick checks on domain restrictions, holes, vertical/horizontal/slant asymptotes, and one-sided denominator behavior.",
+    questions: [
+      {
+        id: "domain-restriction",
+        kind: "text",
+        prompt: "For (x+1)/(x-3), what x-value is excluded from the domain?",
+        acceptedAnswers: ["3", "x=3", "x = 3"],
+        explanation: "The denominator is zero at x=3, so x=3 is excluded.",
+      },
+      {
+        id: "hole-point",
+        kind: "text",
+        prompt: "For (x^2-1)/(x-1), what is the hole point?",
+        acceptedAnswers: ["(1,2)", "(1, 2)"],
+        explanation: "The expression simplifies to x+1 but x=1 is excluded, so the hole is at (1,2).",
+      },
+      {
+        id: "vertical-asymptote",
+        kind: "text",
+        prompt: "For (x+2)/(x-4), what is the vertical asymptote?",
+        acceptedAnswers: ["x=4", "x = 4"],
+        explanation: "The uncanceled denominator factor x-4 creates vertical asymptote x=4.",
+      },
+      {
+        id: "horizontal-asymptote",
+        kind: "text",
+        prompt: "What is the horizontal asymptote of (2x^2+1)/(5x^2-3)?",
+        acceptedAnswers: ["y=2/5", "y = 2/5", "2/5"],
+        explanation: "Degrees are equal, so use the ratio of leading coefficients: 2/5.",
+      },
+      {
+        id: "slant-asymptote",
+        kind: "text",
+        prompt: "What is the slant asymptote of (x^2+3x+5)/(x+1)?",
+        acceptedAnswers: ["y=x+2", "y = x + 2", "x+2", "x + 2"],
+        explanation: "Division gives x+2+3/(x+1), so the slant asymptote is y=x+2.",
+      },
+      {
+        id: "one-sided-positive",
+        kind: "text",
+        prompt: "For 1/(x-3), as x approaches 3 from the right, does the function go to +infinity or -infinity?",
+        acceptedAnswers: ["+infinity", "positive infinity", "+ infinity", "infinity"],
+        explanation: "From the right, x-3 is a tiny positive number, so the quotient goes to +infinity.",
+      },
+      {
+        id: "cancel-factors-not-terms",
+        kind: "text",
+        prompt: "Can you cancel x in (x+1)/x to get 1? Answer yes or no.",
+        acceptedAnswers: ["no", "false", "no you cannot", "no, you cannot"],
+        explanation: "You can cancel common factors, not terms inside a sum.",
+      },
+    ],
+  },
 ];
 
 export function getLessonCheck(id: string) {
