@@ -1,0 +1,659 @@
+# Rearranging Engineering Formulas
+
+## Re-entry Promise
+
+This lesson assumes you have finished the first three lessons of the Engineering Algebra and Geometry module. You are comfortable with the balance-scale view of equations, you can collect like terms and use the distributive property, and you can clear fractions with a common denominator and gather a variable that appears on both sides.
+
+What you have *not* yet done is treat a formula full of letters the same way you treat an equation full of numbers. The fear is understandable. $V = IR$ has three letters and no numbers — what does it even mean to "solve" it?
+
+It means exactly the same thing it meant in lesson 1. Solving for a variable means doing the same valid operation to both sides until that one variable sits by itself. The other letters behave like numbers you have not yet been told. You can multiply by them, divide by them, square them, and take their roots — as long as you treat both sides identically.
+
+By the end of this lesson you will rearrange any engineering formula you meet in lesson 5 (word problems), lesson 6 (units), or in the physics courses that follow, fluently and without panic. You will also pick up a discipline that separates working engineers from struggling students: solve the formula *symbolically* first, then plug in numbers only at the very end.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Rearrange any single-variable linear formula symbolically — that is, in letters, with no numerical substitution — for any chosen unknown.
+- Rearrange formulas that contain reciprocals, such as the parallel-resistor formula $1/R = 1/R_1 + 1/R_2$.
+- Rearrange formulas that contain squares and square roots, such as kinetic energy $E = \tfrac{1}{2}mv^2$ and kinematic motion equations, while keeping track of the $\pm$ that a square root introduces.
+- Use units as a sanity check after rearranging — if the units of your answer do not match the units of the variable you solved for, the rearrangement is wrong.
+- Explain in your own words why solving for the target variable symbolically *before* substituting numbers gives cleaner, more reusable, and more debuggable answers.
+- Recognize when a rearrangement requires the quadratic formula (e.g., kinematic $d = v_0 t + \tfrac{1}{2} a t^2$ solved for $t$) and defer to a later lesson rather than forcing a linear answer.
+- Diagnose the most common rearrangement bug: dividing by the wrong letter, dropping a sign, or forgetting that a denominator might be zero.
+
+## Why It Matters
+
+The formulas you will rearrange in this lesson are not toy examples. They are the operating equations of working engineering. Here are ten concrete situations where rearrangement is the work, not the warm-up.
+
+1. **Ohm's law for current.** You measure a voltage drop of $5.0$ V across a resistor and you know the resistor is $470$ $\Omega$. You need the current. Start from $V = IR$, rearrange to $I = V/R$, then substitute: $I = 5.0 / 470 \approx 1.06 \times 10^{-2}$ A = $10.6$ mA. A working circuit designer does this dozens of times an hour.
+
+2. **Newton's second law for acceleration.** A force sensor reads $12$ N on a $0.75$ kg drone arm. What is the acceleration? Start from $F = ma$, rearrange to $a = F/m = 12 / 0.75 = 16$ m/s$^2$. Vital for control-loop tuning.
+
+3. **Wire sizing from power.** A heater dissipates $1200$ W on a $120$ V line. What current must the wire carry? From $P = IV$, rearrange to $I = P/V = 1200/120 = 10$ A. That tells you to choose at least a 12-gauge wire.
+
+4. **Delivery time from distance and speed.** A delivery drone must cover $4500$ m at a cruise speed of $15$ m/s. How long does the leg take? From $d = vt$, rearrange to $t = d/v = 4500/15 = 300$ s = $5$ minutes. Used in every flight-planning tool.
+
+5. **Designing a parallel resistor.** You want a total parallel resistance of $300$ $\Omega$ and you have one $500$ $\Omega$ resistor in your parts bin. What second resistor do you need? Start from $1/R = 1/R_1 + 1/R_2$, rearrange symbolically for $R_2$, then substitute. (We work this out in full below.) Bench technicians do this routinely.
+
+6. **Drone kinetic energy and impact speed.** A $1.2$ kg quadcopter must not strike the ground with more than $50$ J of kinetic energy, by safety rule. What is the maximum allowed impact speed? From $E = \tfrac{1}{2}mv^2$, rearrange to $v = \sqrt{2E/m} = \sqrt{2 \cdot 50 / 1.2} \approx 9.1$ m/s. This is exactly the rearrangement used in drone-safety regulations.
+
+7. **Light wavelength to frequency.** A green LED emits at $\lambda = 530$ nm $= 5.30 \times 10^{-7}$ m. What is the frequency? From $\lambda = c/f$, rearrange to $f = c/\lambda = (3.00 \times 10^8) / (5.30 \times 10^{-7}) \approx 5.66 \times 10^{14}$ Hz. Optical engineers live in this rearrangement.
+
+8. **Ideal gas law for any variable.** $PV = nRT$ can be rearranged for $P$, $V$, $n$, or $T$ depending on what you measured and what you need. Fluent rearrangement is the difference between confidence and confusion in thermodynamics.
+
+9. **Beam-bending stress.** The stress in a beam at distance $c$ from the neutral axis is $\sigma = Mc/I$, where $M$ is the bending moment and $I$ is the area moment of inertia. To design a beam to a maximum allowable stress, you rearrange for $M$ (the bending capacity) or for the section modulus $I/c$. Structural and mechanical engineers do this on every drawing.
+
+10. **Resistivity and wire length.** A copper wire's resistance is $R = \rho L / A$, where $\rho$ is resistivity, $L$ is length, $A$ is cross-section. To pick a length from a target resistance, rearrange to $L = RA/\rho$. Used wherever you build sensors, traces, or precision shunts.
+
+If you can do these ten rearrangements cold, you have the working algebra you need for the first two years of engineering school.
+
+## Why This Idea Exists
+
+The habit of writing physical laws as letter-equations and then *manipulating them symbolically* is younger than you might guess.
+
+**Galileo Galilei** (1564–1642) was the first scientist to write physical relationships as proportions that could be solved by reasoning rather than by table-lookup. His *Two New Sciences* (1638) derived the law of falling bodies — that distance is proportional to the square of time — using geometric proofs and proportional reasoning. He had no symbolic algebra in the modern sense; he wrote his arguments in long Italian sentences. Yet he established the principle that physical quantities obey definite laws and can be rearranged within those laws.
+
+**Isaac Newton** (1643–1727) wrote his *Principia Mathematica* (1687) in geometric form, with diagrams and Euclidean proofs, even though he was secretly using a primitive form of calculus and symbolic algebra in his notebooks. Newton's reluctance to publish in symbolic form was partly a matter of taste — geometry was considered more rigorous than algebra — and partly a matter of timing. Symbolic algebra was still maturing.
+
+**Gottfried Wilhelm Leibniz** (1646–1716) developed the calculus notation we still use today: $dy/dx$, $\int$, the equals sign in physical relations. Leibniz's symbols, more than Newton's, made it natural to treat a physical law like $F = ma$ as a symbolic equation that you could rearrange like any other.
+
+**Leonhard Euler** (1707–1783) systematized symbolic manipulation of physical formulas through his enormous textbook output. By Euler's time it was routine to take a formula, isolate any variable, and substitute. Engineers since Euler have read formulas as objects to be rearranged, not as fixed recipes.
+
+The modern engineering discipline of "letters until the end" — solve symbolically, substitute numerically only once — was crystallized in the great 19th-century engineering schools, particularly the **École Polytechnique** in Paris (founded 1794), which trained civil and military engineers for Napoleon's France. The Polytechnique tradition emphasized rigorous symbolic derivation followed by numerical evaluation, and that tradition spread to MIT (founded 1861) and the German technical universities. Today every engineering course you will take, from circuits to fluid mechanics, expects you to do symbolic rearrangement first and numerical evaluation last.
+
+The reason is not aesthetic. It is operational: a symbolic answer can be reused with new numbers, audited for unit consistency, and inspected for limiting behaviour. A purely numerical answer cannot.
+
+## Plain-Language Intuition
+
+A formula is just an equation that happens to have multiple letters in it. The rules of algebra do not care whether the other side reads "12" or "$mc^2$". As long as you do the same valid operation to both sides, you can move things around freely.
+
+The mental shift is this: when you are solving for $I$ in $V = IR$, treat $V$ and $R$ as if they were known numbers, like "12" and "5". You wouldn't be afraid to divide $12 = 5x$ by $5$ to get $x = 12/5$. The same fearless move works on letters: divide both sides of $V = IR$ by $R$ to get $V/R = I$.
+
+The second mental shift is the "letters only" rule. Resist the urge to plug in the numbers early. Solve completely in letters, then substitute at the very end. Why? Three reasons:
+
+- **Cleanliness.** Algebra with letters does not accumulate rounding errors. Algebra with numbers does.
+- **Reuse.** A symbolic answer like $I = V/R$ is good for *every* circuit, not just this one. You build a result you can keep.
+- **Debugging.** If you carry the units along with the letters, you can check the answer against unit consistency before you ever touch a calculator. A bad rearrangement almost always produces nonsense units, and that is the cheapest possible bug detector.
+
+Once you internalize the letters-only rule, rearrangement becomes a clean, mechanical activity. You will stop being afraid of formulas you have never seen before.
+
+## Core Theory
+
+### Reversing the Order of Operations
+
+The trick for rearranging is to *peel back operations in reverse order*. If a formula reads
+
+$$y = mx + b,$$
+
+then to extract $x$, you reverse what was done to $x$:
+
+1. The last thing done to $x$ was: multiply by $m$, then add $b$. (Two operations applied in order.)
+2. To undo, reverse the order: first subtract $b$, then divide by $m$.
+
+Worked out symbolically:
+
+$$y - b = mx,$$
+
+$$x = \frac{y - b}{m}.$$
+
+This is the **onion peel**: the unknown sits at the centre of layers of operations, and you peel from the outside in.
+
+### Reciprocal Formulas
+
+When the unknown $X$ appears in a denominator, the safest first move is to multiply both sides by $X$ to bring it up. Consider
+
+$$y = \frac{a}{X}.$$
+
+Multiply both sides by $X$:
+
+$$Xy = a.$$
+
+Divide both sides by $y$:
+
+$$X = \frac{a}{y}.$$
+
+A more interesting case is the parallel-resistor formula
+
+$$\frac{1}{R} = \frac{1}{R_1} + \frac{1}{R_2}.$$
+
+To solve for $R_2$, the cleanest approach is to first isolate the term containing $R_2$, then take the reciprocal of both sides. We work this out in Example (d) below.
+
+### Powers and Roots
+
+Two new tools enter when the unknown is squared.
+
+To undo a square, take the square root. But note: if $x^2 = k$, then $x = \pm\sqrt{k}$. The square root introduces a $\pm$ that you must resolve from physical context. A speed is non-negative; a position can be either sign. Use physics to pick.
+
+To undo a square root, square both sides. But: squaring can introduce **extraneous solutions** — values that satisfy the squared equation but not the original. For example, $x = -3$ does not satisfy $\sqrt{x} = 3$, but if you square both sides you get $x = 9$, which the original equation also rejects (since $\sqrt{9} = 3$, not $-3$). Always check back against the original.
+
+### Units Carry Through
+
+When you rearrange $V = IR$ into $I = V/R$, the units come along for the ride:
+
+$$[I] = \frac{[V]}{[R]} = \frac{\text{V}}{\Omega} = \text{A}.$$
+
+Volts divided by ohms equals amperes. Confirmed by the definition $1$ $\Omega = 1$ V/A.
+
+This is *unit-consistency checking*. If the units do not reduce to the units of the variable you solved for, the rearrangement is wrong. Lesson 6 takes this discipline to its full depth — for now, use it as the cheapest possible sanity check after every rearrangement.
+
+### The "Letters Only" Discipline
+
+The engineering convention, taught at every serious engineering school since the École Polytechnique, is:
+
+1. Solve the formula symbolically for the target variable. Use only letters.
+2. Verify by inspection that the symbolic answer has the right units.
+3. Only at the very end, substitute the known numerical values, with units, and compute.
+4. Carry the units through to the final answer and verify they match.
+
+This is not a stylistic preference. It is how engineering work survives review, audit, and reuse. A numerical computation is a single answer; a symbolic computation is a tool.
+
+### When Linearity Breaks
+
+Some formulas cannot be rearranged for a target variable using the rules of this lesson alone. Consider the kinematic equation for an object under constant acceleration:
+
+$$d = v_0 t + \tfrac{1}{2} a t^2.$$
+
+If you want to solve for $t$, you have a problem: $t$ appears both linearly (in $v_0 t$) and quadratically (in $\tfrac{1}{2} a t^2$). You cannot collect $t$ to one side as a simple multiplicative factor. The equation is *quadratic in* $t$ and requires the quadratic formula
+
+$$t = \frac{-v_0 \pm \sqrt{v_0^2 + 2ad}}{a}.$$
+
+We will treat the quadratic formula systematically in a later lesson. For now, recognize the signature: when an unknown appears with two different powers in the same equation, ordinary linear rearrangement will not finish the job. You need extra machinery, and you should know to reach for it rather than force a wrong answer.
+
+## Visual or Mental Model
+
+### The Onion
+
+Picture the variable $x$ you want to extract as the centre of an onion. The operations applied to $x$ are layers of skin: multiplying by $5$, adding $3$, squaring, dividing by $r$. To get $x$ out, peel the layers from the outside in — reversing the order in which they were applied.
+
+If $y = (5x + 3)^2$, the layers around $x$ are: $\times 5$, then $+ 3$, then squared. To extract $x$:
+
+1. Peel the square: $\sqrt{y} = 5x + 3$ (with $\pm$).
+2. Peel the $+ 3$: $\sqrt{y} - 3 = 5x$.
+3. Peel the $\times 5$: $x = (\sqrt{y} - 3)/5$ (with $\pm$).
+
+The order of peeling is exactly the reverse of the order in which the layers were applied.
+
+### The Balance Scale, Still
+
+The same balance-scale picture from lesson 1 still applies. Whatever you do to one side, you do to the other. The only change is that the things on the scale are letters as well as numbers.
+
+### The Formula as a Machine
+
+Picture a formula as a black box that takes inputs and produces an output. $V = IR$ is a machine that takes a current $I$ and a resistance $R$ and outputs a voltage $V$. Rearrangement is running the machine in reverse: given $V$ and $R$, recover $I$. The hardware (the underlying physics) is the same; the interface (which variable is input, which is output) is what you choose.
+
+A working engineer treats a formula not as a single recipe but as a *family* of recipes, one for each choice of unknown. Rearrangement is how you build the family.
+
+## Worked Examples
+
+### Example (a) — Ohm's Law for Current
+
+**Start:** $V = IR$. Solve for $I$.
+
+The operation applied to $I$ is: multiply by $R$. To undo, divide both sides by $R$:
+
+$$\frac{V}{R} = \frac{IR}{R} = I.$$
+
+Symbolic answer:
+
+$$\boxed{I = \frac{V}{R}}.$$
+
+**Unit check:** $[V]/[R] = \text{V}/\Omega = \text{A}$. Good — matches the units of current.
+
+**Numerical substitution:** Let $V = 5.0$ V and $R = 10$ $\Omega$.
+
+$$I = \frac{5.0 \text{ V}}{10 \text{ }\Omega} = 0.50 \text{ A} = 500 \text{ mA}.$$
+
+Notice that the substitution happened *once*, at the end, with units attached. The result was a number plus a unit, which is the only acceptable form of an engineering answer.
+
+### Example (b) — Newton's Second Law for Mass
+
+**Start:** $F = ma$. Solve for $m$.
+
+The operation applied to $m$ is: multiply by $a$. Divide both sides by $a$:
+
+$$\frac{F}{a} = m.$$
+
+Symbolic answer:
+
+$$\boxed{m = \frac{F}{a}}.$$
+
+**Unit check:** $[F]/[a] = \text{N} / (\text{m/s}^2)$. Recall $1$ N $= 1$ kg$\cdot$m/s$^2$, so
+
+$$\frac{\text{N}}{\text{m/s}^2} = \frac{\text{kg} \cdot \text{m/s}^2}{\text{m/s}^2} = \text{kg}.$$
+
+Good — matches the units of mass.
+
+**Numerical substitution:** Let $F = 50$ N and $a = 9.8$ m/s$^2$ (the acceleration of an object in free fall).
+
+$$m = \frac{50 \text{ N}}{9.8 \text{ m/s}^2} \approx 5.10 \text{ kg}.$$
+
+The object that weighs $50$ N in Earth gravity has a mass of about $5.1$ kg.
+
+### Example (c) — Power Equation for Voltage
+
+**Start:** $P = IV$. Solve for $V$.
+
+Divide both sides by $I$:
+
+$$V = \frac{P}{I}.$$
+
+**Unit check:** $[P]/[I] = \text{W}/\text{A}$. Since $1$ W $= 1$ V$\cdot$A, $\text{W}/\text{A} = \text{V}$. Good.
+
+**Numerical substitution:** Let $P = 60$ W and $I = 0.50$ A.
+
+$$V = \frac{60 \text{ W}}{0.50 \text{ A}} = 120 \text{ V}.$$
+
+This is the operating voltage of a $60$-watt incandescent light bulb in a US household circuit.
+
+### Example (d) — Parallel Resistors
+
+**Start:** $\dfrac{1}{R} = \dfrac{1}{R_1} + \dfrac{1}{R_2}$. Solve for $R_2$.
+
+This formula has the unknown $R_2$ in a denominator. The clean approach is to first isolate the term containing $R_2$, then take reciprocals.
+
+Step 1: subtract $1/R_1$ from both sides.
+
+$$\frac{1}{R} - \frac{1}{R_1} = \frac{1}{R_2}.$$
+
+Step 2: combine the left side over a common denominator $R R_1$.
+
+$$\frac{R_1 - R}{R R_1} = \frac{1}{R_2}.$$
+
+Step 3: take the reciprocal of both sides. If $\dfrac{a}{b} = \dfrac{1}{c}$, then $c = \dfrac{b}{a}$.
+
+$$\boxed{R_2 = \frac{R R_1}{R_1 - R}}.$$
+
+**Sanity checks.**
+
+- *Units:* $[R_2] = [R] \cdot [R_1] / [R_1 - R] = \Omega^2 / \Omega = \Omega$. Good.
+- *Limiting case:* if $R_1 = R$ (we want the same total as one of the resistors), the denominator $R_1 - R$ is zero, and $R_2$ blows up. That makes sense: to keep the parallel combination equal to $R_1$ when one branch is already $R_1$, the other branch must be infinite (an open). Physically correct.
+- *Restriction:* this formula is undefined when $R_1 = R$ (division by zero) and produces a negative $R_2$ when $R > R_1$ (the target is larger than what we already have). A parallel combination is always *smaller* than either branch, so $R > R_1$ is physically impossible — the formula correctly signals an impossible request.
+
+**Numerical substitution.** From the Why It Matters list: want total $R = 300$ $\Omega$, have $R_1 = 500$ $\Omega$.
+
+$$R_2 = \frac{300 \cdot 500}{500 - 300} = \frac{150{,}000}{200} = 750 \text{ }\Omega.$$
+
+Sanity-check by computing the parallel combination of $500$ and $750$:
+
+$$\frac{1}{R} = \frac{1}{500} + \frac{1}{750} = \frac{3}{1500} + \frac{2}{1500} = \frac{5}{1500} = \frac{1}{300}.$$
+
+So $R = 300$ $\Omega$. Confirmed.
+
+### Example (e) — Kinetic Energy for Speed
+
+**Start:** $E = \tfrac{1}{2} m v^2$. Solve for $v$.
+
+The operations applied to $v$ are: square, then multiply by $m/2$. Reverse order: divide by $m/2$, then take a square root.
+
+Multiply both sides by $2$:
+
+$$2E = m v^2.$$
+
+Divide both sides by $m$:
+
+$$\frac{2E}{m} = v^2.$$
+
+Take the square root of both sides:
+
+$$v = \pm \sqrt{\frac{2E}{m}}.$$
+
+Physically, speed is non-negative (it is the magnitude of velocity). So we choose the positive root:
+
+$$\boxed{v = \sqrt{\frac{2E}{m}}}.$$
+
+**Unit check:** $[E]/[m] = \text{J}/\text{kg}$. Since $1$ J $= 1$ kg$\cdot$m$^2$/s$^2$, $\text{J}/\text{kg} = \text{m}^2/\text{s}^2$. The square root gives $\text{m/s}$. Good — matches the units of speed.
+
+**Numerical substitution.** A $1.0$ kg drone has $E = 100$ J of kinetic energy. What is its speed?
+
+$$v = \sqrt{\frac{2 \cdot 100 \text{ J}}{1.0 \text{ kg}}} = \sqrt{200 \text{ m}^2/\text{s}^2} \approx 14.1 \text{ m/s}.$$
+
+That is about $51$ km/h. A drone hitting the ground at that speed carries enough energy to do serious damage; safety guidelines typically cap impact kinetic energy at far lower numbers.
+
+### Example (f) — Beam-Bending Stress
+
+**Start:** $\sigma = \dfrac{Mc}{I}$, where $\sigma$ is the bending stress, $M$ is the bending moment, $c$ is the distance from the neutral axis to the fibre, and $I$ is the area moment of inertia of the cross-section.
+
+**Solve for $c$.** The operations applied to $c$ are: multiply by $M$, then divide by $I$. Reverse: multiply by $I$, then divide by $M$.
+
+Multiply both sides by $I$:
+
+$$\sigma I = Mc.$$
+
+Divide both sides by $M$:
+
+$$\boxed{c = \frac{\sigma I}{M}}.$$
+
+**Solve for $M$.** Multiply both sides of $\sigma = Mc/I$ by $I$:
+
+$$\sigma I = Mc.$$
+
+Divide by $c$:
+
+$$\boxed{M = \frac{\sigma I}{c}}.$$
+
+This rearrangement is exactly the *bending-strength* expression used in structural design: given an allowable stress $\sigma_{\text{allow}}$ and the section's $I/c$ (called the *section modulus* $S$), the allowable bending moment is $M = \sigma_{\text{allow}} S$.
+
+**Unit check for $M$:** $[\sigma][I]/[c] = (\text{Pa}) \cdot (\text{m}^4) / (\text{m}) = \text{Pa} \cdot \text{m}^3 = (\text{N/m}^2) \cdot \text{m}^3 = \text{N} \cdot \text{m}$. Good — a bending moment has units of N$\cdot$m.
+
+### Example (g) — Resistivity
+
+**Start:** $\rho = \dfrac{RA}{L}$, where $\rho$ is the bulk resistivity of the material (in $\Omega\cdot$m), $R$ is the wire's resistance, $A$ is the cross-sectional area, and $L$ is the length.
+
+**Solve for $L$.** The operations on $L$ are: $L$ sits in the denominator, multiplied by $RA$ on top. Multiply both sides by $L$, then divide by $\rho$.
+
+Multiply both sides by $L$:
+
+$$\rho L = R A.$$
+
+Divide by $\rho$:
+
+$$\boxed{L = \frac{RA}{\rho}}.$$
+
+**Unit check:** $[R][A]/[\rho] = \Omega \cdot \text{m}^2 / (\Omega \cdot \text{m}) = \text{m}$. Good.
+
+**Solve for $A$.** Symmetrically:
+
+$$\boxed{A = \frac{\rho L}{R}}.$$
+
+**Numerical substitution.** Copper has $\rho \approx 1.7 \times 10^{-8}$ $\Omega\cdot$m. You want a copper wire of resistance $R = 0.50$ $\Omega$ and cross-section $A = 1.0 \times 10^{-6}$ m$^2$ (about $1$ mm$^2$, a 17-AWG wire). What length?
+
+$$L = \frac{R A}{\rho} = \frac{(0.50 \text{ }\Omega)(1.0 \times 10^{-6} \text{ m}^2)}{1.7 \times 10^{-8} \text{ }\Omega \cdot \text{m}} = \frac{5.0 \times 10^{-7}}{1.7 \times 10^{-8}} \text{ m} \approx 29 \text{ m}.$$
+
+A $29$-meter copper wire of $1$ mm$^2$ cross-section has a resistance of about half an ohm. Useful for sizing motor leads, sensor wiring, or precision shunts.
+
+### Example (h) — Ideal Gas Law
+
+**Start:** $PV = nRT$, where $P$ is pressure, $V$ is volume, $n$ is moles of gas, $R = 8.314$ J/(mol$\cdot$K) is the gas constant, and $T$ is absolute temperature.
+
+**Solve for $T$.** Divide both sides by $nR$:
+
+$$\boxed{T = \frac{PV}{nR}}.$$
+
+**Solve for $n$.** Divide both sides by $RT$:
+
+$$\boxed{n = \frac{PV}{RT}}.$$
+
+**Unit check for $n$:** $[P][V]/([R][T]) = (\text{Pa})(\text{m}^3) / ((\text{J/(mol}\cdot\text{K)})(\text{K})) = (\text{N}\cdot\text{m}) / (\text{J/mol}) = \text{J/(J/mol)} = \text{mol}$. Good.
+
+**Numerical substitution for $n$.** Compute moles in a $1.0$ m$^3$ volume of air at standard pressure $P = 1.013 \times 10^5$ Pa and temperature $T = 293$ K (20 $^\circ$C).
+
+$$n = \frac{(1.013 \times 10^5)(1.0)}{(8.314)(293)} = \frac{1.013 \times 10^5}{2.436 \times 10^3} \approx 41.6 \text{ mol}.$$
+
+A cubic meter of room-temperature air contains about $41.6$ moles of gas, or roughly $42 \cdot 6.022 \times 10^{23} \approx 2.5 \times 10^{25}$ molecules. Useful in HVAC, atmospheric science, and chemical engineering.
+
+### Example (i) — Failure Mode
+
+**Setup.** A student is asked to solve $V = IR$ for $I$. They divide both sides by $V$ instead of by $R$:
+
+$$\frac{V}{V} = \frac{IR}{V}, \qquad 1 = \frac{IR}{V}, \qquad I = \frac{V}{R}?$$
+
+The student writes the final answer $I = V/R$ from memory and moves on. The result happens to be right *by luck*, but the procedure is wrong and on a similar formula it will fail.
+
+**The diagnosis.** Dividing by $V$ does not isolate $I$. The expression $IR/V$ still has $I$ inside it. The correct first move is to divide by *whatever multiplies the variable you want* — in this case, $R$. Two distinct moves:
+
+- "Divide both sides by $V$" — undoes the $V$ on the left. Useful if you want to isolate the left side.
+- "Divide both sides by $R$" — undoes the $R$ on the right. Useful if you want to isolate $I$.
+
+Choose the divisor by *what multiplies your target variable*, not by what stands alone on one side.
+
+**Repair.** Restart from $V = IR$. The target is $I$. The thing multiplying $I$ is $R$. Divide both sides by $R$:
+
+$$\frac{V}{R} = I, \qquad I = \frac{V}{R}.$$
+
+Same final answer, but now via a correct procedure that will generalize. Try it on $F = ma$: to isolate $a$, divide by $m$ (what multiplies $a$), not by $F$. The habit transfers.
+
+A related failure mode: a student tries to "cancel" the $R$ in $V = IR$ by writing $V - R = I$. This is a different bug — confusing multiplication with addition. The opposite of multiplying by $R$ is dividing by $R$, not subtracting $R$. Inverse operations matter.
+
+## Engineering Connections
+
+Almost every engineering domain has a small set of formulas that you must be able to rearrange for any variable on demand. The training pays off across the rest of your career.
+
+### Circuits
+
+- Ohm's law: $V = IR$. Rearrange for $I$ or $R$.
+- Power: $P = IV$, also $P = I^2 R$ and $P = V^2/R$. Rearrange for any one of $P$, $I$, $V$, or $R$.
+- AC impedance magnitude: $|Z| = \sqrt{R^2 + X^2}$, where $X$ is reactance. Rearrange for $R$ or $X$.
+- RC time constant: $\tau = RC$. Rearrange for $R$ or $C$ given a target $\tau$.
+
+### Mechanics
+
+- Newton's second law: $F = ma$.
+- Kinetic energy: $E_k = \tfrac{1}{2} m v^2$.
+- Gravitational potential energy: $U = mgh$.
+- Linear momentum: $p = mv$.
+- Constant-acceleration kinematics: $v = v_0 + at$, $d = v_0 t + \tfrac{1}{2} a t^2$, $v^2 = v_0^2 + 2ad$. The last is easy to rearrange for $v$ or $a$; the second requires the quadratic formula when solving for $t$ with both $v_0 \neq 0$ and $a \neq 0$.
+
+### Fluids
+
+- Hydrostatic pressure: $P = \rho g h$. Rearrange for $h$, the depth, given a target pressure.
+- Reynolds number: $Re = \rho v L / \mu$. Rearrange for any variable; $Re$ is dimensionless, so unit checks are particularly satisfying.
+
+### Thermodynamics
+
+- Ideal gas: $PV = nRT$ (worked above).
+- Carnot efficiency: $\eta = 1 - T_c / T_h$. Rearrange for $T_c$ or $T_h$ given a target efficiency.
+- First law of thermodynamics in simple form: $\Delta U = Q - W$. Rearrange for any variable.
+
+### Electromagnetism
+
+- Electric force on a charge: $F = qE$. Solve for $E$ or $q$.
+- Magnetic force: $F = qvB$ (in the simple perpendicular case). Solve for any one.
+- Wave relation: $\lambda f = c$ (or $\lambda = c/f$). Solve for $\lambda$ or $f$.
+
+### Materials
+
+- Hooke's law for stress and strain: $\sigma = E \varepsilon$, where $E$ is Young's modulus. Solve for any one.
+- Beam bending: $\sigma = Mc/I$ (worked above).
+
+### Drones
+
+- Thrust-to-weight ratio: $\text{TWR} = T / W$. Solve for $T$ given a target ratio.
+- Hover power (ideal momentum theory): $P_{\text{hover}} = T \cdot v_{\text{induced}}$, with $v_{\text{induced}} = \sqrt{T / (2 \rho A)}$. Substituting, $P_{\text{hover}} = T^{3/2} / \sqrt{2 \rho A}$. Solve for $A$ (the disk area) to size a propeller for a given hover power budget.
+
+That last drone example is a good warning: even within rearrangement of "standard" formulas, you sometimes encounter $3/2$ powers and combinations that require care. The discipline of letters-only solving and unit checking keeps you safe.
+
+## Practice Set
+
+### Warmups — Symbolic Rearrangement
+
+Solve each formula for the variable in brackets.
+
+1. $V = IR$ for $[R]$.
+2. $F = ma$ for $[a]$.
+3. $P = IV$ for $[V]$.
+4. $d = vt$ for $[v]$.
+5. $C = 2\pi r$ for $[r]$.
+6. $A = \pi r^2$ for $[r]$.
+7. $E = mc^2$ for $[m]$.
+8. $E_k = \tfrac{1}{2} m v^2$ for $[m]$.
+9. $\lambda = c/f$ for $[f]$.
+10. $y = mx + b$ for $[x]$.
+
+Answers:
+
+1. $R = V/I$.
+2. $a = F/m$.
+3. $V = P/I$.
+4. $v = d/t$.
+5. $r = C/(2\pi)$.
+6. $r = \sqrt{A/\pi}$ (positive root, since $r \geq 0$).
+7. $m = E/c^2$.
+8. $m = 2E_k / v^2$.
+9. $f = c/\lambda$.
+10. $x = (y - b)/m$, with the restriction $m \neq 0$.
+
+### Applied — Symbolic Then Numerical
+
+For each, rearrange symbolically first, then substitute the given numbers (with units) at the very end.
+
+11. Ohm's law. $V = 12$ V, $R = 470$ $\Omega$. Find $I$.
+12. Newton's second law. $F = 25$ N, $m = 5.0$ kg. Find $a$.
+13. Power. $P = 100$ W, $V = 24$ V. Find $I$.
+14. Kinetic energy. $E_k = 250$ J, $m = 2.0$ kg. Find $v$.
+15. Resistivity. $R = 1.0$ $\Omega$, $A = 2.0 \times 10^{-6}$ m$^2$, $\rho = 1.7 \times 10^{-8}$ $\Omega\cdot$m. Find $L$.
+
+Answers (showing only the final substitutions; you should write out the symbolic step first):
+
+11. $I = V/R = 12/470 \approx 0.0255$ A $= 25.5$ mA.
+12. $a = F/m = 25/5.0 = 5.0$ m/s$^2$.
+13. $I = P/V = 100/24 \approx 4.17$ A.
+14. $v = \sqrt{2E_k/m} = \sqrt{2 \cdot 250 / 2.0} = \sqrt{250} \approx 15.8$ m/s.
+15. $L = RA/\rho = (1.0)(2.0 \times 10^{-6})/(1.7 \times 10^{-8}) \approx 118$ m.
+
+### Error-Spotting
+
+For each, identify the bug and provide the correct rearrangement.
+
+16. Student claims: from $V = IR$, $R = V \cdot I$.
+17. Student claims: from $E = \tfrac{1}{2} m v^2$, $v = \sqrt{E/(2m)}$.
+18. Student claims: from $PV = nRT$, $T = PV - nR$.
+
+Answers:
+
+16. Bug: confused multiplication with division. Correct: $R = V/I$.
+17. Bug: misplaced the factor of $2$. Starting from $E = \tfrac{1}{2} m v^2$, multiply both sides by $2$ to get $2E = m v^2$, then divide by $m$ to get $v^2 = 2E/m$, then $v = \sqrt{2E/m}$. The student wrote $\sqrt{E/(2m)}$, which is off by a factor of $\sqrt{4} = 2$ in $v$. Catastrophic for a physical answer.
+18. Bug: confused multiplication with subtraction. Correct: $T = PV/(nR)$.
+
+### Challenge
+
+19. **Nested reciprocals.** Three resistors in parallel: $\dfrac{1}{R} = \dfrac{1}{R_1} + \dfrac{1}{R_2} + \dfrac{1}{R_3}$. Solve symbolically for $R_3$.
+
+20. **Square root in a denominator.** The natural frequency of an LC resonant circuit is $f = \dfrac{1}{2\pi \sqrt{LC}}$. Solve for $L$ in terms of $f$ and $C$.
+
+Answers:
+
+19. Subtract $1/R_1 + 1/R_2$ from both sides:
+   $$\frac{1}{R_3} = \frac{1}{R} - \frac{1}{R_1} - \frac{1}{R_2}.$$
+   Combine the right side over the common denominator $R R_1 R_2$:
+   $$\frac{1}{R_3} = \frac{R_1 R_2 - R R_2 - R R_1}{R R_1 R_2}.$$
+   Take reciprocals:
+   $$R_3 = \frac{R R_1 R_2}{R_1 R_2 - R R_2 - R R_1}.$$
+   The same physical caveats apply as in Example (d): the formula is undefined when the denominator vanishes, and a negative $R_3$ indicates an impossible request.
+
+20. Square both sides:
+   $$f^2 = \frac{1}{(2\pi)^2 LC} = \frac{1}{4\pi^2 L C}.$$
+   Multiply both sides by $L$ and divide by $f^2$:
+   $$L = \frac{1}{4\pi^2 f^2 C}.$$
+   *Unit check:* $1/(\text{Hz}^2 \cdot \text{F}) = 1/((\text{s}^{-1})^2 \cdot \text{F})$. Since $1$ F $= 1$ s/$\Omega$ and $1$ H $= 1$ $\Omega \cdot$s, $1/((\text{s}^{-2})(\text{s}/\Omega)) = \Omega/\text{s}^{-1} = \Omega \cdot \text{s} = \text{H}$. Good.
+
+## Build Task
+
+Write a Python script `rearrange.py` that uses SymPy to rearrange engineering formulas symbolically. The function `rearrange(equation_str, target_var)` should take a string equation (with an `=` sign) and the name of the variable to solve for, and return the symbolic solution.
+
+```python
+"""rearrange.py — symbolic formula rearrangement with SymPy."""
+
+import sympy as sp
+
+
+def rearrange(equation_str: str, target_var: str):
+    """
+    Solve a textual equation for the target variable.
+
+    Parameters
+    ----------
+    equation_str : str
+        Equation in the form "lhs = rhs", e.g., "V = I*R".
+    target_var : str
+        Name of the variable to solve for, e.g., "I".
+
+    Returns
+    -------
+    list[sympy.Expr]
+        All symbolic solutions for the target variable.
+    """
+    if "=" not in equation_str:
+        raise ValueError("equation_str must contain '='")
+    lhs_str, rhs_str = equation_str.split("=", 1)
+    lhs = sp.sympify(lhs_str.strip())
+    rhs = sp.sympify(rhs_str.strip())
+    target = sp.symbols(target_var)
+    return sp.solve(sp.Eq(lhs, rhs), target)
+
+
+if __name__ == "__main__":
+    cases = [
+        ("V = I*R",                 "I"),  # Ohm's law for current
+        ("F = m*a",                 "a"),  # Newton's second for acceleration
+        ("P = I*V",                 "V"),  # Power for voltage
+        ("E = (1/2)*m*v**2",        "v"),  # Kinetic energy for speed
+        ("sigma = M*c/I",           "M"),  # Beam bending for moment
+        ("rho = R*A/L",             "L"),  # Resistivity for length
+        ("P*V = n*R_g*T",           "T"),  # Ideal gas for temperature
+        ("1/R = 1/R1 + 1/R2",       "R2"), # Parallel resistor for R2
+    ]
+    for eq, target in cases:
+        solutions = rearrange(eq, target)
+        print(f"{eq:30s}  solved for {target:4s} -> {solutions}")
+```
+
+Expected output (formatted):
+
+```
+V = I*R                        solved for I    -> [V/R]
+F = m*a                        solved for a    -> [F/m]
+P = I*V                        solved for V    -> [P/I]
+E = (1/2)*m*v**2               solved for v    -> [-sqrt(2)*sqrt(E/m), sqrt(2)*sqrt(E/m)]
+sigma = M*c/I                  solved for M    -> [I*sigma/c]
+rho = R*A/L                    solved for L    -> [A*R/rho]
+P*V = n*R_g*T                  solved for T    -> [P*V/(R_g*n)]
+1/R = 1/R1 + 1/R2              solved for R2   -> [R*R1/(R1 - R)]
+```
+
+For each case, verify the SymPy answer against the hand calculation you did above. The kinetic-energy case shows the $\pm$ that the square root produces, exactly as the theory predicts. You pick the physically meaningful root (positive) when reporting the answer.
+
+**Stretch goal.** Extend `rearrange` to also print the units check: if you tag each variable with its SI unit (using `sympy.physics.units`), SymPy will produce a units expression alongside the symbolic answer, which you can then simplify to confirm dimensional consistency.
+
+## Quiz
+
+Answer each in one or two sentences.
+
+1. Why is it better to solve a formula symbolically before substituting numbers?
+2. What is the "onion" rule of rearrangement?
+3. When you take the square root of both sides of an equation, what extra step must you handle?
+4. Why does dividing by a letter sometimes carry a hidden restriction?
+5. In $V = IR$, why is dividing both sides by $V$ a wrong move when solving for $I$?
+6. Why does the parallel-resistor formula $1/R = 1/R_1 + 1/R_2$ require taking reciprocals at the end?
+7. What does a unit-check confirm and what does it not confirm?
+8. Why does the kinematic equation $d = v_0 t + \tfrac{1}{2} a t^2$ not yield to ordinary linear rearrangement for $t$?
+
+Answers:
+
+1. Symbolic answers do not accumulate rounding errors, can be reused for new numerical inputs, and can be checked against units. Numerical answers are throwaways.
+2. The unknown sits at the centre of layers of operations applied to it; to extract the unknown, peel the layers in *reverse* of the order they were applied.
+3. You must include $\pm$, and you must choose the physically meaningful sign from context (e.g., speed is non-negative, radius is non-negative, but a position coordinate can be either sign).
+4. Division is undefined when the divisor is zero. If the letter you are dividing by could be zero in some physical situation, the rearrangement only holds under the implicit restriction that it is not zero. In real designs you must check the restriction explicitly.
+5. Dividing by $V$ leaves $1 = IR/V$, which still contains $I$ wrapped inside an expression; the $V$ has been "moved" but $I$ has not been isolated. The correct first move is to divide by what *multiplies* $I$, namely $R$.
+6. Because once you have $1/R_2 = (\text{something})$, the $R_2$ is still in a denominator. Taking the reciprocal of both sides flips $1/R_2$ to $R_2$ and finishes the isolation.
+7. A unit check confirms dimensional consistency — that you have not, e.g., produced a length where a time was required. It does *not* confirm numerical correctness; a wrong coefficient (like $2$ instead of $\tfrac{1}{2}$) passes a unit check.
+8. The unknown $t$ appears with two different powers (one linear, one quadratic) in the same equation, so it cannot be factored out as a single multiplicative term. The result is a quadratic equation in $t$, which requires the quadratic formula.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Rearrange any of the ten formulas in the *Why It Matters* section for any chosen variable, fluently and from memory, with the units check done as a habit.
+- Demonstrate the letters-only discipline on a problem you have not previously seen: solve symbolically, do a units check, and only then substitute and compute.
+- Commit a working `rearrange.py` that uses SymPy to mechanically rearrange at least five formulas drawn from a real engineering reference (your physics textbook, an electronics datasheet, or a structural-design table). Print each rearranged formula and verify it matches your hand calculation.
+- Spot the bug in at least three error examples (your own or instructor-supplied) and articulate the fix.
+
+The artifact: a small repository or notebook containing your `rearrange.py`, the printout of its results, and a short log (one paragraph) describing one real-world formula you rearranged and what you used the result for.
+
+## Sources and Further Study
+
+- **Halliday, Resnick, and Walker, *Fundamentals of Physics*.** The canonical introductory-physics text. Every chapter is built around rearranging a small handful of formulas; the worked examples model the letters-only discipline.
+- **Tipler and Mosca, *Physics for Scientists and Engineers*.** A slightly more advanced cousin of Halliday. Strong on the symbolic-then-numerical workflow.
+- **MIT OpenCourseWare 8.01, *Physics I: Classical Mechanics* (Walter Lewin lectures).** Free video and notes. Lewin is relentless about rearranging formulas symbolically and checking units; watching a few lectures will reinforce the habit.
+- **Allan R. Hambley, *Electrical Engineering: Principles and Applications*.** A practicing-engineer textbook for circuits and power. Every example is a rearrangement exercise.
+- **Mary L. Boas, *Mathematical Methods in the Physical Sciences*.** The classic for symbolic-manipulation discipline at the sophomore level. Boas is unusually clear on the *why* of formula manipulation.
+- **SymPy documentation, *Solving Equations* tutorial.** The free-software reference for symbolic algebra in Python. If you can use `sp.solve`, you can rearrange anything.
+- **École Polytechnique historical archive** (for the curious). The 19th-century French engineering-school tradition is the institutional source of the "letters until the end" convention.
+
+## Next Lesson Bridge
+
+You can now rearrange any engineering formula for any chosen variable. That is half of the work. The other half — the half that students dread most — is *getting to* a formula in the first place. When a problem arrives as "A drone flies $12$ km from point A to point B at a cruise speed of $15$ m/s and spends $30$ seconds at point B taking photos before returning. How long is the mission?", you have to do two things: translate the prose into equations, and then rearrange those equations to find what you want.
+
+Lesson 5 (`word-problems-to-equations`) is exactly that translation skill. It will lean heavily on what you just learned — every translated word problem ends in a rearrangement step — and it will introduce the discipline of identifying knowns, unknowns, and the relations that connect them. The rearrangement mechanics you now own will let you finish off any word problem cleanly, as long as you can write down the right starting equation.
+
+Lesson 6 (`units-and-dimensional-analysis`) then takes the unit-check habit you have been using as a sanity check and turns it into a full engineering tool: unit conversion, derived-unit reasoning, and dimensional analysis as a method for discovering formulas. The two skills — rearrangement and dimensional analysis — together make up the symbolic core of all engineering work.
