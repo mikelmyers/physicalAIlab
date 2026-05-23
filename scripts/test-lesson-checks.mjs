@@ -271,6 +271,34 @@ assert.equal(checkAnswer(crossProductById["torque-basic"], "6").correct, true);
 assert.equal(checkAnswer(crossProductById["right-hand-rule"], "right hand").correct, true);
 assert.equal(checkAnswer(crossProductById["i-cross-j"], "(0, 0, -1)").correct, false);
 
+const bearingsCheck = getLessonCheck("bearings-and-headings-for-navigation-check");
+assert.ok(bearingsCheck, "Expected bearings-and-headings-for-navigation-check to exist");
+
+const bearingsById = Object.fromEntries(bearingsCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(bearingsById["east-bearing"], "90 degrees").correct, true);
+assert.equal(checkAnswer(bearingsById["bearing-to-math"], "330 deg").correct, true);
+assert.equal(checkAnswer(bearingsById["bearing-east-component"], "50 m").correct, true);
+assert.equal(checkAnswer(bearingsById["bearing-north-component"], "86.6 meters").correct, true);
+assert.equal(checkAnswer(bearingsById["atan2-order-bearing"], "atan2(E, N)").correct, true);
+assert.equal(checkAnswer(bearingsById["wind-ground-velocity"], "(3, 10)").correct, true);
+assert.equal(checkAnswer(bearingsById["heading-track-differ"], "yes").correct, true);
+assert.equal(checkAnswer(bearingsById["bearing-to-math"], "120 degrees").correct, false);
+
+const framesCheck = getLessonCheck("coordinate-frames-and-robot-motion-check");
+assert.ok(framesCheck, "Expected coordinate-frames-and-robot-motion-check to exist");
+
+const framesById = Object.fromEntries(framesCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(framesById["frame-definition"], "axes").correct, true);
+assert.equal(checkAnswer(framesById["rotate-forward-90"], "(0, 2)").correct, true);
+assert.equal(checkAnswer(framesById["body-point-to-world"], "(10, 7)").correct, true);
+assert.equal(checkAnswer(framesById["world-point-to-body"], "(2, 0)").correct, true);
+assert.equal(checkAnswer(framesById["free-vector-translation"], "no").correct, true);
+assert.equal(checkAnswer(framesById["same-frame-addition"], "yes").correct, true);
+assert.equal(checkAnswer(framesById["body-velocity-wind"], "(0, 3)").correct, true);
+assert.equal(checkAnswer(framesById["free-vector-translation"], "yes").correct, false);
+
 const signedCheck = getLessonCheck("signed-numbers-core-check");
 assert.ok(signedCheck, "Expected signed-numbers-core-check to exist");
 

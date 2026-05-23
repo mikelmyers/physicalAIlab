@@ -606,6 +606,30 @@ const geometryTrigVectors: Lesson[] = [
       checkId: "cross-product-and-right-hand-rule-check",
     },
   ),
+  available(
+    "geometry-trig-and-vectors",
+    17,
+    "bearings-and-headings-for-navigation",
+    "Bearings and Headings for Navigation",
+    "Compass bearings, math angles, east/north components, wind drift, and vector navigation for drones and robots.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["cross-product-and-right-hand-rule"],
+      checkId: "bearings-and-headings-for-navigation-check",
+    },
+  ),
+  available(
+    "geometry-trig-and-vectors",
+    18,
+    "coordinate-frames-and-robot-motion",
+    "Coordinate Frames and Robot Motion",
+    "World frames, body frames, sensor frames, and 2D transforms for robot motion and navigation.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["bearings-and-headings-for-navigation"],
+      checkId: "coordinate-frames-and-robot-motion-check",
+    },
+  ),
 ];
 
 const preCalculus: Lesson[] = [

@@ -1,0 +1,483 @@
+# Bearings and Headings for Navigation
+
+## Re-entry Promise
+
+This lesson assumes you can read angles, use sine and cosine, and work with vectors in component form. It does not assume that compass bearings feel natural.
+
+Most math lessons measure angles counter-clockwise from the positive $x$-axis. Most navigation systems measure bearings clockwise from North. That mismatch is small enough to look harmless and large enough to send a drone the wrong way.
+
+By the end of this lesson, you should be able to move between compass bearings, math angles, east/north components, and vector headings without guessing.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Define heading, bearing, course, and track in practical navigation language.
+- Explain the difference between compass-angle convention and math-angle convention.
+- Convert compass bearings to math angles.
+- Convert math angles to compass bearings.
+- Convert a distance and bearing into east/north displacement components.
+- Recover a bearing from east/north displacement components using `atan2`.
+- Distinguish desired course from actual track when wind or drift is present.
+- Use vectors to combine airspeed, wind, and ground velocity.
+- Recognize quadrant mistakes before they become navigation mistakes.
+- Build a small bearing/vector navigation calculator.
+
+## Plain-Language Intuition
+
+Stand on a map. North is up, east is right.
+
+A compass bearing tells you how far to turn clockwise from North. A bearing of 0 degrees is North. A bearing of 90 degrees is East. A bearing of 180 degrees is South. A bearing of 270 degrees is West.
+
+Now stand on a math graph. The positive $x$-axis points right. Angles usually start at positive $x$ and turn counter-clockwise. A math angle of 0 degrees is East. A math angle of 90 degrees is North.
+
+Both systems are useful. The problem is that they start from different axes and turn in opposite directions.
+
+Navigation asks: "Which way on the Earth or map?" Math asks: "What angle from the $x$-axis?" Robotics and drones need both.
+
+## Why This Idea Exists
+
+Compasses came from navigation long before analytic geometry became standard engineering language. Navigators cared about North because Earth gives us a magnetic and geographic reference. Mathematicians cared about the $x$-axis because coordinate planes, trigonometric functions, and algebra become cleaner that way.
+
+Physical AI systems live in both worlds:
+
+- GPS and maps often speak latitude, longitude, North, East, and bearing.
+- Robot planners often speak $x$, $y$, vectors, and angles from a coordinate frame.
+- Autopilots distinguish commanded heading, actual track, wind correction, and yaw.
+- GIS tools often use eastings and northings.
+- Simulation engines often use their own coordinate conventions.
+
+The skill is not memorizing one convention. The skill is naming the convention before computing.
+
+## Core Theory
+
+### Definitions
+
+A **bearing** is an angle measured clockwise from North.
+
+A **heading** is the direction a vehicle's nose is pointing.
+
+A **course** is the desired path direction over the ground.
+
+A **track** is the actual path direction over the ground.
+
+In calm conditions, heading, course, and track can match. With wind, current, wheel slip, or control error, they may differ.
+
+### Coordinate Convention
+
+In this lesson:
+
+- East is positive $x$.
+- North is positive $y$.
+- A displacement vector is $(E,N)$, meaning east component and north component.
+- Compass bearing $B$ is measured clockwise from North.
+- Math angle $\theta$ is measured counter-clockwise from positive East.
+
+### Bearing To Math Angle
+
+The conversion is:
+
+$$
+\theta = (90^\circ - B) \bmod 360^\circ
+$$
+
+Examples:
+
+- Bearing 0 degrees -> math angle 90 degrees.
+- Bearing 90 degrees -> math angle 0 degrees.
+- Bearing 180 degrees -> math angle 270 degrees.
+- Bearing 270 degrees -> math angle 180 degrees.
+
+### Math Angle To Bearing
+
+The inverse conversion is:
+
+$$
+B = (90^\circ - \theta) \bmod 360^\circ
+$$
+
+It looks the same because the transformation is its own inverse when wrapped modulo 360.
+
+### Distance And Bearing To Components
+
+If distance is $d$ and compass bearing is $B$, then:
+
+$$
+E = d\sin B
+$$
+
+$$
+N = d\cos B
+$$
+
+This surprises many learners because math-angle components use cosine for $x$ and sine for $y$. Bearings are measured from North, so cosine lands on the North component and sine lands on the East component.
+
+### Components To Bearing
+
+Given east/north displacement $(E,N)$, use:
+
+$$
+B = \operatorname{atan2}(E,N)
+$$
+
+Then convert the result to degrees and wrap it into $0^\circ$ to $360^\circ$.
+
+Notice the argument order: `atan2(E, N)`, not `atan2(N, E)`, because bearing is measured from North.
+
+### Ground Velocity With Wind
+
+Velocity vectors add:
+
+$$
+\vec{v}_{ground}=\vec{v}_{air}+\vec{v}_{wind}
+$$
+
+If a drone points its nose at one heading, but wind blows sideways, the actual ground track changes. The heading is where the nose points; the track is where the drone actually moves over the ground.
+
+## Visual Or Mental Model
+
+Draw a compass rose on top of a coordinate plane:
+
+- North sits on positive $y$.
+- East sits on positive $x$.
+- Compass bearings turn clockwise.
+- Math angles turn counter-clockwise.
+
+For a bearing, imagine starting at North and turning right. For a math angle, imagine starting at East and turning left.
+
+That mental overlay prevents almost every bearing conversion mistake.
+
+## Worked Examples
+
+### Example 1: Bearing To Math Angle
+
+Convert bearing 45 degrees to a math angle.
+
+$$
+\theta = 90^\circ - 45^\circ = 45^\circ
+$$
+
+Northeast happens to be 45 degrees in both systems.
+
+### Example 2: Bearing 120 Degrees
+
+Convert bearing 120 degrees to a math angle.
+
+$$
+\theta = 90^\circ - 120^\circ = -30^\circ
+$$
+
+Wrap into $0^\circ$ to $360^\circ$:
+
+$$
+330^\circ
+$$
+
+Bearing 120 degrees points southeast. A math angle of 330 degrees also points southeast.
+
+### Example 3: Components From Bearing
+
+A rover travels 100 m on bearing 30 degrees. Find east and north displacement.
+
+$$
+E = 100\sin 30^\circ=50\text{ m}
+$$
+
+$$
+N = 100\cos 30^\circ\approx86.6\text{ m}
+$$
+
+Displacement is approximately $(50,\ 86.6)$ m.
+
+### Example 4: Bearing From Components
+
+A drone displacement is $(E,N)=(80,60)$ m. Find bearing.
+
+$$
+B=\operatorname{atan2}(80,60)
+$$
+
+$$
+B\approx53.1^\circ
+$$
+
+The drone moved northeast, more east than north.
+
+### Example 5: Westward Motion
+
+A displacement is $(-40,0)$ m. East component is negative, north component is zero. The bearing is:
+
+$$
+B=\operatorname{atan2}(-40,0)=270^\circ
+$$
+
+The displacement is due west.
+
+### Example 6: Wind Changes Track
+
+A drone air velocity is 10 m/s due north:
+
+$$
+\vec{v}_{air}=(0,10)
+$$
+
+Wind is 3 m/s east:
+
+$$
+\vec{v}_{wind}=(3,0)
+$$
+
+Ground velocity:
+
+$$
+\vec{v}_{ground}=(3,10)
+$$
+
+Ground speed:
+
+$$
+\sqrt{3^2+10^2}\approx10.44\text{ m/s}
+$$
+
+Track bearing:
+
+$$
+\operatorname{atan2}(3,10)\approx16.7^\circ
+$$
+
+The drone points north but tracks 16.7 degrees east of north.
+
+### Example 7: Crosswind And Along-Route Wind
+
+A route direction is bearing 0 degrees, so the unit direction is $(0,1)$. Wind is $(4,3)$ m/s.
+
+Along-route wind:
+
+$$
+(4,3)\cdot(0,1)=3\text{ m/s}
+$$
+
+The route gets a 3 m/s tailwind. The east component 4 m/s is crosswind.
+
+### Example 8: Quadrant Failure
+
+Suppose displacement is $(-50,-50)$ m. A careless calculation might use:
+
+$$
+\arctan(E/N)=\arctan(1)=45^\circ
+$$
+
+That is wrong because the displacement is southwest. `atan2(E,N)` sees both signs and gives 225 degrees.
+
+## Engineering Connections
+
+### Drone Autopilot
+
+Autopilots often command heading, observe GPS track, and estimate wind. The difference between heading and track reveals drift. Vector decomposition turns that drift into along-track and cross-track error.
+
+### Mobile Robots
+
+A robot on a warehouse floor may use $x,y$ coordinates internally, while a human operator thinks in compass or building directions. Clear heading conversion prevents wrong-way commands.
+
+### GIS And Field Surveying
+
+Maps and GPS workflows often describe movement in eastings and northings. Bearing formulas convert between human-readable direction and machine-readable components.
+
+### Marine And Air Navigation
+
+Course over ground differs from heading when current or wind pushes the vehicle sideways. Vector addition is the honest model.
+
+### Simulation
+
+Simulators may define axes differently. Before using a heading formula, always identify which axis is forward, which is right, and whether rotations are clockwise or counter-clockwise.
+
+## Common Failure Modes
+
+1. Treating compass bearing as a math angle.
+2. Using $E=d\cos B$ and $N=d\sin B$ for compass bearings.
+3. Calling `atan2(N, E)` when computing a bearing.
+4. Forgetting to wrap negative angles into $0^\circ$ to $360^\circ$.
+5. Confusing heading with track.
+6. Ignoring wind or drift when interpreting actual motion.
+7. Mixing degrees and radians in code.
+8. Forgetting that East is positive and West is negative.
+9. Forgetting that North is positive and South is negative.
+10. Assuming every software package uses the same frame convention.
+
+## Practice Problems
+
+### Warmups
+
+1. What bearing is due North?
+2. What bearing is due East?
+3. What bearing is due South?
+4. What bearing is due West?
+5. Convert bearing 0 degrees to math angle.
+6. Convert bearing 90 degrees to math angle.
+7. Convert bearing 180 degrees to math angle.
+8. Convert bearing 270 degrees to math angle.
+9. Convert math angle 0 degrees to bearing.
+10. Convert math angle 90 degrees to bearing.
+
+### Bearing And Component Conversion
+
+11. Convert bearing 45 degrees to math angle.
+12. Convert bearing 120 degrees to math angle.
+13. Convert bearing 315 degrees to math angle.
+14. A rover travels 100 m on bearing 30 degrees. Find east component.
+15. Same motion: find north component.
+16. A rover travels 200 m on bearing 90 degrees. Find displacement.
+17. A rover travels 50 m on bearing 180 degrees. Find displacement.
+18. A rover travels 80 m on bearing 270 degrees. Find displacement.
+19. A drone travels 10 m on bearing 45 degrees. Find east and north components to 2 decimals.
+20. A drone travels 10 m on bearing 225 degrees. Find east and north components to 2 decimals.
+
+### Components To Bearing
+
+21. Find bearing for displacement $(10,0)$.
+22. Find bearing for displacement $(0,10)$.
+23. Find bearing for displacement $(-10,0)$.
+24. Find bearing for displacement $(0,-10)$.
+25. Find bearing for displacement $(80,60)$ to 1 decimal.
+26. Find bearing for displacement $(-80,60)$ to 1 decimal.
+27. Find bearing for displacement $(-50,-50)$.
+28. Find bearing for displacement $(50,-50)$.
+29. Why should you use `atan2(E,N)` instead of plain arctangent?
+30. What does the zero displacement vector's bearing mean?
+
+### Wind, Track, And Robotics
+
+31. Air velocity is $(0,10)$ m/s and wind is $(3,0)$ m/s. Find ground velocity.
+32. Find ground speed for problem 31 to 2 decimals.
+33. Find ground track bearing for problem 31 to 1 decimal.
+34. Air velocity is $(8,0)$ m/s and wind is $(0,2)$ m/s. Find ground velocity.
+35. Find track bearing for problem 34 to 1 decimal.
+36. A route unit vector is $(0,1)$ and wind is $(4,3)$ m/s. Find along-route wind.
+37. Same route and wind: find crosswind east component.
+38. A robot should travel along positive $x$, but actual velocity is $(5,1)$. What is sideways drift if sideways is positive $y$?
+39. A drone heading is North but track is bearing 20 degrees. What does that suggest?
+40. Why can heading and track differ?
+
+### Challenge And Error Spotting
+
+41. A student converts bearing 120 degrees to math angle 30 degrees. Explain the mistake.
+42. A student computes east component as $d\cos B$ for bearing $B$. Give a counterexample.
+43. A student computes bearing from $(E,N)$ using `atan2(N,E)`. What convention did they accidentally use?
+44. Explain why bearing 315 degrees and math angle 135 degrees point the same way.
+45. A rover drives 60 m bearing 30 degrees, then 60 m bearing 210 degrees. What is net displacement?
+46. A route is due East. Wind is $(-2,3)$ m/s. Find tailwind/headwind component.
+47. Same route and wind: find crosswind component.
+48. A robot moves from $(20,10)$ to $(5,40)$. Find displacement.
+49. Find bearing from start to finish for problem 48 to 1 decimal.
+50. Name one software bug that can come from mixing bearing and math-angle conventions.
+
+## Answer Key
+
+1. 0 degrees.
+2. 90 degrees.
+3. 180 degrees.
+4. 270 degrees.
+5. 90 degrees.
+6. 0 degrees.
+7. 270 degrees.
+8. 180 degrees.
+9. 90 degrees.
+10. 0 degrees.
+11. 45 degrees.
+12. 330 degrees.
+13. 135 degrees.
+14. 50 m.
+15. 86.6 m.
+16. $(200,0)$ m.
+17. $(0,-50)$ m.
+18. $(-80,0)$ m.
+19. $(7.07,7.07)$ m.
+20. $(-7.07,-7.07)$ m.
+21. 90 degrees.
+22. 0 degrees.
+23. 270 degrees.
+24. 180 degrees.
+25. 53.1 degrees.
+26. 306.9 degrees.
+27. 225 degrees.
+28. 135 degrees.
+29. `atan2` preserves quadrant information.
+30. It is undefined because there is no direction.
+31. $(3,10)$ m/s.
+32. 10.44 m/s.
+33. 16.7 degrees.
+34. $(8,2)$ m/s.
+35. 76.0 degrees.
+36. 3 m/s.
+37. 4 m/s.
+38. 1 unit/s in positive $y$.
+39. Wind or drift is pushing it east of the nose direction.
+40. Wind, current, slip, or control error can move the vehicle differently than where it points.
+41. They subtracted in the wrong convention; correct math angle is $(90-120) \bmod 360=330$ degrees.
+42. Bearing 0 degrees should have east component 0, but $d\cos0=d$ would incorrectly put all motion east.
+43. They used the standard math-angle convention from the positive $x$-axis.
+44. Bearing 315 degrees is northwest; math angle 135 degrees is also northwest.
+45. Zero displacement; the second move is opposite the first.
+46. -2 m/s, a 2 m/s headwind along eastward route.
+47. 3 m/s northward crosswind.
+48. $(-15,30)$.
+49. 333.4 degrees.
+50. Examples: drone turns the wrong way, waypoint bearing mirrored, camera yaw sign inverted, or path planner treats north as east.
+
+## Build Task
+
+Create a "navigation vector calculator" as a Python script, spreadsheet, notebook, or careful hand-calculation template.
+
+Minimum requirements:
+
+1. Convert bearing to math angle.
+2. Convert math angle to bearing.
+3. Convert distance and bearing to east/north components.
+4. Convert east/north components to bearing using `atan2(E,N)`.
+5. Add air velocity and wind velocity to get ground velocity.
+6. Compute ground speed and track bearing.
+7. Include at least five tests from the practice set.
+8. Include a zero-displacement guard.
+
+Stretch:
+
+- Plot a compass rose and vector arrow.
+- Add cross-track and along-track decomposition for a route.
+- Accept degrees from the user but convert to radians internally.
+
+## Quiz
+
+1. What is the difference between a bearing and a math angle?
+2. What bearing is East?
+3. What math angle is East?
+4. Convert bearing 120 degrees to math angle.
+5. Convert math angle 225 degrees to bearing.
+6. Why does compass-bearing component conversion use $E=d\sin B$?
+7. Why does bearing recovery use `atan2(E,N)`?
+8. What is the difference between heading and track?
+9. How does wind affect ground velocity?
+10. Why is zero displacement a special case for bearing?
+11. Give one robotics use of bearing conversion.
+12. Give one debugging habit that prevents convention mistakes.
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 40 practice problems, including all challenge/error-spotting problems.
+- A navigation vector calculator artifact with tests.
+- One diagram overlaying compass bearings and math angles.
+- One example showing heading, wind, and actual track as separate vectors.
+- One paragraph explaining the `atan2(E,N)` argument order.
+
+## Sources And Further Study
+
+- FAA Pilot's Handbook of Aeronautical Knowledge, navigation and wind correction concepts.
+- OpenStax, *Precalculus 2e*, trigonometric functions and vectors.
+- MIT OCW 18.02, vector components and angle conventions.
+- GIS references on eastings, northings, azimuth, and bearings.
+- Robotics references on world frames, body frames, and yaw conventions.
+
+## Next Lesson Bridge
+
+Bearings connect human navigation language to vector components. The next lesson generalizes the idea: every robot and sensor lives in a coordinate frame, and useful motion requires transforming vectors between frames without losing sign, axis, or direction.

@@ -1,0 +1,513 @@
+# Coordinate Frames and Robot Motion
+
+## Re-entry Promise
+
+This lesson assumes you understand vectors, bearings, dot products, and cross products at an introductory level. It does not assume you have studied robotics kinematics.
+
+A coordinate frame is just a named way to measure position and direction. The hard part is not the definition. The hard part is remembering which frame a vector belongs to before adding, comparing, or commanding it.
+
+By the end, you should be able to explain world frames, body frames, sensor frames, and simple 2D frame transforms well enough to avoid the most common robot-motion bugs.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Define a coordinate frame as an origin plus axes.
+- Distinguish world, body, camera, map, and sensor frames.
+- Explain why vectors must be expressed in the same frame before addition.
+- Rotate 2D vectors between frames using sine and cosine.
+- Translate points between frames.
+- Distinguish points from free vectors during transforms.
+- Build a 2D pose from position and yaw.
+- Transform a point from robot/body frame into world frame.
+- Transform a world point into robot/body frame.
+- Interpret frame mistakes in robotics, drones, and computer vision.
+
+## Plain-Language Intuition
+
+Put a small arrow sticker on a robot. The robot's forward direction is its local $x$-axis. Its left direction might be local $y$. Those axes move when the robot turns.
+
+Now draw a map on the floor. The map has its own fixed axes: east and north, or room $x$ and room $y$. Those axes do not turn with the robot.
+
+The same physical target can have two different coordinate descriptions:
+
+- In the world frame: "the target is at $(10,4)$ meters."
+- In the robot frame: "the target is 3 meters forward and 1 meter left."
+
+Both can be true. They answer different questions.
+
+## Why This Idea Exists
+
+Robots are collections of parts that each sense and act in their own local coordinates:
+
+- A GPS receiver reports position in a global/map frame.
+- A camera sees pixels in an image frame.
+- An IMU measures acceleration and angular velocity in its body frame.
+- A wheel encoder measures motion along the wheel or axle frame.
+- A robot arm joint measures angles in link frames.
+- A path planner works in a map frame.
+
+Nothing works unless these measurements are transformed into compatible frames. Many robotics failures are not "bad math." They are frame mistakes: adding a body-frame velocity to a world-frame position, using a camera vector as if it were a map vector, or rotating in the wrong direction.
+
+## Core Theory
+
+### What Is A Frame?
+
+A coordinate frame has:
+
+1. An origin.
+2. A set of axes.
+3. A unit scale.
+4. An orientation convention.
+
+In 2D, a frame can be described by its origin $(x,y)$ in another frame and a yaw angle $\theta$.
+
+### Points Versus Vectors
+
+A **point** is a location. It depends on the origin.
+
+A **free vector** is a direction and magnitude, like velocity or displacement. It does not depend on the origin, but it does depend on axis orientation.
+
+When changing frames:
+
+- Points usually need rotation and translation.
+- Free vectors need rotation but not translation.
+
+This distinction prevents many bugs.
+
+### 2D Rotation Matrix
+
+To rotate a vector by angle $\theta$ counter-clockwise:
+
+$$
+R(\theta)=
+\begin{bmatrix}
+\cos\theta & -\sin\theta\\
+\sin\theta & \cos\theta
+\end{bmatrix}
+$$
+
+So:
+
+$$
+R(\theta)
+\begin{bmatrix}
+x\\
+y
+\end{bmatrix}
+=
+\begin{bmatrix}
+x\cos\theta-y\sin\theta\\
+x\sin\theta+y\cos\theta
+\end{bmatrix}
+$$
+
+### Body To World Transform
+
+Suppose a robot pose in the world is:
+
+$$
+\vec{p}_{WB}=(p_x,p_y),\quad \theta
+$$
+
+where $\theta$ is the robot body's yaw angle measured from world $x$.
+
+A point expressed in body frame, $\vec{q}_B$, becomes a world point:
+
+$$
+\vec{q}_W=\vec{p}_{WB}+R(\theta)\vec{q}_B
+$$
+
+Read that aloud: rotate the body-frame point into world orientation, then translate by the robot's world position.
+
+### World To Body Transform
+
+To express a world point in the robot frame:
+
+$$
+\vec{q}_B=R(-\theta)(\vec{q}_W-\vec{p}_{WB})
+$$
+
+Read that aloud: subtract the robot position to get a displacement from robot to target, then rotate by negative yaw to express it in robot axes.
+
+### Vector Transform
+
+For a free vector, no translation:
+
+$$
+\vec{v}_W=R(\theta)\vec{v}_B
+$$
+
+and:
+
+$$
+\vec{v}_B=R(-\theta)\vec{v}_W
+$$
+
+Velocity, acceleration, force, and direction vectors are usually transformed this way.
+
+### Same Frame Before Addition
+
+You can add:
+
+$$
+\vec{v}_W+\vec{w}_W
+$$
+
+or:
+
+$$
+\vec{v}_B+\vec{w}_B
+$$
+
+You cannot safely add:
+
+$$
+\vec{v}_W+\vec{w}_B
+$$
+
+until one vector is transformed into the other's frame.
+
+## Visual Or Mental Model
+
+Imagine the robot carrying a tiny graph paper sheet. That sheet rotates and moves with the robot. The room also has graph paper taped to the floor.
+
+When the robot turns 90 degrees, its "forward" no longer matches the room's positive $x$. A command of "move forward 1 m" is simple in robot frame but becomes a different vector in world frame depending on yaw.
+
+Frame transforms are the translation between the robot's graph paper and the room's graph paper.
+
+## Worked Examples
+
+### Example 1: Rotate Body Forward Into World
+
+A robot faces 90 degrees counter-clockwise from world $x$. Its body-frame forward velocity is:
+
+$$
+\vec{v}_B=(2,0)
+$$
+
+Rotate by 90 degrees:
+
+$$
+\vec{v}_W=R(90^\circ)(2,0)=(0,2)
+$$
+
+Forward in the body frame means north/up in the world frame.
+
+### Example 2: Body Point To World Point
+
+Robot world position is $(10,5)$ and yaw is 0 degrees. A sensor point is $(2,1)$ in robot frame.
+
+Because yaw is zero:
+
+$$
+\vec{q}_W=(10,5)+(2,1)=(12,6)
+$$
+
+### Example 3: Body Point With 90 Degree Yaw
+
+Robot world position is $(10,5)$ and yaw is 90 degrees. A body-frame point is $(2,0)$.
+
+Rotate:
+
+$$
+R(90^\circ)(2,0)=(0,2)
+$$
+
+Translate:
+
+$$
+\vec{q}_W=(10,5)+(0,2)=(10,7)
+$$
+
+The point 2 m in front of the robot is north of it in the world.
+
+### Example 4: World Point To Body Point
+
+Robot is at $(10,5)$ with yaw 90 degrees. Target is at $(10,7)$ world.
+
+Subtract robot position:
+
+$$
+(10,7)-(10,5)=(0,2)
+$$
+
+Rotate by -90 degrees:
+
+$$
+R(-90^\circ)(0,2)=(2,0)
+$$
+
+The target is 2 m forward in robot frame.
+
+### Example 5: Free Vector Versus Point
+
+Robot at $(100,50)$ faces 0 degrees. Body velocity is $(1,0)$ m/s.
+
+World velocity is:
+
+$$
+R(0)(1,0)=(1,0)\text{ m/s}
+$$
+
+Do not add $(100,50)$ to velocity. Position translates; velocity does not.
+
+### Example 6: Camera Offset
+
+A camera is mounted 0.2 m forward and 0.1 m left of the robot origin. In robot frame:
+
+$$
+\vec{p}_{BC}=(0.2,0.1)
+$$
+
+If the robot is at $(4,3)$ with yaw 0 degrees, camera world position is:
+
+$$
+(4,3)+(0.2,0.1)=(4.2,3.1)
+$$
+
+If yaw is 90 degrees, rotate offset:
+
+$$
+R(90^\circ)(0.2,0.1)=(-0.1,0.2)
+$$
+
+Camera world position:
+
+$$
+(4,3)+(-0.1,0.2)=(3.9,3.2)
+$$
+
+### Example 7: Same Frame Before Addition
+
+Robot body velocity is $(2,0)$ m/s. Wind in world frame is $(0,1)$ m/s. Robot yaw is 90 degrees.
+
+First transform body velocity:
+
+$$
+\vec{v}_W=R(90^\circ)(2,0)=(0,2)
+$$
+
+Now add wind:
+
+$$
+\vec{v}_{ground,W}=(0,2)+(0,1)=(0,3)
+$$
+
+### Example 8: Frame Bug
+
+A robot faces 90 degrees and receives a body command $(1,0)$: move forward. If software treats it as world $(1,0)$, the robot moves east instead of north. That is a frame bug, not a motor bug.
+
+## Engineering Connections
+
+### Mobile Robotics
+
+The robot's local frame is natural for commands: forward, left, yaw. The map frame is natural for goals and obstacles. Navigation continuously converts between them.
+
+### Drones
+
+A drone has body axes, inertial/world axes, camera axes, and sometimes wind axes. Control laws must know whether velocity is body-frame or world-frame.
+
+### Computer Vision
+
+Pixels live in image coordinates. Rays live in camera coordinates. Objects live in world or robot coordinates. Vision systems transform between them to estimate where things are.
+
+### Robot Arms
+
+Each link has its own coordinate frame. Forward kinematics chains frame transforms from base to tool.
+
+### Simulation And Game Engines
+
+Coordinate conventions differ: some use $z$ up, some use $y$ up; some define forward as positive $x$, others negative $z$. Reading conventions is part of engineering, not paperwork.
+
+## Common Failure Modes
+
+1. Adding vectors expressed in different frames.
+2. Translating a free vector as if it were a point.
+3. Forgetting to translate a point.
+4. Rotating by $\theta$ when the inverse transform requires $-\theta$.
+5. Mixing degrees and radians.
+6. Assuming robot forward is always world positive $x$.
+7. Forgetting sensor mounting offset.
+8. Confusing camera frame axes with robot frame axes.
+9. Using left-handed and right-handed conventions together without conversion.
+10. Failing to label data with its frame.
+
+## Practice Problems
+
+### Warmups
+
+1. What two things define a 2D coordinate frame?
+2. Is a position a point or a free vector?
+3. Is velocity usually a point or a free vector?
+4. Should a free vector be translated when changing frames?
+5. Should a point be translated when changing frames?
+6. Write the 2D rotation matrix $R(\theta)$.
+7. What is $R(0^\circ)(3,4)$?
+8. What is $R(90^\circ)(1,0)$?
+9. What is $R(90^\circ)(0,1)$?
+10. What is $R(-90^\circ)(0,1)$?
+
+### Body To World
+
+11. Robot pose is $(10,5)$, yaw 0 degrees. Body point $(2,1)$. Find world point.
+12. Robot pose is $(10,5)$, yaw 90 degrees. Body point $(2,0)$. Find world point.
+13. Robot pose is $(0,0)$, yaw 180 degrees. Body point $(3,0)$. Find world point.
+14. Robot pose is $(4,3)$, yaw 90 degrees. Body point $(0.2,0.1)$. Find world point.
+15. Robot yaw is 90 degrees. Body velocity $(2,0)$ m/s. Find world velocity.
+16. Robot yaw is 0 degrees. Body velocity $(0,2)$ m/s. Find world velocity.
+17. Robot yaw is 180 degrees. Body velocity $(1,0)$ m/s. Find world velocity.
+18. Robot yaw is -90 degrees. Body velocity $(1,0)$ m/s. Find world velocity.
+19. Why does velocity not get the robot position added?
+20. Why does a sensor point get robot position added?
+
+### World To Body
+
+21. Robot at $(10,5)$ yaw 0 degrees. World target $(12,6)$. Find body coordinates.
+22. Robot at $(10,5)$ yaw 90 degrees. World target $(10,7)$. Find body coordinates.
+23. Robot at $(0,0)$ yaw 180 degrees. World target $(-3,0)$. Find body coordinates.
+24. Robot at $(4,3)$ yaw 90 degrees. World target $(3.9,3.2)$. Find body coordinates.
+25. Robot at $(5,5)$ yaw 0 degrees. World target $(3,8)$. Find displacement in world frame.
+26. Same problem: body frame coordinates.
+27. Robot at $(5,5)$ yaw 90 degrees. World target $(5,8)$. Is the target forward, left, right, or behind?
+28. Robot at $(5,5)$ yaw 90 degrees. World target $(8,5). Is the target forward, left, right, or behind?
+29. Why does world-to-body use $R(-\theta)$?
+30. What happens if you forget to subtract robot position first?
+
+### Frame Combination
+
+31. Body velocity $(2,0)$, yaw 90 degrees, wind world $(0,1)$. Find ground velocity world.
+32. Body velocity $(2,0)$, yaw 0 degrees, wind world $(0,1)$. Find ground velocity world.
+33. Body velocity $(0,2)$, yaw 90 degrees, wind world $(1,0)$. Find ground velocity world.
+34. A lidar point is $(3,0)$ in robot frame. Robot pose is $(5,2)$ yaw 0 degrees. Find world point.
+35. Same lidar point, robot pose $(5,2)$ yaw 90 degrees. Find world point.
+36. A camera is 0.2 m forward and 0.1 m left. Robot yaw 180 degrees at $(4,3)$. Find camera world position.
+37. A robot command is forward 1 m/s in body frame. Robot yaw is 270 degrees. What world direction is motion?
+38. Why must wind and robot velocity be in the same frame before addition?
+39. What frame is most natural for a human map goal?
+40. What frame is most natural for a "move forward" command?
+
+### Challenge And Error Spotting
+
+41. A student adds robot position to velocity. Explain the mistake.
+42. A student transforms a world point to body frame using $R(\theta)$ instead of $R(-\theta)$. What goes wrong?
+43. A student adds a camera-frame ray directly to a map-frame position. What is missing?
+44. Explain why frame labels should be part of variable names or data structures.
+45. A robot faces north and command $(1,0)$ is body forward. Software treats it as world $(1,0)$. Which way does it move?
+46. Give one example of a left-handed/right-handed convention problem.
+47. Explain why sensor mounting offset matters.
+48. A robot at $(0,0)$ yaw 90 degrees sees a target at body $(2,1)$. Find world point.
+49. Transform that world point back to body coordinates.
+50. Name one robot failure that can be caused by a frame mistake.
+
+## Answer Key
+
+1. Origin and axes.
+2. Point.
+3. Free vector.
+4. No.
+5. Yes.
+6. $\begin{bmatrix}\cos\theta&-\sin\theta\\ \sin\theta&\cos\theta\end{bmatrix}$.
+7. $(3,4)$.
+8. $(0,1)$.
+9. $(-1,0)$.
+10. $(1,0)$.
+11. $(12,6)$.
+12. $(10,7)$.
+13. $(-3,0)$.
+14. $(3.9,3.2)$.
+15. $(0,2)$ m/s.
+16. $(0,2)$ m/s.
+17. $(-1,0)$ m/s.
+18. $(0,-1)$ m/s.
+19. Velocity is a free vector; translation affects locations, not velocity.
+20. A sensor point is a location relative to the robot origin.
+21. $(2,1)$.
+22. $(2,0)$.
+23. $(3,0)$.
+24. $(0.2,0.1)$.
+25. $(-2,3)$.
+26. $(-2,3)$ because yaw is 0 degrees.
+27. Forward.
+28. Right, if body $y$ is left.
+29. It undoes the robot's rotation relative to the world.
+30. You rotate an absolute position instead of the displacement from robot to target.
+31. $(0,3)$.
+32. $(2,1)$.
+33. $(-1,0)+(1,0)=(0,0)$.
+34. $(8,2)$.
+35. $(5,5)$.
+36. $(3.8,2.9)$.
+37. South.
+38. Component addition only makes sense when axes match.
+39. World/map frame.
+40. Body/robot frame.
+41. They treated a free vector as a point.
+42. The target appears mirrored/rotated the wrong way in robot coordinates.
+43. A camera-to-map transform, including rotation and translation.
+44. It prevents silent mixing of incompatible coordinates.
+45. East instead of north.
+46. A normal or yaw sign flips when importing data between systems with different handedness.
+47. Measurements originate at the sensor, not always the robot center.
+48. $R(90)(2,1)=(-1,2)$, so world point is $(-1,2)$.
+49. $(2,1)$.
+50. Examples: driving away from target, inverted yaw correction, wrong obstacle position, or mirrored camera detections.
+
+## Build Task
+
+Create a "2D frame transform workbench" as a Python script, notebook, spreadsheet, or careful hand-calculation template.
+
+Minimum requirements:
+
+1. A function `rotate(v, theta_deg)`.
+2. A function `body_point_to_world(robot_pose, point_body)`.
+3. A function `world_point_to_body(robot_pose, point_world)`.
+4. A function `body_vector_to_world(yaw, vector_body)`.
+5. A function `world_vector_to_body(yaw, vector_world)`.
+6. Tests for yaw 0, 90, 180, and -90 degrees.
+7. One sensor-offset example.
+8. One body-velocity plus world-wind example.
+
+Stretch:
+
+- Add simple plotting for world axes and body axes.
+- Add frame labels to your vector/point data structures.
+- Add an error if a point and vector are accidentally used interchangeably.
+
+## Quiz
+
+1. What is a coordinate frame?
+2. Why must vectors be in the same frame before addition?
+3. What is the difference between transforming a point and transforming a free vector?
+4. Write the body-to-world point transform.
+5. Write the world-to-body point transform.
+6. Why does world-to-body use negative yaw?
+7. Give one example of a body-frame command.
+8. Give one example of a world-frame goal.
+9. Why does sensor mounting offset matter?
+10. What bug appears if robot forward is treated as world east?
+11. Why do simulation engine coordinate conventions matter?
+12. What naming habit helps prevent frame bugs?
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 40 practice problems, including all challenge/error-spotting problems.
+- A 2D frame transform workbench with tests.
+- A diagram showing world axes and robot/body axes at a nonzero yaw.
+- One sensor point transformed from body frame to world frame.
+- One world goal transformed into robot/body coordinates.
+- One paragraph explaining why points translate but free vectors do not.
+
+## Sources And Further Study
+
+- MIT OCW 18.02, vector geometry and coordinate systems.
+- OpenStax, *Precalculus 2e*, rotations and trigonometric functions.
+- Robotics texts on coordinate frames and homogeneous transforms.
+- ROS REP-103, standard units and coordinate conventions.
+- Computer vision references on camera/world coordinate transforms.
+
+## Next Lesson Bridge
+
+Coordinate frames turn vectors into robotics language. Later, linear algebra will turn frame transforms into matrices, and multivariable calculus will use moving frames to describe velocity, acceleration, gradients, and fields.
