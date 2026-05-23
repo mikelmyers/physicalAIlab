@@ -1,0 +1,778 @@
+# Slope-Intercept Form
+
+## Re-entry Promise
+
+You have spent the last three lessons climbing toward this one. Lesson 7 made functions concrete — an input goes in, exactly one output comes out, and the graph passes the vertical-line test. Lesson 8 narrowed the world to *linear* functions — those whose graphs are straight lines, whose rate of change never wobbles. Lesson 9 taught you to pull two numbers out of a line: a slope $m$ (rate of change, with units) and a y-intercept $b$ (the value when the input is zero).
+
+This lesson is the synthesis. It assumes lessons 1 through 9: you can solve a linear equation (lesson 1), rearrange a formula symbolically (lesson 4), read units off a quantity (lesson 6), plot a point on the Cartesian plane (lesson 7), identify a linear function (lesson 8), and extract slope and intercept from a graph, a table, or two points (lesson 9). It does *not* assume that you have ever written $y = mx + b$ on purpose, sketched a line directly from $m$ and $b$, or built an engineering model in slope-intercept form.
+
+By the end of this lesson, $y = mx + b$ will be a tool you reach for without thinking. Given any linear relationship in the world — a sensor's voltage versus the pressure it senses, a battery's charge versus the time it has been discharging, a service's cost versus the number of parts ordered — you will identify what plays the role of $m$, what plays the role of $b$, write the model with units, sketch it, predict from it, and back-solve from it. The next lesson (11) will introduce two more forms of the same line — the point-slope form and the standard form — and show when each is more convenient. But this one is the canonical form, the form most physicists and engineers think in.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Write any linear function in **slope-intercept form** $y = mx + b$, identifying $m$ as the slope and $b$ as the y-intercept by inspection.
+- Sketch a line directly from its slope-intercept equation: plot the y-intercept $(0, b)$, then use the slope as a "rise over run" step to find a second point, then connect.
+- Given a verbal or engineering description, identify which quantity plays the role of the slope, which plays the role of the intercept, and write a slope-intercept model — with units consistent throughout.
+- Given a pair of data points or a graph, compute the slope (using lesson 9), back-solve for $b$, and write the slope-intercept equation.
+- Convert any linear equation into slope-intercept form when $y$ is the quantity of interest — by isolating $y$ using the rearrangement skills of lesson 4.
+- Recognize and write equations for the special cases: horizontal lines ($y = c$), vertical lines ($x = c$, *not* a function), and lines through the origin ($y = mx$, the proportional case).
+- Use a slope-intercept model to predict outputs from inputs (substitute and evaluate) and to back-compute inputs from outputs (substitute and solve).
+- Diagnose the two most common modeling errors: picking the wrong point in the back-solve for $b$, and writing a model whose units do not match across terms.
+
+## Why It Matters
+
+The slope-intercept form is not a school exercise. It is the working language of linear modeling across every branch of physical engineering and applied machine learning. A short list of contexts where it shows up directly:
+
+1. **Sensor calibration.** A pressure transducer outputs a voltage that is linear in the pressure it measures: $V = (\text{mV per psi}) \cdot p + V_{\text{offset}}$. The "sensitivity" listed on the datasheet is the slope, in volts per psi. The "offset" is the intercept, in volts. Every analog sensor in a robot has a slope and an offset, and the firmware that reads it is doing slope-intercept arithmetic every millisecond.
+
+2. **Battery discharge under constant load.** While a lithium battery is in the middle of its discharge curve (not at the top or bottom knees), its voltage falls roughly linearly with time: $V(t) = V_0 - r \cdot t$, where $V_0$ is the initial voltage (the intercept) and $r$ is the discharge rate (the negative slope, in volts per hour). Flight-time predictors in drone autopilots run this model in the background.
+
+3. **Linear cost models.** A fabrication service charges a fixed setup fee plus a per-unit cost: $\text{cost} = (\text{unit cost}) \cdot n + (\text{setup fee})$. The setup fee is the y-intercept; the per-unit cost is the slope. Break-even analysis — where does total cost equal total revenue — is a linear-line intersection problem you previewed in lesson 5 and will master in the next algebra module.
+
+4. **Drone fuel or energy consumption.** Fuel remaining as a function of time at constant cruise: $\text{fuel}(t) = \text{fuel}_0 - \dot{m} \cdot t$, where $\dot{m}$ is the burn rate (mass per second) and $\text{fuel}_0$ is the initial fuel mass. Range and endurance estimates start here.
+
+5. **Tax brackets.** Within a single bracket, your tax owed is a linear function of taxable income: $\text{tax} = (\text{marginal rate}) \cdot \text{income} + (\text{tax at bracket floor})$. Each bracket is its own slope-intercept line, glued together into a piecewise linear function.
+
+6. **PID controllers (proportional term).** The proportional control law is $u = K_p \cdot e + u_{\text{baseline}}$, where $e$ is the error signal (setpoint minus measurement), $K_p$ is the proportional gain (a slope, in actuator units per error unit), and $u_{\text{baseline}}$ is the nominal control output when error is zero (an intercept). Every quadcopter on Earth uses this equation.
+
+7. **Ohm's law as a current-versus-voltage line.** For a fixed resistor, $I = (1/R) \cdot V + 0$. The slope is $1/R$, with units of amperes per volt (which is just inverse ohms, also known as siemens). The intercept is zero, because zero applied voltage produces zero current. Ohm's law is a slope-intercept line through the origin.
+
+8. **Linear regression in machine learning.** The simplest predictive model is $\hat{y} = \beta_1 \cdot x + \beta_0$, where $\beta_1$ is the slope (`coef_` in scikit-learn) and $\beta_0$ is the intercept (`intercept_`). Every line of best fit you ever draw through a scatter plot is this equation.
+
+9. **First-order Taylor approximation.** Any smooth nonlinear function $f(x)$, near a chosen operating point $x_0$, can be approximated by its tangent line: $f(x) \approx f(x_0) + f'(x_0) \cdot (x - x_0)$. This is slope-intercept form in disguise. Almost all of "small-signal" engineering — op-amp analysis, linearized control, perturbation theory — depends on this trick.
+
+10. **Doppler shift in radar.** The frequency shift of a returned radar pulse is linear in the radial velocity of the target: $\Delta f = (2 f_0 / c) \cdot v_r + 0$. The slope $2 f_0 / c$ depends on the radar's carrier frequency; the intercept is zero (no shift for a stationary target). Highway speed-gun radar, weather radar, and autonomous-vehicle radar all read slope-intercept lines.
+
+If you can write, sketch, and read slope-intercept equations fluently, you are ready to model and predict in any of the situations above.
+
+## Why This Idea Exists
+
+The slope-intercept form did not always look the way it does today. Linear equations in two variables go back at least to **Babylonian mathematics** (around 1800 BCE), where scribes solved systems of linear equations to allocate grain, land, and labor. The **Greeks**, especially **Euclid** (around 300 BCE), systematized geometric reasoning about straight lines, and the **Indian mathematician Brahmagupta** (598–668 CE) gave general methods for solving linear and quadratic equations. None of these traditions, however, wrote linear relationships as equations in $x$ and $y$ that lived on a coordinate plane — coordinate geometry simply did not exist yet.
+
+The fusion of algebra and geometry — the realization that *equations are curves and curves are equations* — was the achievement of **René Descartes** (in *La Géométrie*, an appendix to his *Discours de la méthode*, 1637) and, independently and slightly earlier, **Pierre de Fermat** (whose *Ad locos planos et solidos isagoge*, circulated in manuscript around 1636, used the same idea). Descartes and Fermat invented **analytic geometry**: the procedure of placing two perpendicular axes, labeling them with coordinates, and writing the equation of any curve in those coordinates. After Descartes, "the line $y = 2x + 3$" became a sentence that any educated person could parse, and the door to all of modern calculus and physics was open.
+
+The specific *canonical form* $y = mx + b$ as we teach it today is a 19th-century pedagogical convention. Before that, the **standard form** $ax + by + c = 0$ (which we will cover in lesson 11) was the default. The slope-intercept form became popular in school algebra because it makes two of the most useful features of a line — its slope and its y-intercept — readable at a glance. The widespread teaching of $y = mx + b$ in American secondary schools traces in particular to **George A. Wentworth's** *Plane Geometry* (1899) and the algebra textbooks of the early 20th century, which were an organized effort to make analytic geometry intuitive for the engineers and students of the industrial age. The letter $m$ for slope and $b$ for intercept are arbitrary historical conventions that stuck; in some European traditions you will see $y = ax + b$ or $y = kx + d$ instead.
+
+In modern physics and engineering, the slope-intercept form has a deeper role than just describing literal lines. **Linearization** — approximating a nonlinear system by its tangent line near an operating point — is the single most-used analytical technique in all of control theory, circuit analysis, and small-signal modeling. When an aerospace engineer talks about the "linearized dynamics" of an aircraft near cruise, when an analog designer talks about the "small-signal gain" of a transistor, when a roboticist linearizes the inverse-kinematics map of a manipulator — they are reaching for $y = mx + b$. The form is so embedded in working engineering that most practitioners no longer notice they are using it.
+
+## Plain-Language Intuition
+
+Here is the entire idea in one sentence. *Every straight-line relationship between two quantities in the world can be written as*
+
+$$y = (\text{rate of change}) \cdot x + (\text{starting value}).$$
+
+That is it. Two numbers — the rate of change and the starting value — capture the entire infinity of $(x, y)$ pairs that lie on the line. The equation **is** the line, in the strongest sense: every point that satisfies the equation lies on the line, and every point on the line satisfies the equation. There is nothing extra to know.
+
+This is a remarkable compression. A line through the Cartesian plane has, in principle, infinitely many points; you can never list them. But the equation $y = 2x + 3$ specifies all of them at once. Hand me any $x$ — $x = 1$, $x = 17.4$, $x = -100$, $x = \pi$ — and I can give you the unique $y$ on that line: $y = 2(1) + 3 = 5$, $y = 2(17.4) + 3 = 37.8$, and so on. Two numbers, infinite predictions.
+
+The intuition for the two numbers is this. The intercept $b$ tells you *where the line crosses the y-axis* — equivalently, *the value of $y$ when $x = 0$*. In an engineering model, this is almost always the "starting value" or "offset" of the quantity you are modeling: the voltage of a fully-charged battery, the cost of placing an order before any units are added, the sensor reading at zero input. The slope $m$ tells you *how much $y$ changes when $x$ increases by 1*. In an engineering model, this is the "rate of change" — the discharge rate of the battery, the per-unit cost, the sensitivity of the sensor.
+
+If you can identify those two quantities for any linear situation you meet, you can write the model. If you can write the model, you can predict from it and you can solve from it. That is the entire game of this lesson.
+
+## Core Theory
+
+### The Canonical Form
+
+A **linear function** of one variable can always be written in the form
+
+$$y = mx + b,$$
+
+where $m$ and $b$ are real numbers. This is called the **slope-intercept form** of the line. The number $m$ is the **slope** (lesson 9): the change in $y$ per unit change in $x$. The number $b$ is the **y-intercept**: the value of $y$ when $x = 0$, equivalently the y-coordinate of the point where the line crosses the y-axis.
+
+By "canonical" we mean: this is the *standard* way to write a linear function for inspection. When the equation is in this form, both $m$ and $b$ can be read off directly without any algebra. Compare:
+
+- $y = 3x + 5$. Slope is $3$. Y-intercept is $5$. No work required.
+- $2x + 3y - 12 = 0$. Slope and intercept are *not* directly visible. You must first solve for $y$.
+
+Putting an arbitrary linear equation into slope-intercept form is just an application of the rearrangement skills from lesson 4: isolate $y$ on one side.
+
+### Reading Slope and Intercept by Inspection
+
+Once an equation reads $y = mx + b$, the slope is the coefficient of $x$ and the intercept is the constant term. Some examples to internalize:
+
+- $y = 4x + 7$: slope $4$, intercept $7$.
+- $y = -2x + 3$: slope $-2$, intercept $3$.
+- $y = x - 1$: slope $1$ (the coefficient of $x$ is understood as $1$), intercept $-1$.
+- $y = \tfrac{1}{2}x$: slope $\tfrac{1}{2}$, intercept $0$ (the constant term is missing, which means it is zero).
+- $y = -5$: slope $0$, intercept $-5$. This is a horizontal line.
+
+### Rearranging into Slope-Intercept Form
+
+If $y$ is not isolated, isolate it. Use exactly the techniques of lesson 4: add or subtract terms, then divide by the coefficient of $y$.
+
+Suppose you are handed
+
+$$2x + 3y = 12.$$
+
+Subtract $2x$ from both sides:
+
+$$3y = -2x + 12.$$
+
+Divide both sides by $3$:
+
+$$y = -\tfrac{2}{3}x + 4.$$
+
+Now you can read the slope ($-\tfrac{2}{3}$) and the intercept ($4$) directly. The line crosses the y-axis at $y = 4$ and falls by $2$ for every $3$ units you move to the right.
+
+### Sketching a Line from $y = mx + b$
+
+The slope-intercept form makes sketching a line almost effortless. The procedure has three steps.
+
+**Step 1.** Plot the y-intercept. This is the single point $(0, b)$ — easy, because the x-coordinate is zero. You just go to the y-axis and put a dot at height $b$.
+
+**Step 2.** Use the slope to step to a second point. Interpret the slope $m$ as a fraction "rise over run." If $m = 3$, treat it as $\tfrac{3}{1}$: from your first dot, go right $1$ unit and up $3$ units, and place a second dot. If $m = -\tfrac{2}{3}$, go right $3$ units and down $2$ units, and place a second dot. (Negative slope means down rather than up.) If $m = -2$, treat it as $\tfrac{-2}{1}$: right $1$, down $2$.
+
+**Step 3.** Connect the two dots with a straight line, and extend the line beyond both dots in both directions (with a ruler if you are sketching on paper). You are done.
+
+That is the whole sketching procedure. It works for every linear function. With a bit of practice, you can sketch any $y = mx + b$ in under fifteen seconds, without computing a table of values.
+
+### The Modeling Discipline
+
+When you are given a real-world situation that is linear and asked to write the model, follow these six steps. They are the bookkeeping habit that distinguishes a confident engineer from a flustered student.
+
+**Step 1.** Identify the **input** quantity (the independent variable, the "x"). What is being controlled or varied? In the sensor example, the input is the physical quantity being measured (pressure). In the battery example, the input is time. In the cost example, the input is the number of units.
+
+**Step 2.** Identify the **output** quantity (the dependent variable, the "y"). What is being produced or measured? Voltage. Voltage again. Cost.
+
+**Step 3.** Identify the **rate of change** — the slope. *What are its units?* Get them right. The slope of a voltage-versus-pressure line has units of volts per psi. The slope of a voltage-versus-time line has units of volts per hour. The slope of a cost-versus-units line has units of dollars per unit. If you cannot state the units of the slope, you do not yet understand the model.
+
+**Step 4.** Identify the **initial value** or **offset** — the y-intercept. *What are its units?* They must be the same as the output's units. The intercept of a voltage-versus-anything line is in volts. The intercept of a cost-versus-anything line is in dollars. The intercept always has the same units as $y$.
+
+**Step 5.** Write the model: $y = m \cdot x + b$, with units consistent throughout. Check by mentally substituting units: if $x$ is in psi and $m$ is in V/psi, then $m \cdot x$ is in volts; and $b$ is in volts, so the whole right side is in volts; and $y$ is in volts. The equation balances dimensionally.
+
+**Step 6.** Use the model. Substitute a numerical $x$ to predict $y$. Substitute a numerical $y$ and solve for $x$ to back-compute the input that would produce that output.
+
+That is the entire modeling discipline. Practice it on every example below until it is second nature.
+
+### Special Cases
+
+There are three special cases worth recognizing on sight.
+
+**Horizontal lines.** If $m = 0$, the equation reduces to
+
+$$y = b.$$
+
+This is a horizontal line at height $b$. The output never changes, no matter what the input is. It is a perfectly valid function (it passes the vertical-line test from lesson 7) — it is just a *constant function*. Examples in the world: a thermostat holding a room at a setpoint regardless of time; a battery that has not been touched and is sitting at its open-circuit voltage.
+
+**Vertical lines.** A vertical line has the equation
+
+$$x = c$$
+
+for some constant $c$. Notice that $y$ does not appear. There is no slope, in the sense that the "rise over run" denominator would be zero — vertical lines have **undefined slope**. A vertical line is **not a function**, because for the single input $x = c$, there are infinitely many possible outputs (every value of $y$); it fails the vertical-line test of lesson 7. You will see vertical lines on graphs (for example, "current measured at $t = 5$ s"), but they are not slope-intercept-form functions.
+
+**Lines through the origin.** If $b = 0$, the equation reduces to
+
+$$y = mx,$$
+
+a line passing through the origin. This is the **proportional** relationship: $y$ is directly proportional to $x$, with $m$ as the constant of proportionality. Many physical laws live here: Hooke's law $F = kx$ (spring force is proportional to displacement, no offset), Ohm's law $V = IR$ rearranged as $I = (1/R)V$, the relationship between distance traveled at constant speed and time $d = vt$, and so on. Whenever a quantity is "zero when the input is zero," the linear model has no intercept and you should write it as $y = mx$.
+
+### From Two Points to Slope-Intercept
+
+If you are given two points on the line, say $(x_1, y_1)$ and $(x_2, y_2)$, you can recover the slope-intercept equation in two steps.
+
+**Step A.** Compute the slope (lesson 9):
+
+$$m = \frac{y_2 - y_1}{x_2 - x_1}.$$
+
+**Step B.** Substitute one of the two points into $y = mx + b$ and solve for $b$. For example, using the first point:
+
+$$y_1 = m \cdot x_1 + b \quad \Longrightarrow \quad b = y_1 - m \cdot x_1.$$
+
+Then assemble: $y = m x + b$, with the values you just computed.
+
+You can use either of the two points in Step B. Both will give the same $b$ if the slope was computed correctly. *Always verify* by plugging both points back into the final equation. This is the cheapest possible error check.
+
+### From a Graph to Slope-Intercept
+
+If you are handed a graph rather than two points or an equation, the procedure is even more direct.
+
+- **Read the y-intercept** directly off the graph: it is the y-coordinate where the line crosses the vertical axis. Call it $b$.
+- **Pick two clear grid points** on the line — ideally points where the line crosses lattice intersections so you can read coordinates exactly. Compute the slope from those two points using the formula above.
+- **Write** $y = mx + b$.
+
+This is exactly what you do when reading a sensor calibration curve from a datasheet.
+
+### A Brief Mention of Linearization
+
+You will see in calculus (and again throughout control theory) that *any* smooth nonlinear function can be approximated by a straight line near any chosen operating point. The formula is
+
+$$f(x) \approx f(x_0) + f'(x_0) \cdot (x - x_0),$$
+
+which, if you collect the constant terms, is just $f(x) \approx m \cdot x + b$ with $m = f'(x_0)$ (the derivative, i.e., the slope of the tangent at $x_0$) and $b = f(x_0) - f'(x_0) \cdot x_0$. This is called the **first-order Taylor approximation** and it is the engine of small-signal analysis, control linearization, and Newton's method. You do not need it for this lesson, but it is good to know that the canonical form you are learning now is the form that *every* nonlinear function eventually pretends to be.
+
+## Visual or Mental Model
+
+### The "Y-Intercept and Step" Sketch
+
+Picture the y-axis. Put a dot at height $b$. That is your anchor. Now interpret the slope as "for every 1 step right, go $m$ steps up (or down, if $m$ is negative)" and place a second dot. Connect.
+
+```
+   y
+   |
+ b + . . . .x. . . . . . .     (anchor at (0, b))
+   |        \
+   |         \                  (slope -1 example)
+   |          \
+   |           x. . . . . .     (second dot, one right and one down)
+   |            \
+   |             \
+---+--------------+---------- x
+   0
+```
+
+For a positive slope of, say, $+2$, the picture instead steps up:
+
+```
+   y
+   |
+   |           x                (second dot, one right, two up)
+   |          /
+   |         /
+   |        /
+ b + . . . x. . . . . . .       (anchor at (0, b))
+   |
+---+--------------+---------- x
+   0
+```
+
+### Three Lines on One Grid: Positive, Negative, Horizontal
+
+Imagine a single coordinate grid with three lines drawn on it, all passing through the y-axis at different heights, with different slopes:
+
+```
+   y
+ 5 +
+   |  \         (line A: y = -x + 5, slope -1, intercept 5)
+ 4 +   \                       /
+   |    \                    /
+ 3 +- -  - - - - - - - - - - - - - - - -   (line B: y = 3, horizontal, slope 0)
+   |      \                /
+ 2 +       \             /
+   |        \          /
+ 1 +         \       /          (line C: y = 2x - 1, slope +2, intercept -1)
+   |          \    /
+ 0 +-----------\-/-------------- x
+   |0  1  2  3  X  4  5  6
+-1 +           /\
+   |         /    \
+-2 +       /        \
+```
+
+Three different lines, three different "personalities":
+
+- Line A slopes *down* (negative slope) — output decreases as input increases.
+- Line B is *flat* (zero slope) — output never changes.
+- Line C slopes *up* (positive slope) — output increases as input increases.
+
+Each line is fully described by just two numbers: $m$ and $b$.
+
+### The "Intercept Slides the Line Up and Down" Picture
+
+Fix the slope. Vary the intercept. The line slides vertically without changing its tilt.
+
+```
+                    /             y = 2x + 3
+                   /
+                  /  /            y = 2x + 1
+                 /  /
+                /  /  /           y = 2x - 1
+               /  /  /
+              /  /  /  /          y = 2x - 3
+             /  /  /  /
+   ---------/--/--/--/----- x
+           /  /  /  /
+          /  /  /  /
+```
+
+All four lines have slope $2$, so they are parallel. The intercept is the *vertical offset* — change $b$ and the line moves up or down without rotating.
+
+### The "Slope Rotates the Line" Picture
+
+Fix the intercept. Vary the slope. The line rotates around the y-intercept point like a clock hand.
+
+```
+              y = 3x + 2  (steep up)
+                 |    /
+                 |   /  y = x + 2  (gentle up)
+                 |  /  /
+                 | /  /  ----- y = 2  (flat)
+                 |/  / /
+   --------------+--/-/--------------- y = 0 ... wait, we need to anchor at b=2
+                /| / /
+               / |/ /  y = -x + 2 (gentle down)
+              /  |  \
+                 |   \
+                 |    \  y = -3x + 2 (steep down)
+```
+
+All five lines pass through $(0, 2)$ — same intercept. Change $m$ and the line rotates around that fixed anchor point.
+
+These two pictures — *intercept slides, slope rotates* — are worth burning into your visual memory. Together they say: a line in the plane has exactly two degrees of freedom, and slope-intercept form names them.
+
+## Worked Examples
+
+### Example (a) — Write and Sketch from $m$ and $b$
+
+Write the slope-intercept equation with $m = 2$ and $b = -3$. Then sketch it.
+
+The equation is just
+
+$$y = 2x - 3.$$
+
+Sketch: plot $(0, -3)$ on the y-axis (three units below the origin). Use slope $2 = \tfrac{2}{1}$: go right $1$, up $2$, placing a second dot at $(1, -1)$. Connect.
+
+```
+   y
+ 1 +                  x      (1, -1)... wait, (1, -1) is here
+   |                /
+ 0 +--------------/----x---- x      crosses x-axis at x = 1.5
+   |            /
+-1 +          x              (1, -1)
+   |        /
+-2 +      /
+   |    /
+-3 +  x                       (0, -3)
+   |/
+---+--------------+---------- x
+   0  1  2  3
+```
+
+(Reading this ASCII sketch: the anchor is at $(0, -3)$, the second dot at $(1, -1)$, and the line cuts the x-axis at $x = 1.5$.)
+
+### Example (b) — From Two Points
+
+Two points on a line are $(1, 4)$ and $(3, 10)$. Find the slope-intercept equation.
+
+Step A — slope:
+
+$$m = \frac{10 - 4}{3 - 1} = \frac{6}{2} = 3.$$
+
+Step B — back-solve for $b$, using the first point:
+
+$$4 = 3 \cdot 1 + b \quad \Longrightarrow \quad b = 4 - 3 = 1.$$
+
+Assemble: $y = 3x + 1$.
+
+Verify with the second point: $3 \cdot 3 + 1 = 9 + 1 = 10$. Matches. Equation is correct.
+
+### Example (c) — Pressure-Sensor Calibration
+
+A pressure sensor is rated as follows: at $0$ psi, the output voltage is $0.5$ V; at $100$ psi, the output voltage is $3.5$ V. Build the slope-intercept model of voltage versus pressure.
+
+Apply the six-step modeling discipline.
+
+1. Input: pressure $p$, in psi.
+2. Output: voltage $V$, in volts.
+3. Slope (rate of change of voltage per unit of pressure):
+
+   $$m = \frac{3.5 \text{ V} - 0.5 \text{ V}}{100 \text{ psi} - 0 \text{ psi}} = \frac{3.0 \text{ V}}{100 \text{ psi}} = 0.03 \text{ V/psi}.$$
+
+4. Intercept (the voltage when $p = 0$): given directly as $0.5$ V.
+5. Model:
+
+   $$V = 0.03 \cdot p + 0.5,$$
+
+   with $V$ in volts and $p$ in psi.
+
+6. Predict the reading at $p = 75$ psi:
+
+   $$V = 0.03 \cdot 75 + 0.5 = 2.25 + 0.5 = 2.75 \text{ V}.$$
+
+This is exactly the calibration model used in seed lesson 14, now written with the full discipline.
+
+### Example (d) — Battery Discharge
+
+A drone battery starts at $V_0 = 8.4$ V and loses $0.2$ V per hour under a constant load. Write the discharge model $V(t)$, and find the time when the battery reaches $6.0$ V (the dead threshold).
+
+1. Input: time $t$, in hours.
+2. Output: voltage $V(t)$, in volts.
+3. Slope (rate of change of voltage with time): $-0.2$ V/hour. *Negative*, because the voltage is decreasing.
+4. Intercept (voltage at $t = 0$): $8.4$ V.
+5. Model:
+
+   $$V(t) = -0.2 \cdot t + 8.4.$$
+
+6. Solve for $t$ when $V = 6.0$:
+
+   $$6.0 = -0.2 t + 8.4,$$
+
+   $$-2.4 = -0.2 t,$$
+
+   $$t = 12 \text{ hours}.$$
+
+The battery dies after $12$ hours of constant load.
+
+### Example (e) — Linear Cost Model
+
+A fab service charges \$500 to set up a job, then \$50 per part produced. Write the slope-intercept model of total cost versus number of parts, and find how many parts can be made on a \$2000 budget.
+
+1. Input: number of parts $n$ (a count, no physical units).
+2. Output: total cost, in dollars.
+3. Slope: \$50 per part.
+4. Intercept: \$500 (the setup fee — the cost when zero parts are made).
+5. Model:
+
+   $$\text{cost} = 50 \cdot n + 500,$$
+
+   with cost in dollars.
+
+6. Solve for $n$ when cost = \$2000:
+
+   $$2000 = 50 n + 500,$$
+
+   $$1500 = 50 n,$$
+
+   $$n = 30 \text{ parts}.$$
+
+A \$2000 budget pays for 30 parts. (You can produce *up to* 30 parts; one more would exceed the budget by \$50.)
+
+### Example (f) — Ohm's Law as a Slope-Intercept Line
+
+For a fixed $100$ $\Omega$ resistor, express current $I$ as a function of voltage $V$ in slope-intercept form.
+
+From Ohm's law, $V = IR$, so $I = V/R = (1/100) V$. As a slope-intercept line:
+
+$$I = 0.01 \cdot V + 0.$$
+
+1. Input: voltage $V$, in volts.
+2. Output: current $I$, in amperes.
+3. Slope: $1/R = 0.01$ A/V (also called $0.01$ siemens, or $10$ mS).
+4. Intercept: $0$ A. Zero applied voltage produces zero current — there is no offset.
+
+This is a line through the origin, with slope $0.01$. It tells you that for every $1$ V of applied voltage, you get $10$ mA of current — exactly what Ohm's law predicts.
+
+### Example (g) — Convert from Standard Form
+
+Convert
+
+$$2x + 3y = 12$$
+
+to slope-intercept form, then state the slope and y-intercept.
+
+Subtract $2x$ from both sides:
+
+$$3y = -2x + 12.$$
+
+Divide by $3$:
+
+$$y = -\tfrac{2}{3} x + 4.$$
+
+Slope: $-\tfrac{2}{3}$. Y-intercept: $4$. The line falls by $2$ for every $3$ steps to the right and crosses the y-axis at $(0, 4)$.
+
+### Example (h) — Sketch $y = -2x + 5$
+
+Plot the y-intercept $(0, 5)$. Apply slope $-2 = \tfrac{-2}{1}$: from $(0, 5)$ go right $1$, down $2$, reaching $(1, 3)$. Repeat: from $(1, 3)$ go right $1$, down $2$, reaching $(2, 1)$. Connect.
+
+```
+   y
+ 5 +x                          (0, 5)
+   | \
+ 4 +   \
+   |     \
+ 3 +       x                   (1, 3)
+   |         \
+ 2 +           \
+   |             \
+ 1 +               x           (2, 1)
+   |                 \
+ 0 +-------------------\------ x
+   |0  1  2  3   2.5    \
+-1 +                      x    (3, -1)
+```
+
+The line crosses the x-axis at $x = 2.5$ (where $y = 0$), which you can verify by solving $0 = -2x + 5 \Rightarrow x = 2.5$.
+
+### Example (i) — Failure Mode: Wrong Point in Back-Solve
+
+A student is told that a pressure sensor produces $V = 0.5$ V at $p = 0$ psi and $V = 3.5$ V at $p = 100$ psi. They correctly compute the slope $m = 0.03$ V/psi. But when they back-solve for $b$ using the *second* point, they accidentally use the *pressure* value as $V$ and the *voltage* value as $p$:
+
+$$0.5 \text{(?)} = 0.03 \cdot 3.5 + b \quad \Longrightarrow \quad b = 0.5 - 0.105 = 0.395 \text{ V}.$$
+
+The student writes the (wrong) model $V = 0.03 p + 0.395$.
+
+**Diagnostic step**: check the model against *both* original data points.
+
+- At $p = 0$: $V = 0.03 \cdot 0 + 0.395 = 0.395$ V. But the data says $V = 0.5$ V. Mismatch.
+- At $p = 100$: $V = 0.03 \cdot 100 + 0.395 = 3.395$ V. But the data says $V = 3.5$ V. Mismatch.
+
+Both points fail — the back-solve was wrong. Re-do it with care: at the point $(p, V) = (0, 0.5)$, substitute $V = 0.5$ and $p = 0$:
+
+$$0.5 = 0.03 \cdot 0 + b \quad \Longrightarrow \quad b = 0.5.$$
+
+Correct model: $V = 0.03 p + 0.5$. The lesson is that *plugging both points back into your final equation is a free correctness check* — always do it.
+
+### Example (j) — Failure Mode: Inconsistent Units
+
+A student is given that a sensor produces $0.5$ V at $0$ cm and $1.0$ V at $50$ cm of measured distance. They compute slope $m = (1.0 - 0.5)/(50 - 0) = 0.01$ V/cm and intercept $b = 0.5$ V. So far so good.
+
+Now they use the model to predict the voltage at a distance of $0.3$ *meters*. Without converting, they plug $d = 0.3$ into the model:
+
+$$V = 0.01 \cdot 0.3 + 0.5 = 0.003 + 0.5 = 0.503 \text{ V}.$$
+
+But the actual sensor at $0.3$ m = $30$ cm should produce $V = 0.01 \cdot 30 + 0.5 = 0.8$ V. The student's prediction is off by a factor of about $300$.
+
+**Diagnose with dimensional analysis** (recall lesson 6). The slope is in V/cm, but the student plugged in $d$ in m. The product $m \cdot d$ should be in volts, but $(0.01 \text{ V/cm}) \cdot (0.3 \text{ m})$ has units of V·m/cm — which is *not* volts. The units of the right-hand side do not match the units of $V$. That is the bug.
+
+Fix: either convert $d$ to cm before substituting ($0.3$ m = $30$ cm), or rewrite the model with a slope in V/m ($0.01$ V/cm $= 1.0$ V/m, so the model becomes $V = 1.0 \cdot d + 0.5$ with $d$ in m). Either fix produces $V = 0.8$ V at $d = 0.3$ m.
+
+The lesson is that **units must be consistent across every term of the model**. Carry units in your head (or on the page) when substituting, and the dimensional inconsistency will trip the alarm before you commit the error to a real system.
+
+## Engineering Connections
+
+A few concrete places where slope-intercept thinking shows up in working engineering.
+
+**Sensor datasheets explicitly list slope and intercept.** Open the datasheet for an analog pressure transducer, accelerometer, thermistor, or load cell, and you will find two numbers prominently displayed: *sensitivity* (which is the slope, with units like V/psi, mV/g, mV/°C, mV/N) and *offset* (which is the intercept, in volts or millivolts). The firmware that reads the sensor implements exactly $V = \text{sensitivity} \cdot \text{input} + \text{offset}$, then inverts that to compute the physical quantity from the voltage.
+
+**Scikit-learn's `LinearRegression` returns a slope and an intercept.** After you fit a one-feature linear-regression model with `model.fit(X, y)`, the attributes `model.coef_` (an array of slopes; for one feature, an array of length 1) and `model.intercept_` (a scalar) give you exactly $m$ and $b$. The line of best fit is $\hat{y} = \text{coef\_} \cdot x + \text{intercept\_}$. We will replicate this in the build task.
+
+**Control-theory linearization.** When the dynamics of a system are nonlinear — say, a pendulum, a quadcopter, an inverted cart-pole — control engineers linearize the dynamics around an operating point. The result is a matrix equation $\dot{x} \approx A x + B u$, where $A$ is a matrix of slopes (the Jacobian of the dynamics with respect to the state) and $B$ is a matrix of slopes (the Jacobian with respect to the control input). The *entire* edifice of linear control theory — pole placement, LQR, Kalman filtering — runs on this linearization. The slope-intercept form is its great-grandfather.
+
+**Op-amp transfer function in the linear regime.** A non-saturated operational amplifier circuit produces an output that is linear in the input: $V_{\text{out}} = G \cdot V_{\text{in}} + V_{\text{offset}}$, where $G$ is the closed-loop gain (the slope) and $V_{\text{offset}}$ is the input-offset voltage referred to the output (the intercept). The gain is set by external resistor ratios; the offset comes from manufacturing tolerances inside the op-amp. The slope-intercept model is exactly what every op-amp design engineer writes down on the back of an envelope.
+
+**Stress-strain curves in the elastic regime.** Within the elastic limit of a material, the stress $\sigma$ is linear in the strain $\varepsilon$: $\sigma = E \cdot \varepsilon + 0$. This is Hooke's law, and $E$ is the Young's modulus of the material — a slope with units of pascals (since strain is dimensionless). The intercept is zero, because zero strain implies zero stress. Plot stress versus strain on a tensile-test machine and you see a straight line through the origin, whose slope tells you the stiffness of the material. Past the elastic limit, the curve bends — which is exactly where the linear model stops being valid, and where the "approximately linear" Taylor analysis would also fail.
+
+**Thermal sensors.** A resistance-temperature detector (RTD) or thermistor produces an output voltage that is approximately linear in temperature near room temperature: $V = \alpha \cdot T + V_0$. The slope $\alpha$ is the *temperature coefficient* (in V/°C or V/K) and $V_0$ is the reading at the reference temperature. Beyond a narrow range, the response is nonlinear, and a more elaborate model is used — but for control purposes near a setpoint, slope-intercept is the working approximation.
+
+**First-order Taylor expansion as the bridge.** As mentioned earlier, $f(x) \approx f(x_0) + f'(x_0)(x - x_0)$ is slope-intercept form in disguise. This is why slope-intercept form keeps appearing in fields that are nominally nonlinear: any nonlinear system, viewed up close, looks linear. You will see this point made over and over once you reach calculus and control.
+
+## Practice Set
+
+### Warmups
+
+Write the slope-intercept equation $y = mx + b$ for each.
+
+1. Slope $4$, y-intercept $1$.
+2. Slope $-3$, y-intercept $7$.
+3. Slope $\tfrac{1}{2}$, y-intercept $-2$.
+4. Slope $0$, y-intercept $5$.
+5. Slope $-1$, y-intercept $0$.
+
+Given two points, find the slope-intercept equation. Verify with both points.
+
+6. $(0, 4)$ and $(2, 10)$.
+7. $(-1, 5)$ and $(3, -7)$.
+8. $(2, 3)$ and $(5, 3)$. (Watch for a special case.)
+
+### Applied (Engineering Scenarios)
+
+9. A pressure sensor reads $1.0$ V at $0$ psi and $4.0$ V at $60$ psi. Write the slope-intercept model $V(p)$ with units. Predict the reading at $25$ psi.
+
+10. A drone battery starts at $11.1$ V and discharges at $0.25$ V/hour under cruise load. Write $V(t)$ with units. When does it hit $9.6$ V (the soft-cutoff threshold)?
+
+11. A 3D-printing service charges \$80 to set up a print job plus \$5 per gram of material used. Write the cost model as a function of grams $g$. How many grams can be printed on a \$200 budget?
+
+12. A temperature sensor outputs $0$ V at $0$ °C and $0.01$ V per °C. Write the model $V(T)$ with units. What temperature corresponds to $0.42$ V?
+
+13. A motor controller responds linearly: throttle percentage $t$ produces shaft speed $\omega = 50 t + 100$ rpm. Identify the slope and intercept (with units). What throttle percentage gives $3600$ rpm?
+
+14. A radar gun's reported speed is linear in the Doppler shift $\Delta f$: $v = 0.075 \Delta f + 0$ m/s, with $\Delta f$ in Hz. What Doppler shift corresponds to a vehicle traveling at $30$ m/s?
+
+### Sketching
+
+15. Sketch $y = 3x - 2$ by plotting the y-intercept and using the slope to step to a second point. Label both points.
+
+16. Sketch $y = -\tfrac{1}{2} x + 4$ by the same procedure. (For slope $-\tfrac{1}{2}$, go right $2$, down $1$.)
+
+17. Sketch $y = 4$ (a horizontal line). Where does it cross the y-axis? Does it cross the x-axis?
+
+### Error-Spotting
+
+18. A student is given $(0, 3)$ and $(4, 11)$ and writes the slope-intercept equation as $y = 11x + 3$. What did they confuse, and what is the correct equation?
+
+19. A student is told a sensor reads $1.0$ V at $10$ mbar and $1.5$ V at $20$ mbar. They write the model as $V = 0.5 p + 1.0$ with $p$ in mbar. Check by predicting the reading at $20$ mbar. What is wrong, and what is the corrected model?
+
+20. A student converts $4x - 2y = 8$ to slope-intercept form and writes $y = 4x - 8$. What was the algebra error, and what is the correct conversion?
+
+### Challenge
+
+21. A drone's published power consumption is $P = 4.5 v + 90$ W with $v$ in m/s. A new firmware reports velocity in km/h. Without changing the firmware, you want to rewrite the model to take $v$ in km/h directly. What are the new slope and intercept? (Use unit conversion: $1$ km/h $= 1/3.6$ m/s.) Verify your answer by checking both models at $v = 36$ km/h $= 10$ m/s.
+
+22. Convert the standard-form equation $5x - 3y + 9 = 0$ to slope-intercept form. State the slope, the y-intercept, and the x-intercept (where the line crosses the x-axis).
+
+### Answers
+
+1. $y = 4x + 1$.
+2. $y = -3x + 7$.
+3. $y = \tfrac{1}{2} x - 2$.
+4. $y = 5$ (horizontal line).
+5. $y = -x$ (line through origin).
+6. Slope $m = (10 - 4)/(2 - 0) = 3$. Intercept given as $4$. Equation: $y = 3x + 4$.
+7. Slope $m = (-7 - 5)/(3 - (-1)) = -12/4 = -3$. Back-solve: $5 = -3(-1) + b \Rightarrow b = 2$. Equation: $y = -3x + 2$. Verify second point: $-3(3) + 2 = -7$. ✓
+8. Slope $m = (3 - 3)/(5 - 2) = 0$. Horizontal line. Equation: $y = 3$.
+9. Slope $m = (4.0 - 1.0)/(60 - 0) = 0.05$ V/psi. Intercept $1.0$ V. Model: $V = 0.05 p + 1.0$. At $p = 25$ psi: $V = 0.05 \cdot 25 + 1.0 = 2.25$ V.
+10. $V(t) = -0.25 t + 11.1$, with $V$ in V and $t$ in hours. Solve $9.6 = -0.25 t + 11.1 \Rightarrow t = (11.1 - 9.6)/0.25 = 6$ hours.
+11. cost $= 5 g + 80$ (in dollars). Solve $200 = 5 g + 80 \Rightarrow g = 24$ grams.
+12. $V = 0.01 T + 0$ (the intercept is zero). Solve $0.42 = 0.01 T \Rightarrow T = 42$ °C.
+13. Slope $50$ rpm/% (rpm per percent throttle). Intercept $100$ rpm (idle speed when throttle is zero). Solve $3600 = 50 t + 100 \Rightarrow t = 70$%.
+14. $\Delta f = v/0.075 = 30/0.075 = 400$ Hz.
+15. Anchor $(0, -2)$. Slope $3$: step right $1$, up $3$ to $(1, 1)$. Connect.
+16. Anchor $(0, 4)$. Slope $-\tfrac{1}{2}$: step right $2$, down $1$ to $(2, 3)$. Connect.
+17. Horizontal line at $y = 4$. Crosses y-axis at $(0, 4)$. Never crosses the x-axis.
+18. The student used the y-coordinate $11$ as the slope. Correct slope: $(11 - 3)/(4 - 0) = 2$. Intercept $3$. Correct equation: $y = 2x + 3$.
+19. The student used the wrong slope. Correct slope: $(1.5 - 1.0)/(20 - 10) = 0.05$ V/mbar. Back-solve: $1.0 = 0.05 \cdot 10 + b \Rightarrow b = 0.5$ V. Correct model: $V = 0.05 p + 0.5$. (The student's model predicts $V = 11.0$ V at $p = 20$ mbar — wildly wrong.)
+20. The student forgot to divide the constant term by $-2$ as well as the $x$ term. Correct conversion: $4x - 2y = 8 \Rightarrow -2y = -4x + 8 \Rightarrow y = 2x - 4$.
+21. With $v_{\text{ms}}$ in m/s and $v_{\text{kmh}}$ in km/h, $v_{\text{ms}} = v_{\text{kmh}}/3.6$. Substitute: $P = 4.5 \cdot (v_{\text{kmh}}/3.6) + 90 = 1.25 \cdot v_{\text{kmh}} + 90$. New slope $1.25$ W per (km/h); intercept unchanged at $90$ W. Check at $v_{\text{kmh}} = 36$: $P = 1.25 \cdot 36 + 90 = 45 + 90 = 135$ W. Original model at $v_{\text{ms}} = 10$: $P = 4.5 \cdot 10 + 90 = 135$ W. ✓
+22. $5x - 3y + 9 = 0 \Rightarrow -3y = -5x - 9 \Rightarrow y = \tfrac{5}{3} x + 3$. Slope $\tfrac{5}{3}$, y-intercept $3$. X-intercept: set $y = 0 \Rightarrow 0 = \tfrac{5}{3} x + 3 \Rightarrow x = -\tfrac{9}{5} = -1.8$.
+
+## Build Task
+
+Build a Python class `LinearModel` that encapsulates a slope-intercept model with two methods: `predict(x)` (return $y = m x + b$ for one $x$ or an array of $x$) and `fit(xs, ys)` (compute $m$ and $b$ from arrays of data points using least-squares). Then exercise the class on two engineering scenarios — sensor calibration with synthetic noise, and Hooke's law for a spring — and compare the fitted parameters against the true values and against numpy/scipy's built-in routines.
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+class LinearModel:
+    """A slope-intercept linear model: y = m * x + b."""
+
+    def __init__(self, slope=0.0, intercept=0.0):
+        self.slope = float(slope)
+        self.intercept = float(intercept)
+
+    def predict(self, x):
+        """Predict y for scalar or array-like x."""
+        x = np.asarray(x, dtype=float)
+        return self.slope * x + self.intercept
+
+    def fit(self, xs, ys):
+        """Fit slope and intercept by ordinary least squares.
+
+        Uses the closed-form solution:
+            m = sum((x - x_mean) * (y - y_mean)) / sum((x - x_mean) ** 2)
+            b = y_mean - m * x_mean
+        """
+        xs = np.asarray(xs, dtype=float)
+        ys = np.asarray(ys, dtype=float)
+        if xs.shape != ys.shape:
+            raise ValueError("xs and ys must have the same shape")
+        if xs.size < 2:
+            raise ValueError("need at least two points to fit a line")
+        x_mean = xs.mean()
+        y_mean = ys.mean()
+        denom = np.sum((xs - x_mean) ** 2)
+        if denom == 0:
+            raise ValueError("all xs are identical; cannot fit a line")
+        self.slope = float(np.sum((xs - x_mean) * (ys - y_mean)) / denom)
+        self.intercept = float(y_mean - self.slope * x_mean)
+        return self
+
+    def __repr__(self):
+        return f"LinearModel(slope={self.slope:.6g}, intercept={self.intercept:.6g})"
+
+
+# ---- Scenario A: Pressure-sensor calibration with synthetic noise ----
+
+rng = np.random.default_rng(seed=42)
+true_slope_V_per_psi = 0.03
+true_intercept_V = 0.5
+
+pressures_psi = np.linspace(0, 100, 21)  # 21 evenly spaced calibration pressures
+noise_V = rng.normal(loc=0.0, scale=0.02, size=pressures_psi.shape)
+voltages_V = true_slope_V_per_psi * pressures_psi + true_intercept_V + noise_V
+
+sensor_model = LinearModel().fit(pressures_psi, voltages_V)
+print("Sensor calibration:")
+print(f"  true   slope = {true_slope_V_per_psi:.4f} V/psi, intercept = {true_intercept_V:.4f} V")
+print(f"  fitted {sensor_model}")
+print(f"  predicted V at 75 psi: {sensor_model.predict(75):.4f} V")
+
+# Cross-check against numpy's polyfit (degree 1 polynomial = linear fit)
+np_slope, np_intercept = np.polyfit(pressures_psi, voltages_V, deg=1)
+print(f"  numpy.polyfit slope = {np_slope:.4f}, intercept = {np_intercept:.4f}")
+
+
+# ---- Scenario B: Hooke's law for a spring (line through the origin) ----
+
+true_k_N_per_m = 25.0  # spring constant in N/m
+displacements_m = np.linspace(0, 0.10, 11)
+forces_N = true_k_N_per_m * displacements_m + rng.normal(0.0, 0.05, displacements_m.shape)
+
+spring_model = LinearModel().fit(displacements_m, forces_N)
+print("\nSpring (Hooke's law):")
+print(f"  true   spring constant = {true_k_N_per_m:.2f} N/m, intercept = 0 N")
+print(f"  fitted {spring_model}")
+
+# In the ideal noise-free case the intercept would be exactly zero. With noise,
+# the fitted intercept should be small but nonzero.
+
+# ---- Plot both fits ----
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+axes[0].scatter(pressures_psi, voltages_V, label="measured")
+axes[0].plot(pressures_psi, sensor_model.predict(pressures_psi), "r-", label="linear fit")
+axes[0].set_xlabel("Pressure (psi)")
+axes[0].set_ylabel("Voltage (V)")
+axes[0].set_title("Pressure sensor calibration")
+axes[0].legend()
+axes[0].grid(True)
+
+axes[1].scatter(displacements_m, forces_N, label="measured")
+axes[1].plot(displacements_m, spring_model.predict(displacements_m), "r-", label="linear fit")
+axes[1].set_xlabel("Displacement (m)")
+axes[1].set_ylabel("Force (N)")
+axes[1].set_title("Spring (Hooke's law)")
+axes[1].legend()
+axes[1].grid(True)
+
+plt.tight_layout()
+plt.savefig("linear_model_fits.png", dpi=150)
+print("\nWrote linear_model_fits.png")
+```
+
+**Stretch goals.**
+
+- Add a `score(xs, ys)` method that returns the coefficient of determination $R^2$, so you can quantify the goodness of fit. (Definition: $R^2 = 1 - \text{SS}_{\text{res}} / \text{SS}_{\text{tot}}$.)
+- Compare your `LinearModel.fit` to `sklearn.linear_model.LinearRegression`. Verify that `LinearRegression().fit(xs.reshape(-1, 1), ys).coef_[0]` and `.intercept_` match your fit to within floating-point precision.
+- Build a `to_engineering_string(input_unit, output_unit)` helper that returns the model as a human-readable string with units, e.g. `"V = 0.03 V/psi * p + 0.5 V"`.
+- Make the class subscriptable: `model[5]` should return `model.predict(5)`, as a convenient shorthand.
+
+## Quiz
+
+1. Why is $y = mx + b$ called the *canonical* form of a linear equation?
+2. What does $b$ represent geometrically? What does it represent in an engineering model?
+3. What does $m$ represent geometrically? What does it represent in an engineering model?
+4. State the three-step procedure for sketching a line directly from $y = mx + b$. Why is it more efficient than computing a table of $(x, y)$ values?
+5. Convert $4x + 2y = 6$ to slope-intercept form, then read off the slope and y-intercept.
+6. What is the difference between the equations $y = 0$ and $x = 0$? Which is a function?
+7. Write the slope-intercept model for: "A car-rental company charges \$30 per day plus \$0.20 per mile driven." What is the slope? What is the intercept? What are their units?
+8. How does linearization let us use $y = mx + b$ for nonlinear systems? Give the formula for the first-order Taylor approximation of a function $f(x)$ near a point $x_0$, and identify the slope and intercept.
+
+**Answers (compressed).** (1) Because it is the standard form for inspection — both slope and intercept are visible without algebra. (2) Geometrically: the y-coordinate where the line crosses the y-axis. In modeling: the initial value, starting offset, or value of the output when the input is zero. (3) Geometrically: the steepness (rise over run). In modeling: the rate of change of the output per unit change in the input, with units of (output units) per (input units). (4) Plot $(0, b)$; use slope as rise-over-run to step to a second point; connect with a straight line. It is faster because you compute *zero* arithmetic for the first point and one tiny addition for the second. (5) $2y = -4x + 6 \Rightarrow y = -2x + 3$. Slope $-2$, intercept $3$. (6) $y = 0$ is the x-axis itself — a horizontal line, slope $0$, intercept $0$, and it *is* a function. $x = 0$ is the y-axis — a vertical line, undefined slope, and it is *not* a function (one input has infinitely many outputs). (7) cost $= 0.20 m + 30 d$ — actually that mixes two inputs. With *one* input variable, say miles $m$ for a fixed one-day rental: cost $= 0.20 m + 30$. Slope: \$0.20 per mile. Intercept: \$30 (the daily rental fee). (8) $f(x) \approx f(x_0) + f'(x_0) \cdot (x - x_0)$. Expanding: $f(x) \approx f'(x_0) \cdot x + [f(x_0) - f'(x_0) \cdot x_0]$. Slope: $f'(x_0)$, the derivative at the operating point. Intercept: $f(x_0) - f'(x_0) \cdot x_0$.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Write the slope-intercept equation for any line, given $m$ and $b$, two points, a graph, or a verbal description, without consulting notes.
+- Sketch any $y = mx + b$ in under 15 seconds using the y-intercept-and-step procedure.
+- Apply the six-step modeling discipline to a real-world linear scenario, with units tracked throughout.
+- Convert a linear equation in any algebraic form into slope-intercept form by isolating $y$.
+- Identify horizontal lines ($y = c$), vertical lines ($x = c$, *not* a function), and through-the-origin lines ($y = mx$) on sight.
+- Commit the `LinearModel` class from the Build Task, with at least one real-world dataset fit (the sensor calibration counts; bring your own dataset for bonus credit) and the comparison against numpy's `polyfit` showing agreement.
+
+Push your `linear_model.py` (or `linear_model.ipynb`) and your sensor-calibration plot to your curriculum repository. Add a one-paragraph note that explains, in plain language, which quantity is the slope and which is the intercept, and what units each has.
+
+## Sources and Further Study
+
+- **Serge Lang, *Basic Mathematics*, chapters 5–6.** The most rigorous secondary-school-level treatment of linear functions and coordinate geometry. Lang is dry but careful; reading him is excellent preparation for university math.
+- **James Stewart, *Calculus*, chapter 1.** The introductory chapter reviews lines and linear functions before launching into limits and derivatives. Stewart's treatment of the tangent-line approximation foreshadows linearization beautifully.
+- **Howard Anton, *Calculus*, early chapters.** A second alternative to Stewart with similar coverage; pick whichever you can find used.
+- **René Descartes, *La Géométrie* (1637), modern English translation.** Read at least the first 20 pages to see the moment when algebra and geometry fused. Available free online via Project Gutenberg.
+- **MIT OpenCourseWare 18.01, *Single Variable Calculus*, lectures 1–2.** Professor David Jerison's treatment of lines, slopes, and the tangent-line approximation is exceptionally clear and free.
+- **MIT OpenCourseWare 6.302, *Feedback Systems***. For the linearization story: how engineers turn nonlinear plant dynamics into $\dot x = A x + B u$ and design controllers in the linear regime. Watch the first few lectures even if you have no controls background — the framing alone is illuminating.
+- **Norman R. Draper and Harry Smith, *Applied Regression Analysis*.** The deep reference on linear regression. Chapter 1 is a clear, rigorous derivation of the least-squares slope and intercept formulas you used in the build task.
+- **scikit-learn documentation, `LinearRegression`.** The API reference and user-guide section on linear models. Tinker with the parameters, fit some real data (try the `diabetes` dataset bundled with sklearn), and inspect the `coef_` and `intercept_` attributes.
+
+## Next Lesson Bridge
+
+The slope-intercept form you mastered here is one of *three* common ways to write the equation of a line. Each form has a situation where it shines.
+
+- **Slope-intercept** ($y = mx + b$) is the right form when you know — or want to read off — the slope and the y-intercept. It is the canonical form for modeling and graphing.
+- **Point-slope form** ($y - y_1 = m(x - x_1)$) is the right form when you know the slope and *some other point* on the line that is *not* the y-intercept. This is common in calculus, where you build a tangent line at a known point. Lesson 11 will introduce it.
+- **Standard form** ($A x + B y = C$) is the right form when the line is part of a *system of equations* that you plan to solve together with other lines. Lesson 11 will introduce it as well, and will explain when each of the three forms is most convenient.
+
+The deeper lesson — and the one that lesson 11 will hammer home — is that **all three forms describe the same line**. Converting between them is a mechanical algebra exercise, and a working engineer fluently switches forms whenever convenient. You now own one of the three; lesson 11 gives you the other two and the dictionary between them.

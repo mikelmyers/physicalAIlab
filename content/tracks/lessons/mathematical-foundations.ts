@@ -287,33 +287,53 @@ const engineeringAlgebraGeometry: Lesson[] = [
       prerequisites: ["solving-equations-from-zero"],
     },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     7,
     "functions-definition-and-notation",
     "Functions: Definition and Notation",
     "What a function is, the notation f(x), domain and range as engineering input and output, and evaluating functions at specific values.",
+    {
+      estimatedMinutes: 90,
+      prerequisites: ["units-and-dimensional-analysis"],
+      checkId: "functions-definition-and-notation-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     8,
     "domain-range-and-function-types",
     "Domain, Range, and Function Types",
     "Domain restrictions in physical models (no negative time, no division by zero), and recognizing linear, piecewise, and step functions.",
+    {
+      estimatedMinutes: 80,
+      prerequisites: ["functions-definition-and-notation"],
+      checkId: "domain-range-and-function-types-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     9,
     "slope-and-y-intercept",
     "Slope and y-Intercept",
     "Slope as rate of change, y-intercept as starting value, and reading both from data tables, equations, and graphs.",
+    {
+      estimatedMinutes: 85,
+      prerequisites: ["domain-range-and-function-types"],
+      checkId: "slope-and-y-intercept-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     10,
     "slope-intercept-form",
     "Slope-Intercept Form",
     "Writing linear equations as y = mx + b, sketching lines from this form, and modeling linear physical relationships.",
+    {
+      estimatedMinutes: 85,
+      prerequisites: ["slope-and-y-intercept"],
+      checkId: "slope-intercept-form-check",
+    },
   ),
   future(
     "equations-units-and-graphs",
