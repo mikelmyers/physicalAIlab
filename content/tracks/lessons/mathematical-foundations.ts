@@ -633,8 +633,30 @@ const geometryTrigVectors: Lesson[] = [
 ];
 
 const preCalculus: Lesson[] = [
-  future("pre-calculus", 1, "functions-review-and-piecewise", "Functions Review and Piecewise Definitions", "A formal review of functions, function composition, and piecewise-defined functions for engineering models with regime changes."),
-  future("pre-calculus", 2, "polynomial-functions-and-end-behavior", "Polynomial Functions and End Behavior", "Polynomials of arbitrary degree, end behavior at infinity, and the relationship between degree and roots."),
+  available(
+    "pre-calculus",
+    1,
+    "functions-review-and-piecewise",
+    "Functions Review and Piecewise Definitions",
+    "A formal review of functions, function composition, and piecewise-defined functions for engineering models with regime changes.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["coordinate-frames-and-robot-motion"],
+      checkId: "functions-review-and-piecewise-check",
+    },
+  ),
+  available(
+    "pre-calculus",
+    2,
+    "polynomial-functions-and-end-behavior",
+    "Polynomial Functions and End Behavior",
+    "Polynomials of arbitrary degree, end behavior at infinity, and the relationship between degree and roots.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["functions-review-and-piecewise"],
+      checkId: "polynomial-functions-and-end-behavior-check",
+    },
+  ),
   future("pre-calculus", 3, "quadratic-functions-and-the-quadratic-formula", "Quadratic Functions and the Quadratic Formula", "Standard, vertex, and factored forms of quadratics, completing the square, and the quadratic formula with its discriminant."),
   future("pre-calculus", 4, "polynomial-factoring-techniques", "Polynomial Factoring Techniques", "Factoring by grouping, the rational root theorem, and synthetic division for higher-degree polynomials."),
   future("pre-calculus", 5, "polynomial-division-and-factor-theorem", "Polynomial Division and the Factor Theorem", "Long division of polynomials, the remainder and factor theorems, and using them to find roots of polynomial equations."),

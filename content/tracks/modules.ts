@@ -31,7 +31,7 @@ export const modules: Module[] = [
     title: "Pre-calculus",
     summary:
       "Polynomial, rational, exponential, and logarithmic functions; conic sections; sequences; complex numbers. The bridge to calculus.",
-    status: "future",
+    status: "available",
     order: 4,
   },
   {

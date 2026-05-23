@@ -1,0 +1,634 @@
+# Functions Review and Piecewise Definitions
+
+## Re-entry Promise
+
+This lesson assumes you have seen function notation before, but it does not assume you are fluent with it. If $f(x)$ still feels like a weird decoration instead of a machine with inputs and outputs, that is exactly what this lesson is here to fix.
+
+Pre-calculus begins by making functions feel operational. A function is not just a graph in a textbook. It is a rule for turning inputs into outputs: sensor voltage into distance, time into position, motor command into speed, image brightness into a thresholded label, battery state into allowed power.
+
+By the end, you should be able to read, evaluate, graph, and build functions that change rules depending on the input.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Define a function as a rule assigning each valid input exactly one output.
+- Identify independent and dependent variables.
+- Evaluate a function from a formula, table, graph, or verbal rule.
+- Explain domain and range in engineering language.
+- Recognize linear, constant, absolute-value, step, and piecewise functions.
+- Evaluate piecewise functions without mixing up interval conditions.
+- Sketch simple piecewise graphs.
+- Use piecewise definitions to model thresholds, saturation, deadbands, and mode changes.
+- Explain why piecewise models are common in robotics and physical systems.
+- Build a small function evaluator for a piecewise engineering rule.
+
+## Plain-Language Intuition
+
+A function is an input-output promise.
+
+If you give the function an allowed input, it gives back one output. Not zero outputs. Not two different outputs for the same input. One.
+
+Examples:
+
+- A temperature sensor function maps voltage to temperature.
+- A robot path function maps time to desired position.
+- A controller function maps error to motor command.
+- A camera threshold function maps pixel brightness to black or white.
+- A safety limiter maps requested speed to allowed speed.
+
+Piecewise functions appear when one rule is not enough. Many real systems behave differently in different regions. A motor might be off below a deadband, proportional in the middle, and saturated at high command. That is a piecewise function.
+
+## Why This Idea Exists
+
+Functions let humans describe change without listing every possible input. Instead of writing a million sensor readings, we write a rule. Instead of storing every point on a trajectory, we write a formula. Instead of explaining a controller with paragraphs, we write a function.
+
+Piecewise functions exist because the world has regimes:
+
+- Below a threshold, nothing happens.
+- Above a limit, hardware saturates.
+- Before a switch time, one behavior applies.
+- After contact, a robot changes mode.
+- Inside a safe region, control is normal.
+- Outside a safe region, emergency behavior takes over.
+
+Calculus studies how functions change. Before calculus can make sense, functions themselves must be solid.
+
+## Core Theory
+
+### Function Definition
+
+A function $f$ from a domain $D$ to a range of possible outputs assigns each input $x$ in $D$ exactly one output $f(x)$.
+
+The notation:
+
+$$
+f(x)=2x+3
+$$
+
+means: give the function an input $x$, multiply by 2, add 3, and return the result.
+
+### Input And Output
+
+In $y=f(x)$:
+
+- $x$ is the independent variable.
+- $y$ is the dependent variable.
+- $f$ is the rule.
+- $f(x)$ is the output when the input is $x$.
+
+If $h(t)$ gives a drone altitude at time $t$, then time is the input and altitude is the output.
+
+### Domain
+
+The domain is the set of allowed inputs.
+
+Engineering domain restrictions often come from physical meaning:
+
+- Time after launch: $t\ge0$.
+- Battery percentage: $0\le p\le100$.
+- Distance from a sensor: $d\ge0$.
+- Denominators cannot be zero.
+- Square roots of real quantities require nonnegative input.
+
+### Range
+
+The range is the set of outputs the function actually produces.
+
+If a motor command is clipped between -1 and 1, its range is:
+
+$$
+[-1,1]
+$$
+
+even if the requested command can be larger.
+
+### Evaluating Functions
+
+To evaluate $f(4)$ for:
+
+$$
+f(x)=2x+3
+$$
+
+replace every $x$ with 4:
+
+$$
+f(4)=2(4)+3=11
+$$
+
+### Function From A Table
+
+A table can define a function if each input appears with only one output.
+
+| input | output |
+| --- | --- |
+| 0 | 2 |
+| 1 | 5 |
+| 2 | 8 |
+
+This table defines a function. Input 1 has one output: 5.
+
+If input 1 appeared once with output 5 and again with output 9, the table would not define a function.
+
+### Piecewise Function
+
+A piecewise function uses different formulas for different parts of the domain.
+
+Example:
+
+$$
+f(x)=
+\begin{cases}
+0, & x<0\\
+2x, & 0\le x\le 5\\
+10, & x>5
+\end{cases}
+$$
+
+Read it as:
+
+- If $x<0$, output 0.
+- If $0\le x\le5$, output $2x$.
+- If $x>5$, output 10.
+
+### Interval Conditions
+
+The condition chooses the rule. Always decide the interval before substituting.
+
+For the function above:
+
+$$
+f(-3)=0
+$$
+
+because $-3<0$.
+
+$$
+f(4)=2(4)=8
+$$
+
+because $0\le4\le5$.
+
+$$
+f(8)=10
+$$
+
+because $8>5$.
+
+### Step Functions
+
+A step function jumps between values. Example:
+
+$$
+s(x)=
+\begin{cases}
+0, & x<3\\
+1, & x\ge3
+\end{cases}
+$$
+
+This models switches, thresholds, digital signals, and simple classifiers.
+
+### Saturation Function
+
+A saturation function limits output:
+
+$$
+\operatorname{sat}(u)=
+\begin{cases}
+-1, & u<-1\\
+u, & -1\le u\le1\\
+1, & u>1
+\end{cases}
+$$
+
+This is a realistic actuator model. A motor command may request 1.4, but the hardware can only accept 1.
+
+### Deadband Function
+
+A deadband ignores small input:
+
+$$
+d(e)=
+\begin{cases}
+0, & |e|<0.1\\
+e, & |e|\ge0.1
+\end{cases}
+$$
+
+This appears in joysticks, noisy sensors, and control systems.
+
+## Visual Or Mental Model
+
+Think of a function as a machine with one input slot and one output slot. A piecewise function is the same machine with a decision gate at the front.
+
+The decision gate asks: "Which interval is this input in?"
+
+Only after that do you apply the formula.
+
+For graphs, imagine drawing each rule only on its allowed interval, then stitching the pieces together.
+
+## Worked Examples
+
+### Example 1: Evaluate A Formula
+
+Let:
+
+$$
+f(x)=x^2-3x+2
+$$
+
+Find $f(5)$.
+
+$$
+f(5)=5^2-3(5)+2=25-15+2=12
+$$
+
+### Example 2: Domain Restriction
+
+Let:
+
+$$
+g(x)=\frac{1}{x-4}
+$$
+
+The denominator cannot be zero, so:
+
+$$
+x\ne4
+$$
+
+Domain: all real numbers except 4.
+
+### Example 3: Evaluate A Piecewise Function
+
+Let:
+
+$$
+p(x)=
+\begin{cases}
+x+2, & x<1\\
+3x, & 1\le x<4\\
+12, & x\ge4
+\end{cases}
+$$
+
+Find $p(0)$, $p(2)$, and $p(6)$.
+
+$$
+p(0)=0+2=2
+$$
+
+$$
+p(2)=3(2)=6
+$$
+
+$$
+p(6)=12
+$$
+
+### Example 4: Saturated Motor Command
+
+A motor limiter is:
+
+$$
+L(u)=
+\begin{cases}
+-1, & u<-1\\
+u, & -1\le u\le1\\
+1, & u>1
+\end{cases}
+$$
+
+Then:
+
+$$
+L(0.4)=0.4
+$$
+
+$$
+L(2.3)=1
+$$
+
+$$
+L(-1.8)=-1
+$$
+
+### Example 5: Deadband
+
+A joystick deadband is:
+
+$$
+J(u)=
+\begin{cases}
+0, & |u|<0.05\\
+u, & |u|\ge0.05
+\end{cases}
+$$
+
+If $u=0.03$, output is 0. If $u=-0.2$, output is -0.2.
+
+### Example 6: Function Or Not?
+
+Table A:
+
+| input | output |
+| --- | --- |
+| 0 | 1 |
+| 1 | 3 |
+| 2 | 5 |
+
+Function: yes.
+
+Table B:
+
+| input | output |
+| --- | --- |
+| 0 | 1 |
+| 1 | 3 |
+| 1 | 8 |
+
+Function: no. Input 1 has two outputs.
+
+### Example 7: Piecewise Graph
+
+For:
+
+$$
+h(x)=
+\begin{cases}
+0, & x<0\\
+x, & 0\le x\le3\\
+3, & x>3
+\end{cases}
+$$
+
+The graph is flat at 0 before the origin, rises with slope 1 from 0 to 3, then stays flat at 3. This is a ramp with saturation.
+
+### Example 8: Mode Switch
+
+A robot speed rule is:
+
+$$
+v(d)=
+\begin{cases}
+0, & d<0.2\\
+0.5d, & 0.2\le d<2\\
+1, & d\ge2
+\end{cases}
+$$
+
+Here $d$ is distance to target.
+
+- Very close: stop.
+- Medium distance: slow proportional approach.
+- Far away: maximum speed.
+
+That is a practical control rule, not just a classroom function.
+
+## Engineering Connections
+
+### Control Saturation
+
+Actuators have limits. A controller may compute a command outside the hardware range, but the actual output is clipped. Saturation is piecewise.
+
+### Sensor Thresholding
+
+A camera threshold maps brightness to black or white. A proximity sensor may map distance to "safe" or "too close." These are step functions.
+
+### Robot Modes
+
+A robot can use one rule while approaching a waypoint, another while docking, and another during emergency stop. Mode logic is piecewise behavior.
+
+### Battery Management
+
+Power limits may depend on battery temperature and charge level. Below a threshold, the system derates.
+
+### Simulation
+
+Physics engines often use piecewise rules: free motion before contact, collision response after contact.
+
+## Common Failure Modes
+
+1. Substituting into the wrong branch.
+2. Ignoring whether an endpoint is included.
+3. Treating $f(x)$ as multiplication by $f$.
+4. Forgetting that one input must have exactly one output.
+5. Confusing domain with range.
+6. Claiming a vertical line graph is a function.
+7. Graphing a piece beyond its allowed interval.
+8. Using a formula outside its physical domain.
+9. Forgetting units on input or output.
+10. Assuming a piecewise function must be continuous.
+
+## Practice Problems
+
+### Function Basics
+
+1. Evaluate $f(x)=2x+3$ at $x=4$.
+2. Evaluate $g(x)=x^2-5$ at $x=-3$.
+3. Evaluate $h(t)=4t^2$ at $t=0.5$.
+4. If $d(t)=3t+2$, what is $d(10)$?
+5. If $V(I)=12I$, what is $V(0.5)$?
+6. Is a table with input 2 mapped to both 7 and 9 a function?
+7. Is $x=3$ a function of $y$ when graphed as a vertical line?
+8. What is the domain restriction for $1/(x-2)$?
+9. What is the domain restriction for $\sqrt{x-5}$ over the reals?
+10. If motor output is clipped between -1 and 1, what is the range?
+
+### Piecewise Evaluation
+
+Let:
+
+$$
+p(x)=
+\begin{cases}
+x+2, & x<1\\
+3x, & 1\le x<4\\
+12, & x\ge4
+\end{cases}
+$$
+
+11. Find $p(-2)$.
+12. Find $p(0)$.
+13. Find $p(1)$.
+14. Find $p(3)$.
+15. Find $p(4)$.
+16. Find $p(10)$.
+17. Which branch applies at $x=1$?
+18. Which branch applies at $x=4$?
+19. Is this function continuous at $x=1$?
+20. Is this function continuous at $x=4$?
+
+### Applied Piecewise Models
+
+Let:
+
+$$
+L(u)=
+\begin{cases}
+-1, & u<-1\\
+u, & -1\le u\le1\\
+1, & u>1
+\end{cases}
+$$
+
+21. Find $L(-2.5)$.
+22. Find $L(-0.4)$.
+23. Find $L(0)$.
+24. Find $L(0.8)$.
+25. Find $L(3)$.
+
+Let:
+
+$$
+J(u)=
+\begin{cases}
+0, & |u|<0.05\\
+u, & |u|\ge0.05
+\end{cases}
+$$
+
+26. Find $J(0.02)$.
+27. Find $J(0.05)$.
+28. Find $J(-0.04)$.
+29. Find $J(-0.2)$.
+30. What physical behavior does a deadband model?
+
+### Graphs And Interpretation
+
+31. A step function jumps from 0 to 1 at $x=3$. What is its output for $x=2$?
+32. Same step function: output for $x=3$ if the upper branch is $x\ge3$?
+33. Does a horizontal line pass the vertical line test?
+34. Does a circle pass the vertical line test?
+35. A sensor output is constant for all inputs above 100. What behavior is that?
+36. A robot stops when distance is below 0.2 m. Is this a domain restriction or a piecewise rule?
+37. If a function maps time to altitude, what is the input variable?
+38. What is the output variable?
+39. Why might a square-root model require nonnegative input?
+40. Why might time usually have domain $t\ge0$ in an experiment?
+
+### Challenge And Error Spotting
+
+41. Explain why $f(x)$ does not mean $f\cdot x$.
+42. A student evaluates a piecewise function before checking the interval. What can go wrong?
+43. A student says every piecewise function has jumps. Give a counterexample idea.
+44. A student says a function can output two values for one input. Correct them.
+45. Create a piecewise rule for a heater that turns on below 18 degrees and off at or above 18 degrees.
+46. Create a saturation rule that clips speed to $0\le v\le2$.
+47. Create a distance-to-speed rule that stops below 0.1 m and uses speed 1 m/s otherwise.
+48. Explain why mode switching in robotics is naturally piecewise.
+49. Give one example of a physical domain restriction.
+50. Give one example of an output range restriction.
+
+## Answer Key
+
+1. 11.
+2. 4.
+3. 1.
+4. 32.
+5. 6.
+6. No.
+7. No.
+8. $x\ne2$.
+9. $x\ge5$.
+10. $[-1,1]$.
+11. 0.
+12. 2.
+13. 3.
+14. 9.
+15. 12.
+16. 12.
+17. The $3x$ branch.
+18. The 12 branch.
+19. No; left value approaches 3 while value at 1 is 3, so actually yes at 1 for these adjacent formulas. The pieces meet.
+20. Yes; $3x$ approaches 12 and the next branch is 12.
+21. -1.
+22. -0.4.
+23. 0.
+24. 0.8.
+25. 1.
+26. 0.
+27. 0.05.
+28. 0.
+29. -0.2.
+30. Ignoring small noisy or accidental inputs.
+31. 0.
+32. 1.
+33. Yes.
+34. No.
+35. Saturation.
+36. A piecewise rule.
+37. Time.
+38. Altitude.
+39. Real square roots require nonnegative radicands.
+40. The experiment starts at time zero.
+41. $f$ names the rule; $f(x)$ means the output of the rule at input $x$.
+42. They may substitute into the wrong formula and get the wrong output.
+43. Example: $f(x)=x$ for $x<0$ and $f(x)=x$ for $x\ge0$ is piecewise but continuous; many stitched functions also meet smoothly.
+44. By definition, each input in the domain has exactly one output.
+45. $H(T)=1$ for $T<18$, $H(T)=0$ for $T\ge18$.
+46. $S(v)=0$ for $v<0$, $v$ for $0\le v\le2$, and 2 for $v>2$.
+47. $v(d)=0$ for $d<0.1$, $v(d)=1$ for $d\ge0.1$.
+48. Different rules apply in different physical or logical regimes.
+49. Distance cannot be negative; denominator cannot be zero; time after launch is nonnegative.
+50. Motor command clipped between -1 and 1; battery percentage between 0 and 100.
+
+## Build Task
+
+Create a "piecewise function evaluator" as a Python script, spreadsheet, or notebook.
+
+Minimum requirements:
+
+1. Evaluate an ordinary formula for at least five inputs.
+2. Implement a saturation function.
+3. Implement a deadband function.
+4. Implement a robot distance-to-speed rule with at least three regimes.
+5. Include tests at branch boundaries.
+6. Print or plot a small table of inputs and outputs.
+7. Explain the domain and range for one function.
+8. Include one engineering interpretation of each piecewise rule.
+
+Stretch:
+
+- Plot the piecewise functions.
+- Add unit labels.
+- Add a warning when an input is outside a chosen physical domain.
+
+## Quiz
+
+1. What is a function?
+2. What is the domain?
+3. What is the range?
+4. Why must each input have exactly one output?
+5. What is a piecewise function?
+6. Why do interval endpoints matter?
+7. What is actuator saturation?
+8. What is a deadband?
+9. Give one robotics example of a piecewise function.
+10. Give one physical domain restriction.
+11. What does the vertical line test check?
+12. Why are functions the foundation for calculus?
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 40 practice problems, including all challenge/error-spotting problems.
+- A piecewise evaluator artifact with boundary tests.
+- One graph or table showing a saturation function.
+- One graph or table showing a deadband function.
+- One paragraph explaining why piecewise functions are natural in physical systems.
+
+## Sources And Further Study
+
+- OpenStax, *Precalculus 2e*, functions and piecewise-defined functions.
+- Khan Academy, functions and piecewise functions.
+- MIT OCW single-variable calculus prerequisite review on functions.
+- Robotics control references on saturation, deadband, and mode switching.
+- Sensor-processing references on thresholding and clipping.
+
+## Next Lesson Bridge
+
+Functions are the language of change. The next lesson focuses on one family of functions that appears everywhere in modeling: polynomials. You will learn how their degree, leading coefficient, roots, and end behavior control their shape.
