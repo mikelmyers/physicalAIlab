@@ -364,10 +364,11 @@ const engineeringAlgebraGeometry: Lesson[] = [
     13,
     "graphing-functions-for-builders",
     "Graphing Functions for Builders",
-    "Read and sketch graphs as stories about change, systems, sensors, and design tradeoffs.",
+    "Sketching functions from their equations and reading graphs as engineering evidence about the underlying system.",
     {
-      estimatedMinutes: 45,
-      prerequisites: ["units-and-dimensional-analysis"],
+      estimatedMinutes: 95,
+      prerequisites: ["parallel-and-perpendicular-lines"],
+      checkId: "graphing-functions-for-builders-check",
     },
   ),
   available(
@@ -375,10 +376,11 @@ const engineeringAlgebraGeometry: Lesson[] = [
     14,
     "algebra-for-engineering-systems",
     "Algebra for Engineering Systems",
-    "Use equations as models for physical relationships, constraints, and system behavior.",
+    "Systems of linear equations: substitution, elimination, the three cases, and the matrix form Ax = b as the bridge to linear algebra.",
     {
-      estimatedMinutes: 35,
+      estimatedMinutes: 100,
       prerequisites: ["graphing-functions-for-builders"],
+      checkId: "algebra-for-engineering-systems-check",
     },
   ),
   future(

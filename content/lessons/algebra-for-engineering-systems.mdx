@@ -1,60 +1,858 @@
 # Algebra for Engineering Systems
 
+## Re-entry Promise
+
+You have spent thirteen lessons becoming fluent with **one equation in one unknown**. Lesson 1 taught you what an equation is. Lessons 2 through 5 taught you to solve linear equations of every flavor — same-side terms, both-side terms, fractions, parentheses, formula rearrangement. Lesson 6 wrapped units and dimensional analysis around the algebra so that your numbers always meant something physical. Lessons 7 and 8 introduced functions and identified the linear ones. Lessons 9 through 12 gave you slope, all three forms of the line, and the geometry of parallel and perpendicular. Lesson 13 made the entire toolkit visual by teaching you to graph functions on a coordinate plane.
+
+This lesson — the **final** lesson of the equations-units-and-graphs sub-module — expands the world from *one equation* to *two equations*, and from *one unknown* to *two unknowns*. Every physical situation we have modeled so far has been comfortable with a single constraint: one measurement, one calibration line, one battery curve. Real engineering is rarely that polite. A two-degree-of-freedom robot arm has two joint angles to find. A circuit mesh has two loops, each contributing one Kirchhoff equation. A mixing tank has volume balance *and* mass balance. A drone's lateral and vertical positions are coupled. Once you cross into multi-variable territory, you need a new tool: a **system of linear equations**.
+
+The lesson assumes everything from lessons 1 through 13. It does *not* assume any prior exposure to systems, matrices, determinants, or linear algebra. By the end, you will be able to solve any 2×2 linear system by hand using two methods (substitution and elimination), recognize the three cases that can occur (unique solution, no solution, infinitely many solutions), predict which case you will get *before* solving by comparing slopes, and recognize the matrix form $A\mathbf{x} = \mathbf{b}$ that the upcoming linear-algebra module will develop in full generality. The vocabulary of *identity* and *contradiction* from lesson 3 will reappear, now living in two-dimensional space; the parallel-lines geometry from lesson 12 will explain exactly when a system has no solution. Everything links together.
+
 ## Objective
 
-Use algebra to represent physical relationships, solve for unknown quantities, and check whether an engineering result is reasonable.
+By the end of this lesson you should be able to:
+
+- Solve a 2×2 system of linear equations using the **substitution** method, with the full five-step procedure.
+- Solve a 2×2 system using the **elimination** method (adding or subtracting scaled equations).
+- Identify the three possible cases for a 2×2 linear system: **unique solution** (lines meet at one point), **no solution** (parallel distinct lines), and **infinitely many solutions** (coincident lines).
+- Use slope comparison (the rule from lesson 12) to **predict** which of the three cases will occur, *before* doing any solving work.
+- Translate engineering scenarios — sensor self-consistency checks, two-motor cross-over points, mixing problems, Kirchhoff's-law mesh equations, two-force equilibrium, two-vehicle ETA — into a 2×2 linear system, solve it, and interpret the answer physically.
+- Recognize the **matrix form** $A\mathbf{x} = \mathbf{b}$ as a compact rewriting of any linear system, and identify the determinant condition $a_1 b_2 - a_2 b_1 \neq 0$ as the algebraic version of "different slopes."
+- State **Cramer's rule** for a 2×2 system and use it to solve simple problems in one step.
+- Anticipate how 2×2 systems generalize to $n \times n$, where Gaussian elimination becomes the workhorse and the same three-case trichotomy survives.
 
 ## Why It Matters
 
-Every robot, drone, circuit, and simulation is full of relationships between quantities. Algebra turns those relationships into tools you can inspect and reuse.
+Two equations in two unknowns is the smallest non-trivial system. The instant a physical situation has *two* things you do not know — and *two* independent facts that constrain them — you are doing linear-systems algebra. A list of concrete contexts:
 
-## Concept
+1. **Mixing problems in chemistry and materials.** A factory has a 10% saline solution and a 40% saline solution, and needs to make exactly 10 L of a 25% mixture. Two unknowns (volume of each input), two equations (total volume, total salt). This is a 2×2 linear system, and the answer (5 L of each) follows in three lines of algebra.
 
-An equation is a compact model. If a sensor produces a voltage proportional to distance, or a battery runtime depends on current draw, algebra lets you rearrange the model and solve for the unknown.
+2. **Mesh and nodal analysis in circuits.** Every introductory circuits problem with two loops gives you two Kirchhoff Voltage Law equations in two unknown loop currents — a 2×2 system. With three loops, it becomes 3×3. With twenty loops (a real PCB), it becomes 20×20 and you hand it to a SPICE simulator, but the math is identical.
 
-For a linear relationship:
+3. **Robot inverse kinematics for a 2-DOF arm.** Given a desired end-effector position $(x, y)$, find the two joint angles $(\theta_1, \theta_2)$ that put the gripper there. After linearization near a nominal configuration, this is a 2×2 linear system. Iterating it (Newton-Raphson) is exactly how real robot controllers solve the nonlinear problem.
 
-$$y = mx + b$$
+4. **Geographic triangulation and trilateration.** Two distance measurements from two known beacons, after linearization, give a 2×2 system in (latitude, longitude). GPS, with four satellites, is the 4×4 version.
 
-`m` is the rate of change and `b` is the starting offset. In a technical system, the units matter as much as the numbers.
+5. **Statics: two-axis equilibrium.** Sum of forces in the x-direction equals zero. Sum of forces in the y-direction equals zero. Two equations, often in two unknown tensions or two unknown reaction forces. Every truss member, every cable, every bolt load is sized from a small linear system.
 
-## Worked Example
+6. **Optimization with constraints.** The vertex of a feasible region in a 2D linear program lies at the intersection of two constraint lines — a 2×2 system. Linear programming and its many descendants (LP relaxations of integer programs, support vector machines' KKT conditions, MPC for robotics) all live on top of this primitive.
 
-A sensor reads `0.5 V` at zero distance and increases by `0.02 V` per centimeter:
+7. **Two-sensor fusion.** Two different sensors report the same physical quantity through two different calibration lines. Asking "for what input do both sensors agree?" is a 2×2 system. The answer is a self-consistency check; if the answer is unphysical (negative distance, negative time), the sensors are not consistent with each other and at least one needs recalibration.
 
-$$V = 0.02d + 0.5$$
+8. **Break-even analysis.** A product line has revenue $R(n) = p \cdot n$ and cost $C(n) = c \cdot n + F$, where $p$ is price per unit, $c$ is variable cost per unit, and $F$ is fixed cost. The break-even point is where $R(n) = C(n)$ — algebraically, the intersection of two lines.
 
-If the sensor reads `1.7 V`, solve for `d`:
+9. **Linear regression's normal equations.** Fitting the slope-and-intercept of a line of best fit (lesson 10's build task) reduces, behind the scenes, to a 2×2 linear system for $(m, b)$. Multivariate linear regression with $k$ features is a $(k+1) \times (k+1)$ system. Every coefficient in every regression in every paper you read was found by solving a linear system.
 
-$$1.7 = 0.02d + 0.5$$
+10. **Higher dimensions: 3-DOF robotics, three-mesh circuits, RGB color calibration.** Once you understand 2×2, the jump to 3×3 and beyond is purely procedural. Three joint angles to find from three end-effector coordinates. Three loop currents from three Kirchhoff equations. Three RGB calibration coefficients from three color-temperature measurements. The mathematics is the same, and the matrix language of the upcoming linear-algebra module is what makes the bookkeeping tractable.
 
-$$1.2 = 0.02d$$
+When you can write down, classify, and solve a 2×2 linear system fluently, you can model *any* physical situation that has two coupled unknowns. That is most of them.
 
-$$d = 60 cm$$
+## Why This Idea Exists
 
-## Exercise
+Systems of linear equations are among the oldest mathematical objects on the planet, and the procedure for solving them is older than most of modern algebra.
 
-A motor controller maps throttle percentage `t` to wheel speed `s` with:
+The earliest known systematic treatment is in the **Chinese mathematical classic *Nine Chapters on the Mathematical Art* (*Jiǔzhāng Suànshù*)**, compiled between roughly 300 BCE and 200 CE. Chapter 8, *Fāng-chéng* ("rectangular arrays"), poses problems like: "Three bundles of high-quality rice, two bundles of medium-quality, and one bundle of low-quality together yield 39 dou of grain. Two bundles of high, three of medium, and one of low yield 34 dou. One of high, two of medium, and three of low yield 26 dou. How many dou does one bundle of each kind yield?" The text then solves the resulting 3×3 linear system using **counting rods arranged in a rectangular array** — a procedure essentially identical to what we now call **Gaussian elimination**, two thousand years before Gauss was born. The Chinese mathematicians did not have determinants or matrix notation, but they had the algorithm.
 
-$$s = 0.12t + 0.4$$
+In the European tradition, **Gottfried Wilhelm Leibniz** introduced **determinants** in 1693 in a letter to L'Hôpital, recognizing that the solvability of a system was governed by a single number computed from its coefficients. **Gabriel Cramer**, in *Introduction à l'analyse des lignes courbes algébriques* (1750), published the formula now called **Cramer's rule** — although Maclaurin had it earlier (his work was published posthumously in 1748) and Leibniz had it earliest. Cramer's rule expresses the solution of an $n \times n$ system as a ratio of determinants. It is computationally impractical for large $n$ (the cost scales like $n!$), but it remains a beautiful theoretical statement and a useful hand-calculation method for 2×2 and 3×3 cases.
 
-Find the speed when `t = 50`, then solve for the throttle needed to reach `8.8 m/s`.
+**Carl Friedrich Gauss**, working on celestial mechanics in the early 1800s, formalized the elimination procedure that bears his name. The famous story: when the asteroid Ceres was lost behind the Sun in 1801, Gauss computed its orbit from a small number of observations by setting up and solving an overdetermined linear system using least-squares — the same procedure that underlies every modern regression. He published the method in *Theoria motus corporum coelestium* (1809). His algorithm is the same one the Chinese had used 1800 years earlier; it is the same one that numerical-linear-algebra libraries use today (with refinements for pivoting and stability).
+
+**Matrix notation itself** was a 19th-century invention. **Arthur Cayley** and **James Joseph Sylvester** developed the abstract theory of matrices and determinants in the 1850s. Cayley's *A Memoir on the Theory of Matrices* (1858) is one of the founding documents of linear algebra. The modern unified theory — vector spaces, linear maps, eigenvalues, ranks, the rank-nullity theorem — coalesced in the early 20th century, and exploded in practical importance after digital computers made it feasible to solve thousand-equation systems in seconds.
+
+So: the procedure is ancient. The geometric understanding (lines, intersections, parallelism) is Cartesian, from the 1600s. The compact notation $A\mathbf{x} = \mathbf{b}$ is from the 1800s. The computational explosion is post-1950. You are inheriting all of it. The 2×2 case is small enough to be hand-solvable and large enough to display every essential feature.
+
+## Plain-Language Intuition
+
+When you have *one* unknown, you need *one* equation to pin it down. The equation $3x - 7 = 5$ tells you that $x = 4$, period. The single equation specifies a single point on the number line.
+
+When you have *two* unknowns, *one* equation is no longer enough. The equation $2x + y = 7$ does not pin down $(x, y)$ to a single point; it is satisfied by infinitely many pairs — every point on the line of slope $-2$ that crosses the y-axis at $7$. To fix the answer, you need a *second* equation. A second equation, also linear in $x$ and $y$, is *another line* in the plane. The pair of equations is satisfied only at points lying on *both* lines simultaneously — namely, at their **intersection**.
+
+Two lines in a plane can do exactly three things: cross at one point, run parallel without ever meeting, or coincide (be the same line). These are the three cases for the 2×2 system. Each has a clear geometric picture, and each has a clear algebraic signature in the equations.
+
+That is the entire idea. Algebraically, solving a 2×2 system is finding the $(x, y)$ that satisfies both equations at once. Geometrically, it is finding where two lines cross. Algebra and geometry are the same problem written two ways, which is exactly the lesson Descartes taught everyone in 1637.
+
+## Core Theory
+
+### Definition
+
+A **linear equation in two unknowns** $x$ and $y$ is any equation of the form
+
+$$a x + b y = c,$$
+
+where $a$, $b$, and $c$ are real numbers and at least one of $a$, $b$ is nonzero. The solution set of a single such equation is a line in the $(x, y)$ plane.
+
+A **system of two linear equations in two unknowns** is a pair of such equations:
+
+$$\begin{cases} a_1 x + b_1 y = c_1 \\ a_2 x + b_2 y = c_2 \end{cases}$$
+
+A **solution** of the system is an ordered pair $(x, y)$ that satisfies *both* equations simultaneously. The **solution set** is the set of all such pairs.
+
+More generally, a system of $m$ linear equations in $n$ unknowns is a collection of $m$ equations, each linear in the same $n$ unknowns, that must be satisfied simultaneously. We focus on $m = n = 2$ in this lesson; the upcoming linear-algebra module handles the general case.
+
+### Geometric Meaning
+
+Each equation $a_i x + b_i y = c_i$ describes a line in the plane. The solution set of the system is the **intersection** of those two lines — the set of $(x, y)$ lying on both.
+
+### The Three Cases
+
+Two distinct lines in a plane can intersect in exactly one of three ways, and these are the three cases for any 2×2 linear system:
+
+1. **Unique solution.** The lines have **different slopes**. They cross at exactly one point. The system has exactly one solution $(x, y)$.
+
+2. **No solution.** The lines have the **same slope but different y-intercepts** — they are **parallel and distinct** (lesson 12). They never meet. The system has no solution. The two equations are *inconsistent*: they make demands that no $(x, y)$ can simultaneously satisfy. Compare with the **contradiction** case from lesson 3 — it is the same phenomenon, now visible in two dimensions.
+
+3. **Infinitely many solutions.** The lines have the **same slope and the same y-intercept** — they are **coincident** (literally the same line). Every point on that line satisfies both equations. The two equations are *dependent*: one is just a scalar multiple of the other. Compare with the **identity** case from lesson 3 — same phenomenon, now in 2D.
+
+This trichotomy — unique, none, infinite — is universal: every linear system in any dimension has zero, one, or infinitely many solutions, never two or seventeen. (The deeper reason, which the linear-algebra module proves, is the rank-nullity theorem.)
+
+### Predicting the Case from Slopes
+
+Before doing any solving, you can predict which case you are in by computing the slope of each line (lesson 9). Solve each equation for $y$ to read its slope:
+
+$$a_i x + b_i y = c_i \quad \Longrightarrow \quad y = -\frac{a_i}{b_i} x + \frac{c_i}{b_i} \quad (b_i \neq 0).$$
+
+Then:
+
+- If $-a_1/b_1 \neq -a_2/b_2$: **different slopes**, **unique solution**.
+- If $-a_1/b_1 = -a_2/b_2$ and $c_1/b_1 \neq c_2/b_2$: **same slope, different intercepts**, **parallel and distinct**, **no solution**.
+- If $-a_1/b_1 = -a_2/b_2$ and $c_1/b_1 = c_2/b_2$: **same line**, **infinitely many solutions**.
+
+Equivalently — and this is the version that will translate cleanly into matrix language — compute the **determinant**
+
+$$D = a_1 b_2 - a_2 b_1.$$
+
+If $D \neq 0$, the lines have different slopes and the system has a unique solution. If $D = 0$, the lines are parallel (in the broader sense that includes coincident); look at the constants to distinguish "no solution" from "infinitely many."
+
+### Substitution Method
+
+The substitution method is the most direct hand technique for 2×2 systems. It is also the easiest to understand conceptually. Five steps:
+
+**Step 1.** Solve one of the two equations for one of the variables. Pick whichever isolation is algebraically cheapest — typically, the equation that has a coefficient of $1$ or $-1$ on some variable.
+
+**Step 2.** Substitute that expression into the *other* equation. The result is a single equation in a single unknown.
+
+**Step 3.** Solve that single-variable equation using lesson-1-through-lesson-4 skills.
+
+**Step 4.** Back-substitute the value you found into the isolated expression from Step 1 to get the other variable.
+
+**Step 5.** Verify. Plug $(x, y)$ into **both** original equations. Both must be satisfied. (This step is non-negotiable; it is the cheapest possible correctness check.)
+
+If at Step 3 the variable cancels out entirely and you are left with a true numerical statement (like $5 = 5$), the system has **infinitely many solutions**. If you are left with a false statement (like $5 = 3$), the system has **no solution**. These are the same identity-vs-contradiction signatures from lesson 3, surfacing in 2D.
+
+### Elimination Method
+
+The elimination method scales each equation so that the coefficients of one variable are negatives of each other; then adding the equations eliminates that variable. It generalizes cleanly to $n \times n$ — it is the heart of Gaussian elimination — so it is the method professional numerical linear algebra is built on.
+
+Five steps:
+
+**Step 1.** Choose a variable to eliminate (say, $x$). Determine what factors $k_1$ and $k_2$ to multiply each equation by so that the resulting $x$-coefficients are negatives of each other: $k_1 a_1 = -k_2 a_2$. A common choice is $k_1 = a_2$ and $k_2 = -a_1$, but any rescaling that achieves the cancellation works.
+
+**Step 2.** Multiply each equation through by its factor. The resulting system has $x$-coefficients $k_1 a_1$ and $k_2 a_2$, which sum to zero.
+
+**Step 3.** Add the two equations. The $x$ terms cancel; what remains is a single equation in $y$.
+
+**Step 4.** Solve for $y$. Then back-substitute into one of the original equations to find $x$.
+
+**Step 5.** Verify by plugging $(x, y)$ into **both** originals.
+
+As with substitution: if at Step 3 *both* variables cancel and you get a true statement, the system has infinitely many solutions; if you get a false statement, the system has no solution.
+
+### The Matrix Form $A\mathbf{x} = \mathbf{b}$ (Preview)
+
+Every 2×2 system
+
+$$\begin{cases} a_1 x + b_1 y = c_1 \\ a_2 x + b_2 y = c_2 \end{cases}$$
+
+can be packaged in matrix form by collecting the coefficients into a 2×2 matrix, the unknowns into a column vector, and the right-hand sides into another column vector:
+
+$$A = \begin{pmatrix} a_1 & b_1 \\ a_2 & b_2 \end{pmatrix}, \qquad \mathbf{x} = \begin{pmatrix} x \\ y \end{pmatrix}, \qquad \mathbf{b} = \begin{pmatrix} c_1 \\ c_2 \end{pmatrix}.$$
+
+The system becomes the single matrix equation
+
+$$A \mathbf{x} = \mathbf{b}.$$
+
+You will not learn what matrix multiplication means in this lesson; that is the first job of the upcoming linear-algebra module. But the takeaway is that the *same* algebraic content as the two-equation system fits into one compact symbolic statement, and the *same* statement generalizes to $n \times n$ — three equations in three unknowns, ten equations in ten unknowns, ten thousand in ten thousand. The compact notation is exactly why linear algebra dominates numerical engineering.
+
+The **determinant** of $A$ is
+
+$$\det(A) = a_1 b_2 - a_2 b_1,$$
+
+which is the same number $D$ we used to predict the case. The matrix $A$ has an inverse $A^{-1}$ if and only if $\det(A) \neq 0$, in which case the system has the unique solution $\mathbf{x} = A^{-1} \mathbf{b}$. This is the matrix-language version of "different slopes ⇒ unique intersection." When $\det(A) = 0$, the matrix is **singular**, the lines are parallel (or coincident), and the system has either no solution or infinitely many.
+
+### Cramer's Rule (Statement Only)
+
+For the 2×2 system above with $D = a_1 b_2 - a_2 b_1 \neq 0$, the unique solution is given by
+
+$$x = \frac{c_1 b_2 - c_2 b_1}{D}, \qquad y = \frac{a_1 c_2 - a_2 c_1}{D}.$$
+
+The numerators are themselves determinants — each obtained by replacing one column of $A$ with $\mathbf{b}$. Cramer's rule is elegant for hand calculation on small systems and a useful sanity check. For systems larger than about 3×3 it is computationally prohibitive (the cost of computing determinants by cofactor expansion grows factorially); Gaussian elimination is what numerical libraries actually use.
+
+We do not derive Cramer's rule in this lesson; the derivation belongs to the linear-algebra module. But you should know the statement and be able to apply it to a 2×2 system.
+
+### Generalization to $n \times n$
+
+Three brief notes on the larger picture, to fix the horizon:
+
+1. **Gaussian elimination** generalizes the 2×2 elimination method to any size. You eliminate the first variable from all but the first equation, then the second variable from all but the second equation, and so on, producing a **triangular** system that you solve by back-substitution. Every modern numerical linear-algebra library (LAPACK, numpy.linalg, MATLAB's backslash) is doing a variant of Gaussian elimination behind the scenes.
+
+2. The **three cases** (unique, none, infinite) survive in $n \times n$: the system $A \mathbf{x} = \mathbf{b}$ has a unique solution iff $A$ is non-singular ($\det A \neq 0$, equivalently the columns are linearly independent, equivalently the rank is $n$). Otherwise it has either no solution or infinitely many, governed by whether $\mathbf{b}$ lies in the column span of $A$.
+
+3. The **rank-nullity theorem** packages all of this into one statement: $\text{rank}(A) + \text{nullity}(A) = n$. The 2×2 case is the smallest non-trivial instance. The linear-algebra module will prove and apply this theorem in earnest.
+
+For now, knowing the 2×2 case cold is enough to make the entire linear-algebra story feel familiar when you arrive there.
+
+## Visual or Mental Model
+
+The three cases as pictures on a coordinate grid.
+
+### Case 1: Unique Solution — Two Crossing Lines
+
+The two lines have different slopes. They cross at exactly one point, the unique solution.
+
+```
+        y
+        |
+        |       /
+        |      /
+        |     /         line 2 (slope +2)
+        |    /
+   - - -+ - * - - - - - - -   intersection (unique solution)
+        |  /\
+        | /  \
+        |/    \
+   -----+------\----------- x
+        |\      \
+        | \      \           line 1 (slope -1)
+        |  \      \
+        |
+```
+
+### Case 2: No Solution — Parallel Distinct Lines
+
+Same slope, different y-intercepts. The lines run side by side and never meet.
+
+```
+        y
+        |
+        |        /         /
+        |       /         /        line 2 (e.g. y = 2x + 1)
+        |      /         /
+        |     /         /
+        |    /         /
+        |   /         /          line 1 (e.g. y = 2x - 3)
+        |  /         /
+        | /         /
+   -----+/---------/----------- x
+        /         /
+       /|        /
+      / |       /
+        |
+```
+
+The two lines are translates of each other along the y-axis. Algebraically, the second equation is the first equation with a different constant on the right-hand side — a contradiction.
+
+### Case 3: Infinitely Many Solutions — Coincident Lines
+
+Same slope, same y-intercept. The two equations describe the same line. Every point on that line is a solution.
+
+```
+        y
+        |
+        |       /
+        |      /                  (both equations describe this single line)
+        |     /
+        |    /
+        |   /
+        |  /
+   -----+ /------------- x
+        |/
+       /|
+      / |
+        |
+```
+
+Algebraically, the second equation is a scalar multiple of the first — an identity.
+
+### The "Constraint Intersection" Picture
+
+A different mental image, useful for engineering: think of each equation as a **constraint** on the pair $(x, y)$. The first constraint shrinks the allowed pairs from the entire plane to a single line; the second constraint shrinks them further. If the two constraints are independent (different lines), the intersection is a single point. If the constraints are redundant (same line), the intersection is still a whole line. If the constraints are inconsistent (parallel distinct lines), the intersection is empty.
+
+This framing — "each equation is a constraint, the solution is the intersection of all constraints" — is the one to carry into linear programming, control theory, and machine learning.
+
+## Worked Examples
+
+### Example (a) — Substitution, Easy Case
+
+Solve
+
+$$\begin{cases} 2x + y = 7 \\ x - y = 2 \end{cases}$$
+
+**Step 1.** The second equation has a clean $-y$ that is cheap to isolate. Solve it for $y$:
+
+$$x - y = 2 \quad \Longrightarrow \quad y = x - 2.$$
+
+**Step 2.** Substitute $y = x - 2$ into the first equation:
+
+$$2x + (x - 2) = 7.$$
+
+**Step 3.** Solve for $x$:
+
+$$3x - 2 = 7, \quad 3x = 9, \quad x = 3.$$
+
+**Step 4.** Back-substitute: $y = x - 2 = 3 - 2 = 1$.
+
+**Step 5.** Verify in *both* original equations:
+- Equation 1: $2(3) + 1 = 6 + 1 = 7$. Matches.
+- Equation 2: $3 - 1 = 2$. Matches.
+
+Solution: $(x, y) = (3, 1)$.
+
+### Example (b) — Elimination
+
+Solve
+
+$$\begin{cases} 3x + 2y = 12 \\ 5x - 3y = 1 \end{cases}$$
+
+**Step 1.** Eliminate $y$. The coefficients on $y$ are $+2$ and $-3$. Their least common multiple in magnitude is $6$. Multiply the first equation by $3$ and the second by $2$:
+
+$$\begin{cases} 9x + 6y = 36 \\ 10x - 6y = 2 \end{cases}$$
+
+**Step 2 and 3.** Add the two equations. The $y$ terms cancel:
+
+$$19x = 38.$$
+
+**Step 4.** Solve and back-substitute. $x = 2$. Substitute into the first original equation:
+
+$$3(2) + 2y = 12, \quad 2y = 6, \quad y = 3.$$
+
+**Step 5.** Verify:
+- Equation 1: $3(2) + 2(3) = 6 + 6 = 12$. Matches.
+- Equation 2: $5(2) - 3(3) = 10 - 9 = 1$. Matches.
+
+Solution: $(x, y) = (2, 3)$.
+
+### Example (c) — Mixing Problem
+
+A factory has solution A, which is 10% saline by mass, and solution B, which is 40% saline. They need to produce 10 L of a 25% saline mixture. How many liters of each should they combine?
+
+Let $a$ be liters of solution A and $b$ be liters of solution B. There are two physical constraints.
+
+**Volume balance:** $a + b = 10$.
+
+**Salt balance:** the total salt going in must equal the total salt coming out:
+
+$$0.10 \, a + 0.40 \, b = 0.25 \cdot 10 = 2.5.$$
+
+The system is
+
+$$\begin{cases} a + b = 10 \\ 0.10 \, a + 0.40 \, b = 2.5 \end{cases}$$
+
+Use substitution. From the first equation, $a = 10 - b$. Substitute:
+
+$$0.10 (10 - b) + 0.40 \, b = 2.5,$$
+
+$$1.0 - 0.10 \, b + 0.40 \, b = 2.5,$$
+
+$$0.30 \, b = 1.5, \quad b = 5.$$
+
+Then $a = 10 - 5 = 5$. Verify: volume $5 + 5 = 10$ L; salt $0.10(5) + 0.40(5) = 0.5 + 2.0 = 2.5$ L of saline mass equivalent. Matches.
+
+**Solution: 5 L of A and 5 L of B.** This is the standard result for averaging two equal-spaced concentrations: when the target is the midpoint between the two source concentrations, the mixture is half-and-half.
+
+### Example (d) — Circuit: Two Resistors, Two Unknown Currents
+
+Consider a circuit with a 12 V battery driving two resistive paths arranged so that **Kirchhoff's Voltage Law** (KVL) around one loop gives
+
+$$3 I_1 + 2 I_2 = 12$$
+
+(voltages summed around the loop in volts, currents in amperes), and **Kirchhoff's Current Law** (KCL) at a node, combined with another KVL relation, gives
+
+$$I_1 - I_2 = 1.$$
+
+Find $I_1$ and $I_2$.
+
+Use substitution. From the second equation, $I_1 = I_2 + 1$. Substitute:
+
+$$3 (I_2 + 1) + 2 I_2 = 12,$$
+
+$$3 I_2 + 3 + 2 I_2 = 12,$$
+
+$$5 I_2 = 9, \quad I_2 = 1.8 \text{ A}.$$
+
+Then $I_1 = 1.8 + 1 = 2.8$ A. Verify: $3(2.8) + 2(1.8) = 8.4 + 3.6 = 12$. Matches. $2.8 - 1.8 = 1$. Matches.
+
+**Solution: $I_1 = 2.8$ A, $I_2 = 1.8$ A.** This is exactly how mesh analysis works on a real PCB; the only difference for a 20-mesh PCB is that you have a 20×20 system and you solve it numerically.
+
+### Example (e) — Sensor Self-Consistency Check (Spine Example)
+
+The seed lesson 14 modeled a distance sensor with
+
+$$V = 0.02 \, d + 0.5,$$
+
+with $V$ in volts and $d$ in centimeters. Suppose a second, independent reference sensor — also measuring the same distance $d$, but built with different internals — has the calibration
+
+$$V = 0.05 \, d + 0.2.$$
+
+At what distance $d$ would the two sensors produce the *same* voltage reading $V$? Find both $d$ and $V$.
+
+This is a 2×2 system in $(V, d)$:
+
+$$\begin{cases} V = 0.02 \, d + 0.5 \\ V = 0.05 \, d + 0.2 \end{cases}$$
+
+Both equations are already solved for $V$. Set them equal:
+
+$$0.02 \, d + 0.5 = 0.05 \, d + 0.2,$$
+
+$$0.5 - 0.2 = 0.05 \, d - 0.02 \, d,$$
+
+$$0.3 = 0.03 \, d, \quad d = 10 \text{ cm}.$$
+
+Wait — let us re-check. $0.5 - 0.2 = 0.3$. $0.05 - 0.02 = 0.03$. So $d = 0.3 / 0.03 = 10$ cm. Then $V = 0.02(10) + 0.5 = 0.7$ V; cross-check: $V = 0.05(10) + 0.2 = 0.7$ V. Matches.
+
+**Solution: at $d = 10$ cm, both sensors report $V = 0.7$ V.**
+
+What this means physically: at exactly $d = 10$ cm the two sensors agree; everywhere else they disagree, and the disagreement is linear in $d$. A self-consistency *failure* would have looked like a negative or otherwise unphysical $d$ — in which case the two sensors would never agree at any valid distance and at least one needs recalibration. The system diagnoses what a single equation cannot: it tells you not the value of $V$, but whether the two devices' models are *mutually compatible* at any physically meaningful operating point.
+
+### Example (f) — Motor Throttle Cross-Over (Spine Example)
+
+The seed lesson also modeled a motor controller with $s = 0.12 \, t + 0.4$, where $t$ is throttle percentage and $s$ is shaft speed. Suppose a second motor, controlled by a different ESC, has the response
+
+$$s = 0.08 \, t + 1.0.$$
+
+At what throttle percentage do the two motors run at the *same* speed?
+
+Set the right-hand sides equal:
+
+$$0.12 \, t + 0.4 = 0.08 \, t + 1.0,$$
+
+$$0.04 \, t = 0.6, \quad t = 15.$$
+
+At $t = 15$%, both motors produce $s = 0.12(15) + 0.4 = 2.2$ m/s — and cross-check, $s = 0.08(15) + 1.0 = 2.2$ m/s. Matches.
+
+**Solution: throttle 15 %, common speed 2.2 m/s.**
+
+In a multi-rotor or differential-drive vehicle, this is the throttle where two mismatched motors deliver the same output and the platform tracks straight; everywhere else, one motor outpaces the other and the platform pulls to one side. Knowing the cross-over throttle tells the autopilot how to bias the mixer.
+
+### Example (g) — No-Solution Case (Parallel Distinct Lines)
+
+Solve
+
+$$\begin{cases} 2x + y = 7 \\ 4x + 2y = 5 \end{cases}$$
+
+**Slope check first.** Solve each for $y$:
+- $y = -2x + 7$, slope $-2$, intercept $7$.
+- $y = -2x + 2.5$, slope $-2$, intercept $2.5$.
+
+Same slope, different intercepts. **Parallel and distinct: no solution.** Geometrically, the two lines run side by side and never meet.
+
+Verify by elimination. Multiply the first equation by $-2$:
+
+$$-4x - 2y = -14.$$
+
+Add to the second:
+
+$$0 \cdot x + 0 \cdot y = -14 + 5 = -9.$$
+
+This reads $0 = -9$, a **contradiction** in the lesson-3 sense. The system has **no solution**.
+
+### Example (h) — Infinitely-Many-Solutions Case (Coincident Lines)
+
+Solve
+
+$$\begin{cases} 3x + 2y = 6 \\ 6x + 4y = 12 \end{cases}$$
+
+**Slope check first.** Solve each for $y$:
+- $y = -\tfrac{3}{2} x + 3$, slope $-\tfrac{3}{2}$, intercept $3$.
+- $y = -\tfrac{3}{2} x + 3$, slope $-\tfrac{3}{2}$, intercept $3$.
+
+Same slope, same intercept. **Coincident lines.** Notice that the second equation is just $2 \times$ the first.
+
+Verify by elimination. Multiply the first by $-2$ and add to the second:
+
+$$0 \cdot x + 0 \cdot y = 0.$$
+
+This reads $0 = 0$, an **identity** in the lesson-3 sense. The system has **infinitely many solutions**: every $(x, y)$ on the line $3x + 2y = 6$. The solution set is parameterized by, say, $y = (6 - 3x)/2$ for any $x \in \mathbb{R}$.
+
+### Example (i) — Cramer's Rule
+
+Solve
+
+$$\begin{cases} 2x + 3y = 8 \\ x - 2y = -3 \end{cases}$$
+
+using Cramer's rule.
+
+Compute the determinant:
+
+$$D = a_1 b_2 - a_2 b_1 = (2)(-2) - (1)(3) = -4 - 3 = -7.$$
+
+Since $D \neq 0$, the system has a unique solution. By Cramer's rule,
+
+$$x = \frac{c_1 b_2 - c_2 b_1}{D} = \frac{(8)(-2) - (-3)(3)}{-7} = \frac{-16 + 9}{-7} = \frac{-7}{-7} = 1,$$
+
+$$y = \frac{a_1 c_2 - a_2 c_1}{D} = \frac{(2)(-3) - (1)(8)}{-7} = \frac{-6 - 8}{-7} = \frac{-14}{-7} = 2.$$
+
+**Solution: $(x, y) = (1, 2)$.** Verify in the originals: $2(1) + 3(2) = 8$. Matches. $1 - 2(2) = -3$. Matches.
+
+### Example (j) — Failure Mode: Tautological Back-Substitution
+
+A student solves $\begin{cases} 2x + y = 7 \\ x - y = 2 \end{cases}$ by substitution. They isolate $y = 7 - 2x$ from the first equation, substitute into the *first* equation again (instead of the second), and get $2x + (7 - 2x) = 7$, which simplifies to $7 = 7$. They conclude the system has infinitely many solutions.
+
+**Diagnosis.** Substituting back into the equation you just derived the expression from always produces a tautology — that is the algebra of the substitution itself, not new information. You have to substitute into the *other* equation. Re-do it: $y = 7 - 2x$ substituted into the *second* equation $x - y = 2$:
+
+$$x - (7 - 2x) = 2, \quad 3x - 7 = 2, \quad x = 3, \quad y = 1.$$
+
+The verification step from Step 5 would have caught the error: the (false) "all-$x$" claim does not satisfy both originals at a non-test point. **Always verify against both original equations, not the one you derived your substitution from.**
+
+## Engineering Connections
+
+A few of the most common places where 2×2 (and small-$n$) linear systems appear in working engineering. Each of these scales up in dimension as the system grows.
+
+**Mesh and nodal analysis in circuits.** Every two-loop circuit gives a 2×2 KVL system; every three-loop circuit a 3×3 system; and so on. The classic textbook procedure — "write a KVL equation for each loop, with unknown loop currents; solve the resulting linear system" — is exactly the algorithm of this lesson, scaled up. SPICE simulators internally solve linear systems with thousands of unknowns by exactly this method.
+
+**2-DOF robot arm inverse kinematics.** For a planar arm with two revolute joints of lengths $\ell_1$ and $\ell_2$, the forward kinematics $(\theta_1, \theta_2) \mapsto (x_{\text{tip}}, y_{\text{tip}})$ is nonlinear, but its Jacobian linearization around any nominal configuration is a 2×2 linear system that maps joint-angle increments to end-effector increments. Inverse kinematics solves the reverse map at each control cycle — typically at hundreds of Hz — and the linear-system solve is in the inner loop. Three-DOF arms produce 3×3 systems; six-DOF industrial arms produce 6×6 systems.
+
+**Mixing and dilution problems in chemistry and materials.** Worked example (c) was the prototype. Multi-component mixing — three sources, three constituents — yields a 3×3 system. Chemical engineering uses these constantly in process design.
+
+**Statics: two-axis force balance.** For a body in 2D static equilibrium, the two scalar equations $\Sigma F_x = 0$ and $\Sigma F_y = 0$ (often combined with $\Sigma \tau = 0$ for a third equation when there are three unknown reactions) form a small linear system. Every truss member sized in a civil-engineering course is the result of a few 2×2 or 3×3 linear-system solves.
+
+**Multi-sensor fusion.** Two sensors measuring the same physical quantity through different calibration lines (example (e)) give a 2×2 self-consistency check. More elaborately, the Kalman filter at every time step fuses sensor readings through a linear (or linearized) measurement model — internally a linear-system solve, repeated thousands of times per second on every modern flight controller.
+
+**Linear-programming feasible regions.** A 2D linear program has a feasible region bounded by lines (the constraints). The optimum lies at a vertex — an intersection of two of those lines — i.e., the solution of a 2×2 linear system. Linear programming with $k$ variables and $m$ constraints has vertices at intersections of $k$ active constraint hyperplanes, a $k \times k$ system. The simplex method is, at heart, a sequence of small linear-system solves chosen to walk along vertices toward the optimum.
+
+**Linear regression's normal equations (preview).** Fitting $\hat{y} = m x + b$ to $n$ data points by least squares reduces to solving the 2×2 normal equations
+
+$$\begin{pmatrix} \sum x_i^2 & \sum x_i \\ \sum x_i & n \end{pmatrix} \begin{pmatrix} m \\ b \end{pmatrix} = \begin{pmatrix} \sum x_i y_i \\ \sum y_i \end{pmatrix}.$$
+
+For multivariate regression with $k$ features, the normal equations become a $(k+1) \times (k+1)$ system. Every linear regression is a linear-system solve.
+
+**GPS trilateration.** Three distance measurements from three known satellites, after linearization around an initial position estimate, give a 3×3 linear system for $(\Delta x, \Delta y, \Delta z)$. Adding clock-bias unknown promotes it to 4×4, which is why GPS needs at least four satellites in view. Solving the linear system at each receiver fix is, again, the algorithm of this lesson scaled up.
+
+## Practice Set
+
+### Warmups: Substitution
+
+Solve each by substitution. Show your isolation, substitution, and verification.
+
+1. $\begin{cases} x + y = 5 \\ x - y = 1 \end{cases}$
+
+2. $\begin{cases} 2x + y = 9 \\ x + 3y = 12 \end{cases}$
+
+3. $\begin{cases} y = 2x - 1 \\ 3x + y = 14 \end{cases}$
+
+4. $\begin{cases} x = 4 - y \\ 2x + y = 7 \end{cases}$
+
+5. $\begin{cases} x + 2y = 8 \\ 3x - y = 3 \end{cases}$
+
+6. $\begin{cases} y = x + 2 \\ y = -x + 6 \end{cases}$
+
+7. $\begin{cases} 4x - y = 7 \\ x + 2y = 4 \end{cases}$
+
+8. $\begin{cases} x + y = 0 \\ 2x - y = 9 \end{cases}$
+
+### Elimination
+
+Solve each by elimination. Show your scaling factors.
+
+9. $\begin{cases} 3x + y = 11 \\ 2x - y = 4 \end{cases}$
+
+10. $\begin{cases} 2x + 3y = 13 \\ 4x - y = 5 \end{cases}$
+
+11. $\begin{cases} 5x - 2y = 1 \\ 3x + 4y = 11 \end{cases}$
+
+12. $\begin{cases} 4x + 5y = 6 \\ 6x - 7y = 20 \end{cases}$
+
+13. $\begin{cases} 7x + 2y = 24 \\ 3x - 5y = -19 \end{cases}$
+
+### Case Identification (Predict Before Solving)
+
+For each system, predict — using only the slope comparison — whether it has a unique solution, no solution, or infinitely many. Then confirm by solving.
+
+14. $\begin{cases} 2x + 3y = 6 \\ 4x + 6y = 11 \end{cases}$
+
+15. $\begin{cases} x - 2y = 4 \\ 3x - 6y = 12 \end{cases}$
+
+16. $\begin{cases} 5x + y = 3 \\ 2x - 7y = -1 \end{cases}$
+
+### Applied
+
+17. **Mixing.** A lab has stock solutions of 5% and 30% saline. How many liters of each are needed to make 4 L of 20% saline?
+
+18. **Circuit (mesh analysis).** Two loop equations come out of a circuit:
+    $\begin{cases} 4 I_1 - I_2 = 10 \\ -I_1 + 3 I_2 = 5 \end{cases}$ (currents in A, voltages in V). Find $I_1$ and $I_2$.
+
+19. **Equilibrium.** A weight hangs from two cables. Force balance in $x$ and $y$ gives
+    $\begin{cases} T_1 \cos 30^\circ - T_2 \cos 60^\circ = 0 \\ T_1 \sin 30^\circ + T_2 \sin 60^\circ = 100 \end{cases}$ (forces in N). Find the cable tensions $T_1$ and $T_2$. (Use $\cos 30^\circ = \sqrt{3}/2 \approx 0.866$, $\sin 30^\circ = 0.5$, $\cos 60^\circ = 0.5$, $\sin 60^\circ \approx 0.866$.)
+
+20. **Sensor cross-check.** Sensor A reports $V = 0.04 d + 0.6$. Sensor B reports $V = 0.06 d + 0.2$. At what distance $d$ do they agree, and what voltage do they then both report?
+
+### Error-Spotting
+
+21. A student solves $\begin{cases} 2x + y = 5 \\ 4x + 2y = 10 \end{cases}$ by elimination, multiplies the first by $-2$, adds to the second, gets $0 = 0$, and writes "no solution." What did they confuse, and what is the correct conclusion?
+
+22. A student solves $\begin{cases} 3x + 2y = 7 \\ 6x + 4y = 10 \end{cases}$ by elimination, gets $0 = -4$, and writes "$x = 0$, $y = -4$." What did they confuse, and what is the correct conclusion?
+
+### Challenge
+
+23. **3×3 system.** Solve
+    $\begin{cases} x + y + z = 6 \\ 2x - y + z = 3 \\ x + 2y - z = 2 \end{cases}$
+    by elimination. (Hint: pick a variable to eliminate from two of the three equations, reducing to a 2×2 in two unknowns.)
+
+24. **Parameterized system.** Consider $\begin{cases} x + 2y = 3 \\ 2x + k y = 6 \end{cases}$ as a function of the parameter $k$. For which value(s) of $k$ does the system have (a) a unique solution, (b) no solution, (c) infinitely many solutions?
+
+### Answers
+
+1. $x = 3$, $y = 2$.
+2. From the first: $y = 9 - 2x$. Substitute: $x + 3(9 - 2x) = 12 \Rightarrow x + 27 - 6x = 12 \Rightarrow x = 3$, $y = 3$.
+3. Substitute $y = 2x - 1$ into the second: $3x + 2x - 1 = 14 \Rightarrow x = 3$, $y = 5$.
+4. Substitute $x = 4 - y$ into the second: $2(4 - y) + y = 7 \Rightarrow 8 - y = 7 \Rightarrow y = 1$, $x = 3$.
+5. From the second: $y = 3x - 3$. Substitute: $x + 2(3x - 3) = 8 \Rightarrow 7x = 14 \Rightarrow x = 2$, $y = 3$.
+6. $2x - 1 = -x + 6 \Rightarrow 3x = 7 \Rightarrow x = 7/3$, $y = 13/3$.
+7. From the first: $y = 4x - 7$. Substitute: $x + 2(4x - 7) = 4 \Rightarrow 9x = 18 \Rightarrow x = 2$, $y = 1$.
+8. From the first: $y = -x$. Substitute: $2x - (-x) = 9 \Rightarrow 3x = 9 \Rightarrow x = 3$, $y = -3$.
+9. Add the two: $5x = 15 \Rightarrow x = 3$, $y = 2$.
+10. Multiply the first by $1$ and add $3 \times$ the second's $-y$ to the first's $3y$: scale second by $3$ to get $12x - 3y = 15$, add to first: $14x = 28 \Rightarrow x = 2$, $y = 3$.
+11. Multiply first by $2$ and second by $1$: $10x - 4y = 2$, $3x + 4y = 11$. Add: $13x = 13 \Rightarrow x = 1$, $y = 2$.
+12. Multiply first by $3$ and second by $-2$: $12x + 15y = 18$, $-12x + 14y = -40$. Add: $29y = -22 \Rightarrow y = -22/29$, $x = (6 - 5(-22/29))/4 = (174 + 110)/(4 \cdot 29) = 284/116 = 71/29$.
+13. Multiply first by $5$ and second by $2$: $35x + 10y = 120$, $6x - 10y = -38$. Add: $41x = 82 \Rightarrow x = 2$, $y = 5$.
+14. Slopes: $-2/3$ and $-2/3$. Intercepts: $2$ and $11/6$. Same slope, different intercepts: **no solution**.
+15. Slopes: $1/2$ and $1/2$. Intercepts: $-2$ and $-2$. Same line: **infinitely many solutions**.
+16. Slopes: $-5$ and $2/7$. Different slopes: **unique solution**. (Solve: $x = 20/37$, $y = 11/37$ — the messy fractions are typical when the coefficients are not chosen for prettiness.)
+17. Let $a$ = liters of 5% and $b$ = liters of 30%. Volume: $a + b = 4$. Salt: $0.05 a + 0.30 b = 0.20 \cdot 4 = 0.8$. Substitute $a = 4 - b$: $0.05(4 - b) + 0.30 b = 0.8 \Rightarrow 0.2 + 0.25 b = 0.8 \Rightarrow b = 2.4$ L, $a = 1.6$ L.
+18. Add 4× the second to the first: $4 I_1 - I_2 + 4(-I_1 + 3 I_2) = 10 + 4(5) \Rightarrow 11 I_2 = 30 \Rightarrow I_2 = 30/11 \approx 2.73$ A. Then $I_1 = (10 + I_2)/4 = (10 + 30/11)/4 = (140/11)/4 = 35/11 \approx 3.18$ A.
+19. From the first equation: $T_1 (\sqrt{3}/2) = T_2 (1/2)$, so $T_1 = T_2 / \sqrt{3}$. Substitute into the second: $(T_2/\sqrt{3})(1/2) + T_2 (\sqrt{3}/2) = 100$. Combine: $T_2 [(1/(2\sqrt{3})) + (\sqrt{3}/2)] = 100$. $(1/(2\sqrt{3})) + (\sqrt{3}/2) = (1 + 3)/(2 \sqrt{3}) = 4/(2\sqrt{3}) = 2/\sqrt{3}$. So $T_2 = 100 \cdot \sqrt{3}/2 = 50\sqrt{3} \approx 86.6$ N. Then $T_1 = T_2/\sqrt{3} = 50$ N.
+20. Set equal: $0.04 d + 0.6 = 0.06 d + 0.2 \Rightarrow 0.4 = 0.02 d \Rightarrow d = 20$ cm. Both report $V = 0.04(20) + 0.6 = 1.4$ V.
+21. The second equation is exactly $2 \times$ the first — they are the same line. Eliminating gives $0 = 0$, which is the **identity** signature, meaning **infinitely many solutions**, not "no solution." The student confused $0 = 0$ (identity) with $0 = (\text{nonzero})$ (contradiction).
+22. The first equation scaled by $2$ gives $6x + 4y = 14$, but the second equation is $6x + 4y = 10$. Same left-hand side, different right-hand side — parallel, distinct, **no solution**. The student wrote "$x = 0$, $y = -4$" by reading $0 = -4$ as variable assignments, which makes no sense. The correct conclusion is *no solution*.
+23. Eliminate $z$ from the first and third by adding them: $2x + 3y = 8$. Eliminate $z$ from the first and second by subtracting first from second: $x - 2y = -3$. Now solve the 2×2: from the second, $x = 2y - 3$; substitute: $2(2y - 3) + 3y = 8 \Rightarrow 7y = 14 \Rightarrow y = 2$, $x = 1$. Back-substitute into the first original: $1 + 2 + z = 6 \Rightarrow z = 3$. Solution: $(1, 2, 3)$. Verify all three originals: $1 + 2 + 3 = 6$ ✓; $2 - 2 + 3 = 3$ ✓; $1 + 4 - 3 = 2$ ✓.
+24. Determinant: $D = (1)(k) - (2)(2) = k - 4$. **(a)** $k \neq 4$: unique solution. **(b)** $k = 4$ and the second equation is not a multiple of the first — but with $k = 4$, the second becomes $2x + 4y = 6$, which *is* $2 \times$ the first ($x + 2y = 3$). So $k = 4$ gives **infinitely many solutions** (not "no solution"). **(c)** This system has *no* value of $k$ that produces no-solution behavior, because when the slopes match ($k = 4$) the right-hand sides also automatically match. A small change to either constant — say, replacing the $6$ with a $7$ — would make $k = 4$ the no-solution case instead. This is a useful sanity check: whether the parallel-but-distinct case appears depends on the *constants*, not just the *coefficients*.
 
 ## Build Task
 
-Create a small calculator function that solves a linear equation of the form `y = mx + b` for either `y` or `x`.
+Implement a 2×2 linear system solver from scratch — no `numpy.linalg.solve`, no matrix library, just bare arithmetic. Then verify it on every worked example in this lesson and cross-check against `numpy.linalg.solve` for confidence.
+
+```python
+import numpy as np
+
+
+def solve_2x2(A, b, tol=1e-12):
+    """Solve a 2x2 linear system A @ x = b by substitution.
+
+    Parameters
+    ----------
+    A : 2x2 nested list or array of floats, the coefficient matrix.
+    b : length-2 list or array of floats, the right-hand side.
+    tol : float, tolerance for "zero" determinant.
+
+    Returns
+    -------
+    (x, y) tuple of floats — the unique solution.
+
+    Raises
+    ------
+    ValueError : if the system has no solution (parallel distinct lines) or
+                 infinitely many solutions (coincident lines).
+    """
+    (a1, b1), (a2, b2) = A
+    c1, c2 = b
+
+    # Determinant: if zero, no unique solution.
+    det = a1 * b2 - a2 * b1
+
+    if abs(det) < tol:
+        # Distinguish "no solution" from "infinitely many solutions" by
+        # checking whether the right-hand side is consistent with the
+        # left-hand side's degeneracy.
+        # Try to express row 2 as a scalar multiple of row 1.
+        # If a1 (and b1) are both zero, row 1 is degenerate; handle separately.
+        if abs(a1) < tol and abs(b1) < tol:
+            # Row 1 is 0 = c1; either trivial or contradictory.
+            if abs(c1) < tol:
+                raise ValueError(
+                    "Row 1 is 0 = 0 (trivial); the system reduces to row 2 alone, "
+                    "which has infinitely many solutions in two unknowns."
+                )
+            raise ValueError("Row 1 is 0 = nonzero; no solution.")
+        # Find a scalar k such that row 2 == k * row 1.
+        if abs(a1) >= tol:
+            k = a2 / a1
+        else:
+            k = b2 / b1
+        if abs(c2 - k * c1) < tol:
+            raise ValueError(
+                "Coincident lines (one equation is a scalar multiple of the "
+                "other); infinitely many solutions."
+            )
+        raise ValueError(
+            "Parallel distinct lines (same slope, different intercepts); "
+            "no solution."
+        )
+
+    # Unique solution by Cramer's rule (the cleanest closed form for 2x2).
+    x = (c1 * b2 - c2 * b1) / det
+    y = (a1 * c2 - a2 * c1) / det
+    return (x, y)
+
+
+def verify(A, b, sol, tol=1e-9):
+    """Plug the alleged solution back into both equations."""
+    (a1, b1), (a2, b2) = A
+    c1, c2 = b
+    x, y = sol
+    res1 = a1 * x + b1 * y - c1
+    res2 = a2 * x + b2 * y - c2
+    return abs(res1) < tol and abs(res2) < tol
+
+
+# ---- Test on every worked example ----
+
+examples = [
+    # (label, A, b, expected)
+    ("(a)", [[2, 1], [1, -1]], [7, 2], (3.0, 1.0)),
+    ("(b)", [[3, 2], [5, -3]], [12, 1], (2.0, 3.0)),
+    ("(c) mixing", [[1, 1], [0.10, 0.40]], [10, 2.5], (5.0, 5.0)),
+    ("(d) circuit", [[3, 2], [1, -1]], [12, 1], (2.8, 1.8)),
+    ("(e) sensor", [[1, -0.02], [1, -0.05]], [0.5, 0.2], (0.7, 10.0)),
+    # Equation 1: V = 0.02 d + 0.5  =>  V - 0.02 d = 0.5
+    # Equation 2: V = 0.05 d + 0.2  =>  V - 0.05 d = 0.2
+    # Solution: V = 0.7, d = 10
+    ("(f) motor", [[1, -0.12], [1, -0.08]], [0.4, 1.0], (2.2, 15.0)),
+    ("(i) Cramer", [[2, 3], [1, -2]], [8, -3], (1.0, 2.0)),
+]
+
+for label, A, b, expected in examples:
+    sol = solve_2x2(A, b)
+    np_sol = tuple(np.linalg.solve(A, b))
+    assert verify(A, b, sol), f"{label}: solution failed verification"
+    assert all(abs(s - e) < 1e-9 for s, e in zip(sol, expected)), (
+        f"{label}: {sol} != expected {expected}"
+    )
+    print(f"  {label}: solve_2x2 = {sol}, numpy = {np_sol}")
+
+# ---- No-solution case ----
+try:
+    solve_2x2([[2, 1], [4, 2]], [7, 5])
+except ValueError as e:
+    print(f"  no-solution case correctly rejected: {e}")
+
+# ---- Infinitely-many case ----
+try:
+    solve_2x2([[3, 2], [6, 4]], [6, 12])
+except ValueError as e:
+    print(f"  infinitely-many case correctly rejected: {e}")
+
+
+# ---- Stretch: 3x3 Gaussian elimination from scratch ----
+
+def solve_3x3(A, b, tol=1e-12):
+    """Solve a 3x3 system by Gaussian elimination with partial pivoting.
+
+    Forward-eliminates to upper-triangular form, then back-substitutes.
+    """
+    # Build augmented matrix.
+    M = [list(row) + [bi] for row, bi in zip(A, b)]
+
+    n = 3
+    for col in range(n):
+        # Partial pivoting: swap in the row with largest abs value in this column.
+        pivot = max(range(col, n), key=lambda r: abs(M[r][col]))
+        if abs(M[pivot][col]) < tol:
+            raise ValueError("Matrix is singular (rank < 3); no unique solution.")
+        M[col], M[pivot] = M[pivot], M[col]
+        # Eliminate column col below the pivot.
+        for r in range(col + 1, n):
+            factor = M[r][col] / M[col][col]
+            for c in range(col, n + 1):
+                M[r][c] -= factor * M[col][c]
+
+    # Back-substitute.
+    x = [0.0] * n
+    for r in range(n - 1, -1, -1):
+        s = M[r][n] - sum(M[r][c] * x[c] for c in range(r + 1, n))
+        x[r] = s / M[r][r]
+    return tuple(x)
+
+
+# Test the 3x3 solver on the challenge problem.
+A3 = [[1, 1, 1], [2, -1, 1], [1, 2, -1]]
+b3 = [6, 3, 2]
+sol3 = solve_3x3(A3, b3)
+np3 = tuple(np.linalg.solve(A3, b3))
+print(f"\n3x3 challenge: solve_3x3 = {sol3}, numpy = {np3}")
+assert all(abs(s - e) < 1e-9 for s, e in zip(sol3, (1.0, 2.0, 3.0)))
+print("  matches expected (1, 2, 3).")
+```
+
+**Stretch goals.**
+
+- Add a `classify_2x2(A, b)` function that returns one of `"unique"`, `"no_solution"`, or `"infinite_solutions"` along with the (possibly empty) solution set or a parametric description of the line of solutions.
+- Implement Cramer's rule explicitly as a separate function `cramer_2x2(A, b)`, and compare its output to `solve_2x2` on the same examples.
+- Extend `solve_3x3` to a general `solve_nxn` for arbitrary $n$. Test it on a randomly generated 10×10 system and confirm the residual $\|A \mathbf{x} - \mathbf{b}\|$ is at machine epsilon.
+- Build a small visualization: for any 2×2 system, plot both lines on a coordinate grid and mark the intersection. Use matplotlib.
 
 ## Quiz
 
-1. What does the slope represent in a physical system?
-2. Why should units be tracked while solving equations?
-3. What does the intercept represent?
-4. What is the first step when solving `y = mx + b` for `x`?
+1. When does a 2×2 linear system have **no solution**? Describe the geometric picture, and write the algebraic signature you would see in elimination.
+2. When does a 2×2 system have **infinitely many solutions**? Geometry and algebraic signature.
+3. Why does the substitution method work? In one sentence, explain why solving for one variable and plugging into the other equation is mathematically equivalent to finding the intersection of the two lines.
+4. Why is the elimination method usually preferred for hand calculation in 3 or more variables?
+5. State Cramer's rule for a 2×2 system. What is the connection between Cramer's rule and the determinant?
+6. What does the matrix form $A \mathbf{x} = \mathbf{b}$ generalize to in higher dimensions? What is the analog of "different slopes" in matrix language?
+7. Two lines in a plane *must* fall into one of three cases. Why exactly three — why is there no "two solutions" case?
+8. A student says: "I can always tell a 2×2 system has no solution because elimination gives me $0 = 0$." What is wrong with that statement?
+
+**Answers (compressed).**
+
+1. **No solution** when the two lines are **parallel and distinct** (same slope, different y-intercepts). Elimination yields $0 = c$ for some nonzero $c$ — a contradiction.
+2. **Infinitely many solutions** when the two lines are **coincident** (one equation is a scalar multiple of the other). Elimination yields $0 = 0$ — an identity. Every point on the common line is a solution.
+3. Because the isolated expression $y = f(x)$ from one equation is the set of $(x, y)$ on the first line; substituting into the second equation enforces that the same point also satisfies the second line. The substitution mechanically intersects the two solution sets.
+4. Because substitution requires multiple symbolic isolations in succession (each typically introducing fractions), while elimination keeps the arithmetic flat — you scale and add integer or simple-fractional combinations of equations, which is easier to do without mistakes. Elimination also generalizes mechanically to $n \times n$ (Gaussian elimination), whereas substitution becomes increasingly awkward.
+5. For the system $\begin{cases} a_1 x + b_1 y = c_1 \\ a_2 x + b_2 y = c_2 \end{cases}$ with $D = a_1 b_2 - a_2 b_1 \neq 0$: $x = (c_1 b_2 - c_2 b_1)/D$ and $y = (a_1 c_2 - a_2 c_1)/D$. The determinant $D$ is in the denominator of both formulas, so the rule produces a finite answer precisely when $D \neq 0$ — i.e., when the matrix is non-singular and the lines have different slopes.
+6. In $n$ dimensions, $A$ is an $n \times n$ matrix, $\mathbf{x}$ and $\mathbf{b}$ are length-$n$ column vectors, and the system $A \mathbf{x} = \mathbf{b}$ represents $n$ linear equations in $n$ unknowns. The analog of "different slopes" is "**$\det(A) \neq 0$**" — equivalently, "the columns of $A$ are linearly independent" or "$A$ is **non-singular** / **invertible**." When that condition holds, the system has a unique solution $\mathbf{x} = A^{-1} \mathbf{b}$.
+7. Two lines in a plane are 1-dimensional sets in a 2-dimensional space. Their intersection is determined by linear constraints, so it can be a 0-dimensional set (a point), a 1-dimensional set (the whole shared line), or empty. There is no way to get exactly two intersection points from two straight lines. (This is a special case of Bézout's theorem from algebraic geometry: two lines, each of degree 1, intersect in $1 \times 1 = 1$ point in projective space, counted with multiplicities and including a "point at infinity" for parallel lines.)
+8. The student is confusing $0 = 0$ (identity, **infinitely many solutions**) with $0 = c$ for $c \neq 0$ (contradiction, **no solution**). The no-solution signature is the second, not the first. Always inspect what is on the right-hand side after elimination, not just whether the left collapses to zero.
 
 ## Proof of Completion
 
-Submit the calculator code, two example calculations, and a short note explaining how algebra shows up in a real engineering system.
+You have finished this lesson when you can:
 
-## Next Lesson
+- Solve any 2×2 linear system by substitution, showing all five steps, in under three minutes without notes.
+- Solve any 2×2 linear system by elimination, choosing scaling factors that minimize arithmetic.
+- Predict the case (unique / none / infinite) from a slope comparison, *before* doing any solving work, and identify the algebraic signature ($0 = 0$ vs $0 = c$) when one of the degenerate cases arises during elimination.
+- Translate a real engineering scenario into a 2×2 system, solve it, and interpret the solution physically (including diagnosing unphysical answers as model or calibration failures).
+- Apply Cramer's rule to a small 2×2 system and recognize the determinant as the algebraic stand-in for the slope comparison.
+- Commit your `solve_2x2` function (plus the stretch `solve_3x3` if you got there) to your curriculum repository, with a test suite that verifies it on every worked example in this lesson and cross-checks against `numpy.linalg.solve`.
 
-Trigonometry for Drones and Robotics.
+Push the code, the verification output, and one short note (one paragraph) describing a real engineering problem you modeled as a 2×2 system, the solution you obtained, and what the solution meant physically. Bonus credit: a matplotlib figure showing both lines and the intersection point.
+
+## Sources and Further Study
+
+- **Serge Lang, *Basic Mathematics*, chapters 5–6.** Lang's treatment of linear equations and systems is the most algebraically rigorous secondary-school-level reference. It is dry but careful and rewards a slow read.
+- **Gilbert Strang, *Introduction to Linear Algebra* (5th or 6th edition).** The canonical undergraduate reference, and the textbook for MIT's 18.06. Chapter 1 covers exactly the 2×2 case at deeper depth than this lesson, and chapters 2 and 3 develop the matrix form $A \mathbf{x} = \mathbf{b}$, Gaussian elimination, and the three-case theory for general $n$.
+- **Howard Anton, *Elementary Linear Algebra*.** A more procedural alternative to Strang. Excellent worked examples and exercise sets.
+- ***Nine Chapters on the Mathematical Art* (*Jiǔzhāng Suànshù*), modern English translation by Shen, Crossley, and Lun.** Read chapter 8 to see Gaussian elimination as practiced in China around 200 CE. The pedagogical clarity of the original is remarkable.
+- **Carl Friedrich Gauss, *Theoria motus corporum coelestium* (1809).** Gauss' original presentation of the elimination procedure that bears his name, in the context of solving the orbit-determination problem for Ceres. Available in modern translation; section on least-squares is particularly historic.
+- **MIT OpenCourseWare 18.06, *Linear Algebra*, taught by Gilbert Strang.** The single best free resource for learning linear algebra from the ground up. Watch lectures 1–3 immediately after this lesson — they introduce $A \mathbf{x} = \mathbf{b}$, Gaussian elimination, and the geometric picture of column space, using exactly the 2×2 motivating examples you have just internalized.
+- **Strang's *Linear Algebra and Its Applications*.** A more applications-flavored companion to *Introduction to Linear Algebra*.
+- **`numpy.linalg` documentation.** The reference page for `numpy.linalg.solve`, `numpy.linalg.det`, `numpy.linalg.inv`, and `numpy.linalg.lstsq`. Skim it now so the function names are familiar when they reappear in the linear-algebra module.
+- **3Blue1Brown's *Essence of Linear Algebra* video series on YouTube.** Geometric intuition for matrices, vectors, determinants, and linear maps. Episodes 1–7 cover the material you will meet in the upcoming sub-module. Highly recommended supplementary viewing.
+
+## Next Lesson Bridge
+
+**This lesson completes the *Equations, Units, and Graphs* sub-module — 14 lessons at full *Lesson Depth Standard* depth.** Take a moment to register what is now in place.
+
+You have rebuilt, from first principles:
+- **Equations in one unknown** (lessons 1–5): the meaning of an equation, the algebraic moves that preserve solutions, contradictions and identities, formula rearrangement.
+- **Units and dimensional analysis** (lesson 6): the discipline that makes every numerical answer physically meaningful.
+- **Functions and their structure** (lessons 7–8): input-output thinking, domain and range, the vertical-line test, the classification of common function families.
+- **Linear functions in all three forms** (lessons 9–11): slope, slope-intercept, point-slope, standard form, and fluent conversion between them.
+- **Parallel and perpendicular geometry** (lesson 12): the slope-comparison rules that govern when two lines run parallel or meet at a right angle.
+- **Graphing functions visually** (lesson 13): the visual model of a function as a curve on a coordinate plane.
+- **Systems of linear equations** (lesson 14, this lesson): the bridge from one equation to many, with the matrix form $A \mathbf{x} = \mathbf{b}$ previewed and the three-case theory in hand.
+
+The algebraic toolkit is now **complete** at the secondary-school level, with one foot already across the threshold of college-level linear algebra. Every subsequent module — geometry and trigonometry, vectors, matrices and linear transformations, calculus, probability, mechanics, electromagnetism, control, machine learning — assumes fluency with everything you have just covered. If anything in this sub-module still feels shaky, this is the moment to go back and shore it up.
+
+The **next sub-module is *Geometry, Trig, and Vectors***. It will start from coordinate geometry (familiar from lessons 7–13), build trigonometry from the unit circle, and then introduce **vectors** — directed quantities with magnitude and direction — as the right language for points, displacements, forces, velocities, and ultimately the columns of matrices. The instant vectors are in place, every linear system $A \mathbf{x} = \mathbf{b}$ becomes a question about *geometric relationships between vectors*: "find the vector $\mathbf{x}$ such that the linear combination $x \mathbf{a}_1 + y \mathbf{a}_2$ of $A$'s columns lands on $\mathbf{b}$." The matrix language you just glimpsed gets its full geometric meaning, and the 2×2 systems of this lesson become the simplest non-trivial example of a much more general picture.
+
+After Geometry, Trig, and Vectors, the curriculum will return to algebra in its fully general form — **matrices and linear transformations**, then **calculus**, then onward. Every one of those modules will lean directly on what you finished today.
+
+You have closed the equations-units-and-graphs sub-module. That is a real milestone, and it deserves a moment of recognition before you move on.
