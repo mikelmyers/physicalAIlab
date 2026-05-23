@@ -243,6 +243,34 @@ assert.equal(checkAnswer(vectorArithmeticById["path-vs-displacement"], "5 m").co
 assert.equal(checkAnswer(vectorArithmeticById["negative-scalar"], "reverses direction").correct, true);
 assert.equal(checkAnswer(vectorArithmeticById["add-vectors"], "(8, 6)").correct, false);
 
+const dotProductCheck = getLessonCheck("dot-product-and-projections-check");
+assert.ok(dotProductCheck, "Expected dot-product-and-projections-check to exist");
+
+const dotProductById = Object.fromEntries(dotProductCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(dotProductById["basic-dot"], "23").correct, true);
+assert.equal(checkAnswer(dotProductById["perpendicular-dot"], "0").correct, true);
+assert.equal(checkAnswer(dotProductById["dot-sign-negative"], "greater than 90 degrees").correct, true);
+assert.equal(checkAnswer(dotProductById["scalar-projection"], "6").correct, true);
+assert.equal(checkAnswer(dotProductById["vector-projection"], "(4, 0)").correct, true);
+assert.equal(checkAnswer(dotProductById["work-dot"], "50").correct, true);
+assert.equal(checkAnswer(dotProductById["dot-product-result-type"], "scalar").correct, true);
+assert.equal(checkAnswer(dotProductById["dot-product-result-type"], "vector").correct, false);
+
+const crossProductCheck = getLessonCheck("cross-product-and-right-hand-rule-check");
+assert.ok(crossProductCheck, "Expected cross-product-and-right-hand-rule-check to exist");
+
+const crossProductById = Object.fromEntries(crossProductCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(crossProductById["i-cross-j"], "(0, 0, 1)").correct, true);
+assert.equal(checkAnswer(crossProductById["j-cross-i"], "(0, 0, -1)").correct, true);
+assert.equal(checkAnswer(crossProductById["component-cross"], "(-3, 6, -3)").correct, true);
+assert.equal(checkAnswer(crossProductById["parallel-cross"], "zero vector").correct, true);
+assert.equal(checkAnswer(crossProductById["parallelogram-area"], "12").correct, true);
+assert.equal(checkAnswer(crossProductById["torque-basic"], "6").correct, true);
+assert.equal(checkAnswer(crossProductById["right-hand-rule"], "right hand").correct, true);
+assert.equal(checkAnswer(crossProductById["i-cross-j"], "(0, 0, -1)").correct, false);
+
 const signedCheck = getLessonCheck("signed-numbers-core-check");
 assert.ok(signedCheck, "Expected signed-numbers-core-check to exist");
 

@@ -1,0 +1,526 @@
+# The Cross Product and the Right-Hand Rule
+
+## Re-entry Promise
+
+This lesson assumes you can work with 3D vectors, compute a dot product, and picture the standard $x$, $y$, and $z$ axes. It does not assume the right-hand rule already feels natural.
+
+The cross product is the vector product that measures how strongly two vectors form an oriented area or create rotation. It is less familiar than the dot product because it only behaves in its standard form in 3D, but once it clicks, torque, angular momentum, surface normals, rotation axes, and many robotics conventions become much easier to read.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Explain what the cross product measures.
+- Compute $\vec{a}\times\vec{b}$ for 3D vectors.
+- Use the right-hand rule to determine cross product direction.
+- Use $|\vec{a}\times\vec{b}|=|\vec{a}||\vec{b}|\sin\theta$.
+- Interpret cross product magnitude as parallelogram area.
+- Detect parallel vectors using the cross product.
+- Explain why $\vec{a}\times\vec{b}=-(\vec{b}\times\vec{a})$.
+- Compute torque $\vec{\tau}=\vec{r}\times\vec{F}$.
+- Find a normal vector to a plane from two direction vectors.
+- Connect the cross product to robotics coordinate frames, physics, and graphics.
+
+## Plain-Language Intuition
+
+The dot product asks, "How much do these vectors point the same way?"
+
+The cross product asks, "What rotation or oriented area do these two vectors create together?"
+
+Hold your right hand flat. Point your index finger along the first vector. Curl your fingers toward the second vector. Your thumb points in the direction of the cross product.
+
+That thumb direction is the axis around which the first vector would rotate toward the second vector. The length of the cross product is bigger when the vectors are long and close to perpendicular. It is zero when the vectors are parallel, because parallel vectors do not span any area.
+
+## Why This Idea Exists
+
+Many physical quantities are rotational:
+
+- Torque depends on where a force is applied and which way it pushes.
+- Angular momentum depends on position and momentum.
+- A surface normal depends on two directions lying in the surface.
+- A robot's coordinate frame must preserve orientation, not just distances.
+- A drone's body axes must be right-handed so roll, pitch, and yaw signs are consistent.
+
+The cross product packages all of that into one operation.
+
+## Core Theory
+
+### Geometric Definition
+
+For vectors $\vec{a}$ and $\vec{b}$ in 3D:
+
+$$
+|\vec{a}\times\vec{b}|=|\vec{a}||\vec{b}|\sin\theta
+$$
+
+where $\theta$ is the angle between them.
+
+The direction is perpendicular to both $\vec{a}$ and $\vec{b}$, chosen by the right-hand rule.
+
+### Component Formula
+
+If:
+
+$$
+\vec{a}=(a_x,a_y,a_z),\quad \vec{b}=(b_x,b_y,b_z)
+$$
+
+then:
+
+$$
+\vec{a}\times\vec{b}
+=
+(a_yb_z-a_zb_y,\ a_zb_x-a_xb_z,\ a_xb_y-a_yb_x)
+$$
+
+This formula is worth memorizing only after you understand what it is doing. It produces a vector perpendicular to both inputs.
+
+### Determinant Memory Aid
+
+Many textbooks write:
+
+$$
+\vec{a}\times\vec{b}
+=
+\begin{vmatrix}
+\hat{i} & \hat{j} & \hat{k}\\
+a_x & a_y & a_z\\
+b_x & b_y & b_z
+\end{vmatrix}
+$$
+
+Expanding gives:
+
+$$
+(a_yb_z-a_zb_y)\hat{i}
+-(a_xb_z-a_zb_x)\hat{j}
++(a_xb_y-a_yb_x)\hat{k}
+$$
+
+which is the same component formula.
+
+### Standard Basis Cross Products
+
+In a right-handed coordinate system:
+
+$$
+\hat{i}\times\hat{j}=\hat{k}
+$$
+
+$$
+\hat{j}\times\hat{k}=\hat{i}
+$$
+
+$$
+\hat{k}\times\hat{i}=\hat{j}
+$$
+
+Reverse the order and the sign flips:
+
+$$
+\hat{j}\times\hat{i}=-\hat{k}
+$$
+
+Order matters.
+
+### Anti-Commutative
+
+The cross product is anti-commutative:
+
+$$
+\vec{a}\times\vec{b}=-(\vec{b}\times\vec{a})
+$$
+
+This is because reversing the order reverses the right-hand-rule orientation.
+
+### Area Interpretation
+
+The magnitude $|\vec{a}\times\vec{b}|$ is the area of the parallelogram spanned by $\vec{a}$ and $\vec{b}$.
+
+The area of the triangle formed by those vectors is half:
+
+$$
+\text{triangle area}=\frac12|\vec{a}\times\vec{b}|
+$$
+
+If vectors are parallel, they span no area, so the cross product is zero.
+
+### Torque
+
+Torque is:
+
+$$
+\vec{\tau}=\vec{r}\times\vec{F}
+$$
+
+where $\vec{r}$ points from the rotation axis/pivot to the point where force is applied, and $\vec{F}$ is the force.
+
+Magnitude:
+
+$$
+|\vec{\tau}|=|\vec{r}||\vec{F}|\sin\theta
+$$
+
+The force component perpendicular to the lever arm produces torque. The force component along the lever arm does not.
+
+## Visual Or Mental Model
+
+Picture two vectors as two edges of a flat parallelogram. The cross product sticks out of that parallelogram at a right angle. Its length is the parallelogram's area. Its direction tells which side is "front" according to the right-hand rule.
+
+For the right-hand rule:
+
+1. Point your right index finger along the first vector.
+2. Curl your fingers toward the second vector through the smaller angle.
+3. Your thumb points along $\vec{a}\times\vec{b}$.
+
+If you swap first and second vector, your thumb points the opposite way.
+
+## Worked Examples
+
+### Example 1: Basis Vectors
+
+Compute:
+
+$$
+(1,0,0)\times(0,1,0)
+$$
+
+This is $\hat{i}\times\hat{j}=\hat{k}$, so:
+
+$$
+(1,0,0)\times(0,1,0)=(0,0,1)
+$$
+
+### Example 2: Reverse Order
+
+Compute:
+
+$$
+(0,1,0)\times(1,0,0)
+$$
+
+This is $\hat{j}\times\hat{i}=-\hat{k}$, so:
+
+$$
+(0,1,0)\times(1,0,0)=(0,0,-1)
+$$
+
+### Example 3: Component Cross Product
+
+Let:
+
+$$
+\vec{a}=(2,3,4),\quad \vec{b}=(5,6,7)
+$$
+
+Then:
+
+$$
+\vec{a}\times\vec{b}
+=
+(3\cdot7-4\cdot6,\ 4\cdot5-2\cdot7,\ 2\cdot6-3\cdot5)
+$$
+
+$$
+=(-3,\ 6,\ -3)
+$$
+
+### Example 4: Area
+
+Let $\vec{a}=(3,0,0)$ and $\vec{b}=(0,4,0)$.
+
+$$
+\vec{a}\times\vec{b}=(0,0,12)
+$$
+
+Magnitude is 12, so the parallelogram area is 12. The triangle area is 6.
+
+### Example 5: Parallel Vectors
+
+Let $\vec{a}=(2,4,6)$ and $\vec{b}=(1,2,3)$.
+
+These are parallel because $\vec{a}=2\vec{b}$. Their cross product is:
+
+$$
+\vec{0}
+$$
+
+Parallel vectors span zero area.
+
+### Example 6: Torque
+
+A wrench vector from bolt to hand is:
+
+$$
+\vec{r}=(0.3,0,0)\text{ m}
+$$
+
+A force is:
+
+$$
+\vec{F}=(0,20,0)\text{ N}
+$$
+
+Torque:
+
+$$
+\vec{\tau}=\vec{r}\times\vec{F}=(0,0,6)
+$$
+
+The torque magnitude is 6 N m, pointing in positive $z$.
+
+### Example 7: Plane Normal
+
+A surface contains direction vectors:
+
+$$
+\vec{u}=(1,0,0),\quad \vec{v}=(0,1,1)
+$$
+
+A normal is:
+
+$$
+\vec{u}\times\vec{v}=(0,-1,1)
+$$
+
+That normal is perpendicular to both directions in the surface.
+
+### Example 8: 2D Orientation Test
+
+For 2D vectors $(a_x,a_y)$ and $(b_x,b_y)$, the signed scalar:
+
+$$
+a_xb_y-a_yb_x
+$$
+
+is the $z$ component of the 3D cross product after treating the vectors as $(a_x,a_y,0)$ and $(b_x,b_y,0)$.
+
+If it is positive, the turn from $\vec{a}$ to $\vec{b}$ is counter-clockwise. If negative, clockwise. If zero, collinear.
+
+This is used in geometry algorithms, path planning, and computer vision.
+
+## Engineering Connections
+
+### Torque In Robotics
+
+Robot joints rotate because motors produce torque. A force far from the pivot can produce more torque than the same force near the pivot. The cross product captures both distance from the pivot and the perpendicular part of the force.
+
+### Surface Normals In Vision And Graphics
+
+Given two edges of a triangle mesh, their cross product gives a surface normal. Normals are used for lighting, collision, plane fitting, and estimating object orientation.
+
+### Coordinate Frames
+
+A right-handed coordinate frame can be built from axes where:
+
+$$
+\hat{x}\times\hat{y}=\hat{z}
+$$
+
+Robotics software depends on consistent frame orientation. A sign error can flip yaw, invert normals, or produce impossible rotations.
+
+### Angular Momentum
+
+Angular momentum is:
+
+$$
+\vec{L}=\vec{r}\times\vec{p}
+$$
+
+The structure is the same as torque. Position plus momentum creates a rotation axis.
+
+### Path Planning And Geometry
+
+The 2D cross product sign tells whether a point lies to the left or right of a path segment. This helps with collision checks, polygon winding, and turning decisions.
+
+## Common Failure Modes
+
+1. Using the left hand instead of the right hand.
+2. Forgetting that order matters.
+3. Treating $\vec{a}\times\vec{b}$ as the same as $\vec{b}\times\vec{a}$.
+4. Returning a scalar for the 3D cross product.
+5. Forgetting the middle component sign in determinant expansion.
+6. Using cross product when a dot product question was asked.
+7. Thinking a zero cross product always means a zero vector input; parallel nonzero vectors also produce zero.
+8. Confusing parallelogram area with triangle area.
+9. Computing torque with the wrong $\vec{r}$ direction.
+10. Mixing coordinate frames before crossing vectors.
+
+## Practice Problems
+
+### Warmups
+
+1. Compute $\hat{i}\times\hat{j}$.
+2. Compute $\hat{j}\times\hat{i}$.
+3. Compute $\hat{j}\times\hat{k}$.
+4. Compute $\hat{k}\times\hat{i}$.
+5. Compute $(1,0,0)\times(0,0,1)$.
+6. Is the cross product a scalar or a vector in 3D?
+7. What is the magnitude formula for $\vec{a}\times\vec{b}$?
+8. What is the cross product of parallel vectors?
+9. What area does $|\vec{a}\times\vec{b}|$ represent?
+10. What area does $\frac12|\vec{a}\times\vec{b}|$ represent?
+
+### Component Computation
+
+11. Compute $(1,0,0)\times(0,1,0)$.
+12. Compute $(0,1,0)\times(0,0,1)$.
+13. Compute $(2,3,4)\times(5,6,7)$.
+14. Compute $(3,0,0)\times(0,4,0)$.
+15. Compute $(0,4,0)\times(3,0,0)$.
+16. Compute $(1,2,3)\times(4,5,6)$.
+17. Compute $(2,4,6)\times(1,2,3)$.
+18. Compute $(0,0,5)\times(2,0,0)$.
+19. Compute $(2,0,0)\times(0,0,5)$.
+20. Verify that your answer to 18 is the negative of your answer to 19.
+
+### Area And Orientation
+
+21. Find parallelogram area for $(3,0,0)$ and $(0,4,0)$.
+22. Find triangle area for the same two vectors.
+23. Two vectors have magnitudes 5 and 8 and meet at 90 degrees. Find cross product magnitude.
+24. Two vectors have magnitudes 5 and 8 and meet at 30 degrees. Find cross product magnitude.
+25. Two vectors have magnitudes 5 and 8 and meet at 0 degrees. Find cross product magnitude.
+26. For 2D vectors $(1,0)$ and $(0,1)$, is the signed cross value positive, negative, or zero?
+27. For 2D vectors $(0,1)$ and $(1,0)$, is it positive, negative, or zero?
+28. For 2D vectors $(2,2)$ and $(4,4)$, is it positive, negative, or zero?
+29. What does a positive 2D cross sign mean?
+30. What does a negative 2D cross sign mean?
+
+### Torque And Engineering
+
+31. Compute torque for $\vec{r}=(0.3,0,0)$ m and $\vec{F}=(0,20,0)$ N.
+32. Compute torque for $\vec{r}=(0.5,0,0)$ m and $\vec{F}=(0,10,0)$ N.
+33. Compute torque magnitude if $|\vec{r}|=0.4$ m, $|\vec{F}|=30$ N, and angle is 90 degrees.
+34. Compute torque magnitude if the same vectors have angle 30 degrees.
+35. Why does a force along the wrench handle produce zero torque about the bolt?
+36. Find a normal to a plane with directions $(1,0,0)$ and $(0,1,1)$.
+37. Find a normal to a plane with directions $(1,0,0)$ and $(0,0,1)$.
+38. If a mesh triangle's vertices are ordered backward, what happens to its normal?
+39. Why do robot coordinate frames care about right-handedness?
+40. What does $\hat{x}\times\hat{y}=\hat{z}$ guarantee about a frame?
+
+### Challenge And Error Spotting
+
+41. Explain why $\vec{a}\times\vec{b}$ is perpendicular to both $\vec{a}$ and $\vec{b}$.
+42. Show that reversing order reverses sign using $(1,0,0)$ and $(0,1,0)$.
+43. A student says $(1,0,0)\times(0,1,0)=(1,1,0)$. What operation are they confusing it with?
+44. A student computes $(3,0,0)\times(0,4,0)$ as $(0,0,7)$. What did they do wrong?
+45. A student gets triangle area 12 for vectors $(3,0,0)$ and $(0,4,0)$. Correct it.
+46. A wrench is twice as long with the same perpendicular force. What happens to torque?
+47. A force is applied at the pivot. What is torque?
+48. Why is the cross product useful for surface normals?
+49. Why is cross product not the right tool for measuring alignment?
+50. Give one robotics or physics situation where the direction of the cross product matters.
+
+## Answer Key
+
+1. $\hat{k}$.
+2. $-\hat{k}$.
+3. $\hat{i}$.
+4. $\hat{j}$.
+5. $(0,-1,0)$.
+6. A vector.
+7. $|\vec{a}||\vec{b}|\sin\theta$.
+8. $\vec{0}$.
+9. Parallelogram area.
+10. Triangle area.
+11. $(0,0,1)$.
+12. $(1,0,0)$.
+13. $(-3,6,-3)$.
+14. $(0,0,12)$.
+15. $(0,0,-12)$.
+16. $(-3,6,-3)$.
+17. $(0,0,0)$.
+18. $(0,10,0)$.
+19. $(0,-10,0)$.
+20. They are opposites.
+21. 12.
+22. 6.
+23. 40.
+24. 20.
+25. 0.
+26. Positive.
+27. Negative.
+28. Zero.
+29. Counter-clockwise turn from first to second.
+30. Clockwise turn from first to second.
+31. $(0,0,6)$ N m.
+32. $(0,0,5)$ N m.
+33. 12 N m.
+34. 6 N m.
+35. The perpendicular lever arm component is zero.
+36. $(0,-1,1)$ or its negative.
+37. $(0,-1,0)$ or its negative.
+38. It flips direction.
+39. Sign conventions for rotations, normals, and angular rates depend on frame handedness.
+40. It guarantees the axes follow a right-handed orientation.
+41. The component formula produces a vector whose dot product with each input is zero.
+42. $\hat{i}\times\hat{j}=\hat{k}$, but $\hat{j}\times\hat{i}=-\hat{k}$.
+43. Vector addition.
+44. They added magnitudes/components instead of multiplying perpendicular side lengths through the cross product.
+45. Parallelogram area is 12; triangle area is 6.
+46. It doubles.
+47. Zero, because $\vec{r}=\vec{0}$.
+48. Two surface directions define a perpendicular direction.
+49. Alignment is a dot product question; cross product measures perpendicular area/rotation tendency.
+50. Examples: torque axis, angular momentum direction, surface normal orientation, right-handed robot frames.
+
+## Build Task
+
+Create a "right-hand-rule and torque workbench" as a Python script, notebook, spreadsheet, or careful hand-calculation template.
+
+Minimum requirements:
+
+1. A function for `cross(a, b)` for 3D vectors.
+2. A function for `cross_magnitude(a, b)`.
+3. A function for triangle area from two side vectors.
+4. A function for torque `cross(r, F)`.
+5. A function for a plane normal from two edge vectors.
+6. Tests for $\hat{i}\times\hat{j}=\hat{k}$ and $\hat{j}\times\hat{i}=-\hat{k}$.
+7. A torque example with units in comments or notes.
+8. A surface-normal example from a triangle or plane.
+
+Stretch:
+
+- Add a 2D orientation test using $a_xb_y-a_yb_x$.
+- Draw the two input vectors and cross product direction.
+- Add a warning when the cross product magnitude is near zero.
+
+## Quiz
+
+1. What does the cross product measure in plain language?
+2. Write the component formula for $\vec{a}\times\vec{b}$.
+3. How does the right-hand rule determine direction?
+4. Why does order matter?
+5. What is $\hat{i}\times\hat{j}$?
+6. What is $\hat{j}\times\hat{i}$?
+7. What does cross product magnitude represent geometrically?
+8. How do you get triangle area from a cross product?
+9. Why is the cross product zero for parallel vectors?
+10. Write the torque formula.
+11. Why does force parallel to a lever arm produce zero torque?
+12. Give one robotics or computer-vision use of a surface normal.
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 40 practice problems, including all challenge/error-spotting problems.
+- Your cross-product/torque workbench artifact with tests passing.
+- A hand sketch or plotted diagram of $\hat{i}\times\hat{j}=\hat{k}$ using the right-hand rule.
+- One torque calculation with units.
+- One surface-normal calculation.
+- One paragraph explaining why cross product order matters.
+
+## Sources And Further Study
+
+- MIT OCW 18.02, vectors, cross products, and determinants.
+- OpenStax, *University Physics Volume 1*, torque and angular momentum.
+- OpenStax, *Calculus Volume 3*, vectors in space and cross products.
+- Gilbert Strang, *Introduction to Linear Algebra*, geometry of vectors and determinants.
+- Robotics coordinate-frame conventions, especially right-handed frames and axis definitions.
+
+## Next Lesson Bridge
+
+You now have the two central vector products. The dot product measures alignment and projection. The cross product measures oriented area and rotation axis. Later lessons in linear algebra, multivariable calculus, mechanics, robotics, computer vision, and electromagnetism will reuse these two tools constantly.
