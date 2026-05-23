@@ -1,0 +1,650 @@
+# Equations with Variables on Both Sides
+
+## Re-entry Promise
+
+This lesson assumes you finished lessons 1 and 2 of the linear-equation arc. From lesson 1 you know an equation is a balance statement, and from lesson 2 you can combine like terms on one side, distribute through parentheses, and run the four-step isolation discipline (add/subtract, then multiply/divide). You know to check by substitution.
+
+This lesson does *not* assume anything beyond that. We will not need graphing, slopes, functions, or anything from later modules. We will not assume you have ever solved an equation with variables on both sides — that is exactly what we are here to learn. And we will not assume you remember anything about fractions or decimals beyond what was rebuilt in the earlier modules; when fractions show up we will treat them carefully and slowly.
+
+By the end you should be able to handle any first-degree (linear) equation in one unknown, including the awkward cases where the variable appears on both sides, where fractions clutter the page, where decimals invite arithmetic errors, or where the answer is "every real number" or "no real number." Those last two are not weird exceptions — they are part of the territory, and you should be able to recognize them on sight.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Collect variable terms to one side of an equation using the subtraction (or addition) property of equality.
+- Clear fractions by multiplying every term through by the LCD of all denominators.
+- Clear decimals by multiplying every term through by an appropriate power of ten.
+- Recognize and explain **identities** — equations whose solution set is every real number — and write the answer cleanly.
+- Recognize and explain **contradictions** — equations with no solution — and write the answer cleanly.
+- Strategize about *which* side to collect variables onto so that the remaining coefficient is positive, reducing the sign-error rate.
+- Verify a solution by back-substitution in the original (not the simplified) equation.
+- Solve the parallel-resistor equation $1/R = 1/R_1 + 1/R_2$ for any one of the three resistances, given the other two.
+
+## Why It Matters
+
+Many of the equations engineering throws at you have the unknown on both sides — sometimes openly, sometimes hidden behind algebraic manipulation that will surface it. A short tour:
+
+1. **Equilibrium of a feedback loop.** A control system feeds its output back into its input through a gain. At steady state the input *equals* the output, so the equilibrium condition naturally has the same variable appearing twice — once as "what we put in," once as "what comes out." Solving for the steady-state point is a both-sided equation.
+
+2. **Parallel current pathways.** When two resistors share a node, finding the resistance combination $R$ such that two parallel branches carry the same current produces an equation with $R$ on both sides. Solving requires clearing fractions, exactly what this lesson teaches.
+
+3. **Trajectory crossing.** Two robots, two drones, two planets, two stocks — anything that moves on a one-dimensional schedule has a position equation $x_1(t)$ and $x_2(t)$. They meet when $x_1(t) = x_2(t)$. That equation has $t$ on both sides.
+
+4. **Chemical and biological steady state.** A reactor has reagent flowing in and product flowing out. At steady state, "in" equals "out" — and the concentration variable shows up in both rates. Solving for the steady-state concentration is a both-sided equation.
+
+5. **Transistor operating points.** A self-biased transistor amplifier has its gate voltage set by a resistor divider that depends on the very current it is trying to control. The bias equation has the current on both sides. Solving it gives the operating point.
+
+6. **Parallel-resistor formula.** The combined resistance of two parallel resistors is
+   $$\frac{1}{R} = \frac{1}{R_1} + \frac{1}{R_2}.$$
+   To solve for any single variable you must multiply through by the LCD — the technique this lesson drills.
+
+7. **Capacitors in series.** The reciprocal formula again, structurally identical:
+   $$\frac{1}{C_\text{total}} = \frac{1}{C_1} + \frac{1}{C_2}.$$
+
+8. **Heat balance.** A thermal system at steady state has heat in equal to heat out: $\dot Q_\text{in} = \dot Q_\text{out}$. Both sides usually contain the temperature variable. Same technique.
+
+9. **Mortgage and loan break-even.** Comparing two amortization plans means setting the total cost of plan A equal to the total cost of plan B, both of which depend on the duration variable.
+
+10. **Root-finding.** Whenever you write $f(x) = g(x)$ — which is the most general form of an equation in one variable — you have a "both sides" problem. It is the prototype every numerical root-finder solves by rewriting as $f(x) - g(x) = 0$.
+
+You will keep meeting both-sided equations until you retire. The four-step discipline from lesson 2 is not enough by itself — you also need a *collection step* at the front. That collection step is the heart of this lesson.
+
+## Why This Idea Exists
+
+The notion of an equation as a relation between *two arbitrary expressions* — rather than "some expression equals a number" — is medieval. Greek mathematics, brilliant as it was, treated arithmetic problems geometrically; al-Khwarizmi (9th century) gave us the word *algebra* (from *al-jabr*, "the restoration") but worked with verbal descriptions of equations whose right-hand sides were typically a single quantity.
+
+The first systematic European treatment of equations with structured expressions on *both* sides is in **Rafael Bombelli**'s *L'Algebra* (1572). Bombelli wrote equations with polynomial expressions on each side, and laid out rules for the operations that we now call the addition and subtraction properties of equality: *add equals to equals, the wholes are equal*. He treated this as the foundational move of the discipline.
+
+A few years earlier, in 1557, the Welsh physician and mathematician **Robert Recorde** had introduced the equals sign `=` in *The Whetstone of Witte*, justifying his choice with the lovely sentence that no two things could be more equal than two parallel lines of the same length. Before Recorde, "is equal to" was written out in words or with verbal abbreviations like *aeq.* Recorde's `=` did for equations what Stevin's decimal point did for fractions a generation later — it made the manipulation visible on the page.
+
+The modern *strategic* picture — "collect everything to one side, set the other side to zero, then study the resulting expression" — came together in the work of **François Viète** (*In Artem Analyticem Isagoge*, 1591) and **René Descartes** (*La Géométrie*, 1637). Viète introduced the convention of letters for unknowns and constants; Descartes used the modern letters $x, y, z$ for unknowns and gave us the standard form $f(x) = 0$ for studying equations geometrically. Once an equation could be written cleanly with arbitrary expressions on both sides, the move "subtract the right side from both sides, get zero on the right" became the universal first step.
+
+The *special-case* recognition — that some equations have infinitely many solutions and some have none — is older than the algebra. The Greeks knew, in geometric form, that two coincident lines share every point (identity) while two parallel lines share none (contradiction). When linear equations in one unknown were finally written down algebraically, those two cases reappeared as the corner cases this lesson teaches you to recognize.
+
+The deepest framing — that *every* linear equation in one unknown has exactly zero, one, or infinitely many solutions — is the one-dimensional baby case of a theorem that, in linear algebra, becomes the **rank-nullity theorem**. We will not prove that here. But when you reach the linear-algebra module later, you will recognize that the identity/unique/no-solution trichotomy you learn today is the same trichotomy that governs systems of $n$ equations in $n$ unknowns.
+
+## Plain-Language Intuition
+
+Extend lesson 1's balance metaphor. Both pans now have variable weights as well as constant weights:
+
+$$\underbrace{5x + 3}_{\text{left pan}} = \underbrace{2x + 18}_{\text{right pan}}.$$
+
+The left pan has *five copies of an unknown weight* and *three units of constant weight*. The right pan has *two copies of that same unknown weight* and *eighteen units of constant weight*. The scale balances.
+
+The lesson-2 four-step strategy assumed all variables were already on one pan. They are not. So we add a step zero: move all variable copies to one pan, all constants to the other.
+
+Move two copies of the unknown weight off the right pan (subtract $2x$ from both sides):
+
+$$3x + 3 = 18.$$
+
+Now it looks like a lesson-2 equation. Subtract 3, divide by 3, get $x = 5$.
+
+### Which Pan?
+
+You always have a choice: collect variables onto the *left* or onto the *right*. Either works. But one choice is friendlier — pick the side whose variable coefficient is larger, so that after subtraction the remaining coefficient is positive.
+
+Compare:
+
+- $5x + 3 = 2x + 18$. Larger coefficient (5) is on the left. Subtract $2x$ from both sides. Result: $3x + 3 = 18$. Positive coefficient. Nice.
+- Same equation, wrong-side choice. Subtract $5x$ from both sides: $3 = -3x + 18$. Negative coefficient. Doable, but you have introduced a minus sign that will be easy to mishandle.
+
+Whenever it costs you nothing, choose positive. Sign errors are the most common bug in linear algebra, and you can prevent half of them by choosing well at the start.
+
+### The Decimal and Fraction Pain Killer
+
+Fractions on the page are slow. Decimals on the page are slower (every multiplication step is a separate arithmetic error). The fix is the same in both cases: multiply *every* term, on *both* sides, by a number that cancels the fractions or shifts the decimals into integer territory. The right number is:
+
+- For fractions: the **LCD** (least common denominator) of every denominator that appears.
+- For decimals: a **power of ten** equal to $10^k$, where $k$ is the number of decimal places in the term with the most decimal places.
+
+The point is not just laziness. Once you clear fractions, the equation is a clean integer-coefficient linear equation, and the rest of the work is lesson-2 stuff.
+
+## Core Theory
+
+### The Addition and Subtraction Properties of Equality
+
+If $a = b$, then for any real number $c$,
+
+$$a + c = b + c \qquad\text{and}\qquad a - c = b - c.$$
+
+These were stated in lesson 1. We now use them in a new way: $c$ can itself be an *expression containing the variable*. The property still holds. If $a = b$, then $a - 2x = b - 2x$.
+
+That move — subtracting a variable term from both sides — is what lets you "collect variables to one side."
+
+### The Multiplication Property of Equality
+
+If $a = b$, then for any nonzero real number $c$,
+
+$$ac = bc.$$
+
+When we multiply *every term* on both sides of an equation by the LCD, we are using this property with $c = \text{LCD}$. Because the LCD is positive and nonzero, the equation's solution set is unchanged.
+
+(A nuance to flag now and revisit later: multiplying by an *expression that could be zero* — say multiplying both sides by $x$, when $x$ might be the value zero — can change the solution set. We will not do that in this lesson. But the foreshadowing matters for the quiz.)
+
+### Collecting Variables: The Formal Move
+
+Given $ax + b = cx + d$, subtract $cx$ from both sides:
+
+$$ax - cx + b = d,$$
+
+$$(a - c) x + b = d.$$
+
+You have now reduced a both-sided equation to a one-sided equation. Apply the lesson-2 four-step isolation: subtract $b$, then divide by $(a - c)$.
+
+The lone restriction is $a \ne c$. If $a = c$, the variable terms cancel completely, and what remains is just numbers — either a true statement (identity) or a false one (contradiction). We will treat that case shortly.
+
+### Clearing Fractions: Multiply Through by the LCD
+
+If denominators appear, the LCD-clearing move turns
+
+$$\frac{x + 2}{3} = \frac{x - 1}{4}$$
+
+into
+
+$$12 \cdot \frac{x + 2}{3} = 12 \cdot \frac{x - 1}{4},$$
+
+$$4(x + 2) = 3(x - 1).$$
+
+Then the rest is lesson-2 distribution and isolation. The LCD here was 12 — the least common multiple of 3 and 4.
+
+If there are more than two denominators, take the LCM of all of them. If one term has no denominator, treat it as having denominator 1 and multiply it by the full LCD as well — *every* term on the page gets multiplied. Forgetting one term is the single most common bug in this technique.
+
+### Clearing Decimals: Multiply Through by a Power of Ten
+
+If decimals appear, count the maximum number of decimal places in any term. Multiply every term by $10^k$ where $k$ is that maximum.
+
+$$0.05x + 0.3 = 0.2x - 0.6.$$
+
+Maximum decimal places: 2 (the $0.05$ term). Multiply through by $100$:
+
+$$5x + 30 = 20x - 60.$$
+
+Now it is a clean integer equation.
+
+### Strategic Side Choice
+
+After clearing fractions or decimals, you have an equation of the form $ax + b = cx + d$ with integer (or at least clean) coefficients. Compare $|a|$ and $|c|$. Subtract the *smaller* one from both sides, so the result has a positive coefficient on the variable.
+
+This is a stylistic recommendation, not a mathematical requirement — you will get the right answer either way. But fewer sign errors means fewer rework cycles.
+
+### Special Case 1: Identities
+
+If, after collecting variables and constants, you arrive at a statement like
+
+$$0 = 0 \qquad\text{or}\qquad 7 = 7 \qquad\text{or}\qquad x = x,$$
+
+— a statement that is true regardless of the value of $x$ — then *every real number* is a solution. The equation is called an **identity**.
+
+Concrete example: $3(x + 2) = 3x + 6$. Distribute: $3x + 6 = 3x + 6$. Subtract $3x$ from both sides: $6 = 6$. True for every $x$.
+
+Write the solution as: *all real numbers*, or with set notation, $\{x : x \in \mathbb{R}\}$, or just *every real number is a solution*.
+
+### Special Case 2: Contradictions
+
+If instead you arrive at
+
+$$5 = 7 \qquad\text{or}\qquad 0 = 1 \qquad\text{or}\qquad 3 = -2,$$
+
+— a statement that is false regardless of $x$ — then *no real number* is a solution. The equation is called a **contradiction**.
+
+Concrete example: $2x + 5 = 2x + 7$. Subtract $2x$ from both sides: $5 = 7$. False for every $x$.
+
+Write the solution as: *no solution*, or with set notation, $\{\,\}$ (the empty set), or just *empty solution set*.
+
+### The Trichotomy
+
+A linear equation in one unknown — that is, any equation that simplifies to $Ax = B$ for real constants $A, B$ — has exactly one of three solution sets:
+
+- $A \ne 0$: **unique solution** $x = B/A$.
+- $A = 0$ and $B = 0$: **identity** — every real number works.
+- $A = 0$ and $B \ne 0$: **contradiction** — no real number works.
+
+There is no fourth case. When you reach linear algebra, this exact trichotomy will reappear for systems of $n$ equations in $n$ unknowns, governed by the rank of the coefficient matrix.
+
+### Verification by Back-Substitution
+
+A solved equation is not a verified equation. Substitute your answer into the *original* equation — the one with fractions, decimals, both-sided variables, and all the mess — not the simplified version. If you substitute into the simplified version, you only verify that you did the last step correctly; substituting into the original verifies the entire chain.
+
+For identity and contradiction cases, verify by picking *two* random values for $x$ and checking. If the equation holds for both, you have an identity; if it fails for both with the same kind of mismatch, you have a contradiction.
+
+## Visual or Mental Model
+
+Picture the real number line. The solution set of a linear equation in one unknown is a *subset* of this line. There are only three possible shapes:
+
+- **Unique solution.** A single dot on the line. Example: $x = 5$.
+- **Identity.** The entire line shaded — every point qualifies. Example: $3(x+2) = 3x + 6$.
+- **Contradiction.** The line is empty — no dot anywhere. Example: $2x + 5 = 2x + 7$.
+
+There is no fourth shape. There is no "two dots." (Two dots would require a quadratic, which is a future module.) There is no "an interval but not the whole line" — that would require an *inequality*, also a future module.
+
+Another mental picture: every linear equation $f(x) = g(x)$ can be thought of as two graphs. Solutions are points where the graphs cross. Two lines on a plane cross at a single point (unique), are the same line (identity, infinitely many crossings), or are parallel and never cross (contradiction, no crossings). The three cases are forced by geometry.
+
+## Worked Examples
+
+### Worked Example (a) — Classic Both-Sided
+
+Solve:
+
+$$5x - 3 = 2x + 9.$$
+
+Larger coefficient is on the left, so collect to the left. Subtract $2x$ from both sides:
+
+$$3x - 3 = 9.$$
+
+Add 3 to both sides:
+
+$$3x = 12.$$
+
+Divide by 3:
+
+$$x = 4.$$
+
+Verify in the original equation. Left: $5(4) - 3 = 17$. Right: $2(4) + 9 = 17$. Both sides match.
+
+### Worked Example (b) — Strategic Side Choice
+
+Solve:
+
+$$7 - 4x = 2x + 1.$$
+
+The variable coefficients are $-4$ on the left and $+2$ on the right. To get a positive variable coefficient at the end, collect to the side where the coefficient is *larger* (in the signed sense). Since $2 > -4$, collect to the right. Add $4x$ to both sides:
+
+$$7 = 6x + 1.$$
+
+Subtract 1:
+
+$$6 = 6x.$$
+
+Divide by 6:
+
+$$x = 1.$$
+
+Verify. Left: $7 - 4(1) = 3$. Right: $2(1) + 1 = 3$. Match.
+
+For comparison, the "wrong-side" version: subtract $2x$ from both sides of the original to get $7 - 6x = 1$. Then $-6x = -6$, then $x = 1$. Same answer, but you carried a minus sign through two lines unnecessarily.
+
+### Worked Example (c) — Clearing Fractions
+
+Solve:
+
+$$\frac{x + 2}{3} = \frac{x - 1}{4}.$$
+
+Denominators are 3 and 4. LCD is 12. Multiply *every term* by 12:
+
+$$12 \cdot \frac{x + 2}{3} = 12 \cdot \frac{x - 1}{4}.$$
+
+Cancel:
+
+$$4(x + 2) = 3(x - 1).$$
+
+Distribute:
+
+$$4x + 8 = 3x - 3.$$
+
+Collect variables to the left (larger coefficient). Subtract $3x$:
+
+$$x + 8 = -3.$$
+
+Subtract 8:
+
+$$x = -11.$$
+
+Verify in the original equation. Left: $(-11 + 2) / 3 = -9/3 = -3$. Right: $(-11 - 1) / 4 = -12/4 = -3$. Match.
+
+### Worked Example (d) — Clearing Decimals
+
+Solve:
+
+$$0.05x + 0.3 = 0.2x - 0.6.$$
+
+Maximum decimal places: 2 (from $0.05$). Multiply every term by $100$:
+
+$$5x + 30 = 20x - 60.$$
+
+Collect variables to the right (larger coefficient). Subtract $5x$:
+
+$$30 = 15x - 60.$$
+
+Add 60:
+
+$$90 = 15x.$$
+
+Divide by 15:
+
+$$x = 6.$$
+
+Verify in the original equation. Left: $0.05(6) + 0.3 = 0.3 + 0.3 = 0.6$. Right: $0.2(6) - 0.6 = 1.2 - 0.6 = 0.6$. Match.
+
+### Worked Example (e) — Identity
+
+Solve:
+
+$$3(x + 2) - 6 = 3x.$$
+
+Distribute on the left:
+
+$$3x + 6 - 6 = 3x,$$
+
+$$3x = 3x.$$
+
+Subtract $3x$ from both sides:
+
+$$0 = 0.$$
+
+This is true regardless of the value of $x$. **The equation is an identity. Every real number is a solution.**
+
+You can sanity-check by trying two different values. Try $x = 0$: left is $3(0 + 2) - 6 = 0$, right is $3(0) = 0$. Match. Try $x = 7$: left is $3(7 + 2) - 6 = 27 - 6 = 21$, right is $3(7) = 21$. Match. Two different values both work, exactly as the identity case predicts.
+
+### Worked Example (f) — Contradiction
+
+Solve:
+
+$$4x - 7 = 4x + 2.$$
+
+Subtract $4x$ from both sides:
+
+$$-7 = 2.$$
+
+This is false regardless of $x$. **The equation has no solution.**
+
+Sanity-check by trying any value. $x = 0$: left $-7$, right $2$. Mismatch. $x = 100$: left $393$, right $402$. Same mismatch of 9. The mismatch is *constant*, which is the geometric signature of a contradiction (two parallel lines, vertical gap 9, never crossing).
+
+### Worked Example (g) — Engineering: Parallel Resistors
+
+The parallel-resistor formula is
+
+$$\frac{1}{R} = \frac{1}{R_1} + \frac{1}{R_2}.$$
+
+Given $R = 6\ \Omega$ and $R_1 = 10\ \Omega$, find $R_2$.
+
+Substitute the known values:
+
+$$\frac{1}{6} = \frac{1}{10} + \frac{1}{R_2}.$$
+
+The denominators are $6$, $10$, and $R_2$. The LCD that wipes out $6$ and $10$ is $30$. But we cannot multiply by $R_2$ blindly without confirming $R_2 \ne 0$, so let us first isolate the $R_2$ term by subtracting $1/10$ from both sides:
+
+$$\frac{1}{6} - \frac{1}{10} = \frac{1}{R_2}.$$
+
+Combine fractions on the left. LCD of 6 and 10 is 30:
+
+$$\frac{5}{30} - \frac{3}{30} = \frac{1}{R_2},$$
+
+$$\frac{2}{30} = \frac{1}{R_2},$$
+
+$$\frac{1}{15} = \frac{1}{R_2}.$$
+
+Take reciprocals of both sides (which is valid because both sides are nonzero):
+
+$$R_2 = 15\ \Omega.$$
+
+Verify in the original equation:
+
+$$\frac{1}{10} + \frac{1}{15} = \frac{3}{30} + \frac{2}{30} = \frac{5}{30} = \frac{1}{6}.$$
+
+Match.
+
+There is an alternative path: multiply through by $30 R_2$ from the start. That gives $5 R_2 = 3 R_2 + 30$, hence $2 R_2 = 30$, hence $R_2 = 15$. Same answer, slightly different route. Both are correct.
+
+The intuition behind the answer: a $6\ \Omega$ parallel combination is "more conductive" than either branch alone. To get that from a $10\ \Omega$ branch, the second branch must add enough conductance — and a $15\ \Omega$ branch does the job.
+
+### Worked Example (h) — Failure Mode: The Sign-Flip Bug
+
+A student is asked to solve
+
+$$5 - 3x = 2x + 11.$$
+
+They write:
+
+```
+5 - 3x = 2x + 11
+5 - 3x - 2x = 11        (subtracted 2x from both sides)
+5 - x = 11              (combined -3x and -2x WRONG)
+-x = 6
+x = -6
+```
+
+What went wrong? In the third line they combined $-3x - 2x$ as $-x$. That is wrong: $-3x - 2x = -5x$, not $-x$. The student likely mentally did "the difference is 1" because $3$ and $2$ differ by $1$, but both coefficients are negative, so the operation is *addition of magnitudes with a negative sign*, not subtraction.
+
+The correct third line is $5 - 5x = 11$, then $-5x = 6$, then $x = -6/5$.
+
+Verify the correct answer in the original equation. Left: $5 - 3(-6/5) = 5 + 18/5 = 25/5 + 18/5 = 43/5$. Right: $2(-6/5) + 11 = -12/5 + 55/5 = 43/5$. Match.
+
+The student's *incorrect* answer $x = -6$ would have failed verification immediately: left would be $5 - 3(-6) = 23$, right would be $2(-6) + 11 = -1$. Wildly mismatched. The check would have caught the bug. Always check.
+
+The general lesson: when subtracting a variable term that already carries a minus sign, write the operation out explicitly. "$-3x - 2x$" is "negative three plus negative two, all times $x$" — which is $-5x$, not $-x$.
+
+## Engineering Connections
+
+### Parallel Resistors — The Reciprocal Workhorse
+
+The formula
+
+$$\frac{1}{R} = \frac{1}{R_1} + \frac{1}{R_2}$$
+
+generalizes to $n$ resistors:
+
+$$\frac{1}{R} = \sum_{k=1}^{n} \frac{1}{R_k}.$$
+
+Every problem of "what total resistance does a node see, looking into a bank of $n$ parallel resistors" is a both-sided, fraction-heavy equation. The technique you learn here scales directly. (For two resistors there is a famous shortcut, $R = R_1 R_2 / (R_1 + R_2)$, which you can derive in three lines from the general formula by clearing fractions.)
+
+### Capacitors in Series
+
+A pair of capacitors in series obeys
+
+$$\frac{1}{C_\text{total}} = \frac{1}{C_1} + \frac{1}{C_2}.$$
+
+This is the same equation as parallel resistors, structurally. The same LCD-clearing technique solves it. (Capacitors *in parallel* simply add, $C_\text{total} = C_1 + C_2$, which is the easier case.)
+
+### Inductors and Springs
+
+Springs in series — and inductors in parallel — obey the same reciprocal-sum formula. The bookkeeping is dialect; the algebra is identical.
+
+### Root-Finding: $f(x) = g(x)$ is $f(x) - g(x) = 0$
+
+Any numerical root-finder (bisection, Newton's method, secant) wants the equation in the form $h(x) = 0$. If you start with $f(x) = g(x)$ you rewrite as $h(x) = f(x) - g(x) = 0$. That rewrite is exactly the lesson-this-lesson collection step, generalized to any function. The strategic habit of "collect everything to one side" is foundational to numerical computing.
+
+### Control Theory: PID Stability and Steady State
+
+A closed-loop control system at steady state satisfies an equation in which the reference input equals the plant output through a chain of gains. The variable (steady-state error, output, or control signal) appears on both sides. Solving for it requires the collection move from this lesson. Whole textbooks on control theory rest on this skill being automatic.
+
+### Heat Balance and Thermal Equilibrium
+
+A heat sink at thermal equilibrium has $\dot Q_\text{in} = \dot Q_\text{out}$, with both sides containing the unknown temperature. Solving for that temperature is a both-sided algebra problem before it is anything else.
+
+### Chemistry: Mass-Balance at Steady State
+
+A continuous-flow stirred reactor at steady state has reagent flowing in at a rate that equals the rate of consumption inside. Both rates depend on the concentration, which appears on both sides of the balance equation. Solve as a linear (or sometimes nonlinear) both-sided equation.
+
+## Practice Set
+
+### Warmups: Variables on Both Sides
+
+Solve each. Use strategic side choice and verify by substitution.
+
+1. $4x + 7 = 2x + 19$.
+2. $6x - 5 = 3x + 7$.
+3. $9 - 2x = x + 3$.
+4. $5x + 1 = 8x - 14$.
+5. $11 - 3x = 5 + x$.
+6. $7x - 4 = 2x + 16$.
+7. $-2x + 9 = 3x - 1$.
+8. $4(x - 1) = 2x + 6$ (distribute first).
+
+### Applied: Fractions and Decimals
+
+Solve. For fraction problems, clear by LCD first. For decimal problems, clear by power of ten.
+
+1. $\dfrac{x}{2} + 3 = \dfrac{x}{5} + 6$.
+2. $\dfrac{2x - 1}{3} = \dfrac{x + 4}{2}$.
+3. $\dfrac{x + 1}{4} - \dfrac{x - 2}{6} = 1$.
+4. $0.4x - 0.1 = 0.1x + 0.5$.
+5. $0.03x + 1.2 = 0.05x - 0.4$.
+6. $1.5(x - 2) = 0.5x + 3$.
+
+### Error-Spotting
+
+For each, identify the error in the student's work and write the corrected solution.
+
+1. Student solves $5x - 2 = 3x + 8$ as follows:
+   ```
+   5x - 2 = 3x + 8
+   5x - 3x = 8 + 2     (collect)
+   2x = 10
+   x = 5
+   ```
+   Is the answer right? Is the *work* right? Both? Neither? Explain what the student should have written for the second line and why their shortcut is dangerous in harder problems.
+
+2. Student solves $7 - 4x = 2x + 1$ as follows:
+   ```
+   7 - 4x = 2x + 1
+   7 - 4x - 2x = 1
+   7 - 2x = 1          (combined -4x and -2x WRONG)
+   -2x = -6
+   x = 3
+   ```
+   Identify the bug, write the correct chain.
+
+3. Student tries to solve $\dfrac{x + 1}{2} = \dfrac{x - 3}{4} + 2$ by multiplying by 4:
+   ```
+   x + 1 / 2 * 4 = x - 3 + 2     (forgot to multiply the +2 term by 4!)
+   2(x + 1) = x - 3 + 2
+   2x + 2 = x - 1
+   x = -3
+   ```
+   Identify the missing step and write the corrected solution.
+
+### Challenge
+
+1. Determine the solution set:
+   $$5(2x - 3) - 4 = 10x - 19.$$
+   Watch out — this one looks like a normal equation but is hiding something. Show your work.
+
+2. A circuit has two unknown resistors in parallel. Their combined resistance is $4\ \Omega$. You measure $R_1 = 12\ \Omega$. Find $R_2$. Show all algebra, including LCD-clearing. Verify in the original formula.
+
+## Build Task
+
+Build a Python function `classify_linear(equation_str)` that returns one of `"unique"`, `"identity"`, or `"no_solution"`, along with the solution(s) where applicable. Use SymPy for the heavy lifting.
+
+```python
+from sympy import symbols, sympify, simplify, solveset, S, Eq
+
+x = symbols("x")
+
+def classify_linear(equation_str: str):
+    """
+    Classify a linear-in-x equation written as 'lhs = rhs'.
+
+    Returns a tuple (label, solution) where:
+      label is one of "unique", "identity", "no_solution".
+      For "unique", solution is the single value of x as a SymPy expression.
+      For "identity", solution is S.Reals.
+      For "no_solution", solution is S.EmptySet.
+    """
+    lhs_str, rhs_str = equation_str.split("=")
+    lhs = sympify(lhs_str)
+    rhs = sympify(rhs_str)
+    diff = simplify(lhs - rhs)
+
+    # If diff is identically zero, every x is a solution.
+    if diff == 0:
+        return ("identity", S.Reals)
+
+    # If diff is a nonzero constant (no x), there is no solution.
+    if x not in diff.free_symbols:
+        return ("no_solution", S.EmptySet)
+
+    # Otherwise solveset returns the unique solution (for a linear eq).
+    sol = solveset(Eq(lhs, rhs), x, domain=S.Reals)
+    return ("unique", sol)
+
+
+# Six test cases covering every corner.
+tests = [
+    "5*x - 3 = 2*x + 9",            # unique, x = 4
+    "(x + 2)/3 = (x - 1)/4",         # unique, x = -11
+    "0.05*x + 0.3 = 0.2*x - 0.6",    # unique, x = 6
+    "3*(x + 2) - 6 = 3*x",           # identity
+    "4*x - 7 = 4*x + 2",             # no_solution
+    "7 - 4*x = 2*x + 1",             # unique, x = 1
+]
+
+for eqn in tests:
+    label, sol = classify_linear(eqn)
+    print(f"{eqn:35s}  ->  {label:12s}  {sol}")
+```
+
+Expected output (your numerical formats may vary slightly):
+
+```
+5*x - 3 = 2*x + 9                    ->  unique        {4}
+(x + 2)/3 = (x - 1)/4                ->  unique        {-11}
+0.05*x + 0.3 = 0.2*x - 0.6           ->  unique        {6.00000000000000}
+3*(x + 2) - 6 = 3*x                  ->  identity      Reals
+4*x - 7 = 4*x + 2                    ->  no_solution   EmptySet
+7 - 4*x = 2*x + 1                    ->  unique        {1}
+```
+
+Run the script. Confirm every classification matches the lesson's analysis. Add at least two of your own test cases — one identity you construct yourself and one contradiction — and verify the classifier handles them. Commit the script to your build log.
+
+## Quiz
+
+Eight conceptual questions. Write answers in your own words.
+
+1. After collecting variables to one side and constants to the other, you end up with $0 = 0$. What is the solution set, and why?
+
+2. After collecting variables and constants, you end up with $0 = 5$. What is the solution set, and why?
+
+3. Why do we multiply *every* term by the LCD when clearing fractions, instead of just the terms that have a denominator?
+
+4. Why is multiplying both sides by a *constant* always safe, but multiplying both sides by an *expression that contains the variable* potentially risky? (Foreshadow: think about what happens if that expression equals zero for some value of $x$.)
+
+5. When you have $ax + b = cx + d$ and want to collect variables onto one side, which side should you pick to avoid sign errors? Explain the strategy in one sentence.
+
+6. State the trichotomy: every linear equation in one unknown has exactly how many solutions, and which three cases are possible?
+
+7. Why is verifying a solution by substitution into the *original* equation more informative than substituting into the simplified version?
+
+8. Suppose you encounter the equation $0.025x - 0.4 = 0.1x + 0.05$. By what number would you multiply through to clear the decimals, and why?
+
+### Answer Sketches
+
+1. Every real number is a solution. The statement is true regardless of $x$ because $x$ has been algebraically eliminated and what remains is a true numeric identity.
+2. No solution. The statement is false regardless of $x$ because $x$ has been eliminated and what remains is a contradiction.
+3. The multiplication property of equality says "multiply both sides by the same nonzero number." A *side* is the *whole expression*, including every term in it. Multiplying only some terms changes the equation's meaning.
+4. Multiplying by a nonzero constant preserves the solution set exactly. Multiplying by a variable expression *can* introduce *extraneous* solutions — specifically, values that make the multiplier zero — because the new equation is satisfied at those zeros even if the original was not. Verification by substitution into the original equation catches the extras. (This is foundational for rational equations, which you will meet later.)
+5. Subtract the side with the *smaller* variable coefficient, so that the remaining coefficient is positive.
+6. Exactly one of three cases: unique solution (when $A \ne 0$ in $Ax = B$), identity / infinitely many solutions (when $A = 0$ and $B = 0$), or contradiction / no solution (when $A = 0$ and $B \ne 0$).
+7. Substituting into the simplified version only verifies the last few algebra steps. Substituting into the original verifies the entire chain of reasoning, including the first steps (like LCD-clearing) where most mistakes happen.
+8. The term $0.025$ has three decimal places, the most of any term. Multiply through by $10^3 = 1000$.
+
+## Proof of Completion
+
+To prove you have completed this lesson, commit to your build log:
+
+- The Python file containing your `classify_linear` function and the run output for all eight test cases (six provided plus your two added ones).
+- A short note (3–5 sentences) describing one engineering scenario where you have encountered, or expect to encounter, a both-sided linear equation. Use the parallel-resistor scenario only if you cannot think of another.
+- Your worked solutions to the two challenge problems, with verification.
+
+## Sources and Further Study
+
+- **Serge Lang**, *Basic Mathematics* (Springer, 1971). Chapter 1 (Numbers) and Chapter 2 (Linear Equations). Lang's treatment is short, rigorous, and well-suited to a PhD-prep arc.
+- **Israel M. Gelfand and Alexander Shen**, *Algebra* (Birkhäuser, 1993). A Russian-tradition treatment that takes linear equations seriously as a stepping-stone to deeper algebra.
+- **Rafael Bombelli**, *L'Algebra* (1572). The historical primary source for systematic both-sided equation handling. Selections appear in many history-of-mathematics readers; the full Italian text is available as a scanned manuscript online.
+- **MIT OCW 18.01** (Single Variable Calculus). Not strictly an algebra course, but the early problem sets exercise linear equation manipulation under time pressure. Useful for fluency.
+- **Gilbert Strang**, *Introduction to Linear Algebra*, opening lectures (MIT OCW 18.06). Watch the first two lectures even though you do not yet have the matrix machinery — they preview the trichotomy (unique / infinite / none) at the system level and will make today's trichotomy feel inevitable.
+- **Khan Academy: Algebra Basics**, the units on variables on both sides, on equations with fractions, and on identities and no-solution equations. Free, well-paced practice.
+
+## Next Lesson Bridge
+
+You now have three new tools.
+
+- **Collect variables to one side.** Useful whenever an unknown appears on both sides of an equation — which is most engineering equations.
+- **Clear fractions and decimals by multiplying through.** Useful whenever an equation involves rational expressions or decimal coefficients.
+- **Recognize identities and contradictions.** Useful whenever an algebraic manipulation eliminates the variable entirely and you need to interpret what remains.
+
+The next lesson, **Rearranging Engineering Formulas**, puts those tools to work on the actual formulas of physics and engineering. $V = IR$ to solve for $I$ or $R$. $F = ma$ to solve for $a$ or $m$. The kinematic equation $v^2 = v_0^2 + 2a\Delta x$ to solve for $\Delta x$ or $a$. The parallel-resistor formula to solve for $R_2$ given $R$ and $R_1$ — exactly the worked example you just did, but now generalized.
+
+You will not meet anything truly new in the next lesson, in the sense of new algebraic techniques. Instead you will exercise the techniques you already know against the actual formulas you will use for the next forty years. That is the point of the lesson: to make the formulas feel pliable, rearrangeable, alive — rather than fixed inscriptions to be memorized.
+
+When you can rearrange $V = IR$ for any of its three variables in fifteen seconds, with units, and verify the answer, you are ready.
