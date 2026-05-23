@@ -355,6 +355,34 @@ assert.equal(checkAnswer(factoringById["lost-root"], "0").correct, true);
 assert.equal(checkAnswer(factoringById["projectile-factor"], "4 s").correct, true);
 assert.equal(checkAnswer(factoringById["difference-squares"], "(x-9)(x+9)").correct, false);
 
+const polynomialDivisionCheck = getLessonCheck("polynomial-division-and-factor-theorem-check");
+assert.ok(polynomialDivisionCheck, "Expected polynomial-division-and-factor-theorem-check to exist");
+
+const polynomialDivisionById = Object.fromEntries(polynomialDivisionCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(polynomialDivisionById["remainder-theorem"], "18").correct, true);
+assert.equal(checkAnswer(polynomialDivisionById["factor-theorem"], "x - 3").correct, true);
+assert.equal(checkAnswer(polynomialDivisionById["synthetic-sign"], "-2").correct, true);
+assert.equal(checkAnswer(polynomialDivisionById["cubic-quotient"], "x^2 - 5x + 6").correct, true);
+assert.equal(checkAnswer(polynomialDivisionById["rational-root-candidate"], "yes").correct, true);
+assert.equal(checkAnswer(polynomialDivisionById["quotient-remainder"], "x+2+3/(x+1)").correct, true);
+assert.equal(checkAnswer(polynomialDivisionById["missing-zero-coefficients"], "yes").correct, true);
+assert.equal(checkAnswer(polynomialDivisionById["synthetic-sign"], "2").correct, false);
+
+const rationalFunctionsCheck = getLessonCheck("rational-functions-and-asymptotes-check");
+assert.ok(rationalFunctionsCheck, "Expected rational-functions-and-asymptotes-check to exist");
+
+const rationalFunctionsById = Object.fromEntries(rationalFunctionsCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(rationalFunctionsById["domain-restriction"], "x = 3").correct, true);
+assert.equal(checkAnswer(rationalFunctionsById["hole-point"], "(1, 2)").correct, true);
+assert.equal(checkAnswer(rationalFunctionsById["vertical-asymptote"], "x=4").correct, true);
+assert.equal(checkAnswer(rationalFunctionsById["horizontal-asymptote"], "y = 2/5").correct, true);
+assert.equal(checkAnswer(rationalFunctionsById["slant-asymptote"], "y=x+2").correct, true);
+assert.equal(checkAnswer(rationalFunctionsById["one-sided-positive"], "+infinity").correct, true);
+assert.equal(checkAnswer(rationalFunctionsById["cancel-factors-not-terms"], "no").correct, true);
+assert.equal(checkAnswer(rationalFunctionsById["cancel-factors-not-terms"], "yes").correct, false);
+
 const signedCheck = getLessonCheck("signed-numbers-core-check");
 assert.ok(signedCheck, "Expected signed-numbers-core-check to exist");
 

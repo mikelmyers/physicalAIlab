@@ -1,0 +1,622 @@
+# Rational Functions and Asymptotes
+
+## Re-entry Promise
+
+This lesson assumes you can factor polynomials and understand domain restrictions. It does not assume asymptotes already make intuitive sense.
+
+A rational function is a ratio of polynomials. Ratios are everywhere in engineering: gain, efficiency, impedance, transfer functions, rates, normalized errors, and signal-to-noise. But ratios can break when the denominator is zero, and their long-range behavior can approach lines or levels without touching them.
+
+By the end, you should be able to find domains, holes, vertical asymptotes, horizontal asymptotes, and slant asymptotes for common rational functions.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Define a rational function.
+- Find domain restrictions from denominator zeros.
+- Distinguish holes from vertical asymptotes.
+- Find vertical asymptotes after simplifying common factors.
+- Find horizontal asymptotes by comparing degrees.
+- Find slant asymptotes using polynomial division.
+- Analyze one-sided behavior near a vertical asymptote.
+- Use a reliable graphing workflow: domain, simplification, holes, asymptotes, intercepts, and sign behavior.
+- Sketch rational-function behavior from factors and asymptotes.
+- Explain why denominator behavior matters in physical systems.
+- Connect rational functions to control transfer functions, filters, impedance, and normalized models.
+
+## Plain-Language Intuition
+
+A rational function is a fraction where the top and bottom are polynomials:
+
+$$
+R(x)=\frac{P(x)}{Q(x)}
+$$
+
+The denominator is dangerous. If it becomes zero, the expression is undefined. Sometimes that undefined point is a removable hole. Sometimes the function shoots upward or downward without bound, creating a vertical asymptote.
+
+An asymptote is a line the graph approaches. It describes behavior near forbidden inputs or far away from the origin.
+
+## Why This Idea Exists
+
+Ratios model relationships where one quantity is normalized by another:
+
+- Output/input gain.
+- Voltage/current impedance.
+- Signal/noise ratio.
+- Transfer functions in control systems.
+- Efficiency as useful output divided by input.
+- Error divided by scale.
+- Camera projection formulas with depth in the denominator.
+
+Rational functions teach a critical engineering habit: denominators are not passive. They control singularities, instability, and limits.
+
+## Core Theory
+
+### Rational Function Definition
+
+A rational function has form:
+
+$$
+R(x)=\frac{P(x)}{Q(x)}
+$$
+
+where $P$ and $Q$ are polynomials and $Q(x)\ne0$.
+
+### Domain Restrictions
+
+The domain excludes values that make the denominator zero.
+
+Example:
+
+$$
+R(x)=\frac{x+1}{x-3}
+$$
+
+Domain:
+
+$$
+x\ne3
+$$
+
+### Holes
+
+A hole occurs when a factor cancels from numerator and denominator.
+
+Example:
+
+$$
+R(x)=\frac{(x-2)(x+1)}{x-2}
+$$
+
+For $x\ne2$, this simplifies to:
+
+$$
+x+1
+$$
+
+But $x=2$ is still excluded from the original function. The graph has a hole at:
+
+$$
+(2,3)
+$$
+
+### Vertical Asymptotes
+
+A vertical asymptote occurs when a denominator factor remains after simplification.
+
+Example:
+
+$$
+R(x)=\frac{x+1}{x-3}
+$$
+
+Vertical asymptote:
+
+$$
+x=3
+$$
+
+### One-Sided Behavior Near A Vertical Asymptote
+
+Finding $x=3$ as a vertical asymptote is not the whole story. You should also ask what happens from the left and from the right.
+
+For:
+
+$$
+R(x)=\frac{1}{x-3}
+$$
+
+as $x\to3^+$, the denominator is a tiny positive number, so:
+
+$$
+R(x)\to+\infty
+$$
+
+as $x\to3^-$, the denominator is a tiny negative number, so:
+
+$$
+R(x)\to-\infty
+$$
+
+This sign reasoning is more important than memorizing graph shapes. It tells you which way the graph shoots near a forbidden input.
+
+### Horizontal Asymptotes
+
+Compare degrees of numerator and denominator.
+
+Let numerator degree be $n$, denominator degree be $d$.
+
+- If $n<d$, horizontal asymptote is $y=0$.
+- If $n=d$, horizontal asymptote is ratio of leading coefficients.
+- If $n>d$, there is no horizontal asymptote. There may be a slant or polynomial asymptote.
+
+Examples:
+
+$$
+\frac{3x+1}{x^2+1}\to0
+$$
+
+$$
+\frac{2x^2+1}{5x^2-3}\to\frac25
+$$
+
+### Slant Asymptote
+
+If numerator degree is exactly one more than denominator degree, divide.
+
+Example:
+
+$$
+\frac{x^2+3x+5}{x+1}=x+2+\frac{3}{x+1}
+$$
+
+As $|x|$ grows, the fraction term approaches 0, so the slant asymptote is:
+
+$$
+y=x+2
+$$
+
+### Intercepts
+
+$x$-intercepts occur when numerator is zero and denominator is not zero.
+
+$y$-intercept occurs at $x=0$ if defined.
+
+### Graphing Workflow
+
+For a rational function:
+
+$$
+R(x)=\frac{P(x)}{Q(x)}
+$$
+
+use this sequence:
+
+1. Factor numerator and denominator.
+2. Record every denominator zero as excluded from the domain.
+3. Cancel common factors only after recording exclusions.
+4. Canceled factors become holes.
+5. Uncanceled denominator factors become vertical asymptotes.
+6. Compare degrees or divide to find horizontal/slant/polynomial asymptotes.
+7. Find intercepts from the simplified expression, while respecting exclusions.
+8. Test signs on intervals split by holes, intercepts, and vertical asymptotes.
+9. Sketch behavior near asymptotes and far away.
+
+This workflow is deliberately slow at first. Speed comes after the order becomes automatic.
+
+## Visual Or Mental Model
+
+The denominator creates forbidden places. The numerator creates zeros. Common factors create holes. Uncanceled denominator factors create vertical asymptotes. Degree comparison controls far-away behavior.
+
+Before graphing, factor first.
+
+## Worked Examples
+
+### Example 1: Domain
+
+Find domain:
+
+$$
+R(x)=\frac{2x+1}{x^2-9}
+$$
+
+Denominator:
+
+$$
+x^2-9=(x-3)(x+3)
+$$
+
+Domain:
+
+$$
+x\ne3,\quad x\ne-3
+$$
+
+### Example 2: Hole
+
+$$
+R(x)=\frac{x^2-1}{x-1}
+$$
+
+Factor:
+
+$$
+\frac{(x-1)(x+1)}{x-1}
+$$
+
+Hole at $x=1$. Simplified function is $x+1$, so hole point is:
+
+$$
+(1,2)
+$$
+
+### Example 3: Vertical Asymptote
+
+$$
+R(x)=\frac{x+2}{x-4}
+$$
+
+No common factor. Vertical asymptote:
+
+$$
+x=4
+$$
+
+Check one-sided behavior:
+
+- As $x\to4^+$, the denominator is positive and the numerator is near 6, so $R(x)\to+\infty$.
+- As $x\to4^-$, the denominator is negative and the numerator is near 6, so $R(x)\to-\infty$.
+
+### Example 4: Horizontal Asymptote Degree Smaller On Top
+
+$$
+R(x)=\frac{5x+1}{x^2+3}
+$$
+
+Numerator degree 1, denominator degree 2. Horizontal asymptote:
+
+$$
+y=0
+$$
+
+### Example 5: Horizontal Asymptote Equal Degree
+
+$$
+R(x)=\frac{6x^2-1}{3x^2+4x}
+$$
+
+Same degree. Ratio of leading coefficients:
+
+$$
+y=\frac63=2
+$$
+
+### Example 6: Slant Asymptote
+
+$$
+R(x)=\frac{x^2+3x+5}{x+1}
+$$
+
+Divide:
+
+$$
+R(x)=x+2+\frac{3}{x+1}
+$$
+
+Slant asymptote:
+
+$$
+y=x+2
+$$
+
+### Example 7: Hole Plus Vertical Asymptote
+
+$$
+R(x)=\frac{(x-2)(x+1)}{(x-2)(x-5)}
+$$
+
+Cancel $x-2$ for simplified behavior:
+
+$$
+\frac{x+1}{x-5}
+$$
+
+Hole at $x=2$. Its $y$ value:
+
+$$
+\frac{2+1}{2-5}=-1
+$$
+
+Vertical asymptote:
+
+$$
+x=5
+$$
+
+### Example 8: Transfer Function
+
+A simple transfer function:
+
+$$
+H(s)=\frac{s+2}{s+5}
+$$
+
+Zero at $s=-2$, pole at $s=-5$. The denominator root is a pole, not just an algebraic inconvenience. In control systems, pole locations shape stability and response.
+
+### Example 9: Full Graphing Workflow
+
+Analyze:
+
+$$
+R(x)=\frac{(x-1)(x+2)}{(x-1)(x-3)}
+$$
+
+Domain exclusions:
+
+$$
+x\ne1,\quad x\ne3
+$$
+
+Cancel the common factor $x-1$:
+
+$$
+R(x)=\frac{x+2}{x-3},\quad x\ne1,3
+$$
+
+Hole:
+
+At $x=1$:
+
+$$
+y=\frac{1+2}{1-3}=-\frac32
+$$
+
+so the hole is:
+
+$$
+\left(1,-\frac32\right)
+$$
+
+Vertical asymptote:
+
+$$
+x=3
+$$
+
+Horizontal asymptote:
+
+Degrees are equal, leading coefficient ratio is 1, so:
+
+$$
+y=1
+$$
+
+$x$-intercept:
+
+$$
+x=-2
+$$
+
+$y$-intercept:
+
+$$
+R(0)=\frac{2}{3}
+$$
+
+This is enough structure to sketch the graph without plotting hundreds of points.
+
+## Engineering Connections
+
+### Control Systems
+
+Transfer functions are rational functions. Denominator roots are poles; numerator roots are zeros.
+
+### Signal Processing
+
+Filters use rational functions in frequency or complex variables. Asymptotic behavior describes gain at high or low frequency.
+
+### Circuits
+
+Impedance and gain formulas often become rational expressions of frequency.
+
+### Computer Vision
+
+Perspective projection divides by depth. When depth approaches zero, behavior becomes singular.
+
+### Normalized Error
+
+Ratios like error/scale are rational-like. Small denominators can amplify noise or create instability.
+
+## Common Failure Modes
+
+1. Canceling terms instead of factors.
+2. Forgetting canceled denominator zeros are still excluded.
+3. Calling a hole a vertical asymptote.
+4. Missing a vertical asymptote after partial simplification.
+5. Applying horizontal asymptote rules before simplifying.
+6. Forgetting slant asymptote when numerator degree is one higher.
+7. Treating denominator zero as output zero.
+8. Ignoring physical meaning of denominator approaching zero.
+9. Dropping domain restrictions after algebraic simplification.
+10. Confusing zeros of numerator with zeros of denominator.
+11. Finding an asymptote but never checking one-sided sign behavior.
+12. Sketching before recording domain exclusions.
+
+## Practice Problems
+
+### Domain
+
+1. Find domain of $(x+1)/(x-3)$.
+2. Find domain of $(2x+1)/(x^2-9)$.
+3. Find domain of $x/(x^2+x)$.
+4. Find domain of $(x^2-1)/(x-1)$.
+5. Find domain of $(x+2)/(x^2-4)$.
+6. Why can denominator not equal zero?
+7. If denominator has factor $(x+7)$, what value is excluded?
+8. If denominator is $x^2+1$, are any real values excluded?
+9. Find domain of $(x-5)/(x^2-25)$.
+10. Find domain of $(x+3)/(x^2+6x+9)$.
+
+### Holes And Vertical Asymptotes
+
+11. Does $(x^2-1)/(x-1)$ have a hole or vertical asymptote at $x=1$?
+12. Find the hole point for problem 11.
+13. Does $(x+2)/(x-4)$ have a vertical asymptote?
+14. Where?
+15. Simplify $((x-2)(x+1))/((x-2)(x-5))$.
+16. Find the hole for problem 15.
+17. Find the vertical asymptote for problem 15.
+18. What causes a hole?
+19. What causes a vertical asymptote?
+20. Why must factors be canceled, not terms?
+
+### Horizontal And Slant Asymptotes
+
+21. Horizontal asymptote of $(3x+1)/(x^2+1)$.
+22. Horizontal asymptote of $(2x^2+1)/(5x^2-3)$.
+23. Horizontal asymptote of $(7x^3+1)/(2x^3-x)$.
+24. Horizontal asymptote of $(x^2+1)/(x+1)$?
+25. Slant asymptote of $(x^2+3x+5)/(x+1)$.
+26. What degree relationship creates a slant asymptote?
+27. If numerator degree is less than denominator degree, what is horizontal asymptote?
+28. If degrees are equal, how do you find horizontal asymptote?
+29. Why does the remainder term shrink far from the origin?
+30. What does the quotient from division represent asymptotically?
+
+### Intercepts And Behavior
+
+31. Find x-intercept of $(x-2)/(x+5)$.
+32. Find y-intercept of $(x-2)/(x+5)$.
+33. Find x-intercepts of $((x-1)(x+3))/(x-4)$.
+34. Does $((x-1)(x+3))/(x-1)$ have x-intercept at $x=1$?
+35. Why not?
+36. What happens near a vertical asymptote?
+37. Can a graph cross a horizontal asymptote?
+38. Can a graph be defined at a hole?
+39. What is the difference between undefined and zero?
+40. How can factoring help sketch a rational function?
+
+### Challenge And Error Spotting
+
+41. A student cancels $x$ in $(x+1)/x$ and gets 1. Correct them.
+42. A student says $(x^2-1)/(x-1)=x+1$ for all $x$. What did they miss?
+43. A student says denominator zero means function output is zero. Correct them.
+44. A student finds horizontal asymptote of $(x^2+3x+5)/(x+1)$ as $y=1$. Correct them.
+45. Explain why $((x-2)(x+1))/((x-2)(x-5))$ has both a hole and an asymptote.
+46. Give a rational function with vertical asymptote $x=4$.
+47. Give a rational function with a hole at $x=2$.
+48. Give a rational function with horizontal asymptote $y=3$.
+49. Give one engineering danger of a denominator near zero.
+50. Give one control-system interpretation of a denominator root.
+
+## Answer Key
+
+1. $x\ne3$.
+2. $x\ne3,-3$.
+3. $x\ne0,-1$.
+4. $x\ne1$.
+5. $x\ne2,-2$.
+6. Division by zero is undefined.
+7. $x=-7$.
+8. No real exclusions.
+9. $x\ne5,-5$.
+10. $x\ne-3$.
+11. Hole.
+12. $(1,2)$.
+13. Yes.
+14. $x=4$.
+15. $(x+1)/(x-5)$ with $x\ne2,5$.
+16. $(2,-1)$.
+17. $x=5$.
+18. A common factor that cancels.
+19. An uncanceled denominator factor.
+20. Only factors multiply the whole numerator/denominator.
+21. $y=0$.
+22. $y=2/5$.
+23. $y=7/2$.
+24. None horizontal; slant exists.
+25. $y=x+2$.
+26. Numerator degree exactly one more than denominator degree.
+27. $y=0$.
+28. Ratio of leading coefficients.
+29. Denominator grows while remainder degree is smaller.
+30. The long-run polynomial/line behavior.
+31. $x=2$.
+32. $-2/5$.
+33. $x=1,-3$.
+34. No.
+35. $x=1$ is a hole/excluded input.
+36. Values grow without bound or plunge without bound depending on side.
+37. Yes, sometimes.
+38. No, the original function is undefined there.
+39. Undefined means no output; zero is an output value.
+40. It reveals holes, asymptotes, and intercepts.
+41. $x$ is not a factor of $x+1$; no cancellation is allowed.
+42. $x=1$ remains excluded.
+43. Denominator zero means undefined, often an asymptote or hole.
+44. Numerator degree is one higher, so slant asymptote from division is $y=x+2$.
+45. $x-2$ cancels causing a hole, while $x-5$ remains causing an asymptote.
+46. $1/(x-4)$.
+47. $(x-2)(x+1)/(x-2)$.
+48. $(3x+1)/(x+2)$.
+49. Amplified noise, instability, overflow, or singular projection.
+50. A pole affecting stability and transient response.
+
+## Build Task
+
+Create a "rational function analyzer" as a script, spreadsheet, notebook, or careful worksheet.
+
+Minimum requirements:
+
+1. Factor numerator and denominator for at least five rational functions.
+2. Identify domain restrictions.
+3. Identify holes.
+4. Identify vertical asymptotes.
+5. Identify horizontal or slant asymptotes.
+6. Compute intercepts when defined.
+7. Include one quotient-plus-remainder example.
+8. Include one control, circuit, vision, or normalized-error interpretation.
+
+Stretch:
+
+- Plot rational functions with asymptotes.
+- Add warnings for denominator values near zero.
+- Classify holes versus vertical asymptotes automatically from factors.
+
+## Quiz
+
+1. What is a rational function?
+2. Why are denominator zeros excluded?
+3. What creates a hole?
+4. What creates a vertical asymptote?
+5. How do you find horizontal asymptote when numerator degree is smaller?
+6. How do you find horizontal asymptote when degrees are equal?
+7. When do you look for a slant asymptote?
+8. Why does polynomial division help?
+9. Why can canceled factors still matter?
+10. Give one engineering use of rational functions.
+11. What is one danger of small denominators?
+12. Why should you factor before graphing?
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 40 practice problems, including all challenge/error-spotting problems.
+- A rational function analyzer artifact.
+- One graph or table showing a hole.
+- One graph or table showing a vertical asymptote.
+- One quotient-plus-remainder/slant asymptote example.
+- One paragraph explaining why denominator roots matter in engineering.
+
+## Sources And Further Study
+
+- OpenStax, *Precalculus 2e*, rational functions.
+- Khan Academy, rational functions and asymptotes.
+- MIT OCW calculus prerequisite materials on rational expressions and limits.
+- Control systems references on transfer functions, poles, and zeros.
+- Computer vision references on perspective projection and division by depth.
+
+## Next Lesson Bridge
+
+Rational functions show how ratios behave when denominators change. The next lesson moves into exponentials, where the variable moves into the exponent and growth becomes multiplicative instead of additive.
