@@ -1,0 +1,864 @@
+# Significant Figures and Measurement Uncertainty
+
+## Re-entry Promise
+
+Every measurement is a lie. Not a malicious lie — a *quantified* one. When a datasheet says "5.0 V supply, ±5%," it is telling you that the true voltage is somewhere in the band $[4.75, 5.25]$ V, and the manufacturer refuses to commit beyond that. When a scale reads 72.3 kg, the last digit is already a fight between the instrument and reality. The whole discipline of *significant figures* and *uncertainty propagation* is the engineering grammar for being honest about how much you actually know.
+
+This lesson assumes you are comfortable with decimal arithmetic (lesson 9), percents (lesson 10), and scientific notation (lesson 15). It does not assume you remember how to count sig figs from $0.00450$, how to add two measured lengths that have different decimal places, why $\sigma_z^2 = \sigma_x^2 + \sigma_y^2$ for a sum of independent errors, or what the "GUM" is — we will build it all from scratch.
+
+By the end you should be able to count significant figures in any expression, do arithmetic with measured quantities without lying about precision, propagate uncertainty through a multi-step calculation by both partial derivatives and quadrature, and write a small Python class that handles uncertain numbers cleanly. The next lesson (17) builds on the order-of-magnitude habit to do Fermi-style engineering estimation when sig figs are the wrong tool entirely.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Count **significant figures** in any number, including tricky cases with leading zeros, trailing zeros, and embedded zeros.
+- Use **scientific notation** to disambiguate when standard notation is unclear (e.g., does $300$ have one, two, or three sig figs?).
+- Apply the **multiplication/division sig-fig rule** (result keeps the *fewest* sig figs of the inputs).
+- Apply the **addition/subtraction sig-fig rule** (result keeps the *lowest decimal place*, not the fewest sig figs).
+- Round correctly, including **round-half-to-even** (banker's rounding) and know when it matters.
+- Distinguish **standard uncertainty** $u$, **expanded uncertainty** $U = ku$, and **relative uncertainty** $u/x$.
+- Distinguish **Type A** uncertainty (statistical, from repeated measurements) and **Type B** uncertainty (estimated from calibration, datasheets, prior knowledge), per the **GUM** framework.
+- Propagate uncertainty through **sums** by adding variances: $\sigma_z^2 = \sigma_x^2 + \sigma_y^2$.
+- Propagate uncertainty through **products** by adding *relative* variances: $(\sigma_z/z)^2 = (\sigma_x/x)^2 + (\sigma_y/y)^2$.
+- Apply the **general partial-derivative formula** $\sigma_f^2 = \sum_i (\partial f / \partial x_i)^2 \sigma_{x_i}^2$ for arbitrary functions.
+- Use the **worst-case linear bound** $\delta f \le \sum_i |\partial f / \partial x_i| \delta x_i$ as a quick upper estimate.
+- Read uncertainty from real datasheets: ADC resolution, sensor noise floors, calibration tolerances, GPS accuracy specs.
+- Spot the most common failure modes: false precision, mis-aligned units, treating systematic and random errors the same way, mis-applying the product rule.
+
+## Why It Matters
+
+Uncertainty arithmetic is the foundation of every quantitative engineering and scientific discipline. A short tour of where it bites:
+
+1. **Lab measurement.** A vernier caliper reads $12.45$ mm; the manufacturer's spec says ±0.02 mm. A spring scale reads $4.7$ N ±0.1 N. When you multiply these to get a force × length product (work, torque, modulus), the result must inherit the uncertainty of *both* inputs. Pretending the answer is "$58.515$ mN·m" is dishonest; reality is closer to "$58 \pm 1$ mN·m."
+
+2. **Sensor datasheets.** Every component has a tolerance: a 1% metal-film resistor is $R = 10{,}000 \pm 100$ Ω. A 5% capacitor of nominal 22 µF can actually be anywhere in $[20.9, 23.1]$ µF. An IMU's gyro has a "noise density" of $\sim 0.01\ ^\circ/\sqrt{\text{Hz}}$, a "bias instability" of $\sim 5\ ^\circ/\text{hr}$, and a "scale-factor error" of ~$1\%$. Failing to budget all of these guarantees system failure.
+
+3. **ADC resolution.** A 12-bit ADC on a 5 V reference resolves $5 / 2^{12} = 1.22$ mV per LSB. A 16-bit ADC on the same reference resolves $5 / 2^{16} = 76$ µV. No matter how clean your analog signal is, the digital sample carries a minimum quantization uncertainty of one half-LSB.
+
+4. **GPS.** A consumer GPS receiver gives $\sim 3$ m horizontal accuracy at the 50% confidence level (CEP). At the 95% level, the bound is closer to $7$ m. A differential GPS reduces this to centimeters. A self-driving car that ignores this band will drive into a guardrail.
+
+5. **NIST calibration.** Every traceable measurement chain ends at NIST (or another national metrology institute). NIST issues calibration certificates that state both a measured value *and* an uncertainty (e.g., a Rb frequency standard at $9.192\,631\,770 \times 10^9$ Hz ±$10^{-13}$ relative). Without the uncertainty number, the measurement is meaningless.
+
+6. **ML benchmarks.** Modern ML papers report results as mean ± std over multiple random seeds: "$78.4 \pm 0.6$ accuracy over 5 seeds." Papers that report a single number (no seeds, no error bar) are increasingly considered unscientific. The seed-variance is the system's *measurement uncertainty*.
+
+7. **Civil engineering tolerances.** A bridge cable is specified at $50.0 \pm 0.5$ mm diameter. A column is poured at $400 \pm 10$ mm. When you stack tolerances over many parts, the assembly tolerance grows in quadrature, *not* linearly — and load engineers must know which to use.
+
+8. **Drug dosing.** A "$5$ mg" tablet has actual content somewhere in $[4.5, 5.5]$ mg under USP pharmacopoeial tolerance. For some drugs (warfarin, levothyroxine, lithium) this tolerance is clinically meaningful and the pharmacy must source from a single manufacturer.
+
+9. **Machine tooling.** A CNC mill cuts to $\pm 0.001$" (~25 µm) tolerance on a fine machine; a hobby mill might hit $\pm 0.005$" on a good day. When you stack 5 parts in an assembly, the cumulative tolerance can be $\pm 0.005$" (worst case) or $\pm 0.0022$" (in quadrature, assuming independence). Designers must specify which model to use.
+
+10. **Scientific publishing.** Physics journals require every reported value to carry an uncertainty. "The Higgs boson mass is $125.25 \pm 0.17$ GeV/$c^2$." The Particle Data Group spends an enormous amount of editorial effort policing uncertainty conventions across thousands of papers.
+
+The common thread: an answer without an uncertainty is not an answer. It is an opinion. Real engineering and real science always carry the error bar along with the number.
+
+## Why This Idea Exists
+
+Significant figures, in their modern form, are a 20th-century shorthand. The deeper notion — that every measurement is a probability distribution over the unknown true value — is older, and was forced into existence by the rise of precision instrumentation.
+
+**Galileo** (~1600) timed pendulums with a water clock and his own pulse, and was acutely aware that his measurements were imprecise. He averaged repeated trials, which is the first hint of statistical uncertainty reasoning. **Henry Cavendish** (1798) measured the gravitational constant $G$ with a torsion balance and reported a *range* (not a single number) for the density of Earth: $5.448 \pm 0.033\ \text{g/cm}^3$ in modern notation. This is one of the earliest known explicit uncertainty intervals.
+
+**Carl Friedrich Gauss** (early 1800s) developed the method of least squares to extract best-estimate values from noisy astronomical observations, and along the way formalized the *normal distribution* (the bell curve) as a model for measurement error. The width $\sigma$ of the Gaussian became the canonical *standard deviation* — the modern $\sigma$ in $\pm \sigma$.
+
+**Albert Michelson** spent decades refining the speed of light measurement: $c \approx 299{,}910 \pm 50$ km/s in 1879, then $c \approx 299{,}774 \pm 11$ km/s in 1926. Each successive measurement narrowed the uncertainty band, and Michelson reported the *uncertainty itself* as the key headline number. His 1907 Nobel Prize was as much about reducing $\sigma$ as about the central value.
+
+**The rise of precision manufacturing** — interchangeable parts (Whitney, ~1800), gauge blocks (Johansson, ~1900), modern CNC (post-WWII) — made measurement tolerances a daily engineering concern. The phrase "$\pm 0.001$ inch" became a contract specification. Manufacturers without good metrology lost business.
+
+**NIST** (originally NBS, founded 1901) and **BIPM** (Bureau International des Poids et Mesures, founded 1875) became the global custodians of measurement standards. The kilogram was defined by a physical prototype (the IPK) in Sèvres, France, until 2019, when it was redefined in terms of Planck's constant — a redefinition driven entirely by uncertainty considerations: the IPK was drifting at the $\sim 50$ µg level over a century, which became intolerable for modern science.
+
+**The GUM** — *Guide to the Expression of Uncertainty in Measurement* — was first published by ISO in 1993 and updated as JCGM 100:2008. It is the international consensus standard for how to evaluate, combine, and report measurement uncertainty. NIST Technical Note 1297 (Taylor & Kuyatt) is the US implementation. The GUM introduced the now-universal distinction between **Type A** uncertainty (evaluated from a statistical sample) and **Type B** uncertainty (evaluated from any other source: prior knowledge, calibration certificates, physical limits, expert judgment).
+
+Significant figures, by contrast, are a much older and looser convention — a 19th- and 20th-century pedagogical tool for teaching arithmetic discipline before students learn full statistical error propagation. They are an approximation to the GUM framework, useful in classrooms and back-of-envelope work, but the modern engineer must understand both the shorthand and the rigorous version.
+
+## Plain-Language Intuition
+
+### What "Significant Figure" Really Means
+
+A **significant figure** is a digit that carries actual information about the measurement. If a ruler reads $4.7$ cm, the "$4$" and the "$7$" are both significant — they encode what the ruler showed. If you write that measurement as $4.70$ cm, you are claiming that the second decimal is also meaningful (i.e., the ruler resolved the hundredths). If you write $4.700$ cm, you are claiming you can measure to a thousandth of a cm — a much stronger claim that a wooden ruler cannot back up.
+
+Writing extra digits beyond what your instrument can resolve is **false precision**. It is the technical-writing equivalent of lying.
+
+### Exact vs. Measured Numbers
+
+There are two kinds of numbers in engineering:
+
+- **Exact numbers** have no uncertainty. The 4 wheels of a car. The 12 inches in a foot (by definition). The exponent in $E = mc^2$. The $2$ in $A = \pi r^2$. These have infinitely many sig figs.
+- **Measured numbers** have a finite precision set by the instrument that produced them. $9.81$ m/s² (local gravity). $25.4$ °C (today's temperature). $1.602 \times 10^{-19}$ C (electron charge, as the 2024 CODATA recommends).
+
+Most sig-fig rules apply only to measured numbers. Exact numbers do not limit the precision of a result.
+
+### Why Trailing Zeros Are Ambiguous
+
+The number $300$ in standard decimal notation has *ambiguous* precision. Is it:
+- $3 \times 10^2$ (one sig fig, "around 300")?
+- $3.0 \times 10^2$ (two sig figs, "between 295 and 305")?
+- $3.00 \times 10^2$ (three sig figs, "between 299.5 and 300.5")?
+
+You cannot tell from the bare "$300$" alone. This is why scientific notation is the *correct* form for any measurement where precision matters. Once you write $3.00 \times 10^2$, the precision is explicit and unambiguous: three sig figs.
+
+A measurement, written rigorously, should always either (a) use scientific notation with the correct number of coefficient digits, or (b) include an explicit uncertainty: $300 \pm 5$, $300 \pm 0.5$, etc. The bare integer "$300$" with no context is sloppy.
+
+### Sig Figs vs. Uncertainty
+
+Significant figures are a *qualitative* shorthand for precision. Uncertainty (the $\pm$ value) is the *quantitative* statement. Roughly:
+
+- Saying "3 sig figs" is like saying "uncertain at the third-digit level."
+- Saying "$\pm 0.05$" is precise: the uncertainty is exactly $0.05$ units.
+
+Sig figs are easier to write and faster to reason about; uncertainty is what real instruments and real datasheets actually report. The serious engineer uses sig figs for sketching and uses explicit uncertainty for final answers.
+
+## Core Theory
+
+### Counting Significant Figures: The Rules
+
+For a number written in standard decimal notation, count significant figures as follows:
+
+1. **All nonzero digits are significant.** $4.27$ has 3 sig figs; $112$ has 3 sig figs; $9.999$ has 4.
+2. **Zeros between nonzero digits are significant.** $4007$ has 4 sig figs; $1.005$ has 4; $40.02$ has 4.
+3. **Leading zeros are *never* significant.** They are placeholders only. $0.0042$ has 2 sig figs (just the 4 and the 2); $0.000700$ has 3 (the 7 and the two trailing zeros).
+4. **Trailing zeros *after* a decimal point are significant.** $4.70$ has 3 sig figs; $0.500$ has 3; $25.000$ has 5.
+5. **Trailing zeros in an integer with no decimal point are ambiguous.** $300$ might be 1, 2, or 3 sig figs. Disambiguate using scientific notation: $3 \times 10^2$, $3.0 \times 10^2$, or $3.00 \times 10^2$.
+
+A trailing decimal-point convention sometimes helps: "$300.$" (with the trailing dot) is taken to mean exactly 3 sig figs. But this convention is not universally followed, so scientific notation is the safe choice.
+
+| Number | Sig figs | Why |
+|---|---|---|
+| $4.27$ | 3 | All nonzero |
+| $0.0042$ | 2 | Leading zeros don't count |
+| $4007$ | 4 | Embedded zero counts |
+| $4.70$ | 3 | Trailing zero after decimal counts |
+| $0.500$ | 3 | Trailing zeros after decimal count |
+| $300$ | ambiguous | Could be 1, 2, or 3 |
+| $3.00 \times 10^2$ | 3 | Unambiguous in scientific notation |
+| $1.602 \times 10^{-19}$ | 4 | Coefficient has 4 digits |
+| $6.022 \times 10^{23}$ | 4 | Coefficient has 4 digits |
+
+The cleanest rule: **the number of significant figures equals the number of digits in the coefficient when written in normalized scientific notation.** This rule is unambiguous and is the safest fallback.
+
+### Arithmetic Rules
+
+**Multiplication and division:** the result keeps the *fewest* significant figures of any input.
+
+$$\underbrace{4.27}_{3\ \text{sf}} \times \underbrace{3.1}_{2\ \text{sf}} = 13.237 \to 13$$
+
+Two sig figs in the answer because $3.1$ has only two.
+
+**Addition and subtraction:** the result keeps the *lowest decimal place* (= the *least precise* input by place value, not by sig fig count).
+
+$$\underbrace{27.31}_{2\ \text{decimal places}} + \underbrace{4.1}_{1\ \text{decimal place}} = 31.41 \to 31.4$$
+
+One decimal place in the answer because $4.1$ has only one. Note the answer has 3 sig figs even though one input had only 2; the rule is about decimal *position*, not sig fig *count*.
+
+This is the most common stumble in sig-fig arithmetic: students apply the multiplication rule to a sum, or the addition rule to a product. The two are genuinely different.
+
+**Why the two rules differ:** when you multiply, the *relative* errors combine (errors as fractions of the value). When you add, the *absolute* errors combine (errors in the same units as the value). We will see this rigorously in the propagation section.
+
+### Rounding Rules
+
+**Standard rounding** (sometimes called "round-half-up"): if the digit after the cutoff is 5 or more, round up; if less, round down.
+
+- $13.27 \to 13.3$ (digit 7 ≥ 5)
+- $13.24 \to 13.2$ (digit 4 < 5)
+- $13.25 \to 13.3$ (digit 5, round up)
+
+**Round-half-to-even** (banker's rounding, IEEE 754 default): if the digit after the cutoff is exactly 5 (and nothing follows), round to the nearest *even* digit.
+
+- $13.25 \to 13.2$ (round to even)
+- $13.35 \to 13.4$ (round to even)
+- $13.251 \to 13.3$ (digit 5 followed by more — round up normally)
+
+Why banker's rounding? When you average many numbers that are rounded with standard "round-half-up," you introduce a slight systematic bias upward (because the 5 cases all go up). Banker's rounding averages out: half go up, half go down. This matters in large-scale numerical computing, financial calculations, and statistical processing.
+
+Python's built-in `round()` and NumPy both use banker's rounding by default. Most spreadsheets do not. Be aware of which is in use.
+
+### Sig Figs vs. Full Uncertainty
+
+A number reported with $n$ significant figures implicitly carries an uncertainty of $\pm$ half a unit in the last digit:
+
+- $4.27$ implies $\pm 0.005$ (the next digit could be anywhere from 4.265 to 4.275).
+- $4.270$ implies $\pm 0.0005$.
+- $3 \times 10^2$ implies $\pm 50$ (huge band).
+- $3.00 \times 10^2$ implies $\pm 0.5$.
+
+Sig figs are thus a shorthand for an uncertainty bound, but a fairly coarse one (factor-of-3 on either side). For more precision, write the uncertainty explicitly: $4.27 \pm 0.02$.
+
+### Standard Uncertainty, Expanded Uncertainty, Relative Uncertainty
+
+The GUM defines three central quantities:
+
+- **Standard uncertainty $u$:** one standard deviation $\sigma$ of the inferred distribution of the measurand. This is the workhorse number.
+- **Expanded uncertainty $U = k u$:** the standard uncertainty multiplied by a *coverage factor* $k$. Common choices: $k = 2$ for ~95% confidence under a Gaussian assumption, $k = 3$ for ~99.7%. Expanded uncertainty is what gets reported on calibration certificates: "$U = 0.02\ \text{mm}\ (k=2)$."
+- **Relative uncertainty $u_r = u / x$:** the standard uncertainty as a fraction of the value, often expressed in percent or ppm. Useful for comparing the precision of measurements at different scales: a 0.1% measurement of distance is much more precise than a 5% measurement of voltage.
+
+When you see "$25.4 \pm 0.2$ mm $(k=2)$" on a calibration cert, that means the standard uncertainty is $0.1$ mm and the expanded uncertainty (with coverage factor 2) is $0.2$ mm.
+
+### Type A and Type B Uncertainty (GUM)
+
+The GUM partitions sources of uncertainty into two categories:
+
+- **Type A uncertainty** is evaluated by *statistical analysis* of a series of observations. Example: you measure the same length 20 times with a caliper, compute the sample standard deviation, and report the standard error of the mean $s/\sqrt{n}$ as the Type A standard uncertainty.
+- **Type B uncertainty** is evaluated from *any other source*: a manufacturer's tolerance, a calibration certificate, a physical resolution limit, prior measurements, expert judgment. Example: an ADC's quantization uncertainty of $1/\sqrt{12}$ LSB (for a uniformly distributed sub-LSB error) is Type B.
+
+Both kinds of uncertainty are expressed in the same units (typically as a $\sigma$) and combined identically using the propagation rules below. The Type A/Type B distinction is about *evaluation method*, not about *behavior*.
+
+### Propagation of Uncertainty: The Rules
+
+**Sums and differences (independent errors):**
+
+For $z = x \pm y$ with independent errors $\sigma_x$, $\sigma_y$:
+
+$$\sigma_z^2 = \sigma_x^2 + \sigma_y^2 \qquad \text{(quadrature)}$$
+
+Note: addition and subtraction follow the *same* uncertainty rule. Subtracting two values does *not* subtract their uncertainties.
+
+**Products and quotients (independent errors):**
+
+For $z = x y$ or $z = x / y$, with independent errors:
+
+$$\left(\frac{\sigma_z}{z}\right)^2 = \left(\frac{\sigma_x}{x}\right)^2 + \left(\frac{\sigma_y}{y}\right)^2 \qquad \text{(relative quadrature)}$$
+
+The *relative* uncertainties add in quadrature. Multiply or divide all you want; relative errors compound.
+
+**Powers:**
+
+For $z = x^n$:
+
+$$\frac{\sigma_z}{z} = |n| \frac{\sigma_x}{x}$$
+
+A square ($n = 2$) doubles the relative uncertainty. A square root ($n = 1/2$) halves it. This is one reason taking a square root is "good" for precision: it reduces relative error.
+
+**General nonlinear functions (the master formula):**
+
+For $z = f(x_1, x_2, \ldots, x_n)$ with independent errors $\sigma_{x_i}$, the standard uncertainty of $z$ is:
+
+$$\sigma_z^2 = \sum_{i=1}^{n} \left( \frac{\partial f}{\partial x_i} \right)^2 \sigma_{x_i}^2$$
+
+This is the first-order Taylor expansion of $f$ about the measured values, taking variances of independent inputs and ignoring cross-terms. It is the *fundamental* uncertainty propagation formula; all the special cases above are corollaries.
+
+The product rule comes from $f = xy$: $\partial f / \partial x = y$, $\partial f / \partial y = x$, so $\sigma_z^2 = y^2 \sigma_x^2 + x^2 \sigma_y^2$. Divide both sides by $z^2 = x^2 y^2$ and you get the relative-quadrature form.
+
+The sum rule comes from $f = x + y$: $\partial f / \partial x = 1$, $\partial f / \partial y = 1$, so $\sigma_z^2 = \sigma_x^2 + \sigma_y^2$.
+
+**Correlated errors:** if the inputs are *not* independent (say, both measured by the same drifting instrument), cross-terms appear: $\sigma_z^2 = \sum_i (\partial f / \partial x_i)^2 \sigma_{x_i}^2 + 2 \sum_{i < j} (\partial f / \partial x_i)(\partial f / \partial x_j) \, \text{Cov}(x_i, x_j)$. Most undergraduate work assumes independence; in real metrology, correlations are tracked carefully.
+
+### The Worst-Case Linear Bound
+
+A quick, conservative upper bound on uncertainty is obtained by replacing the quadrature sum with a *linear* sum of absolute contributions:
+
+$$\delta f \le \sum_{i=1}^{n} \left| \frac{\partial f}{\partial x_i} \right| \delta x_i$$
+
+This is the *worst-case* bound: it assumes all errors push in the same direction simultaneously, which is statistically unlikely for independent errors but is the conservative engineering choice for worst-case tolerance analysis.
+
+For a product: $\delta z / z \le \delta x / x + \delta y / y$ (relative errors add linearly).
+
+When to use which?
+
+- **Quadrature** ($\sigma$ adds in Pythagoras): the *expected* uncertainty for independent random errors. Use for sensor noise, manufacturing variation across many parts, statistical measurements.
+- **Linear** (worst case, $\delta$ adds linearly): the *guaranteed* upper bound. Use for safety-critical tolerance budgets, regulatory compliance, mission-critical specs.
+
+For $n$ equal contributions, quadrature gives $\sqrt{n}$ growth; linear gives $n$ growth. The two differ by a factor of $\sqrt{n}$ — substantial for large $n$.
+
+## Visual or Mental Model
+
+### Model 1: The Uncertainty Interval
+
+A measurement $x = 25.4 \pm 0.2$ is a *probability distribution* on the number line, centered at $25.4$ with most of its mass in the band $[25.2, 25.6]$:
+
+```
+              25.2     25.4     25.6
+    ----------|---------|---------|----------
+              [   ~~~~~~ • ~~~~~~   ]
+                       x ± σ
+```
+
+The $\bullet$ is the best-estimate value; the brackets show the ±$\sigma$ band. A second measurement $y = 25.5 \pm 0.3$ would be a wider distribution centered slightly to the right, overlapping the first. Whether the two measurements *agree* depends on whether their bands overlap — visually, an immediate diagnostic.
+
+### Model 2: Multiplication Grows Relative Error
+
+When you multiply two measured quantities, the relative errors compound. Picture two number lines, each with their own ± band, projected onto a 2D rectangle:
+
+```
+       y + σ_y  ┌──────────────┐
+                │              │
+         y      │      • xy    │  <- the product
+                │              │
+       y - σ_y  └──────────────┘
+              x - σ_x   x   x + σ_x
+```
+
+The rectangle's *area* is the product $xy$. Its uncertainty in area depends on the relative widths of the rectangle in $x$ and $y$. A 5% spread in $x$ combined with a 5% spread in $y$ produces about a $\sqrt{0.05^2 + 0.05^2} \approx 7\%$ spread in the product. Both inputs' uncertainties add in quadrature *as relative errors*.
+
+### Model 3: Quadrature Is Pythagoras
+
+The key insight of independent-error propagation is that uncertainties add like *perpendicular vectors*, not like *parallel vectors*. If error $\sigma_x = 3$ and error $\sigma_y = 4$, then for $z = x + y$:
+
+$$\sigma_z = \sqrt{3^2 + 4^2} = 5$$
+
+This is the Pythagorean theorem for variances. Independent random errors *partially cancel* on average — sometimes the $x$ error pushes up while the $y$ error pushes down, sometimes both push the same direction. The expected combined effect is the hypotenuse, not the sum.
+
+```
+                 σ_y = 4
+                ┌────────●  z = (x+y) ± 5
+                │       ╱
+                │     ╱
+                │   ╱  σ_z = 5
+                │ ╱
+              σ_x = 3
+```
+
+Worst-case linear addition assumes both errors push the same way: $3 + 4 = 7$ — the *sum* of the legs, larger than the hypotenuse. This is the safe but pessimistic bound.
+
+### Model 4: The Bullseye
+
+A target with a tight cluster of shots far from center has high *precision* (low random error, $\sigma$ small) but low *accuracy* (high systematic error, *bias*). A loose spread centered on the bullseye has high accuracy but low precision. The two failure modes are orthogonal:
+
+```
+   Accurate, precise        Accurate, imprecise
+        ●●●                     ●  ●
+        ●●●                  ●     ●
+        ●●●                     ●
+
+   Inaccurate, precise      Inaccurate, imprecise
+                                    ●
+              ●●●                 ●
+              ●●●                    ●
+              ●●●                ●
+```
+
+Standard uncertainty $\sigma$ captures precision. *Bias* — the offset from truth — is a separate quantity that must be estimated independently (typically by calibration against a reference standard). The GUM and modern metrology track both.
+
+## Worked Examples
+
+### Example 1 — Counting Sig Figs in Tricky Cases
+
+How many significant figures in each?
+
+(a) $0.00450$. Leading zeros don't count. Trailing zero *after* decimal point counts. Sig figs: 4, 5, 0 → **3 sig figs**.
+
+(b) $4.500 \times 10^3$. The coefficient has 4 digits. **4 sig figs**.
+
+(c) $4007$. Embedded zeros count. **4 sig figs**.
+
+(d) $4500$. Trailing zeros in an integer without a decimal point are ambiguous. **2 to 4 sig figs**. Use scientific notation: $4.5 \times 10^3$ (2), $4.50 \times 10^3$ (3), $4.500 \times 10^3$ (4).
+
+(e) $4500.$ (with the trailing decimal). The decimal point signals that trailing zeros are significant. **4 sig figs** (by the trailing-dot convention).
+
+(f) $0.0001$. Leading zeros don't count. **1 sig fig**.
+
+(g) $1.0001 \times 10^{-3}$. The coefficient has 5 digits. **5 sig figs**.
+
+### Example 2 — Multiplication
+
+A rectangle measures $4.27$ cm by $3.1$ cm. Compute the area with the right number of sig figs.
+
+Raw product: $4.27 \times 3.1 = 13.237$ cm².
+
+Sig fig count: $4.27$ has 3, $3.1$ has 2. **Result keeps 2 sig figs**: $13$ cm².
+
+(More precisely: round $13.237$ to 2 sig figs. The third sig fig is the "2", which is followed by "37" — rounds down. Answer: $13$ cm², not $13.2$.)
+
+### Example 3 — Addition with Different Decimal Places
+
+You add three lengths: $25.31$ cm, $4.1$ cm, $0.027$ cm. Sum?
+
+Raw sum: $25.31 + 4.1 + 0.027 = 29.437$ cm.
+
+Lowest decimal place among the inputs: $4.1$ is precise to the *tenths* place. **Round result to tenths**: $29.4$ cm.
+
+Note the result has 3 sig figs, even though one input had only 2 — because the *lowest decimal place*, not the sig-fig count, drives addition.
+
+### Example 4 — Propagating Uncertainty Through Area
+
+You measure $L = 4.27 \pm 0.02$ cm and $W = 3.10 \pm 0.05$ cm. The area is $A = LW$. Compute $A$ and its uncertainty.
+
+Best-estimate area: $A = 4.27 \times 3.10 = 13.237$ cm².
+
+Relative uncertainties:
+- $\sigma_L / L = 0.02 / 4.27 = 0.00468$ (~0.5%)
+- $\sigma_W / W = 0.05 / 3.10 = 0.01613$ (~1.6%)
+
+Combine in quadrature:
+
+$$\left(\frac{\sigma_A}{A}\right)^2 = (0.00468)^2 + (0.01613)^2 = 0.0000219 + 0.0002602 = 0.0002821$$
+
+$$\frac{\sigma_A}{A} = 0.0168 \approx 1.7\%$$
+
+Absolute uncertainty: $\sigma_A = 0.0168 \times 13.237 = 0.222$ cm².
+
+**Report: $A = 13.24 \pm 0.22$ cm²**, or with sig-fig conventions: $A = 13.2 \pm 0.2$ cm² (the uncertainty itself is reported to ~1 sig fig, and the value is rounded to match the uncertainty's decimal place).
+
+Note how $\sigma_W$ dominates. The width measurement is the precision bottleneck. To improve $A$, improve $W$ first.
+
+### Example 5 — Propagating Through the Pendulum Period
+
+The period of a simple pendulum is $T = 2\pi \sqrt{L/g}$. You measure $L = 0.500 \pm 0.005$ m and use $g = 9.81 \pm 0.01$ m/s². Compute $T$ and its uncertainty.
+
+Best-estimate: $T = 2\pi \sqrt{0.500 / 9.81} = 2\pi \sqrt{0.05097} = 2\pi \cdot 0.2257 = 1.418$ s.
+
+To propagate uncertainty, take partial derivatives. Let $T = 2\pi (L/g)^{1/2} = 2\pi L^{1/2} g^{-1/2}$.
+
+$$\frac{\partial T}{\partial L} = 2\pi \cdot \frac{1}{2} L^{-1/2} g^{-1/2} = \frac{T}{2L}$$
+
+$$\frac{\partial T}{\partial g} = 2\pi \cdot \left(-\frac{1}{2}\right) L^{1/2} g^{-3/2} = -\frac{T}{2g}$$
+
+Apply the master formula:
+
+$$\sigma_T^2 = \left(\frac{T}{2L}\right)^2 \sigma_L^2 + \left(\frac{T}{2g}\right)^2 \sigma_g^2$$
+
+Divide by $T^2$ to get relative uncertainty:
+
+$$\left(\frac{\sigma_T}{T}\right)^2 = \frac{1}{4}\left(\frac{\sigma_L}{L}\right)^2 + \frac{1}{4}\left(\frac{\sigma_g}{g}\right)^2$$
+
+The factor of $1/4 = (1/2)^2$ comes from the square-root in $T$: each input contributes its relative uncertainty *halved* (because they are under a square root).
+
+Plug in:
+- $\sigma_L / L = 0.005 / 0.500 = 0.010 = 1.0\%$
+- $\sigma_g / g = 0.01 / 9.81 = 0.00102 = 0.1\%$
+
+$$\left(\frac{\sigma_T}{T}\right)^2 = \frac{1}{4}(0.010)^2 + \frac{1}{4}(0.00102)^2 = 0.000025 + 0.00000026 \approx 0.000025$$
+
+$$\frac{\sigma_T}{T} = 0.00502 \approx 0.50\%$$
+
+$\sigma_T = 0.00502 \cdot 1.418 = 0.00712$ s.
+
+**Report: $T = 1.418 \pm 0.007$ s.**
+
+Note the length uncertainty dominates entirely; the $g$ uncertainty is negligible. If you wanted to measure $T$ more precisely, measure $L$ more carefully — measuring $g$ better is wasted effort here.
+
+### Example 6 — Failure Mode: Unit Mismatch
+
+You measure $L_1 = 25.4$ cm and $L_2 = 0.254$ m and try to add them: "$L_1 + L_2 = 25.4 + 0.254 = 25.654$".
+
+Wrong: the units differ. Convert first. $L_2 = 0.254$ m $= 25.4$ cm. So $L_1 + L_2 = 25.4 + 25.4 = 50.8$ cm.
+
+This is the single most common error in physical computation. The sig-fig rules don't matter if the units are inconsistent. *Always* normalize units before applying any arithmetic rule. (Lesson 12 on dimensional analysis treats this as a first-class topic.)
+
+### Example 7 — The Classic False-Precision Mistake
+
+A student measures the length of a desk with a wooden meter stick (smallest division 1 mm) and reports: "$L = 87.31249$ cm."
+
+This is absurd. A wooden meter stick resolves to *at best* the nearest mm (and arguably only to the nearest half-mm by interpolation). The honest report is "$L = 87.3$ cm" or "$L = 87.30$ cm" if the student was confident interpolating to the tenth of a mm.
+
+The extra digits did not come from the instrument — they came from a calculator, perhaps after multiplying by some unit conversion or factor. Carrying digits the instrument never produced is **false precision**, and it lies to anyone who reads the report.
+
+Rule of thumb: the *last* reported digit of a measurement should be the *first* uncertain digit — the one you had to estimate or interpolate. Anything beyond that is invention.
+
+### Example 8 — Multi-Step Propagation: Density
+
+You measure mass $m = 12.50 \pm 0.05$ g and volume $V = 4.20 \pm 0.10$ cm³. Density $\rho = m / V$. Compute and propagate.
+
+Best-estimate: $\rho = 12.50 / 4.20 = 2.976$ g/cm³.
+
+Relative uncertainties:
+- $\sigma_m / m = 0.05 / 12.50 = 0.0040 = 0.4\%$
+- $\sigma_V / V = 0.10 / 4.20 = 0.0238 = 2.4\%$
+
+Quadrature:
+
+$$\left(\frac{\sigma_\rho}{\rho}\right)^2 = (0.0040)^2 + (0.0238)^2 = 0.0000160 + 0.000566 = 0.000582$$
+
+$$\frac{\sigma_\rho}{\rho} = 0.0241 = 2.4\%$$
+
+$\sigma_\rho = 0.0241 \cdot 2.976 = 0.0718$ g/cm³.
+
+**Report: $\rho = 2.98 \pm 0.07$ g/cm³.**
+
+The volume uncertainty dominates (as expected — it's larger in relative terms). The mass measurement is essentially free of uncertainty in the result.
+
+## Engineering Connections
+
+### ADC Resolution and Quantization Noise
+
+A 12-bit ADC with a 5 V reference voltage resolves the input range $[0, 5]$ V into $2^{12} = 4096$ discrete codes. One *least significant bit* (LSB) corresponds to:
+
+$$1\ \text{LSB} = \frac{5\ \text{V}}{4096} = 1.22\ \text{mV}$$
+
+A 16-bit ADC on the same range: $5 / 2^{16} = 76\ \mu$V. A 24-bit ADC: $5 / 2^{24} = 0.30\ \mu$V (300 nV) — but at this level, thermal noise of the input resistors usually dominates the ADC's own precision.
+
+The quantization process introduces a uniformly distributed error in $[-0.5, +0.5]$ LSB. The standard deviation of a uniform distribution of width $w$ is $w / \sqrt{12}$, so:
+
+$$\sigma_{\text{quant}} = \frac{1\ \text{LSB}}{\sqrt{12}} \approx 0.289\ \text{LSB}$$
+
+This $1/\sqrt{12}$ factor is a classic Type B uncertainty. It is *every* digitized measurement's irreducible noise floor, on top of all analog noise.
+
+### Sensor Datasheets
+
+Real datasheet excerpts:
+
+- **MPU-6050 IMU** (a common hobby IMU): gyro full-scale ±2000 °/s, output noise $0.05\ ^\circ/\text{s}/\sqrt{\text{Hz}}$, scale factor tolerance ±3%, zero-rate output ±20 °/s. Integrating gyro noise gives angle uncertainty growing as $\sqrt{t}$.
+- **BME280 environmental sensor**: pressure accuracy ±1 hPa absolute, temperature accuracy ±0.5 °C, humidity ±3% RH. The temperature accuracy is the Type B standard uncertainty; the manufacturer typically reports it as a worst-case bound rather than $\sigma$.
+- **LM35 temperature sensor**: ±0.5 °C accuracy at 25 °C, ±1 °C over full range. Linear scale: 10 mV/°C.
+- **ADS1115 16-bit ADC**: integral nonlinearity ±1 LSB, offset error ±3 LSB, gain error ±0.15%. The 16-bit resolution sounds great, but the *real* precision is limited by these systematic errors.
+
+When you design a measurement chain (sensor → amplifier → ADC → digital), you must budget every uncertainty contribution and combine them in quadrature (for independent random sources) or linearly (for systematic biases that don't average out).
+
+### GPS Accuracy
+
+Consumer GPS receivers report a *circular error probable* (CEP) of about 3 m, meaning 50% of fixes fall within a 3 m radius of the true position. The 95% (R95) bound is closer to 7 m. Vertical accuracy is typically 1.5× worse than horizontal.
+
+A differential GPS (DGPS) with a nearby reference station improves this to ~1 m. RTK (real-time kinematic) GPS, used in surveying and high-precision robotics, achieves centimeter-level accuracy. Survey-grade post-processed GPS achieves millimeters.
+
+These numbers all come with explicit standard uncertainty values in the receiver's NMEA output (GST sentence) — the receiver is constantly estimating its own uncertainty.
+
+### Machinist Tolerances and Tolerance Stack-Up
+
+A precision CNC mill produces parts to about ±0.001" (~25 µm) tolerance on critical dimensions. A typical hobby 3D printer produces ±0.1 mm. A factory injection-molding line might hit ±0.05 mm consistently.
+
+When you stack five parts in an assembly, each at ±0.001":
+- **Worst case**: tolerance accumulates linearly: $5 \times 0.001 = 0.005$".
+- **Statistical (quadrature)**: assuming independent random errors, $\sqrt{5} \times 0.001 = 0.0022$".
+
+The choice between these models matters. Aerospace and medical assemblies often use worst case for safety-critical dimensions; consumer electronics typically uses statistical for cost-driven mass production.
+
+### NIST Calibration Certificates
+
+When you send a high-precision instrument (a Fluke voltmeter, a HP frequency counter) to NIST or an accredited cal lab, you receive a calibration certificate. A typical entry:
+
+> Reading: 1.000 005 V (at applied 1.000 000 V)
+> Expanded uncertainty: $U = 5 \times 10^{-6}$ V at $k = 2$, ~95% confidence
+
+This says: the standard uncertainty is $u = 2.5\ \mu$V, expanded to $U = 5\ \mu$V at $k = 2$. The instrument reads 5 ppm high. You correct for this when using it, and the corrected reading carries the $\pm 5\ \mu$V band as your traceable Type B uncertainty for every downstream measurement.
+
+### ML Benchmarks
+
+Modern ML papers report results like: "Our model achieves $84.2 \pm 0.3$ accuracy on ImageNet over 5 random seeds." The $\pm 0.3$ is one standard deviation of accuracy across seeds — a Type A uncertainty, statistically evaluated.
+
+Papers that report a single number with no seed-variance information are increasingly considered unscientific, because seed-to-seed variation in neural-network training can easily be larger than the differences between competing methods. Without the error bar, two methods at "$84.2$" and "$84.5$" cannot be distinguished.
+
+The ML community has slowly adopted the metrology habit. Conferences like NeurIPS now ask papers to report variance over multiple seeds and to plot error bands on learning curves.
+
+### Resistor Tolerance Bands
+
+The colored bands on a through-hole resistor encode value *and* tolerance:
+- **Gold band**: ±5%
+- **Silver band**: ±10%
+- **Brown band**: ±1%
+- **Red band**: ±2%
+- **Green band**: ±0.5%
+- **No band**: ±20% (vintage)
+
+A "$10\ \text{k}\Omega \pm 1\%$" resistor is $10{,}000 \pm 100\ \Omega$. In a precision analog circuit, you specify ±1% or ±0.1% parts; in a hobby project, ±5% is fine and cheaper. The trade-off is explicit in BOM cost: a precision resistor is 10–100× more expensive than its loose-tolerance counterpart.
+
+### Thermocouples
+
+A Type-K thermocouple has standard accuracy ±2.2 °C or ±0.75% (whichever is greater) over $-200$ to $+1250$ °C. A "special limits" Type-K is ±1.1 °C or ±0.4%. For a 1000 °C measurement, the standard part has $\pm 7.5$ °C uncertainty — surprisingly poor for what feels like a "precise" measurement.
+
+For higher accuracy: PT100 RTDs (±0.1 °C class A) or PT1000s, or for the very best, a cryogenic standard like an ITS-90 calibrated reference. The choice of sensor *is* a choice of uncertainty.
+
+## Practice Set
+
+### Counting Sig Figs
+
+For each, state the number of significant figures.
+
+1. $4.27$
+2. $0.0042$
+3. $4007$
+4. $4.700$
+5. $0.5000$
+6. $1.005 \times 10^{-3}$
+7. $30000$ (no decimal)
+8. $3.0 \times 10^4$
+9. $9.999 \times 10^{-7}$
+10. $1$ (integer, no decimal)
+
+### Arithmetic with Sig Figs
+
+For each, compute and report with the correct number of sig figs.
+
+11. $4.27 \times 3.1$
+12. $25.31 + 4.1$
+13. $100.0 / 3.0$
+14. $9.81 + 0.005$
+15. $(2.0 \times 10^3) \cdot (3.00 \times 10^{-4})$
+16. $1.234 - 1.23$
+
+### Uncertainty Propagation
+
+Compute the result and its uncertainty (both absolute and as a $\pm$ on the value).
+
+17. $z = x + y$ where $x = 5.00 \pm 0.10$, $y = 3.00 \pm 0.04$.
+18. $z = x - y$ where $x = 5.00 \pm 0.10$, $y = 3.00 \pm 0.04$.
+19. $z = xy$ where $x = 10.0 \pm 0.2$, $y = 4.0 \pm 0.1$.
+20. $z = x/y$ where $x = 100.0 \pm 1.0$, $y = 20.0 \pm 0.5$.
+21. $z = x^2$ where $x = 5.0 \pm 0.1$.
+
+### Error Spotting
+
+For each, identify what the student did wrong.
+
+22. Student computes $(4.27)(3.1) = 13.237$ cm² and reports as "the area is $13.237$ cm²."
+23. Student adds $25.31 + 4.1 + 0.027 = 29.437$ and reports as "$29.437$ cm."
+24. Student measures resistance with a 3.5-digit multimeter (reads to 0.01 Ω at low ranges) and reports $R = 4.32517$ Ω.
+
+### Challenge
+
+25. The volume of a cylinder is $V = \pi r^2 h$. You measure $r = 2.00 \pm 0.05$ cm and $h = 10.00 \pm 0.10$ cm. Compute $V$ and $\sigma_V$ using partial derivatives. Which input dominates the uncertainty?
+
+26. The kinetic energy of a moving object is $K = \frac{1}{2} m v^2$. You measure $m = 1.50 \pm 0.01$ kg and $v = 3.20 \pm 0.05$ m/s. Compute $K$ and $\sigma_K$.
+
+### Answers
+
+1. 3. 2. 2. 3. 4. 4. 4. 5. 4. 6. 4. 7. ambiguous (1 to 5). 8. 2. 9. 4. 10. 1.
+
+11. $4.27 \times 3.1 = 13.237 \to 13$ (2 sig figs, limited by $3.1$).
+12. $29.41 \to 29.4$ (one decimal place, limited by $4.1$).
+13. $33.333 \to 33$ (2 sig figs, limited by $3.0$).
+14. $9.815 \to 9.82$ (two decimal places, limited by $9.81$).
+15. $0.60 \to 6.0 \times 10^{-1}$ (2 sig figs).
+16. $0.004$ — but here precision is limited by the *lower decimal place*, which is hundredths ($1.23$). So $0.00 \to 0.00$, which is essentially "indistinguishable from zero given the precision." This is **catastrophic cancellation**: subtracting nearly-equal numbers can wipe out all precision.
+
+17. $z = 8.00$. $\sigma_z = \sqrt{0.10^2 + 0.04^2} = \sqrt{0.0116} = 0.108$. Report: $z = 8.00 \pm 0.11$.
+18. $z = 2.00$. Same $\sigma_z = 0.108$. Report: $z = 2.00 \pm 0.11$. Note subtracting the values does *not* subtract the uncertainties.
+19. $z = 40.0$. Relative: $\sqrt{(0.02)^2 + (0.025)^2} = \sqrt{0.0004 + 0.000625} = 0.032 = 3.2\%$. Absolute: $\sigma_z = 1.28$. Report: $z = 40.0 \pm 1.3$.
+20. $z = 5.00$. Relative: $\sqrt{(0.01)^2 + (0.025)^2} = 0.0269 = 2.7\%$. Absolute: $\sigma_z = 0.13$. Report: $z = 5.00 \pm 0.13$.
+21. $z = 25$. $\sigma_z / z = 2 \cdot (0.1/5.0) = 0.04$, so $\sigma_z = 1.0$. Report: $z = 25 \pm 1$.
+
+22. False precision. Report should be $13$ cm² (2 sig figs) or, with explicit uncertainty, $13.2 \pm$ (some estimate) cm². The $13.237$ is calculator output, not a measurement.
+23. The lowest decimal place was tenths ($4.1$), so report $29.4$ cm. Carrying extra digits is dishonest.
+24. False precision. The instrument doesn't resolve beyond $0.01\ \Omega$. Report $4.33\ \Omega$ at most.
+
+25. $V = \pi (2.00)^2 (10.00) = 125.7$ cm³. Partials: $\partial V / \partial r = 2 \pi r h$, $\partial V / \partial h = \pi r^2$. Plug in: $\partial V / \partial r = 2\pi(2.00)(10.00) = 125.7$, $\partial V / \partial h = \pi(2.00)^2 = 12.57$. Then $\sigma_V^2 = (125.7)^2 (0.05)^2 + (12.57)^2 (0.10)^2 = 39.5 + 1.58 = 41.1$. So $\sigma_V = 6.4$ cm³. Report: $V = 126 \pm 6$ cm³. The radius dominates (by factor ~25) because $V \propto r^2$, doubling the relative error.
+
+26. $K = \frac{1}{2}(1.50)(3.20)^2 = 7.68$ J. Partials: $\partial K / \partial m = \frac{1}{2} v^2 = 5.12$, $\partial K / \partial v = mv = 4.80$. $\sigma_K^2 = (5.12)^2 (0.01)^2 + (4.80)^2 (0.05)^2 = 0.00262 + 0.0576 = 0.0602$. $\sigma_K = 0.245$ J. Report: $K = 7.68 \pm 0.25$ J. Velocity dominates.
+
+## Build Task
+
+Write a `Measurement` class in Python that holds a value and a standard uncertainty, and overloads arithmetic operators to propagate uncertainty correctly under the quadrature assumption (independent errors). Apply it to compute density from measured mass and volume.
+
+```python
+"""measurement.py — uncertain-number arithmetic with quadrature propagation."""
+
+from __future__ import annotations
+from dataclasses import dataclass
+from math import sqrt, log, exp, sin, cos, pi
+
+
+@dataclass
+class Measurement:
+    """A measured quantity with a standard uncertainty (one sigma).
+
+    Arithmetic operators propagate uncertainty assuming INDEPENDENT errors.
+    For correlated inputs, use the full GUM treatment instead.
+    """
+
+    value: float
+    uncertainty: float = 0.0  # standard uncertainty (one sigma)
+
+    def __post_init__(self):
+        if self.uncertainty < 0:
+            raise ValueError("uncertainty must be non-negative")
+
+    # --- Display ---
+    def __repr__(self) -> str:
+        return f"Measurement({self.value:g}, {self.uncertainty:g})"
+
+    def __str__(self) -> str:
+        return f"{self.value:g} +/- {self.uncertainty:g}"
+
+    def relative(self) -> float:
+        """Relative uncertainty (dimensionless fraction)."""
+        if self.value == 0:
+            return float("inf")
+        return self.uncertainty / abs(self.value)
+
+    def expanded(self, k: float = 2.0) -> tuple[float, float]:
+        """Return (value, expanded_uncertainty) at coverage factor k."""
+        return (self.value, k * self.uncertainty)
+
+    # --- Helpers ---
+    @staticmethod
+    def _coerce(other) -> "Measurement":
+        if isinstance(other, Measurement):
+            return other
+        return Measurement(float(other), 0.0)
+
+    # --- Addition / Subtraction ---
+    def __add__(self, other) -> "Measurement":
+        o = self._coerce(other)
+        return Measurement(
+            self.value + o.value,
+            sqrt(self.uncertainty ** 2 + o.uncertainty ** 2),
+        )
+
+    def __radd__(self, other) -> "Measurement":
+        return self.__add__(other)
+
+    def __sub__(self, other) -> "Measurement":
+        o = self._coerce(other)
+        return Measurement(
+            self.value - o.value,
+            sqrt(self.uncertainty ** 2 + o.uncertainty ** 2),
+        )
+
+    def __rsub__(self, other) -> "Measurement":
+        return self._coerce(other).__sub__(self)
+
+    def __neg__(self) -> "Measurement":
+        return Measurement(-self.value, self.uncertainty)
+
+    # --- Multiplication / Division ---
+    def __mul__(self, other) -> "Measurement":
+        o = self._coerce(other)
+        v = self.value * o.value
+        # relative uncertainties add in quadrature
+        ru = sqrt(self.relative() ** 2 + o.relative() ** 2) if v != 0 else 0.0
+        return Measurement(v, abs(v) * ru)
+
+    def __rmul__(self, other) -> "Measurement":
+        return self.__mul__(other)
+
+    def __truediv__(self, other) -> "Measurement":
+        o = self._coerce(other)
+        if o.value == 0:
+            raise ZeroDivisionError("division by Measurement with zero value")
+        v = self.value / o.value
+        ru = sqrt(self.relative() ** 2 + o.relative() ** 2)
+        return Measurement(v, abs(v) * ru)
+
+    def __rtruediv__(self, other) -> "Measurement":
+        return self._coerce(other).__truediv__(self)
+
+    # --- Powers ---
+    def __pow__(self, n: float) -> "Measurement":
+        v = self.value ** n
+        # d/dx (x^n) = n x^(n-1); relative uncertainty scales by |n|
+        ru = abs(n) * self.relative()
+        return Measurement(v, abs(v) * ru)
+
+    # --- General nonlinear: take a function and its derivative ---
+    def apply(self, f, df) -> "Measurement":
+        """Apply f via first-order propagation: sigma_f = |df(value)| * sigma."""
+        return Measurement(f(self.value), abs(df(self.value)) * self.uncertainty)
+
+
+# --- Convenience nonlinear functions ---
+def msqrt(x: Measurement) -> Measurement:
+    return x ** 0.5
+
+
+def mlog(x: Measurement) -> Measurement:
+    return x.apply(log, lambda v: 1.0 / v)
+
+
+def mexp(x: Measurement) -> Measurement:
+    return x.apply(exp, exp)
+
+
+def msin(x: Measurement) -> Measurement:
+    return x.apply(sin, cos)
+
+
+def mcos(x: Measurement) -> Measurement:
+    return x.apply(cos, lambda v: -sin(v))
+
+
+# --- Driver: compute density from measured mass and volume ---
+if __name__ == "__main__":
+    mass = Measurement(12.50, 0.05)        # grams
+    volume = Measurement(4.20, 0.10)       # cubic centimeters
+
+    density = mass / volume
+    print(f"mass:    {mass} g")
+    print(f"volume:  {volume} cm^3")
+    print(f"density: {density} g/cm^3")
+    print(f"relative uncertainty: {density.relative() * 100:.2f}%")
+
+    # Expanded uncertainty at k=2 (about 95% confidence under Gaussian)
+    val, U = density.expanded(k=2)
+    print(f"expanded (k=2):  {val:.3f} +/- {U:.3f} g/cm^3")
+
+    # Pendulum example: T = 2 pi sqrt(L/g)
+    L = Measurement(0.500, 0.005)          # meters
+    g = Measurement(9.81, 0.01)            # m/s^2
+    T = 2 * pi * msqrt(L / g)
+    print(f"\npendulum period: {T} s")
+    print(f"relative uncertainty: {T.relative() * 100:.3f}%")
+```
+
+Save as `measurement.py`. Run it; you should see the density result $\rho = 2.976 \pm 0.072$ g/cm³ (or close, depending on Python float printing) and the pendulum $T = 1.418 \pm 0.007$ s.
+
+Stretch goals:
+
+- Add a `mean(samples)` constructor that takes a list of independent measurements and returns a `Measurement` whose value is the sample mean and whose uncertainty is the standard error of the mean ($s/\sqrt{n}$). This is the Type A uncertainty pipeline.
+- Add a unit string field and propagate units through arithmetic (or use the `pint` library).
+- Replace the first-order propagation with a *Monte Carlo* approach: sample the inputs from Gaussians, compute the function for each sample, and report the empirical $\sigma$ of the output. Compare with the first-order result on a strongly nonlinear function like $f(x) = e^x$ at $x = 10 \pm 1$ — you will see the first-order method *underestimates* the uncertainty for highly nonlinear functions.
+- Implement correlated-error arithmetic: track a covariance matrix across multiple `Measurement` objects derived from a common source.
+
+## Quiz
+
+1. State the difference between the sig-fig rule for multiplication and the sig-fig rule for addition. Why are they different?
+
+2. A measurement is reported as $4.50 \times 10^3$. How many significant figures? What if it were written as $4500$ in standard notation — what changes?
+
+3. Why does Python's `round()` use banker's rounding by default? In what kind of computation does this matter?
+
+4. For independent random errors, why do we add *variances* (in quadrature) rather than standard deviations directly?
+
+5. When would you use the worst-case linear bound on combined uncertainty instead of the quadrature sum?
+
+6. A student measures a length as $L = 1.0000$ m with a tape measure whose smallest division is $1$ mm. Why is the report dishonest? How should it be written?
+
+7. State the GUM distinction between Type A and Type B uncertainty. Give one concrete example of each in a real measurement chain.
+
+8. The relative uncertainty of $z = x^n$ is $|n| \cdot (\sigma_x / x)$. Explain why a square root ($n = 1/2$) reduces relative uncertainty and a square ($n = 2$) doubles it.
+
+### Quiz Answers
+
+1. Multiplication preserves the *fewest sig figs* of the inputs because relative errors compound (and the input with the largest relative error dominates). Addition preserves the *lowest decimal place* because absolute errors compound in the same units. They differ because relative-vs-absolute uncertainty behaves differently under the two operations.
+
+2. $4.50 \times 10^3$ has 3 sig figs unambiguously (the coefficient has 3 digits). Written as $4500$ in standard notation, the trailing zeros are ambiguous: it could be 2, 3, or 4 sig figs. Scientific notation removes the ambiguity.
+
+3. Banker's rounding (round-half-to-even) avoids the systematic upward bias of standard "round-half-up." When you average many rounded numbers, half-up always pushes the average slightly high; banker's rounding averages to zero bias. Matters in financial calculations, large-scale numerical computing, statistical processing, and IEEE 754 float arithmetic.
+
+4. Variances of independent random variables add (a result from probability theory: $\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y)$ for independent $X$, $Y$). Standard deviations are $\sqrt{\text{Var}}$, so they add as Pythagorean legs. Adding standard deviations directly would assume the errors are *perfectly correlated*, pushing in the same direction — the worst-case bound.
+
+5. Worst-case linear when you need a *guaranteed* upper bound (safety-critical specs, regulatory compliance, mission-critical tolerance budgets), or when the errors are not actually independent (systematic biases that don't average out, common-mode errors). Quadrature is the *expected* uncertainty for independent random errors; it can be exceeded in rare cases.
+
+6. A tape measure with 1 mm divisions cannot resolve below ~0.5 mm; reporting four decimal places of m (= 0.1 mm) is false precision. Report $L = 1.000$ m (3 decimal places, sub-mm honest only if you interpolated carefully) or, more honestly, $L = 1.000 \pm 0.001$ m.
+
+7. **Type A** is evaluated statistically (e.g., compute the sample standard deviation of 20 repeated measurements). **Type B** is evaluated from non-statistical sources (datasheet specs, calibration certificates, physical resolution limits). Concrete: in a current measurement using a shunt resistor and ADC, the ADC's quantization noise of $1\,\text{LSB}/\sqrt{12}$ is Type B (from datasheet); the run-to-run variation in repeated readings is Type A (from statistics).
+
+8. The chain rule for $z = x^n$ gives $\partial z / \partial x = n x^{n-1}$, so $\sigma_z = |n x^{n-1}| \sigma_x$. Dividing by $z = x^n$: $\sigma_z / z = |n| (\sigma_x / x)$. A square root halves the relative error (averaging effect), a square doubles it (compounding effect). Useful trick: when designing a precision measurement, prefer to derive your final quantity via a square root rather than a square.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Count sig figs in any number, including ambiguous trailing-zero cases.
+- Apply the multiplication and addition sig-fig rules correctly without flipping them.
+- Propagate uncertainty through any one-variable function using the partial-derivative formula.
+- Propagate uncertainty through a multi-variable function (e.g., $V = \pi r^2 h$ or $T = 2\pi\sqrt{L/g}$) using the quadrature formula.
+- Choose between worst-case and quadrature combination appropriately.
+- Identify false precision in your own and others' reports.
+- Run your `measurement.py` module, see the density and pendulum results compute correctly with uncertainty, and have committed it to your study repository.
+- Apply your `Measurement` class in a notebook to a real measurement you make in your home or workshop (e.g., timing a falling object, measuring the volume of a cup, weighing a coin). Report the result with proper uncertainty.
+
+Suggested artifact: commit a Jupyter notebook to your repo titled `uncertainty_lab.ipynb` that:
+- Imports your `Measurement` class.
+- Performs at least one real measurement chain (e.g., measure the density of a household object).
+- Reports the result with a clearly-stated $\pm$ uncertainty and a justification of every Type A and Type B contribution.
+- Discusses which input dominates the final uncertainty and how you would improve precision.
+
+## Sources and Further Study
+
+- **NIST Technical Note 1297** — Taylor, B. N., and Kuyatt, C. E. (1994). *Guidelines for Evaluating and Expressing the Uncertainty of NIST Measurement Results.* The US implementation of the GUM. Free PDF on the NIST website. The canonical metrology reference for practicing engineers in the US.
+- **JCGM 100:2008 — Guide to the Expression of Uncertainty in Measurement (GUM)**. The international standard, published by the Joint Committee for Guides in Metrology under BIPM. Free PDF. The bible of measurement uncertainty.
+- **John R. Taylor**, *An Introduction to Error Analysis: The Study of Uncertainties in Physical Measurements* (2nd ed., University Science Books, 1997). The single most widely-used undergraduate text on error analysis. Worked examples, problems, clear writing. The book to own if you do any quantitative experiment.
+- **Philip R. Bevington and D. Keith Robinson**, *Data Reduction and Error Analysis for the Physical Sciences* (3rd ed., McGraw-Hill, 2003). More advanced than Taylor; includes regression, least-squares fitting, chi-squared analysis. Used in physics graduate programs.
+- **MIT OpenCourseWare 8.13/8.14 — Experimental Physics (Junior Physics Lab)**. The MIT junior physics lab sequence. Course materials online include explicit uncertainty-analysis tutorials and lab guides.
+- **MIT 18.05 — Introduction to Probability and Statistics**. The statistical foundation of Type A uncertainty (means, standard errors, confidence intervals). Free OCW materials.
+- **NIST/SEMATECH e-Handbook of Statistical Methods** (online, free). Comprehensive online handbook on measurement uncertainty, calibration, and statistical methods.
+- **R. H. Dieck**, *Measurement Uncertainty: Methods and Applications* (4th ed., ISA Press). Practical industrial-engineering treatment.
+- **Hughes and Hase**, *Measurements and Their Uncertainties: A Practical Guide to Modern Error Analysis* (Oxford, 2010). Concise modern treatment with computational examples.
+- **Particle Data Group reviews** (pdg.lbl.gov) — for examples of uncertainty handling at the cutting edge of fundamental physics.
+
+## Next Lesson Bridge
+
+Lesson 17 — *Engineering Estimation and Fermi Problems* — picks up where this lesson's worst-case bounds leave off. Significant figures and uncertainty propagation are the right tool when you have *measured* numbers with known precision. But often you don't: you have *guessed* numbers, perhaps known only to within a factor of 3 or 10, and the question is whether the final answer is even the right order of magnitude. For that, you don't track $\sigma$ in quadrature; you reason multiplicatively across orders of magnitude (Fermi estimation), accepting that the answer is correct to a factor of 3 at best.
+
+The Fermi habit and the sig-fig habit are complementary. Sig figs are for tight precision when measurements are reliable. Fermi is for rough orientation when measurements are absent. The mature engineer fluidly switches between them: Fermi to decide whether a project is feasible at all, sig figs to design the final implementation honestly.
+
+After lesson 17 the Math Re-entry module closes out (lessons 18, 19, 20) with data literacy, basic probability, and basic statistics. The probability and statistics lessons are where Type A uncertainty (statistical estimation from samples) gets its full treatment: standard error of the mean, confidence intervals, $t$-tests, regression with error bars, the chi-squared distribution for goodness-of-fit. Everything you have learned about $\sigma$ and quadrature in this lesson will be revisited with full statistical rigor.
+
+For the rest of your engineering career, every number you measure, compute, or report will travel with an uncertainty. The discipline you build here pays out every day.

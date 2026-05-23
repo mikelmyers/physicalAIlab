@@ -1,0 +1,789 @@
+# Functions: Definition and Notation
+
+## Re-entry Promise
+
+For the past six lessons you have been working with *equations* — statements that two quantities are equal — and you have learned to solve them, rearrange them, and carry units through them. An equation like $V = IR$ relates three numbers, and given any two you can find the third.
+
+This lesson introduces a different kind of object: a **function**. A function is not a single relation between three numbers. It is a *rule* — a fixed procedure — that takes an input and produces an output. Every time you feed it the same input, it produces the same output. Engineers and scientists think in functions far more than they think in equations, because the world is full of relationships where one quantity *depends on* another: temperature depends on time of day, sensor voltage depends on distance to a target, drone altitude depends on time since launch, the loss of a neural network depends on its parameters.
+
+This lesson assumes you can rearrange and evaluate algebraic expressions (lessons 1–4) and you carry units through your work (lesson 6). It does not assume you have seen the formal definition of a function before, or that you are comfortable with the notation $f(x)$. It does not assume any calculus, any pre-calculus, or any familiarity with graphing beyond plotting a few points. We will build all of that from the ground up.
+
+The function concept is one of the most important ideas in modern mathematics and engineering. Everything from neural networks to control systems to physics models is, at its core, the study of functions. By the end of this lesson you will be comfortable with what a function *is*, how to write one down, how to evaluate one at a specific input, and how to tell when something is *not* a function. The next lesson (8) goes deeper on the inputs and outputs that functions are allowed to have, and the function-type "zoo" that shows up throughout engineering.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- State the formal (Dirichlet) definition of a function: a rule that assigns to each input *exactly one* output.
+- Read the notation $f(x)$ aloud — "f of x" — and explain what it means: the output of the function $f$ when given the input $x$.
+- Evaluate $f(x)$ at specific numeric inputs by substitution.
+- Evaluate $f(x)$ at *symbolic* inputs such as $f(a)$, $f(a + 1)$, $f(2t)$ — the algebraic move that underlies all of calculus.
+- Apply the **vertical-line test** to a graph and decide whether it represents a function.
+- Identify common relationships that are *not* functions (a circle, a multi-valued sensor reading) and say why.
+- Describe the **function-as-machine** mental model and use it when reasoning about input–output behaviour.
+- Informally describe what is meant by the **domain** (set of allowed inputs) and **range** (set of resulting outputs) of a function, in preparation for the formal treatment in lesson 8.
+- Distinguish between the function $f$ (the rule itself) and the value $f(x)$ (a specific output) — a notational distinction that trips up many learners.
+
+## Why It Matters
+
+The function concept is everywhere in engineering. Ten concrete situations where you cannot avoid it:
+
+1. **Distance sensor.** A Sharp infrared distance sensor outputs a voltage that depends on the distance to the target: $V = f(d)$. For a particular sensor, $f$ might be approximately $V = 0.02 \cdot d + 0.5$ in volts, with $d$ in centimetres. To read distance from voltage, you invert $f$. Calibrating, reading, and inverting a sensor curve is daily work in robotics.
+
+2. **Motor RPM.** A brushless DC motor's steady-state speed depends on the applied voltage: $\omega = f(V)$. For an ideal motor, $\omega = k_v \cdot V$ where $k_v$ is the motor's velocity constant. Selecting motors and gearboxes turns on understanding this function.
+
+3. **Drone altitude.** A drone in free fall from height $h_0$ has altitude $h(t) = h_0 - \tfrac{1}{2} g t^2$ — a function of time. Predicting trajectory, designing safety zones, and tuning controllers all require thinking in $h$ as a function of $t$.
+
+4. **Neural network.** A neural network is, literally and mathematically, a function $f: \mathbb{R}^n \to \mathbb{R}^m$. Its parameters (weights and biases) determine which particular function it is; training adjusts them to match a target function. The whole field of deep learning is the study of *which functions can be expressed by which network architectures*.
+
+5. **Battery state-of-charge.** A lithium-ion cell's terminal voltage depends on its state of charge in a known nonlinear way: $V = f(\text{SoC})$. Battery management systems invert this function — given a measured voltage, infer remaining charge.
+
+6. **GPS position.** A GPS receiver computes position as a function of time: $\mathbf{r}(t) = (x(t), y(t), z(t))$. This is a *vector-valued* function, an extension of the single-output functions we focus on here, but the function concept is identical.
+
+7. **Audio waveform.** The pressure at your eardrum at a concert is a function of time: $p(t)$. Digitizing this function (sampling it at a fixed rate, like 44.1 kHz) is the basis of all digital audio.
+
+8. **Control-loop step response.** When you command a motor to "go to position 100", the actual position $y(t)$ rises, possibly overshoots, and settles. The shape of $y(t)$ is a function of time and tells you almost everything you need to know to tune the controller.
+
+9. **ML loss function.** During training, the loss of a neural network is a function of its parameters: $\mathcal{L}(\boldsymbol{\theta})$. Gradient descent walks downhill on this function. The whole subject of optimization is the study of how to find inputs that minimize a function.
+
+10. **Code itself.** Every Python function you write is (often) a mathematical function in disguise: `def square(x): return x*x` is precisely the function $f(x) = x^2$. Pure functions (deterministic, side-effect-free) are exactly the functions of mathematics. The discipline of functional programming exploits this directly.
+
+Across all ten examples, the common thread is *one input, one output, deterministic rule*. That is what a function is, and that is what you are about to formalize.
+
+## Why This Idea Exists
+
+The function concept took a long time to crystallize. It is now so central to mathematics that "modern mathematics" can be characterized as the mathematics built on the function concept, but as recently as 1700 the word "function" did not exist.
+
+**René Descartes** (1596–1650) published *La Géométrie* in 1637, an appendix to his *Discourse on the Method*. In it he introduced the coordinate plane — the $xy$-grid we still use — and so connected algebra to geometry: a curve in the plane could be described by an equation in $x$ and $y$. This was the foundation. Before Descartes you could draw a curve or write an equation, but you could not freely translate between the two.
+
+**Gottfried Wilhelm Leibniz** (1646–1716) coined the term *function* — Latin *functio*, "performance, execution" — in a manuscript of 1673 to describe quantities that depended on a curve's geometry, such as the slope of a tangent or the length of a chord. Leibniz's notion was tied to geometry: a function was something you computed from a curve.
+
+**Johann Bernoulli** (1667–1748) gave the first explicit, general definition in 1718: "a quantity composed in any manner from a variable and constants." The qualifier "in any manner" is interesting — Bernoulli imagined functions as expressions you build from a variable using arithmetic operations, exponents, and so on. This is the *analytic* view of a function: a function is a formula.
+
+**Leonhard Euler** (1707–1783), in his monumental *Introductio in analysin infinitorum* (1748), introduced the notation $f(x)$ that we still use today. He defined a function as "an analytic expression composed in any manner from variables and constants" — essentially Bernoulli's definition with cleaner notation. Euler's books were so influential that his notation and his definition became standard across Europe.
+
+For about a century, Euler's analytic definition was the working definition. A function was *a formula in $x$*. But mathematicians began to find pathological cases: the heat equation, studied by Fourier in the 1820s, led to functions defined piecewise or by infinite series that did not look like any single formula. The analytic definition was strained.
+
+**Peter Gustav Lejeune Dirichlet** (1805–1859) cut the knot. In an 1837 paper on Fourier series, he wrote what is now considered the modern definition:
+
+> $y$ is a function of $x$ if, for each value of $x$ in a certain interval, there corresponds a definite value of $y$. It is not necessary that the correspondence be expressed by a single formula.
+
+Dirichlet's definition is **set-theoretic**: a function is a rule of correspondence between elements, with no requirement that the rule be a formula. Under Dirichlet's definition, you can have a function defined by a table, a graph, a piecewise rule, an algorithm, or any other unambiguous procedure. The only requirement is that *each input gives exactly one output*.
+
+To drive the point home, Dirichlet defined what is now called the *Dirichlet function*: $f(x) = 1$ if $x$ is rational, $f(x) = 0$ if $x$ is irrational. There is no formula for this; you cannot graph it; but it satisfies the definition perfectly. It is the function that proves the definition is broader than any specific notation.
+
+**Gottlob Frege** (1848–1925), in his *Grundgesetze der Arithmetik* (1893), and later the Bourbaki collective (mid-20th century) gave the function concept its modern set-theoretic foundations. In the contemporary view, a function $f: A \to B$ is *defined to be* a subset of $A \times B$ — a set of input-output pairs — with the constraint that no input appears twice. The function *is* its graph, in this formal sense.
+
+Why does engineering need this concept? Because every measurable physical quantity that depends on another is a function in the Dirichlet sense. A temperature changes with time. A voltage changes with current. A position changes with elapsed seconds. Each of these is a deterministic input-to-output rule. Modern computation, especially machine learning, is largely the manipulation and approximation of functions. The function concept is the basic vocabulary of all engineering modelling.
+
+## Plain-Language Intuition
+
+A function is a **deterministic machine**.
+
+Imagine a vending machine. You insert a code, like "A1", and a Coke comes out. You insert "B3", and a bag of chips comes out. Crucially, **the same input always produces the same output**. Every time you press "A1", you get a Coke. Never a Sprite, never two Cokes, never nothing. That is what makes it a vending machine and not a slot machine.
+
+A function is that vending machine, formalized. Input on the left, output on the right, fixed rule in the middle. Same input today, tomorrow, and ten years from now: same output.
+
+By contrast, a *slot machine* takes an input (a coin) and produces a random output (sometimes coins, mostly nothing). A slot machine is **not a function**. It violates the determinism requirement.
+
+A *broken vending machine* that gives you Coke half the time and Sprite the other half for input "A1" is also not a function. Same input, different outputs — not allowed.
+
+That is the entire core of the idea. The notation, the symbols, the formal definitions all serve this one mental picture: **one input in, one definite output out, every time**.
+
+The second piece of intuition is the notation. We write $f$ for the machine — the rule, the box, the abstract procedure. We write $f(x)$ — read "f of x" — for what the machine produces when you feed it input $x$. So:
+
+- $f$ is the function (the machine).
+- $f(x)$ is the *output* of the function at input $x$ (one specific Coke or Sprite).
+
+This distinction matters. If $f(x) = 2x + 3$, then $f$ is the rule "double and add three", and $f(5)$ is the specific number $13$. The rule is one thing; an output of the rule is another. Confusing the two is the most common notational mistake learners make, and we will name it explicitly in the worked examples.
+
+## Core Theory
+
+### The Formal Definition
+
+Here is the modern, Dirichlet-style definition:
+
+> A **function** $f$ from a set $A$ to a set $B$ is a rule that assigns to each element $x \in A$ exactly one element $f(x) \in B$.
+
+We write $f: A \to B$ and read "f from A to B."
+
+The pieces have names:
+
+- $A$ is the **domain** — the set of allowed inputs. The function knows what to do with every element of $A$.
+- $B$ is the **codomain** — the set in which the outputs live. The codomain is the *type* of the output.
+- The actual set of values $\{ f(x) : x \in A \}$ that the function produces is called the **range** (or *image*). The range is a subset of the codomain, and may be strictly smaller.
+
+The single critical constraint is **"exactly one"**: for each input, exactly one output. Not zero, not two, not "depends on the day". Exactly one.
+
+This lesson focuses on the case where $A$ and $B$ are sets of real numbers, written $\mathbb{R}$. Most engineering functions live in $\mathbb{R}$, at least to begin with. Lesson 8 will broaden the picture.
+
+### The Notation $f(x)$
+
+The expression $f(x)$ is read **"f of x"** and means *the output of the function $f$ when given input $x$*. The parentheses do not mean multiplication. $f(x)$ is not "f times x". It is "f applied to x".
+
+Some common variants of the notation:
+
+- $f(x) = 2x + 3$ — defines $f$ to be the doubling-plus-three rule.
+- $y = 2x + 3$ — same idea, but names the output $y$. Sometimes written as a "function equation" without the $f$.
+- $x \mapsto 2x + 3$ — read "x maps to 2x + 3". The arrow $\mapsto$ (different from $\to$) describes the rule itself. You see this in pure mathematics and in functional-programming literature.
+- $f: x \mapsto 2x + 3$ — combines name and rule.
+
+These are all the same function. Pick the notation that is clearest in context.
+
+When we want to name several functions in the same discussion, we use other letters: $g(x)$, $h(t)$, $\phi(\theta)$. The function's *name* is just a label. Common conventions:
+
+- $f, g, h$ for general functions.
+- $V(d)$, $h(t)$, $\omega(V)$ for engineering functions, where the letter hints at the physical quantity.
+- $\sin x$, $\cos x$, $\ln x$, $\exp x$ — function names so familiar that the parentheses are usually dropped.
+
+### Evaluation at a Number
+
+To **evaluate** $f$ at a particular input, substitute that input wherever $x$ appears in the rule.
+
+If $f(x) = 2x + 3$, then:
+
+- $f(0) = 2 \cdot 0 + 3 = 3$.
+- $f(1) = 2 \cdot 1 + 3 = 5$.
+- $f(-2) = 2 \cdot (-2) + 3 = -4 + 3 = -1$.
+
+The mechanical move is **replace every $x$ with the input value**, then simplify.
+
+### Evaluation at a Symbolic Input
+
+The same mechanical move works when the input is itself a letter or an expression. This is the move that prepares you for calculus and for higher algebra.
+
+If $f(x) = 2x + 3$, then:
+
+- $f(a) = 2a + 3$.
+- $f(a + 1) = 2(a + 1) + 3 = 2a + 2 + 3 = 2a + 5$.
+- $f(2t) = 2 \cdot (2t) + 3 = 4t + 3$.
+- $f(x + h) = 2(x + h) + 3 = 2x + 2h + 3$.
+
+The last one, $f(x + h)$, is the key building block of the **difference quotient** $\bigl(f(x + h) - f(x)\bigr) / h$, which we will need for the definition of the derivative when we reach calculus. Get comfortable with it now.
+
+A crucial detail: when substituting an expression, **always wrap it in parentheses first**. The rule $f(x) = x^2$ evaluated at $x = a + 1$ gives $f(a + 1) = (a + 1)^2 = a^2 + 2a + 1$. Without the parentheses you might write $a + 1^2 = a + 1$, which is wrong. Parentheses preserve the structure of the substitution.
+
+### The Vertical-Line Test
+
+When a function has real numbers as both input and output, we can draw its graph: the set of points $(x, f(x))$ in the $xy$-plane.
+
+The "exactly one output" rule then has a beautiful visual interpretation:
+
+> A graph in the $xy$-plane represents $y$ as a function of $x$ if and only if every vertical line intersects the graph in at most one point.
+
+This is the **vertical-line test**. It is just the definition translated to a picture: at each $x$ on the horizontal axis, there is at most one $y$ above or below it. Pass a vertical line across the graph. If it ever crosses the graph in two or more points at once, the relation fails the definition — at that $x$, the rule would have to produce two different outputs.
+
+### What Is Not a Function
+
+The classic example of a relation that is *not* a function is the **circle**. The unit circle satisfies the equation
+
+$$x^2 + y^2 = 1.$$
+
+For $x = 0$, the equation gives $y^2 = 1$, so $y = +1$ or $y = -1$. Two outputs for one input. The circle fails the vertical-line test — a vertical line through the centre crosses the circle in two points.
+
+Other relations that are not functions:
+
+- A *multi-valued square root*: the equation $y^2 = x$ gives $y = \pm \sqrt{x}$, two outputs per positive input. The *principal* square root $\sqrt{x}$ — the positive branch — *is* a function, but $y^2 = x$ as a relation is not.
+- A sensor with hysteresis: a thermostat that switches on at $20\,^\circ$C falling and off at $22\,^\circ$C rising. At any temperature between, the state depends on history, not just the temperature. So "state as a function of current temperature" is not a function. (To recover a function, include the history as an additional input.)
+
+The fix in each case is the same: either restrict the rule so it produces exactly one output (the principal-root convention), or add more inputs to disambiguate (include the history).
+
+### Multiple Representations
+
+A single function can be presented in several ways:
+
+1. **A formula:** $f(x) = 2x + 3$.
+2. **A table:** a list of $(x, f(x))$ pairs.
+
+   | $x$ | $f(x)$ |
+   | --- | --- |
+   | $0$ | $3$ |
+   | $1$ | $5$ |
+   | $2$ | $7$ |
+   | $3$ | $9$ |
+
+3. **A graph:** plot the table as points and connect them. (The graph of $f(x) = 2x + 3$ is a straight line.)
+4. **A verbal description:** "double the input and add three."
+5. **A piece of code:**
+
+   ```python
+   def f(x):
+       return 2 * x + 3
+   ```
+
+All five are the same function. Choosing among them is a matter of which makes a particular argument clearest. Formulas are good for algebra. Tables are good for sensor calibration data. Graphs are good for visual intuition. Verbal descriptions are good for communicating intent. Code is good for actually computing values.
+
+### The Function-as-Machine Mental Model
+
+Picture a function as a black box with one input slot and one output slot:
+
+```
+            +---------+
+   input -->|   f     |--> output
+   (x)      |  rule   |     (f(x))
+            +---------+
+```
+
+You feed in $x$ on the left. The box applies its fixed rule. Out comes $f(x)$ on the right. The box is deterministic: feed the same $x$, get the same $f(x)$. Forever.
+
+This is more than a cute picture. It is the mental model used in:
+
+- Engineering block diagrams (each block is a function from input signal to output signal).
+- Functional programming (functions compose; piping the output of one into another is the basic move).
+- Neural network design (each layer is a function; the network is a composition of these functions).
+- Control theory (the *plant* is a function from control input to system output).
+
+When in doubt, draw the box.
+
+### A Brief Mention of Composition and Inverses
+
+Two more ideas we will not fully develop here, but you should be aware they exist:
+
+- **Composition.** If you have two functions $f$ and $g$, you can chain them: feed $x$ into $g$, then feed $g(x)$ into $f$. The result is written $f(g(x))$ or $(f \circ g)(x)$, read "f composed with g of x." Compositions of simple functions build up complicated ones — and neural networks are precisely deeply nested compositions of simple functions.
+- **Inverse.** Given a function $f$, an *inverse function* $f^{-1}$ undoes $f$: $f^{-1}(f(x)) = x$. Not every function has an inverse — the rule must be one-to-one (each output comes from a unique input), which is a stronger condition than "function". Inverses matter in engineering when you measure an output (a sensor voltage) and want to recover the input (a distance).
+
+Both composition and inverses get their own lessons later. For now, just notice the words exist.
+
+### Domain and Range — Informal Preview
+
+Two informal points to carry forward to lesson 8:
+
+- The **domain** is the set of inputs the function knows how to handle. For $f(x) = 1/(x - 2)$, the domain excludes $x = 2$ (division by zero). For $g(x) = \sqrt{x}$, the domain (restricting to real numbers) is $x \ge 0$. Real engineering functions often have natural domain restrictions: a sensor only works in a certain temperature range, a motor curve is only valid up to its maximum RPM, a model is only accurate within its training distribution.
+- The **range** is the set of outputs the function actually produces. For $h(x) = x^2$, the range is $h(x) \ge 0$ — squaring never produces a negative number, even though negative numbers are allowed in the codomain $\mathbb{R}$.
+
+Lesson 8 will make these precise and connect them to the function-type zoo (linear, polynomial, rational, exponential, logarithmic, trigonometric, piecewise).
+
+## Visual or Mental Model
+
+### Model 1: The Machine Diagram
+
+```
+            +---------+
+    x ----->|    f    |-----> f(x)
+            +---------+
+```
+
+A black box with a fixed rule. Input $x$ enters on the left; the rule is applied; output $f(x)$ leaves on the right. The box is **deterministic** (same input gives same output) and **single-valued** (one output per call).
+
+### Model 2: The Arrow Diagram
+
+Picture the domain $A$ as a set of dots on the left, the codomain $B$ as a set of dots on the right. A function $f$ is a set of arrows, one from each dot of $A$ to exactly one dot of $B$:
+
+```
+   A                   B
+
+   a1  ----------->    b1
+                       
+   a2  ----------->    b2
+                       
+   a3  ----------\    
+                  >--> b3
+   a4  ----------/    
+                       b4   (not in range)
+```
+
+Notice three things:
+
+- Every dot in $A$ has exactly one arrow leaving it. (That is the "function" requirement.)
+- Two different dots in $A$ may point to the same dot in $B$. (Different inputs can give the same output. The function rule $f(x) = x^2$ sends both $+3$ and $-3$ to $9$.)
+- A dot in $B$ may have no arrow pointing to it. ($b_4$ above. It is in the codomain but not the range.)
+
+A function is allowed to "fan in" (many inputs to one output) but not to "fan out" (one input to many outputs).
+
+### Model 3: The Vertical-Line Test
+
+Here are two graphs in the $xy$-plane:
+
+```
+   y                            y
+   |                            |       ___
+   |        /                   |      /   \
+   |       /                    |     |     |
+   |      /                     |     |     |
+   |-----/--------- x           |------\___/----- x
+   |    /                       |
+   |   /                        |
+   |  /                         |
+   | /                          |
+   |/                           |
+
+   y = 2x + 3 (function)        unit circle (not a function)
+```
+
+The line $y = 2x + 3$ passes the vertical-line test: any vertical line you draw crosses the graph in exactly one point. So it is a function.
+
+The unit circle fails: a vertical line through the centre crosses the circle in two points. So the relation "$x^2 + y^2 = 1$" is not a function of $x$.
+
+(If you want to recover a function from the circle, you split it into the upper half $y = +\sqrt{1 - x^2}$ and the lower half $y = -\sqrt{1 - x^2}$. Each half, individually, passes the vertical-line test.)
+
+## Worked Examples
+
+### Example (a) — Linear Function, Numeric and Symbolic Evaluation
+
+Let $f(x) = 2x + 3$.
+
+**Numeric evaluation.**
+
+- $f(0) = 2 \cdot 0 + 3 = 3$.
+- $f(1) = 2 \cdot 1 + 3 = 5$.
+- $f(-1) = 2 \cdot (-1) + 3 = -2 + 3 = 1$.
+- $f(5) = 2 \cdot 5 + 3 = 13$.
+
+**Symbolic evaluation.**
+
+- $f(a) = 2a + 3$. (Just replace $x$ with $a$.)
+- $f(a + 1) = 2(a + 1) + 3 = 2a + 2 + 3 = 2a + 5$. (Wrap the input in parentheses, then expand.)
+- $f(2t) = 2 \cdot (2t) + 3 = 4t + 3$.
+
+The symbolic substitutions are exactly the same mechanical move as the numeric ones. The expression $(a + 1)$ is treated as a single object that goes into the slot where $x$ used to be.
+
+### Example (b) — Quadratic Function and Finding Zeros
+
+Let $g(t) = t^2 - 4t$.
+
+**Numeric evaluation.**
+
+- $g(0) = 0^2 - 4 \cdot 0 = 0$.
+- $g(2) = 2^2 - 4 \cdot 2 = 4 - 8 = -4$.
+- $g(4) = 4^2 - 4 \cdot 4 = 16 - 16 = 0$.
+
+**Where does $g(t) = 0$?** Set the rule equal to zero and solve:
+
+$$t^2 - 4t = 0.$$
+
+Factor:
+
+$$t(t - 4) = 0.$$
+
+So either $t = 0$ or $t = 4$. These are the *zeros* of $g$ — the inputs where the function outputs zero. The numeric values above already showed both.
+
+If $g(t)$ were, say, the height of a projectile, the zeros would be the times when it is on the ground. Finding zeros of functions is one of the most common engineering tasks.
+
+### Example (c) — Engineering: Distance-Sensor Calibration
+
+A Sharp-style infrared distance sensor outputs a voltage that depends on the distance to a target. After calibration on the bench, we find
+
+$$V(d) = 0.02 \cdot d + 0.5$$
+
+with $V$ in volts and $d$ in centimetres, valid roughly for $10 \le d \le 80$ cm.
+
+**Evaluate at $d = 10$ cm.**
+
+$$V(10) = 0.02 \cdot 10 + 0.5 = 0.2 + 0.5 = 0.7 \text{ V}.$$
+
+**Evaluate at $d = 50$ cm.**
+
+$$V(50) = 0.02 \cdot 50 + 0.5 = 1.0 + 0.5 = 1.5 \text{ V}.$$
+
+**Units sanity check.** The slope $0.02$ has units of V/cm: voltage per centimetre. Multiplying by a distance in cm gives a voltage in V. The intercept $0.5$ is in V. Adding the two gives V. Output units check out.
+
+The function $V$ takes a real number (distance in cm) and produces a real number (voltage in V), so we could write $V: [10, 80] \to \mathbb{R}$. The interval $[10, 80]$ is the *engineering* domain; outside it the calibration curve is not valid even if the formula technically gives a number.
+
+### Example (d) — Engineering: Drone Altitude in Free Flight
+
+A drone is launched straight up from ground level with initial speed $v_0 = 10$ m/s. Under gravity alone (no motor, no air resistance), its altitude as a function of time is
+
+$$h(t) = 10 t - \tfrac{1}{2} (9.8) t^2 = 10 t - 4.9 t^2,$$
+
+with $h$ in metres and $t$ in seconds.
+
+**Evaluate at specific times.**
+
+- $h(0) = 10 \cdot 0 - 4.9 \cdot 0^2 = 0$. (Starts at ground level. Good.)
+- $h(1) = 10 \cdot 1 - 4.9 \cdot 1^2 = 10 - 4.9 = 5.1$ m.
+- $h(2) = 10 \cdot 2 - 4.9 \cdot 2^2 = 20 - 19.6 = 0.4$ m. (Almost back to ground.)
+
+**When does it return to ground?** Set $h(t) = 0$:
+
+$$10 t - 4.9 t^2 = 0.$$
+
+Factor out $t$:
+
+$$t (10 - 4.9 t) = 0.$$
+
+So $t = 0$ (the launch instant) or $10 - 4.9 t = 0$, i.e. $t = 10 / 4.9 \approx 2.04$ s. The first zero is the launch, the second is the return to ground. Plausible: a 10 m/s upward toss takes about 2 seconds to come back down.
+
+Notice the structure: a single function $h(t)$, evaluated at several inputs and then solved for the inputs where the output is zero. This is the bread and butter of mechanics, controls, and trajectory planning.
+
+### Example (e) — The Vertical-Line Test in Action
+
+Consider two relations in the $xy$-plane:
+
+**Relation 1:** $y = x^2$.
+
+Sketch. For each $x$, there is exactly one $y$ (the square). The graph is a parabola opening upward. A vertical line at any $x = c$ crosses the graph at the single point $(c, c^2)$. Passes the vertical-line test. **Is a function.**
+
+**Relation 2:** $x^2 + y^2 = 4$ (a circle of radius 2 centred at the origin).
+
+Sketch. For $x = 0$, $y^2 = 4$, so $y = \pm 2$. Two distinct $y$ values for the single input $x = 0$. A vertical line at $x = 0$ crosses the circle at $(0, 2)$ and $(0, -2)$. Fails the vertical-line test. **Is not a function** of $x$.
+
+The fix: split the circle into two functions, an upper semicircle $y = +\sqrt{4 - x^2}$ and a lower semicircle $y = -\sqrt{4 - x^2}$. Each semicircle, individually, is a function of $x$ on the domain $-2 \le x \le 2$. Two functions taped together describe the original circle.
+
+This split — describing a multi-valued relation as a union of single-valued functions, each on its own restricted domain — is a routine move in engineering (and the basis of *branches* in complex analysis).
+
+### Example (f) — Rational Function with a Domain Restriction
+
+Let $f(x) = \dfrac{1}{x - 2}$.
+
+**Evaluate.**
+
+- $f(3) = 1 / (3 - 2) = 1 / 1 = 1$.
+- $f(5) = 1 / (5 - 2) = 1 / 3 \approx 0.333$.
+- $f(0) = 1 / (0 - 2) = 1 / (-2) = -0.5$.
+
+**What about $x = 2$?**
+
+$$f(2) = \frac{1}{2 - 2} = \frac{1}{0} = \text{undefined}.$$
+
+Division by zero. The rule produces no real number at $x = 2$, so $x = 2$ is **not in the domain** of $f$. The natural real-number domain of this $f$ is $\{x \in \mathbb{R} : x \ne 2\}$, often written $\mathbb{R} \setminus \{2\}$.
+
+If your code calls `f(2)` it will raise `ZeroDivisionError`. The function is undefined at that input; no number you write down for the output would obey any sensible rule. Domain restrictions are real, not a technicality.
+
+Lesson 8 will study the most common domain-restriction patterns (division by zero, square root of a negative, logarithm of a non-positive) systematically.
+
+### Example (g) — A Piece of Code as a Function
+
+Consider this Python function:
+
+```python
+def slope(p1, p2):
+    return (p2[1] - p1[1]) / (p2[0] - p1[0])
+```
+
+It takes two points $p_1 = (x_1, y_1)$ and $p_2 = (x_2, y_2)$ and returns the slope of the line through them.
+
+Mathematically, this is a function
+
+$$\text{slope}: \mathbb{R}^2 \times \mathbb{R}^2 \to \mathbb{R}, \quad (p_1, p_2) \mapsto \frac{y_2 - y_1}{x_2 - x_1}.$$
+
+The input is a pair of points (four real numbers in total). The output is one real number. The function is deterministic: feed the same two points, get the same slope.
+
+**When does it fail?** When $x_2 = x_1$. Then the denominator is zero, and we hit `ZeroDivisionError`. Geometrically, $x_2 = x_1$ means the two points lie on a vertical line; a vertical line has undefined slope (infinite slope, depending on your convention). So the natural domain excludes pairs of points with equal $x$-coordinates.
+
+This is exactly the same domain restriction as Example (f): we are dividing by something that might be zero, and the function is undefined where that happens. Code-functions and mathematical functions follow the same rules.
+
+### Example (h) — Failure Mode: Confusing $f$ with $f(x)$
+
+A student is given $f(x) = 2x + 3$ and asked to compute $f(x) + 5$. They write:
+
+$$f + 5 = 2x + 3 + 5 = 2x + 8,$$
+
+and then claim $f = 2x + 8$.
+
+**Diagnosis.** The student has confused the *function* $f$ with the *value* $f(x)$.
+
+- $f$ is the rule (the machine).
+- $f(x)$ is the output of the rule at input $x$ — a number (or expression in $x$).
+
+You cannot add 5 to a *rule*; that does not type-check. You can add 5 to an *output*. The correct interpretation of $f(x) + 5$ is "evaluate $f$ at $x$, then add 5":
+
+$$f(x) + 5 = (2x + 3) + 5 = 2x + 8.$$
+
+This is the value $f(x) + 5$, not a new value of $f$. The function $f$ itself has not changed.
+
+If the student wanted a *new function* $g$ whose value at $x$ is $f(x) + 5$, they would write $g(x) = f(x) + 5 = 2x + 8$. That is now a different rule with a different name.
+
+**The general moral.** Always distinguish the function (the rule) from a value of the function (a number). $f$ is not $f(x)$. The notation $f(x)$ explicitly invokes the rule at a specific input. Writing $f = 2x + 8$ is a category error: a rule cannot equal an expression in $x$, only the rule's outputs can. The clean way is $f(x) = 2x + 8$, or equivalently $f: x \mapsto 2x + 8$.
+
+This confusion is the single most common notational mistake in early function work. Catch it in your own writing and you will save yourself hours of confusion later.
+
+## Engineering Connections
+
+The function concept underlies every input-output relationship in engineering. A small survey:
+
+### Sensors and Transducers
+
+Every sensor is a function from a physical quantity to an electrical reading:
+
+- Thermistor: temperature $\to$ resistance, $R(T)$.
+- Strain gauge: strain $\to$ resistance, $R(\varepsilon)$.
+- Photodiode: light intensity $\to$ current, $I(\Phi)$.
+- Microphone: pressure $\to$ voltage, $V(p)$.
+
+The calibration of a sensor *is* the function. To use the sensor, you invert the function — given a voltage reading, recover the temperature, strain, light, or pressure that produced it.
+
+### Op-Amps and Amplifiers
+
+An op-amp circuit implements a function from input voltage to output voltage: $V_{\text{out}} = f(V_{\text{in}})$. For an ideal inverting amplifier with gain $-A$, the function is $V_{\text{out}} = -A \cdot V_{\text{in}}$. For a real op-amp, the function is approximately linear within a range (the *linear region*) and saturates outside it (a more complicated piecewise function).
+
+### Control Systems
+
+Every block in a control-system block diagram is a function. The *plant* (the thing being controlled) is a function from control input $u(t)$ to system output $y(t)$. The *controller* is a function from error signal $e(t)$ to control input $u(t)$. The whole loop is a composition of these functions. Designing the controller is choosing a function that, when composed with the plant, makes the closed-loop behaviour acceptable.
+
+### Machine Learning
+
+A neural network is a parameterised function $f_{\boldsymbol{\theta}}: \mathbb{R}^n \to \mathbb{R}^m$. Each layer is a function; the network is a composition. The parameters $\boldsymbol{\theta}$ (the weights and biases) determine which specific function the network represents. Training is the process of choosing $\boldsymbol{\theta}$ so that $f_{\boldsymbol{\theta}}$ approximates a desired target function (often known only through labelled data).
+
+Loss is also a function — but a function *of the parameters*, not of the inputs. The loss $\mathcal{L}(\boldsymbol{\theta})$ tells you how badly the network is doing at the current settings. Gradient descent walks downhill on this function.
+
+### Digital Signal Processing
+
+A digital filter is a function from an input sequence (samples of a signal) to an output sequence. A finite-impulse-response (FIR) filter computes each output sample as a weighted sum of recent input samples — a function of a fixed window of inputs.
+
+### Robotics
+
+*Forward kinematics* is the function from joint angles to end-effector pose: given the angles of all the joints of a robot arm, compute where the gripper is. This is a function $\mathbf{f}: \mathbb{R}^n \to \mathrm{SE}(3)$ where $n$ is the number of joints. *Inverse kinematics* is its inverse — and, as you might guess, inverses are hard, often multi-valued, and sometimes nonexistent.
+
+### Graphics
+
+A shader is a function from a pixel position (and scene data) to a colour. The graphics pipeline is a composition of functions: vertex shader, rasterizer, fragment shader. The whole rendering of an image is the evaluation of a giant function on millions of pixels.
+
+In every one of these examples, the underlying mathematical object is the same: a deterministic rule from input to output. Once you see the function pattern, you see it everywhere.
+
+## Practice Set
+
+### Warmups — Evaluation
+
+Let $f(x) = 3x - 2$, $g(x) = x^2 + 1$, $h(x) = 1 / (x + 3)$, and a piecewise rule
+
+$$p(x) = \begin{cases} x^2 & \text{if } x \ge 0, \\ -x & \text{if } x < 0. \end{cases}$$
+
+Evaluate each.
+
+1. $f(0)$.
+2. $f(4)$.
+3. $f(-1)$.
+4. $g(2)$.
+5. $g(-3)$.
+6. $g(0)$.
+7. $h(0)$.
+8. $h(-3)$ — careful.
+9. $p(2)$.
+10. $p(-2)$.
+
+### Symbolic Evaluation
+
+With the same $f, g$ as above:
+
+11. $f(a)$.
+12. $f(a + 1)$.
+13. $f(2x)$.
+14. $g(x + h)$ — expand fully.
+15. $g(a) - g(0)$.
+16. $f(x + 1) - f(x)$.
+
+### Applied — Engineering Functions
+
+Using the distance-sensor curve $V(d) = 0.02 d + 0.5$ (V, cm) and the projectile altitude $h(t) = 10 t - 4.9 t^2$ (m, s) from the worked examples:
+
+17. $V(30)$. State units.
+18. $V(60)$.
+19. Solve $V(d) = 1.0$ V for $d$. (Rearrangement practice from lesson 4.)
+20. $h(0.5)$. State units.
+21. $h(1.5)$.
+22. Use the formula to estimate the maximum altitude of the projectile. (Hint: the parabola is symmetric about its peak; the peak occurs halfway between the two zeros.)
+
+### Vertical-Line Test
+
+For each, state whether the equation defines $y$ as a function of $x$. If not, explain.
+
+23. $y = 3x + 4$.
+24. $y = x^3$.
+25. $y^2 = x$.
+26. $|y| = x$.
+27. A horizontal line: $y = 5$.
+28. A vertical line: $x = 5$.
+
+### Error-Spotting
+
+29. A student writes "Let $f = x^2 + 1$. Then $f + 3 = x^2 + 4$, so the new function is $x^2 + 4$." Diagnose.
+30. A student is asked for $f(a + 1)$ where $f(x) = x^2$. They write $f(a + 1) = a^2 + 1^2 = a^2 + 1$. Diagnose.
+31. A student declares the function $f(x) = 1 / x$ has "domain all real numbers". Diagnose.
+
+### Challenge
+
+32. Given $f(x) = 2x + 3$, compute the *difference quotient* $\dfrac{f(x + h) - f(x)}{h}$ and simplify. What does the result tell you about the function?
+33. Sketch the graph of the relation $|y| = x$ for $x \ge 0$. Does it pass the vertical-line test? Decompose it as a union of two functions.
+
+### Answers
+
+1. $-2$.
+2. $10$.
+3. $-5$.
+4. $5$.
+5. $10$.
+6. $1$.
+7. $1/3$.
+8. Undefined. $h(-3) = 1 / 0$; $-3$ is not in the domain of $h$.
+9. $4$. ($p(2)$ uses the upper branch since $2 \ge 0$, giving $2^2 = 4$.)
+10. $2$. ($p(-2)$ uses the lower branch since $-2 < 0$, giving $-(-2) = 2$.)
+
+11. $3a - 2$.
+12. $3(a + 1) - 2 = 3a + 1$.
+13. $3 \cdot (2x) - 2 = 6x - 2$.
+14. $g(x + h) = (x + h)^2 + 1 = x^2 + 2xh + h^2 + 1$.
+15. $g(a) - g(0) = (a^2 + 1) - (0 + 1) = a^2$.
+16. $f(x + 1) - f(x) = (3(x+1) - 2) - (3x - 2) = (3x + 1) - (3x - 2) = 3$. (The output of $f$ increases by exactly 3 every time the input increases by 1. The constant difference is what makes $f$ a *linear* function. We will name this number the *slope* in lesson 9.)
+
+17. $V(30) = 0.02 \cdot 30 + 0.5 = 0.6 + 0.5 = 1.1$ V.
+18. $V(60) = 0.02 \cdot 60 + 0.5 = 1.2 + 0.5 = 1.7$ V.
+19. $1.0 = 0.02 d + 0.5 \Rightarrow 0.5 = 0.02 d \Rightarrow d = 25$ cm.
+20. $h(0.5) = 10 \cdot 0.5 - 4.9 \cdot 0.25 = 5 - 1.225 = 3.775$ m.
+21. $h(1.5) = 10 \cdot 1.5 - 4.9 \cdot 2.25 = 15 - 11.025 = 3.975$ m.
+22. The zeros of $h$ are at $t = 0$ and $t \approx 2.04$ s. Halfway: $t \approx 1.02$ s. $h(1.02) = 10 \cdot 1.02 - 4.9 \cdot 1.0404 \approx 10.2 - 5.10 \approx 5.10$ m. Maximum altitude is about 5.1 m.
+
+23. Yes (a non-vertical line; passes the vertical-line test).
+24. Yes (the cubic curve passes the vertical-line test).
+25. No. For $x = 4$, $y = \pm 2$; two outputs for one input. Fails the test.
+26. No. For $x = 3$, $y = \pm 3$. Same issue.
+27. Yes (a horizontal line; for each $x$ exactly one $y$, namely $5$).
+28. No. The vertical line $x = 5$ has infinitely many $y$ values for the single input $x = 5$. Spectacular failure of the vertical-line test (the line *is* the vertical line).
+
+29. The student is confusing the function $f$ with the expression for its output. Writing "$f = x^2 + 1$" is informal shorthand for $f(x) = x^2 + 1$. Then "$f + 3$" only makes sense as $f(x) + 3 = x^2 + 4$; this is a new *value*, and if you wanted a new function you would name it: $g(x) = f(x) + 3 = x^2 + 4$. The original $f$ is unchanged.
+30. The student forgot to wrap $(a + 1)$ in parentheses before squaring. $(a + 1)^2 = a^2 + 2a + 1$, not $a^2 + 1$. The correct value is $f(a + 1) = a^2 + 2a + 1$.
+31. Wrong. $f(0) = 1/0$ is undefined, so $0$ is not in the domain of $f$. The natural domain is $\mathbb{R} \setminus \{0\}$ (all real numbers except zero).
+
+32. $\dfrac{f(x + h) - f(x)}{h} = \dfrac{(2(x+h) + 3) - (2x + 3)}{h} = \dfrac{2h}{h} = 2$. The difference quotient is the constant $2$ — independent of both $x$ and $h$. This says: the average rate of change of $f$ over any interval of any width is $2$. That is the defining property of a linear function with slope $2$. In calculus, the limit of the difference quotient as $h \to 0$ is the *derivative*; for a linear function it is simply the slope.
+
+33. The relation $|y| = x$ for $x \ge 0$ is the union of two rays: $y = x$ (the upper branch, $y \ge 0$) and $y = -x$ (the lower branch, $y \le 0$), both starting at the origin. It looks like a sideways "V" opening to the right. A vertical line at $x = 3$ crosses at $(3, 3)$ and $(3, -3)$ — two points. Fails the vertical-line test. Decomposition: $y_+(x) = x$ (upper) and $y_-(x) = -x$ (lower), each a function on its own.
+
+## Build Task
+
+Write a Python module `function_class.py` that wraps a callable in a small `Function` class with explicit domain tracking. The class evaluates the function at a valid input or raises an informative error if the input is outside the domain. Test on three cases: a linear function on all of $\mathbb{R}$, the principal square root on $x \ge 0$, and a rational function with one excluded point.
+
+```python
+"""function_class.py — a tiny Function wrapper with explicit domain tracking."""
+
+from math import sqrt
+from typing import Callable
+
+
+class DomainError(ValueError):
+    """Raised when a Function is called outside its declared domain."""
+
+
+class Function:
+    """A real function with an explicit domain predicate.
+
+    Parameters
+    ----------
+    rule : Callable[[float], float]
+        The mathematical rule, e.g., ``lambda x: 2*x + 3``.
+    domain : Callable[[float], bool]
+        Predicate that returns True for valid inputs.
+    name : str
+        Human-readable label, used in errors.
+    """
+
+    def __init__(
+        self,
+        rule: Callable[[float], float],
+        domain: Callable[[float], bool] = lambda x: True,
+        name: str = "f",
+    ):
+        self.rule = rule
+        self.domain = domain
+        self.name = name
+
+    def __call__(self, x: float) -> float:
+        if not self.domain(x):
+            raise DomainError(
+                f"{self.name}({x}) is undefined: input outside declared domain."
+            )
+        return self.rule(x)
+
+    def __repr__(self) -> str:
+        return f"Function({self.name})"
+
+
+if __name__ == "__main__":
+    # (a) Linear function on all of R.
+    f = Function(lambda x: 2 * x + 3, name="f")
+    print(f"f(0)  = {f(0)}")     # 3
+    print(f"f(5)  = {f(5)}")     # 13
+    print(f"f(-2) = {f(-2)}")    # -1
+
+    # (b) Principal square root; domain x >= 0.
+    g = Function(sqrt, domain=lambda x: x >= 0, name="g")
+    print(f"g(0)  = {g(0)}")     # 0.0
+    print(f"g(4)  = {g(4)}")     # 2.0
+    try:
+        g(-1)
+    except DomainError as e:
+        print(f"g(-1) raised: {e}")
+
+    # (c) Rational function 1/(x-2); domain x != 2.
+    h = Function(lambda x: 1 / (x - 2), domain=lambda x: x != 2, name="h")
+    print(f"h(3)  = {h(3)}")     # 1.0
+    print(f"h(0)  = {h(0)}")     # -0.5
+    try:
+        h(2)
+    except DomainError as e:
+        print(f"h(2)  raised: {e}")
+
+    # (d) Engineering example: distance-sensor calibration on 10 <= d <= 80 cm.
+    V = Function(
+        rule=lambda d: 0.02 * d + 0.5,
+        domain=lambda d: 10 <= d <= 80,
+        name="V",
+    )
+    print(f"V(10) = {V(10)} V")
+    print(f"V(50) = {V(50)} V")
+    try:
+        V(5)
+    except DomainError as e:
+        print(f"V(5)  raised: {e}")
+```
+
+**Expected behaviour.** The class correctly evaluates each function on inputs in its domain and raises a `DomainError` (with a useful message) on inputs outside it. The engineering case demonstrates that the domain restriction can be a physical *valid range* of the sensor, not just a mathematical "avoid division by zero".
+
+**Stretch goal.** Add a `range_sample(n=100)` method that samples $n$ inputs from the domain (if it is an interval) and reports the min/max of the resulting outputs as an approximate range. Then test that the principal square root produces only non-negative outputs.
+
+**Stretch goal 2.** Add an `__add__` method so that `Function` objects compose like values: `(f + g)(x) = f(x) + g(x)`, with the new function's domain being the intersection of the operands' domains.
+
+## Quiz
+
+Answer each in one or two sentences.
+
+1. State the modern (Dirichlet) definition of a function.
+2. What does the vertical-line test check?
+3. What is the difference between the symbol $f$ and the symbol $f(x)$?
+4. Give an example of a relation between $x$ and $y$ that is *not* a function of $x$. Why does it fail?
+5. What is the difference between the codomain and the range of a function?
+6. If $f(x) = x^2$ and you want to compute $f(a + h)$, what do you write?
+7. Name three different "representations" of a function (besides a formula).
+8. Why is a slot machine not a mathematical function from "coin inserted" to "payout"?
+
+### Answers
+
+1. A function $f$ from a set $A$ to a set $B$ is a rule assigning to each element of $A$ exactly one element of $B$.
+2. Whether a graph in the $xy$-plane represents $y$ as a function of $x$ — equivalently, whether each input $x$ corresponds to at most one output $y$.
+3. $f$ is the rule (the function itself, the "machine"). $f(x)$ is the *output* — a number (or expression in $x$) produced by applying the rule to the input $x$.
+4. The unit circle $x^2 + y^2 = 1$ is one. For $x = 0$, both $y = +1$ and $y = -1$ satisfy the equation, so a single input would have two outputs. The definition requires *exactly one*.
+5. The codomain is the set in which outputs are allowed to live (the *type* of the output, like $\mathbb{R}$). The range is the set of values the function actually produces, a subset of the codomain.
+6. $f(a + h) = (a + h)^2 = a^2 + 2ah + h^2$. Wrap the input in parentheses before applying the rule.
+7. A table of input-output pairs; a graph; a verbal description; a piece of code; a piecewise rule. (Any three.)
+8. Because the payout is not determined by the coin — it is random. The same input (a coin) can produce different outputs (jackpot, nothing). The "exactly one output per input" rule is violated.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Recite the Dirichlet definition of a function from memory.
+- Read aloud and use the notation $f(x)$, $g(t)$, $V(d)$ fluently in both numerical and symbolic substitution.
+- Apply the vertical-line test correctly to graphs you have not seen before.
+- Diagnose the $f$-versus-$f(x)$ confusion in your own writing and other people's.
+- Commit `function_class.py` with the three test cases (linear, square root, rational) and at least one engineering example (e.g., a sensor calibration curve) where the domain is a physical *valid range*. The class should evaluate correctly inside the domain and raise an informative `DomainError` outside.
+- Explain in your own words why a function is a *deterministic machine* and why this single restriction is what makes the concept useful.
+
+## Sources and Further Study
+
+- **Serge Lang, *Basic Mathematics*** (Springer). Chapters 3 and 4 give a clean, mathematician's introduction to functions for the algebra-fluent reader. Lang's prose is famously austere but the definitions are unimprovable.
+- **James Stewart, *Calculus: Early Transcendentals*** (any edition). Chapter 1, *Functions and Models*, is the standard first-year-calculus treatment, with many engineering-flavoured examples. Highly readable.
+- **Howard Anton, *Calculus*** (any edition). Chapter 1 is a thorough alternative to Stewart, with slightly more emphasis on rigour.
+- **MIT OpenCourseWare 18.01, *Single Variable Calculus***. Lecture 1 (David Jerison) covers functions, their graphs, and the vertical-line test in 45 minutes. Free video and notes.
+- **Leonhard Euler, *Introductio in analysin infinitorum* (1748)**. The original source for the $f(x)$ notation and for the analytic conception of a function. An English translation by John Blanton (Springer, 1988) is available; reading even a few pages of Euler in translation is illuminating.
+- **Dirichlet's 1837 paper** *Über die Darstellung ganz willkürlicher Functionen durch Sinus- und Cosinusreihen* contains the modern definition. Hard to find in English but discussed in any history of analysis.
+- **3Blue1Brown, *Essence of Calculus***, episode 1. The function-as-machine mental model, visualised. Excellent for intuition.
+- **SymPy documentation**, *Symbolic Functions* and *Lambdification* tutorials. Useful when you want to manipulate functions symbolically in Python rather than just evaluate them numerically.
+- **Harold Abelson and Gerald Jay Sussman, *Structure and Interpretation of Computer Programs*** (MIT Press, free online). Chapter 1 takes the function-as-procedure view seriously and is the cleanest software-side treatment of the function concept available.
+
+## Next Lesson Bridge
+
+You now know what a function *is*: a deterministic rule from inputs to outputs, written $f(x)$, evaluated by substitution, visualised by the vertical-line test. You can spot a non-function (like a circle), and you have an informal sense that real engineering functions come with *domain restrictions* (a sensor only works in a range; division by zero is forbidden; square roots want non-negative inputs).
+
+Lesson 8 — *Domain, Range, and Function Types* — takes these informal observations and makes them precise. We will learn the systematic vocabulary for the most common domain restrictions (where they come from, how to compute them, how to write them down), the corresponding language for *ranges* (what outputs a function actually produces), and the function-type "zoo" you will meet again and again in engineering: linear, polynomial, rational, root, exponential, logarithmic, trigonometric, and piecewise. By the end of lesson 8 you will be able to look at any engineering formula and immediately classify it, predict its domain, and sketch its qualitative shape.
+
+Lesson 9 will then zero in on the most important type — the *linear* function — and define its central numerical invariant, the **slope**, which you have already encountered in the rate-of-change exercises but not yet treated abstractly. Lesson 10 will assemble slope and intercept into the canonical form $y = mx + b$, which is the workhorse equation of all linear engineering models — from sensor calibration curves to control-system gain, from Ohm's law to the simplest neural network layer.
+
+You have just learned the most important concept in mathematics. The next three lessons specialise it; everything after them is a generalisation. You are in good shape.

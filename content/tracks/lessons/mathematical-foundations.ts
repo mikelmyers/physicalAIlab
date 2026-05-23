@@ -174,40 +174,45 @@ const mathReentryToolkit: Lesson[] = [
     "Writing very large and very small numbers compactly, doing arithmetic in scientific notation, and the order-of-magnitude habit.",
     { estimatedMinutes: 95, checkId: "scientific-notation-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     16,
     "significant-figures-and-uncertainty",
     "Significant Figures and Measurement Uncertainty",
     "Counting significant figures, rules for arithmetic with measured quantities, and tracking uncertainty through a calculation.",
+    { estimatedMinutes: 100, checkId: "significant-figures-and-uncertainty-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     17,
     "engineering-estimation-and-fermi-problems",
     "Engineering Estimation and Fermi Problems",
     "Order-of-magnitude reasoning, breaking unknown quantities into knowable pieces, and the Fermi estimation method for sanity-checking.",
+    { estimatedMinutes: 95, checkId: "engineering-estimation-and-fermi-problems-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     18,
     "reading-data-tables-and-charts",
     "Reading Data Tables and Charts",
     "Reading bar charts, line plots, scatterplots, and data tables; spotting misleading axes, scales, and aggregation choices.",
+    { estimatedMinutes: 80, checkId: "reading-data-tables-and-charts-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     19,
     "basic-probability-intuition",
     "Basic Probability Intuition",
     "What probability is, simple counting arguments, and using probabilities to reason about reliability and risk.",
+    { estimatedMinutes: 110, checkId: "basic-probability-intuition-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     20,
     "basic-statistics-mean-median-mode",
     "Basic Statistics: Mean, Median, Mode, and Spread",
     "Mean, median, and mode; standard deviation as a measure of spread; and choosing the right summary statistic for engineering data.",
+    { estimatedMinutes: 100, checkId: "basic-statistics-mean-median-mode-check" },
   ),
 ];
 
@@ -223,33 +228,53 @@ const engineeringAlgebraGeometry: Lesson[] = [
       prerequisites: ["signed-numbers-and-order-of-operations"],
     },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     2,
     "solving-multi-step-linear-equations",
     "Solving Multi-Step Linear Equations",
     "Combining like terms, distributing, multi-step isolation of a variable, and using checks to catch arithmetic mistakes.",
+    {
+      estimatedMinutes: 75,
+      prerequisites: ["solving-equations-from-zero"],
+      checkId: "solving-multi-step-linear-equations-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     3,
     "equations-with-variables-on-both-sides",
     "Equations with Variables on Both Sides",
     "Collecting variables to one side, eliminating fractions and decimals, and recognizing identities and no-solution equations.",
+    {
+      estimatedMinutes: 75,
+      prerequisites: ["solving-multi-step-linear-equations"],
+      checkId: "equations-with-variables-on-both-sides-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     4,
     "rearranging-engineering-formulas",
     "Rearranging Engineering Formulas",
     "Algebraic manipulation of physical formulas (V = IR, F = ma, P = VI) to solve for any variable, including with units carried through.",
+    {
+      estimatedMinutes: 85,
+      prerequisites: ["equations-with-variables-on-both-sides"],
+      checkId: "rearranging-engineering-formulas-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     5,
     "word-problems-to-equations",
     "Translating Word Problems into Equations",
     "A systematic method for turning English-language problems into algebra: identify unknowns, name them, write relationships, solve, and check.",
+    {
+      estimatedMinutes: 90,
+      prerequisites: ["rearranging-engineering-formulas"],
+      checkId: "word-problems-to-equations-check",
+    },
   ),
   available(
     "equations-units-and-graphs",
@@ -262,57 +287,88 @@ const engineeringAlgebraGeometry: Lesson[] = [
       prerequisites: ["solving-equations-from-zero"],
     },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     7,
     "functions-definition-and-notation",
     "Functions: Definition and Notation",
     "What a function is, the notation f(x), domain and range as engineering input and output, and evaluating functions at specific values.",
+    {
+      estimatedMinutes: 90,
+      prerequisites: ["units-and-dimensional-analysis"],
+      checkId: "functions-definition-and-notation-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     8,
     "domain-range-and-function-types",
     "Domain, Range, and Function Types",
     "Domain restrictions in physical models (no negative time, no division by zero), and recognizing linear, piecewise, and step functions.",
+    {
+      estimatedMinutes: 80,
+      prerequisites: ["functions-definition-and-notation"],
+      checkId: "domain-range-and-function-types-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     9,
     "slope-and-y-intercept",
     "Slope and y-Intercept",
     "Slope as rate of change, y-intercept as starting value, and reading both from data tables, equations, and graphs.",
+    {
+      estimatedMinutes: 85,
+      prerequisites: ["domain-range-and-function-types"],
+      checkId: "slope-and-y-intercept-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     10,
     "slope-intercept-form",
     "Slope-Intercept Form",
     "Writing linear equations as y = mx + b, sketching lines from this form, and modeling linear physical relationships.",
+    {
+      estimatedMinutes: 85,
+      prerequisites: ["slope-and-y-intercept"],
+      checkId: "slope-intercept-form-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     11,
     "point-slope-and-standard-forms",
     "Point-Slope and Standard Forms of a Line",
     "Two more linear equation forms, when each is convenient, and converting between slope-intercept, point-slope, and standard form.",
+    {
+      estimatedMinutes: 75,
+      prerequisites: ["slope-intercept-form"],
+      checkId: "point-slope-and-standard-forms-check",
+    },
   ),
-  future(
+  available(
     "equations-units-and-graphs",
     12,
     "parallel-and-perpendicular-lines",
     "Parallel and Perpendicular Lines",
     "Slopes of parallel and perpendicular lines, and using them to construct geometric arguments and engineering layouts.",
+    {
+      estimatedMinutes: 70,
+      prerequisites: ["point-slope-and-standard-forms"],
+      checkId: "parallel-and-perpendicular-lines-check",
+    },
   ),
   available(
     "equations-units-and-graphs",
     13,
     "graphing-functions-for-builders",
     "Graphing Functions for Builders",
-    "Read and sketch graphs as stories about change, systems, sensors, and design tradeoffs.",
+    "Sketching functions from their equations and reading graphs as engineering evidence about the underlying system.",
     {
-      estimatedMinutes: 45,
-      prerequisites: ["units-and-dimensional-analysis"],
+      estimatedMinutes: 95,
+      prerequisites: ["parallel-and-perpendicular-lines"],
+      checkId: "graphing-functions-for-builders-check",
     },
   ),
   available(
@@ -320,10 +376,11 @@ const engineeringAlgebraGeometry: Lesson[] = [
     14,
     "algebra-for-engineering-systems",
     "Algebra for Engineering Systems",
-    "Use equations as models for physical relationships, constraints, and system behavior.",
+    "Systems of linear equations: substitution, elimination, the three cases, and the matrix form Ax = b as the bridge to linear algebra.",
     {
-      estimatedMinutes: 35,
+      estimatedMinutes: 100,
       prerequisites: ["graphing-functions-for-builders"],
+      checkId: "algebra-for-engineering-systems-check",
     },
   ),
   future(

@@ -1,0 +1,731 @@
+# Translating Word Problems into Equations
+
+## Re-entry Promise
+
+This lesson assumes lessons 1 through 4 of the Engineering Algebra & Geometry module are behind you. You know how to combine like terms and distribute (L2). You can collect variables onto one side, clear least common denominators, and recognize identities and contradictions (L3). You can rearrange an engineering formula symbolically and carry the units through to a sanity check (L4).
+
+What lessons 2 through 4 did *not* teach is the step that comes *before* the algebra: how to read an English-language problem and write down the equation in the first place. That step is the hardest part of every engineering homework, every physics exam, and every requirements document on every real project. This lesson teaches it as a systematic method, not a guessing game.
+
+By the end you will have a five-step procedure (NAME, RELATE, SOLVE, CHECK, INTERPRET) that turns any well-posed word problem into a solvable algebraic statement, plus a translation dictionary that maps English phrases to mathematical symbols, plus a long catalog of worked engineering examples to imitate.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Apply a five-step translation method — **NAME, RELATE, SOLVE, CHECK, INTERPRET** — to any well-posed word problem.
+- **Name** each unknown by writing down a letter *and* the unit it carries ("let $v$ be the drone speed in m/s").
+- **Relate** the named quantities by turning each English sentence in the problem into a mathematical equation or inequality.
+- **Solve** the resulting equation using the L2-L4 techniques (combine, collect, clear, isolate).
+- **Check** the answer by substituting back into the original equation, by confirming units reduce correctly, and by a magnitude sanity check (is the number plausible?).
+- **Interpret** the result by writing a sentence in the language of the original problem ("the drone flies at 13 m/s").
+- Use a **translation dictionary** to map common English phrases ("three more than," "twice as fast as," "the ratio of A to B," "at the rate of") to algebraic operators.
+- Recognize and avoid the most common translation pitfalls: subtraction in the wrong direction, confusing a rate with a total, sign errors, missing units, and unnamed unknowns.
+
+## Why It Matters
+
+Word-problem translation is the single most useful skill in the entire algebra arc, because it is the bridge between the world (which speaks English, German, Mandarin, or requirements-document) and the math (which speaks algebra). Without that bridge, you cannot apply the math to anything outside of a textbook.
+
+A partial inventory of where this skill shows up:
+
+1. **Engineering design.** Every spec begins with an English sentence: *"the bracket must support a 200 kg load with a safety factor of 2.5."* Before you can pick a material or a thickness, you have to translate that sentence into a stress equation, name the unknown thickness, and solve.
+
+2. **Robotics motion planning.** *"Two mobile robots leave opposite corners of a 10 m × 10 m warehouse at the same instant; one moves at 0.4 m/s, the other at 0.6 m/s. When and where do they meet?"* Half a dozen sentences in English collapse to one or two equations once you name positions and times.
+
+3. **Drone mission design.** *"How much battery capacity do I need to fly a 30-minute mission at 50 km/h with a 25 percent safety reserve?"* You translate the sentence into $E = P \cdot t \cdot (1 + r)$, name each unknown with its unit, and crank the numbers.
+
+4. **Machine-learning training cost.** *"Estimate the GPU-hours to train a 1-billion-parameter transformer on 1 trillion tokens, given 6 FLOPs per parameter per token and 500 teraflops sustained per GPU."* All English; the math is one division, but only after you have named the quantities.
+
+5. **Classical physics homework.** Nearly every problem in Halliday-Resnick-Walker is a paragraph of English ending in *"find the…"*. The mechanical part (force balance, energy conservation, kinematics) is easy compared to the translation.
+
+6. **Job interviews.** Quantitative interview questions — Fermi estimates, brain-teasers, system-sizing problems — are word problems. *"How many tennis balls fit in a school bus?"* is solved by NAME, RELATE, SOLVE.
+
+7. **Requirements documents.** Real engineering work begins with a stakeholder writing English sentences. *"The drone must hover for at least 22 minutes at sea level."* You translate into a power budget, name the battery capacity, and design.
+
+8. **Business and data analysis.** *"At what price does revenue equal cost?"* The break-even question is a translation into $P \cdot q = F + V \cdot q$, where $P$ is price, $q$ is quantity, $F$ is fixed cost, $V$ is variable cost per unit. One equation; the rest is L2-L3 algebra.
+
+9. **Mixing and chemistry problems.** *"How much 10% saline solution must be added to 5 L of 30% saline to get a 20% solution?"* Every formulation, dilution, doping, and reagent-prep task in a lab is a mixing word problem.
+
+10. **Everyday quantitative reasoning.** Splitting a restaurant bill with a tip, calculating loan interest, figuring out how late you can leave for the airport — these are word problems too, and the same five-step method works.
+
+The translation skill *is* the engineering skill. Algebra is only as useful as your ability to invoke it on a real problem.
+
+## Why This Idea Exists
+
+Word-problem translation is roughly as old as algebra itself, because the original purpose of algebra was *to solve word problems*. The symbolic, abstract version of algebra you learn in school is a relatively recent compression of a much older oral and textual tradition.
+
+The first systematic collection of algebraic word problems is **Diophantus of Alexandria's *Arithmetica*** (3rd century CE), a thirteen-book treatise (six surviving in Greek, four more in Arabic translation) consisting almost entirely of problems of the form: *"find numbers such that…"* followed by relations among them. Diophantus introduced symbolic shorthand for the unknown ($\varsigma$, the *arithmos*) and for its powers, and worked through hundreds of examples that read, in modern terms, exactly like word-problem-to-equation translations. The famous *Diophantine equations* — integer-solution problems like Fermat's Last Theorem — descend from this tradition.
+
+**Muḥammad ibn Mūsā al-Khwārizmī's *Kitāb al-mukhtaṣar fī ḥisāb al-jabr wa-l-muqābala*** (c. 820 CE), from which the word *algebra* itself derives, was explicitly a practical handbook for legal, commercial, and surveying problems. Its second half is a catalog of word problems about inheritance shares, trade exchanges, area surveys, and tax assessments — each translated step-by-step into an equation and then solved. Al-Khwārizmī did not use symbols; everything was written in prose, including the equations themselves. The discipline of translating prose to a manipulable form was the entire subject.
+
+**Rafael Bombelli's *L'Algebra*** (1572) carried the tradition into the modern era, introducing notation closer to what we use today and including extensive word problems in commerce and geometry. By the 17th century, with Viète, Descartes, and Newton, symbolic algebra had matured into the modern form — but the *teaching* of algebra still revolved around word problems, because those were the applications.
+
+The modern canonical reference on problem-solving methodology is **George Pólya's *How to Solve It*** (Princeton University Press, 1945). Pólya was a Hungarian-American mathematician at Stanford who distilled the heuristics of mathematical problem-solving into a four-step process:
+
+1. **Understand the problem.** What is unknown? What is given? What is the condition?
+2. **Devise a plan.** Have you seen a similar problem? Can you restate the problem? Can you use a related problem with the same unknown?
+3. **Carry out the plan.** Execute each step; check each step.
+4. **Look back.** Examine the solution. Can you check the result? Can you derive it differently? Can you use the method on another problem?
+
+The five-step method we teach in this lesson — NAME, RELATE, SOLVE, CHECK, INTERPRET — is a direct descendant of Pólya's four steps, refined for the specific case of translating word problems into algebraic equations. Pólya's book is one of the most influential mathematics-education texts of the 20th century and remains the foundational reference. We cite it again at the end.
+
+## Plain-Language Intuition
+
+Strip a typical word problem down to its skeleton and you find only three kinds of content:
+
+1. **Unknowns** — quantities you are asked to find. *"Find the resistance of device B."*
+2. **Knowns** — numerical values supplied by the problem. *"A 12 V battery, a 30 mA current, device A has 200 Ω."*
+3. **Relationships** — sentences that connect knowns and unknowns. *"The two devices are in series."* *"The total voltage equals the sum of the voltages across each device."*
+
+The art of word-problem solving is parsing the English into these three buckets, naming the unknowns explicitly (with units), and writing the relationships as equations. Once you have an equation, the rest is L2-L4 mechanics, which you already know.
+
+The hard part is almost always Step 2 — **RELATE** — because English is ambiguous. *"Three less than twice a number"* and *"twice three less than a number"* sound similar and mean different things. The translation dictionary fixes most of these confusions; experience fixes the rest.
+
+The other recurring difficulty is **forgetting units**. A number without units is not an engineering answer; it is a number. If you name $v$ as "the speed" without specifying m/s, you may end up with a value of 50 and not know whether it is 50 mph, 50 m/s, or 50 km/h. Always attach the unit at the moment you name the variable.
+
+## Core Theory
+
+### The Five-Step Translation Method
+
+Apply these five steps, in order, to *every* word problem. The method is mechanical: if you follow the steps, the problem solves itself.
+
+#### Step 1: NAME
+
+Identify each unknown. Give it a letter and a unit. Write the naming down on paper, in this form:
+
+> Let $v$ = drone speed in m/s.
+> Let $t$ = flight time in hours.
+> Let $R_B$ = resistance of device B in Ω.
+
+This step is non-negotiable. *Every* worked example in this lesson — and every problem you should ever solve — begins with explicit, written variable declarations. The discipline pays for itself: errors that would otherwise be invisible become catchable because the units are written down.
+
+Choose letters that suggest the quantity ($v$ for velocity, $t$ for time, $R$ for resistance, $m$ for mass). When two unknowns share a natural letter, subscript them ($R_A$, $R_B$, or $t_1$, $t_2$).
+
+#### Step 2: RELATE
+
+Walk through the English problem sentence by sentence. For each sentence, ask: *does this sentence give a numerical value, an equation, or background context?* Then turn each equational sentence into a mathematical relation among the named quantities.
+
+A useful habit is to build a **translation table** with three columns:
+
+| English sentence | Named quantities | Mathematical equation |
+| --- | --- | --- |
+| "A 12 V battery…" | $V_{\text{total}} = 12$ V | $V_{\text{total}} = 12$ |
+| "…device A has 200 Ω resistance" | $R_A = 200$ Ω | $R_A = 200$ |
+| "…the current is 30 mA" | $I = 0.030$ A | $I = 0.030$ |
+| "…two devices in series" | $V_{\text{total}} = I(R_A + R_B)$ | $12 = 0.030(200 + R_B)$ |
+
+By the end of the table you usually have a single equation in a single unknown.
+
+#### Step 3: SOLVE
+
+Use the L2-L4 techniques: distribute, combine like terms, collect variables on one side, clear LCDs, isolate. Do not skip steps. Solve symbolically first, then substitute numbers if the problem allows.
+
+#### Step 4: CHECK
+
+Three checks, in order:
+
+1. **Substitute back into the original equation.** The equation should be satisfied numerically.
+2. **Verify units.** The units on both sides must match. If they do not, the equation is wrong.
+3. **Sanity-check magnitude.** Is the number plausible? A drone flight time of 0.01 s or $10^7$ s is almost certainly wrong even if the algebra checks out.
+
+The magnitude check catches the deepest errors — the ones where the equation itself was wrong but the algebra was correct.
+
+#### Step 5: INTERPRET
+
+Write a sentence in the original problem's language. Not just "$R_B = 200$ Ω" but:
+
+> The unknown resistance of device B is 200 ohms.
+
+Interpretation closes the loop. It forces you to articulate the answer in the form the problem asked for, and it surfaces any disconnect between the algebra and the question.
+
+### The Translation Dictionary
+
+Most word problems use the same handful of English phrases. Memorize this mapping:
+
+| English phrase | Math |
+| --- | --- |
+| "is," "equals," "results in," "gives" | $=$ |
+| "the sum of $A$ and $B$" | $A + B$ |
+| "the difference of $A$ and $B$" | $A - B$ |
+| "$A$ more than $B$" | $B + A$ |
+| "$A$ less than $B$" | $B - A$ |
+| "$A$ increased by $B$" | $A + B$ |
+| "$A$ decreased by $B$" | $A - B$ |
+| "the product of $A$ and $B$" | $A \cdot B$ |
+| "twice $A$," "double $A$" | $2A$ |
+| "$A$ times as much as $B$" | $A \cdot B$ |
+| "the quotient of $A$ and $B$" | $A / B$ |
+| "$A$ divided by $B$" | $A / B$ |
+| "the ratio of $A$ to $B$ is $k$" | $A / B = k$ |
+| "$A$ per $B$" | $A / B$ |
+| "at the rate of $r$ per unit" | $r$ as a rate (e.g., m/s) |
+| "$p$ percent of $A$" | $(p/100) \cdot A$ |
+| "$A$ of $B$" (in fraction context) | $A \cdot B$ |
+| "the average of $A$ and $B$" | $(A + B) / 2$ |
+| "$A$ exceeds $B$ by $c$" | $A = B + c$ |
+| "$A$ is between $B$ and $C$" | $B \le A \le C$ |
+
+The most error-prone entry is **"$A$ less than $B$"**. In English the *thing being subtracted* ($A$) appears *first*, but in the algebra the *thing subtracted from* ($B$) appears first: $B - A$. Reversing this is the most common translation mistake in the entire subject. See Worked Example (h) below.
+
+### Common Translation Pitfalls
+
+The following are the recurring failure modes. Each is illustrated later, but be alert from the start.
+
+- **Direction-of-subtraction error.** "$A$ less than $B$" is $B - A$, not $A - B$. Likewise "$A$ exceeds $B$ by $c$" is $A = B + c$, not $A + c = B$.
+- **"$A$ is less than $B$" vs. "$A$ less than $B$"**. The first is an inequality $A < B$; the second is a quantity $B - A$. The verb "is" changes everything.
+- **Rate vs. total confusion.** "Robot A drives at 60 km/h" is a rate (km/h). "Robot A has driven 60 km" is a total (km). Naming the variable wrong propagates everywhere.
+- **Sign-of-direction errors.** When two objects approach each other, their relative speed is the *sum* of their individual speeds. When they move in the same direction, it is the *difference*. Easy to mix up.
+- **"Twice as much as $A$" vs. "$A$ more"**. "Twice as much as $A$" is $2A$. "Two more than $A$" is $A + 2$. They sound similar; they are not the same.
+- **Percent-as-fraction.** A 30% saline solution is $0.30 \cdot V$ of salt, not $30 \cdot V$. Forgetting to divide by 100 is the dominant mixing-problem error.
+- **Missing units.** If you write "let $v$ = the speed" without specifying m/s vs. km/h, you have lost information you will need by Step 4.
+- **Unnamed unknowns.** If you do not write down "let $x$ = …" then by Step 3 you have no idea what $x$ means. Always name explicitly, in writing.
+
+## Visual or Mental Model
+
+The single most useful habit for this lesson is the **translation table**. For every word problem, draw three columns on your scratch paper:
+
+| English from problem | Named quantities | Equation |
+| --- | --- | --- |
+
+Walk through the problem sentence by sentence and fill in the rows. By the time you reach the question ("find …"), the equation has been built up piece by piece, and the algebra mechanics from L2-L4 take over.
+
+A second useful picture is the **funnel**:
+
+```
+                English sentences
+                       |
+                       v
+           +-----------------------+
+           |   STEP 1: NAME        |   (give every unknown a letter + unit)
+           +-----------------------+
+                       |
+                       v
+           +-----------------------+
+           |   STEP 2: RELATE      |   (turn each sentence into an equation)
+           +-----------------------+
+                       |
+                       v
+           +-----------------------+
+           |   STEP 3: SOLVE       |   (apply L2-L4 algebra)
+           +-----------------------+
+                       |
+                       v
+           +-----------------------+
+           |   STEP 4: CHECK       |   (substitute, units, magnitude)
+           +-----------------------+
+                       |
+                       v
+           +-----------------------+
+           |   STEP 5: INTERPRET   |   (answer in plain English)
+           +-----------------------+
+                       |
+                       v
+                  Final answer
+```
+
+Every example in this lesson, and every problem you should ever do, flows top to bottom through this funnel.
+
+## Worked Examples
+
+### Example (a) — Warmup: "Three more than twice a number is 17"
+
+> *"Three more than twice a number is 17. Find the number."*
+
+**Step 1 (NAME).** Let $x$ = the unknown number (dimensionless).
+
+**Step 2 (RELATE).** Walk through the sentence.
+
+| English | Equation piece |
+| --- | --- |
+| "a number" | $x$ |
+| "twice a number" | $2x$ |
+| "three more than twice a number" | $2x + 3$ |
+| "is 17" | $= 17$ |
+
+Full equation: $2x + 3 = 17$.
+
+**Step 3 (SOLVE).**
+
+$$2x + 3 = 17$$
+
+$$2x = 14$$
+
+$$x = 7$$
+
+**Step 4 (CHECK).** Substitute: $2(7) + 3 = 14 + 3 = 17$. The equation holds. Units: dimensionless on both sides. Magnitude: a number near 10 — plausible.
+
+**Step 5 (INTERPRET).** The number is $7$.
+
+### Example (b) — Rectangle Dimensions from Perimeter
+
+> *"A rectangle has perimeter 30 m, and its length is 4 m more than its width. Find the dimensions."*
+
+**Step 1 (NAME).** Let $w$ = width in m, $L$ = length in m.
+
+**Step 2 (RELATE).**
+
+| English | Equation |
+| --- | --- |
+| "perimeter 30 m" | $2L + 2w = 30$ |
+| "length is 4 m more than width" | $L = w + 4$ |
+
+Two unknowns, two equations. Substitute the second into the first to reduce to one unknown:
+
+$$2(w + 4) + 2w = 30$$
+
+**Step 3 (SOLVE).**
+
+$$2w + 8 + 2w = 30$$
+
+$$4w + 8 = 30$$
+
+$$4w = 22$$
+
+$$w = 5.5 \text{ m}$$
+
+Then $L = w + 4 = 9.5$ m.
+
+**Step 4 (CHECK).** Perimeter: $2(9.5) + 2(5.5) = 19 + 11 = 30$ m. Length minus width: $9.5 - 5.5 = 4$ m. Units: meters on both sides. Magnitude: a few meters — plausible for a room or a panel.
+
+**Step 5 (INTERPRET).** The rectangle has width $5.5$ m and length $9.5$ m.
+
+### Example (c) — Mixing Problem: Saline Dilution
+
+> *"How much 10% saline solution must be added to 5 L of 30% saline to get a 20% saline solution?"*
+
+**Step 1 (NAME).** Let $V$ = volume of 10% saline to add, in liters.
+
+The total volume of the mixture is then $V + 5$ liters.
+
+**Step 2 (RELATE).** Translate each piece. The key principle of mixing problems: *salt in equals salt out*. The amount of salt in a saline solution is (concentration as a decimal) $\times$ (volume).
+
+| Source | Volume (L) | Concentration | Salt (L of salt) |
+| --- | --- | --- | --- |
+| 10% saline added | $V$ | $0.10$ | $0.10 V$ |
+| 30% saline (given) | $5$ | $0.30$ | $0.30 \cdot 5 = 1.5$ |
+| Final mixture | $V + 5$ | $0.20$ | $0.20(V + 5)$ |
+
+Salt balance:
+
+$$0.10 V + 1.5 = 0.20(V + 5)$$
+
+**Step 3 (SOLVE).** Distribute:
+
+$$0.10 V + 1.5 = 0.20 V + 1.0$$
+
+Subtract $0.10 V$ from both sides:
+
+$$1.5 = 0.10 V + 1.0$$
+
+Subtract $1.0$:
+
+$$0.5 = 0.10 V$$
+
+Divide by $0.10$:
+
+$$V = 5 \text{ L}$$
+
+**Step 4 (CHECK).** Total volume: $5 + 5 = 10$ L. Salt: $0.10 \cdot 5 + 0.30 \cdot 5 = 0.5 + 1.5 = 2.0$ L of salt. Concentration: $2.0 / 10 = 0.20 = 20\%$. The mixture is indeed 20% saline. Units: liters. Magnitude: a few liters — plausible.
+
+**Step 5 (INTERPRET).** Adding $5$ L of 10% saline to $5$ L of 30% saline produces $10$ L of 20% saline.
+
+### Example (d) — Rate-Time-Distance: Catching Up
+
+> *"A car leaves point A heading east at 60 km/h. One hour later, a second car leaves point A heading east at 80 km/h. How long after the second car leaves does it catch the first?"*
+
+**Step 1 (NAME).** Let $t$ = time after the second car leaves, in hours, until they meet.
+
+At that moment:
+
+- The first car has been traveling for $t + 1$ hours (it had a one-hour head start).
+- The second car has been traveling for $t$ hours.
+
+**Step 2 (RELATE).** They meet when their distances from A are equal:
+
+$$60 (t + 1) = 80 t$$
+
+(Distance equals speed times time for each car, and the two distances must be equal at the moment of meeting.)
+
+**Step 3 (SOLVE).** Distribute:
+
+$$60 t + 60 = 80 t$$
+
+Subtract $60 t$ from both sides:
+
+$$60 = 20 t$$
+
+Divide by $20$:
+
+$$t = 3 \text{ h}$$
+
+**Step 4 (CHECK).** First car after $3 + 1 = 4$ h at 60 km/h: $240$ km. Second car after $3$ h at 80 km/h: $240$ km. They are at the same place. Units: hours match km/h $\cdot$ h = km. Magnitude: a few hours — plausible.
+
+**Step 5 (INTERPRET).** The second car catches the first $3$ hours after the second car leaves (which is $4$ hours after the first car leaves).
+
+### Example (e) — Engineering: Ohm's Law with Two Resistors in Series
+
+> *"A 12 V battery powers two devices wired in series. Device A has a resistance of 200 Ω. The current through the circuit is 30 mA. Find the resistance of device B."*
+
+**Step 1 (NAME).** Let $R_B$ = resistance of device B, in ohms.
+
+Other quantities are given:
+
+- $V_{\text{total}} = 12$ V
+- $R_A = 200$ Ω
+- $I = 30$ mA $= 0.030$ A
+
+(Note the unit conversion — milliamperes to amperes — done at the naming step to keep all units in SI.)
+
+**Step 2 (RELATE).** For two resistors in series, total resistance is $R_A + R_B$, and Ohm's Law gives:
+
+$$V_{\text{total}} = I (R_A + R_B)$$
+
+Substituting the known values:
+
+$$12 = 0.030 (200 + R_B)$$
+
+**Step 3 (SOLVE).** Divide both sides by $0.030$:
+
+$$\frac{12}{0.030} = 200 + R_B$$
+
+$$400 = 200 + R_B$$
+
+$$R_B = 200 \ \Omega$$
+
+**Step 4 (CHECK).** Substitute back: $0.030(200 + 200) = 0.030 \cdot 400 = 12$ V. The equation holds. Units: amperes $\times$ ohms = volts ($\text{A} \cdot \Omega = \text{V}$). Magnitude: $200$ Ω is a normal value for a small electronic device. Plausible.
+
+**Step 5 (INTERPRET).** Device B has a resistance of $200$ Ω, equal to device A.
+
+### Example (f) — Engineering: Drone Hover Time from Battery
+
+> *"A small drone consumes 100 W of electrical power while hovering. Its battery stores 90 Wh of energy. Mission planning rules require a 20% reserve to remain at landing. How long can the drone hover before exhausting the usable energy?"*
+
+**Step 1 (NAME).** Let $t$ = usable hover time, in hours.
+
+Given:
+
+- Power consumed: $P = 100$ W
+- Battery capacity: $E_{\text{total}} = 90$ Wh
+- Reserve fraction: $r = 0.20$ (20% must remain)
+
+So usable energy is $E_{\text{usable}} = (1 - r) E_{\text{total}} = 0.80 \cdot 90 = 72$ Wh.
+
+**Step 2 (RELATE).** Energy used equals power times time:
+
+$$E_{\text{usable}} = P \cdot t$$
+
+$$72 = 100 \cdot t$$
+
+**Step 3 (SOLVE).**
+
+$$t = \frac{72}{100} = 0.72 \text{ h}$$
+
+Convert to minutes: $0.72 \text{ h} \cdot 60 \text{ min/h} = 43.2$ min.
+
+**Step 4 (CHECK).** Energy check: $100 \text{ W} \cdot 0.72 \text{ h} = 72$ Wh, leaving $90 - 72 = 18$ Wh in reserve, which is $18 / 90 = 0.20 = 20\%$ — exactly the requirement. Units: Wh / W = h. Magnitude: 40 minutes is normal for a small drone.
+
+**Step 5 (INTERPRET).** The drone can hover for about $43$ minutes (or $0.72$ hours) before reaching the 20% reserve cutoff.
+
+### Example (g) — Engineering: Beam Section Modulus
+
+> *"A simply supported steel beam of length $L = 4$ m carries a center load of $P = 5$ kN. The maximum bending moment is $M = PL/4$. If the allowable bending stress is $\sigma_{\text{allow}} = 200$ MPa, and the required section modulus is $S = M / \sigma_{\text{allow}}$, find the required $S$ in cubic meters."*
+
+**Step 1 (NAME).** Let $S$ = required section modulus, in m³. Two intermediate quantities will appear:
+
+- Maximum moment $M$, in N·m.
+- Allowable stress $\sigma_{\text{allow}} = 200 \text{ MPa} = 200 \times 10^6$ Pa $= 200 \times 10^6$ N/m².
+
+Given:
+
+- $L = 4$ m
+- $P = 5 \text{ kN} = 5000$ N
+
+**Step 2 (RELATE).**
+
+$$M = \frac{P L}{4}$$
+
+$$S = \frac{M}{\sigma_{\text{allow}}}$$
+
+Combining:
+
+$$S = \frac{P L}{4 \sigma_{\text{allow}}}$$
+
+**Step 3 (SOLVE).** Substitute:
+
+$$S = \frac{5000 \cdot 4}{4 \cdot 200 \times 10^6} = \frac{20000}{8 \times 10^8} = 2.5 \times 10^{-5} \text{ m}^3$$
+
+**Step 4 (CHECK).**
+
+- Substitute into the relations: $M = PL/4 = 5000 \cdot 4 / 4 = 5000$ N·m. Then $S = M / \sigma = 5000 / (200 \times 10^6) = 2.5 \times 10^{-5}$ m³.
+- Units: N·m / (N/m²) = m³. Correct.
+- Magnitude: $2.5 \times 10^{-5}$ m³ = $25$ cm³. For a small structural beam, that is plausible (a beam with cross-section roughly 5 cm $\times$ 2 cm has section modulus on this order).
+
+**Step 5 (INTERPRET).** The beam requires a section modulus of at least $2.5 \times 10^{-5}$ m³ to keep the bending stress at or below 200 MPa under the 5 kN center load.
+
+### Example (h) — Failure Mode: Misreading "5 less than twice $x$"
+
+> *"Five less than twice a number equals 11. Find the number."*
+
+The intended translation:
+
+$$2x - 5 = 11 \implies 2x = 16 \implies x = 8$$
+
+Check: $2(8) - 5 = 16 - 5 = 11$. Correct.
+
+**The common error.** A student reads "five less than twice $x$" and writes:
+
+$$5 - 2x = 11$$
+
+This swaps the order: it now says "five with twice-$x$ subtracted." Solving: $-2x = 6 \implies x = -3$.
+
+Check that wrong answer in the *intended* equation: $2(-3) - 5 = -6 - 5 = -11 \ne 11$. The check fails.
+
+**Diagnosis.** The phrase "$A$ less than $B$" puts $A$ first in English but second in the subtraction: $B - A$. The student wrote the subtraction in English order rather than algebraic order.
+
+**Fix.** Rewrite the phrase mentally as "$B$ minus $A$" before translating: "twice $x$ minus five equals 11." That gives $2x - 5 = 11$ unambiguously.
+
+This is the single most common translation error in the entire subject. Catch it by checking after Step 2: read the equation aloud and compare it to the English. If they sound the same, the translation is probably right.
+
+## Engineering Connections
+
+Every real engineering project moves from English to equations and back again. A few canonical pipelines:
+
+**Spec → equation → design.** A bridge spec says *"the deck must support an HS-25 truck (44 tons) at midspan with a deflection no greater than $L/360$."* Translate to the deflection equation $\delta = \frac{PL^3}{48 EI}$, name the unknown moment of inertia $I$, solve, and pick a beam from the AISC catalog. The English-to-equation step is the load-bearing skill.
+
+**Mission → battery sizing.** A drone mission says *"survey a 1 km² field at 2 m/s ground speed with overlapping passes."* Translate: total path length is roughly area $\div$ swath width; flight time is path length $\div$ speed; energy is power $\times$ time. Each English clause becomes an equation; the final answer is the required battery capacity in watt-hours.
+
+**Requirement → control law.** A robot spec says *"reach the goal within 5% of the commanded position in under 2 seconds."* Translate: a settling-time and steady-state-error pair, which fix the closed-loop bandwidth and damping ratio, which fix the PID gains. Each piece of natural language picks out a parameter of the control law.
+
+**Training budget → cluster size.** An ML team says *"train a 7-billion-parameter model on 2 trillion tokens in under 7 days."* Translate: total compute = $6 \times P \times T$ FLOPs; cluster compute = $N \times f \times u$ FLOP/s where $N$ is GPU count, $f$ is per-GPU peak, $u$ is sustained utilization. One division and the cluster size pops out. Without the translation step, you cannot procure hardware.
+
+**Failure analysis → equation reversal.** A car crash investigation says *"the skid marks are 30 m long; the road friction coefficient is 0.7; estimate the speed at impact."* Translate to kinematic equations with the friction model giving deceleration; solve for initial speed. Forensics, accident reconstruction, and incident analysis all live in this regime.
+
+In each case the engineering skill is not the algebra itself — that is L2-L4. The engineering skill is the disciplined translation.
+
+## Practice Set
+
+Solve each problem using the five-step method. Show your translation table and your check.
+
+### Warmups
+
+1. *"Seven more than three times a number is 22. Find the number."*
+2. *"The sum of a number and twice itself is 36. Find the number."*
+3. *"A number decreased by 9 equals 15. Find the number."*
+4. *"Half of a number, increased by 4, equals 11. Find the number."*
+5. *"Six less than four times a number is 30. Find the number."*
+
+### Applied (Geometry, Mixing, Rate-Time-Distance)
+
+6. *"A rectangle has perimeter 48 cm. Its length is twice its width. Find the dimensions."*
+7. *"A triangle has angles in the ratio 1:2:3. Find each angle in degrees."* (Use that the angles sum to 180°.)
+8. *"How many liters of pure water must be added to 8 L of 25% acid to dilute it to 10%?"*
+9. *"A boat travels 30 km downstream in the same time it takes to travel 18 km upstream. The current is 4 km/h. Find the boat's speed in still water."*
+10. *"Two trains start 600 km apart and move toward each other at 70 km/h and 80 km/h. When do they meet?"*
+
+### Engineering
+
+11. *"A voltage divider with a 9 V source has two series resistors. The output is taken across $R_2$. If the output voltage is 3 V and $R_1 = 200$ Ω, find $R_2$. Hint: $V_{\text{out}} = V_{\text{in}} \cdot R_2 / (R_1 + R_2)$."*
+12. *"A small aircraft has a wing area of 16 m² and a takeoff lift of 12000 N. The wing loading is lift / area. Find the wing loading in N/m², and find the new lift if the area is increased to 20 m² at the same wing loading."*
+13. *"A chemical process requires 2 moles of A for every 3 moles of B to produce 1 mole of product P. If 10 moles of A are available and B is in excess, how many moles of P can be produced?"*
+14. *"You deposit a sum of money at 4% annual simple interest. After 3 years the account holds 4480 dollars. Find the original deposit."* (Use $A = P(1 + rt)$; do all dollar amounts in plain text.)
+15. *"A factory has fixed costs of 20000 dollars per month and a variable cost of 12 dollars per unit produced. The product sells for 32 dollars per unit. How many units per month must be sold to break even?"*
+16. *"A solution is made by mixing 200 g of a 5% NaCl solution with $x$ g of a 20% NaCl solution to produce a 12% solution. Find $x$."*
+
+### Error-Spotting
+
+17. A student reads *"the difference between $x$ and 10 is 3"* and writes $10 - x = 3$, getting $x = 7$. The intended reading is $x - 10 = 3$, giving $x = 13$. Explain which interpretation matches the English and why "difference" is ambiguous.
+18. A student reads *"a car drives at 50 km/h for 2 hours and then at 70 km/h for 3 hours; find the total distance"* and writes total distance $= 50 + 70 = 120$ km, ignoring the time multipliers. Explain the error and write the correct setup.
+
+### Challenge
+
+19. *"A 1.5 kg drone hovers by producing a downward jet of air. The jet leaves the propellers at 8 m/s. By Newton's second law (and conservation of momentum, $F = \dot m \cdot v_{\text{jet}}$ where $\dot m$ is the mass flow rate of air), what mass of air per second must the propeller move to keep the drone aloft? Assume $g = 9.8$ m/s²."*
+20. *"Three pumps fill a tank. Pump A alone fills it in 6 h; pump B in 4 h; pump C in 12 h. All three run together. How long do they take to fill the tank?"* (Hint: combine rates as fractions of tank per hour.)
+
+### Answers (abbreviated)
+
+1. $x = 5$
+2. $x = 12$
+3. $x = 24$
+4. $x = 14$
+5. $x = 9$
+6. Width $= 8$ cm, length $= 16$ cm
+7. $30°, 60°, 90°$
+8. $V = 12$ L of water
+9. Boat speed in still water $= 16$ km/h
+10. $t = 4$ h
+11. $R_2 = 100$ Ω
+12. Wing loading $= 750$ N/m²; new lift at 20 m² $= 15000$ N
+13. $P = 5$ moles (limited by A: 10 mol A / 2 mol per P = 5)
+14. Original deposit $= 4000$ dollars (since $A = P(1 + 0.04 \cdot 3) = 1.12 P$, so $P = 4480 / 1.12 = 4000$)
+15. Break-even quantity $= 1000$ units/month
+16. $x = 350$ g (salt balance: $0.05 \cdot 200 + 0.20 x = 0.12(200 + x)$, so $10 + 0.20 x = 24 + 0.12 x$, $0.08 x = 14$, $x = 175$)
+
+   *Correction:* recomputing carefully: $0.05 \cdot 200 = 10$; $0.12 \cdot 200 = 24$. Equation $10 + 0.20 x = 24 + 0.12 x$ gives $0.08 x = 14$, so $x = 175$ g. (Always recompute on paper; do not trust a quick mental arithmetic step.)
+
+17. Both readings of "difference" are common in English. In strict math, "the difference between $A$ and $B$" usually means $A - B$, matching the order spoken. The student's $10 - x$ reverses the order. The fix is the same as in Example (h): read aloud "$x$ minus 10" before translating.
+18. Distance equals speed times time *for each leg* and then summed: $D = 50 \cdot 2 + 70 \cdot 3 = 100 + 210 = 310$ km. The student added rates instead of summing distances. Always carry units; the units (km/h alone cannot equal km) reveal the error immediately.
+19. $\dot m = m g / v_{\text{jet}} = 1.5 \cdot 9.8 / 8 \approx 1.84$ kg/s. Check units: kg $\cdot$ m/s² $/$ (m/s) = kg/s. Correct.
+20. Rates add: $1/6 + 1/4 + 1/12 = 2/12 + 3/12 + 1/12 = 6/12 = 1/2$ tank/hour. Combined time $= 2$ hours.
+
+## Build Task
+
+Build a structured word-problem template in Python using SymPy. The goal is to encode the five-step method as code, so that solving a word problem becomes the act of writing a clean specification.
+
+### Specification
+
+Write a function:
+
+```python
+from sympy import symbols, Eq, solve, sympify
+
+def solve_word_problem(name_unknowns, knowns, relations, target,
+                       expected_range=None):
+    """
+    Solve a word problem by structured translation.
+
+    Parameters
+    ----------
+    name_unknowns : dict
+        Mapping of unknown name (str) -> unit (str). Example:
+        {"R_B": "ohm", "V": "volt"}.
+    knowns : dict
+        Mapping of name -> numeric value. Units are implicit (SI) and
+        documented in comments.
+    relations : list of str
+        Each string is a SymPy-parseable equation of the form
+        "lhs = rhs".  Example: "12 = 0.030 * (200 + R_B)".
+    target : str
+        The name of the unknown to solve for.
+    expected_range : tuple (low, high) or None
+        Optional. If given, warn when the solved value falls outside.
+
+    Returns
+    -------
+    solution : float
+        Numerical value of target.
+    report : str
+        Human-readable trace of all five steps.
+    """
+    # 1. NAME: declare SymPy symbols for each unknown
+    sym_table = {name: symbols(name) for name in name_unknowns}
+    # ...
+    # 2. RELATE: parse each relation string into a SymPy Eq
+    eqs = []
+    for r in relations:
+        lhs, rhs = r.split("=")
+        eqs.append(Eq(sympify(lhs, locals=sym_table),
+                      sympify(rhs, locals=sym_table)))
+    # 3. SOLVE: call sympy.solve
+    sols = solve(eqs, list(sym_table.values()), dict=True)
+    if not sols:
+        raise ValueError("No solution found.")
+    sol = sols[0][sym_table[target]]
+    val = float(sol)
+    # 4. CHECK: substitute back; raise if any equation fails to balance
+    for eq in eqs:
+        residual = float(eq.lhs.subs(sols[0]) - eq.rhs.subs(sols[0]))
+        if abs(residual) > 1e-9:
+            raise AssertionError(f"Residual {residual} in {eq}")
+    # 4b. MAGNITUDE SANITY CHECK
+    warning = ""
+    if expected_range is not None:
+        low, high = expected_range
+        if not (low <= val <= high):
+            warning = (f"WARNING: solved value {val} for {target} is "
+                       f"outside expected range [{low}, {high}].")
+    # 5. INTERPRET
+    unit = name_unknowns[target]
+    report = (f"NAME: {target} in {unit}\n"
+              f"SOLVE: {target} = {val}\n"
+              f"INTERPRET: The unknown {target} is {val} {unit}.\n"
+              f"{warning}")
+    return val, report
+```
+
+Apply your implementation to three of the worked examples:
+
+1. Example (e) — Ohm's Law series circuit. Expect $R_B = 200$ Ω, expected range $[1, 10^6]$ Ω.
+2. Example (f) — Drone hover time. Expect $t = 0.72$ h, expected range $[0.01, 10]$ h.
+3. Example (c) — Saline dilution. Expect $V = 5$ L, expected range $[0.1, 100]$ L.
+
+### Stretch
+
+- Add support for inequalities (e.g., safety-margin constraints) using `sympy.solve_univariate_inequality`.
+- Add unit checking with `pint` or `sympy.physics.units`, so that an equation with mismatched units raises before solve runs.
+- Extend the `expected_range` parameter to support multiple orders of magnitude: warn if the solution is more than three orders of magnitude from the geometric mean of the range.
+
+The deliverable is a small Python module plus a test file that exercises it on the three worked examples and emits the full five-step report for each.
+
+## Quiz
+
+1. State the five steps of the translation method in order, with one sentence on each.
+2. Why does the NAME step require attaching a unit to each variable? Give a concrete example where omitting the unit would create an error.
+3. Translate to algebra: *"Four less than twice $x$ equals seven."* Then translate: *"Four is less than twice $x$."* Explain how the verb "is" changes the meaning.
+4. Why is checking the *magnitude* of an answer (not just the equation balance) the most diagnostically powerful check?
+5. In a mixing problem, what is the conserved quantity that lets you write the central equation? (Hint: it is not volume.)
+6. In a rate-time-distance problem with two moving objects, when do you use the *sum* of their speeds and when do you use the *difference*?
+7. Why is the phrase "$A$ less than $B$" the most error-prone item in the translation dictionary?
+8. After solving an engineering problem, why is the INTERPRET step necessary even when the math is complete? What kind of error does it catch?
+
+### Answers
+
+1. *NAME* (assign letter + unit to each unknown), *RELATE* (turn English into equations), *SOLVE* (use L2-L4 algebra), *CHECK* (substitute, units, magnitude), *INTERPRET* (state answer in original language).
+2. Units carry meaning. If $v = 50$ and you do not know whether the unit is m/s or km/h, you cannot use the answer. A drone control loop fed 50 km/h when it expected 50 m/s would behave catastrophically (off by a factor of 3.6).
+3. *"Four less than twice $x$ equals seven"* $\to 2x - 4 = 7$. *"Four is less than twice $x$"* $\to 4 < 2x$. The verb "is" turns a quantity into a statement; the second is an inequality, not an equation.
+4. Equation-balance checks only confirm that the algebra was internally consistent. They cannot catch errors in the *original equation*. A magnitude check (does the number make engineering sense?) catches wrong-equation errors.
+5. The conserved quantity is the *amount of solute* (e.g., grams of salt, moles of acid). Volumes add but concentrations do not.
+6. *Sum* when the objects approach each other; *difference* when they move in the same direction (one catching the other). Always draw a quick picture.
+7. The English order ("$A$ less than $B$") puts $A$ first, but the algebra ("$B - A$") puts $B$ first. The mismatch is the source of the most common translation error in algebra.
+8. INTERPRET catches the disconnect between *the answer to the equation* and *the answer to the question*. The question may ask for a length and you may have solved for a length squared; or it may ask for a time in minutes and you have hours. Articulating the answer in the original language surfaces these mismatches.
+
+## Proof of Completion
+
+Submit:
+
+- Completed warmups, applied problems, engineering problems, error-spotting, and challenge problems from the practice set, with each solution shown via the full five-step method and a translation table.
+- The SymPy-based `solve_word_problem` template, applied to three of the worked examples, committed to your repository with a `README` showing the five-step report for each.
+- A short build-log entry (200-300 words) reflecting on which step of the five-step method you find hardest, and why. The honest answer is almost always RELATE, but the *specific* nature of the difficulty (translation-dictionary confusion, missed sentences, sign errors, units) is the diagnostic.
+- Solve five word problems from a real engineering textbook (suggested: Halliday-Resnick-Walker *Fundamentals of Physics*, or Hibbeler *Statics*) using your template, with the full report saved as a notebook cell or markdown file.
+
+When you can take an arbitrary English-language engineering problem and produce a written translation table, a solved equation, and a magnitude-checked answer in under ten minutes, you have completed this lesson.
+
+## Sources and Further Study
+
+**Primary recommendation.**
+
+- **G. Pólya, *How to Solve It* (Princeton University Press, 1945; 2nd edition 1957).** The canonical text on mathematical problem-solving methodology. The four-step method (understand → plan → carry out → look back) is the direct ancestor of the five-step method in this lesson. Read at least the introduction and the first 50 pages. Pólya's chapter on heuristic is the most influential single piece of writing on how to solve problems systematically.
+
+**Historical primary sources.**
+
+- **Diophantus of Alexandria, *Arithmetica*** (3rd century CE; modern translation by Heath, Dover reprint). The first systematic collection of algebraic word problems. Skim the first book to see how Diophantus introduced symbols for unknowns.
+- **Muḥammad ibn Mūsā al-Khwārizmī, *Kitāb al-mukhtaṣar fī ḥisāb al-jabr wa-l-muqābala*** (c. 820 CE; translated by F. Rosen, 1831). The origin of the word *algebra*. Translates almost entirely as word problems with prose solutions.
+- **Rafael Bombelli, *L'Algebra*** (1572). Early modern symbolic algebra applied to word problems in commerce and surveying.
+
+**Modern textbooks (heavy in word problems).**
+
+- **J. Stewart, *Calculus: Early Transcendentals*** (any edition, Cengage). The applied-problem sections of chapters on rates of change, optimization, and integration are an enormous catalog of high-quality engineering word problems.
+- **D. Halliday, R. Resnick, J. Walker, *Fundamentals of Physics*** (any edition, Wiley). Every problem in this textbook is a word problem. Working through the kinematics and dynamics problem sets is one of the best translation drills available.
+- **R. C. Hibbeler, *Engineering Mechanics: Statics*** (Pearson). Every problem is a translation exercise on top of free-body diagrams.
+
+**Open courseware.**
+
+- **MIT OpenCourseWare 18.01 *Single Variable Calculus*** — problem sets, especially the optimization and related-rates problems, all of which are word-problem translation drills.
+- **MIT OpenCourseWare 8.01 *Classical Mechanics*** — Walter Lewin's lectures and the accompanying problem sets are a master class in physics word-problem translation.
+
+**Software.**
+
+- **SymPy documentation** — `sympy.solve`, `sympy.Eq`, `sympy.sympify`. The library used in the build task.
+- **`pint`** — a Python units library that integrates well with SymPy for the stretch task.
+
+## Next Lesson Bridge
+
+You will have noticed by now — in Example (e), Example (f), Example (g), and throughout the practice set — that *naming a variable with its unit* and *checking that the units of the final answer reduce correctly* were doing a lot of work. In Example (e), the units check $\text{A} \cdot \Omega = \text{V}$ confirmed that the equation was Ohm's Law. In Example (f), Wh / W = h told you the answer was a time. In Example (g), the units N·m / (N/m²) = m³ confirmed the section modulus had volume dimensions. Each time, the units functioned as a parallel check on the algebra.
+
+The next lesson, **units-and-dimensional-analysis**, takes this idea seriously and turns it into a first-class engineering tool. You will learn:
+
+- The difference between a *quantity*, a *unit*, and a *dimension* (and why this distinction matters for catching errors).
+- How to convert between units using ratio-of-one factors, especially for compound units like km/h $\to$ m/s.
+- How to test whether a formula is *dimensionally consistent*, and what to do when it is not.
+- How to use dimensional analysis to *derive* missing constants in scaling laws (Rayleigh's method).
+- How to use units to debug numerical code, simulator outputs, and sensor pipelines.
+
+You are ready for the next lesson when you can take an arbitrary English-language word problem, name every unknown with its unit, write the equation, solve it, and check the answer by substitution, by units, and by magnitude — without skipping any of the five steps.

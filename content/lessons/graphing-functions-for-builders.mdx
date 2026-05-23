@@ -1,66 +1,939 @@
 # Graphing Functions for Builders
 
+## Re-entry Promise
+
+You have arrived at lesson 13 of the Engineering Algebra and Geometry module, which means you have already done the heaviest lifting. Lessons 1 through 5 taught you to solve and rearrange equations in one unknown. Lesson 6 taught you to carry units through every calculation. Lessons 7 and 8 made functions concrete — an input goes in, exactly one output comes out — and gave you a catalog of the function types (constant, linear, absolute value, piecewise, step, floor, signum) that engineers reach for over and over. Lessons 9, 10, and 11 zoomed into the linear case: you can compute a slope, identify a y-intercept, and write the same line in slope-intercept form, point-slope form, or standard form, switching forms whenever convenient. Lesson 12 closed out the linear story with parallel and perpendicular lines.
+
+What lessons 7 through 12 left implicit is the *picture*. You have the symbolic machinery for linear functions and the symbolic catalog for nonlinear function types, but you have not yet practiced the engineer's reflex of *seeing* an equation as a curve. This lesson is the visualization synthesis. You will learn to sketch any of the function types you already know — directly from the equation, without computing a table of values — and to read an engineering graph as technical evidence about the underlying system.
+
+This lesson assumes lessons 1 through 12. It does *not* assume that you have ever drawn a graph on graph paper since high school, that you have ever produced a figure in matplotlib, or that you can sketch a Bode plot. By the end you should be able to draft a position-versus-time graph for a robot on a napkin in under a minute, read a sensor's calibration curve off a datasheet without confusion, and predict on paper what an oscilloscope trace or training-loss curve should look like before you ever run the experiment.
+
+A note on scope. A separate lesson, *Reading Data Tables and Charts* in the Math Re-entry Toolkit, treats *published* charts — Cleveland's perception ladder, Tufte's data-ink ratio, and the visual rhetoric of statistical graphics. This lesson is its complement. Here we sketch *from equations*, and we read graphs as evidence about a function or a system, not as polished publication artifacts.
+
 ## Objective
 
-Read and sketch graphs as visual stories about how one quantity changes with another.
+By the end of this lesson you should be able to:
+
+- Sketch a linear function directly from any of its three forms (slope-intercept, point-slope, standard), without computing a table of values, in under fifteen seconds.
+- Sketch the canonical nonlinear function shapes from lesson 8: absolute-value $|x - a| + b$, piecewise linear, the Heaviside step $u(t - a)$, and the floor function $\lfloor x \rfloor$.
+- Identify the slope, intercepts, asymptotes, and monotonicity of a function from a sketch, and explain what each feature means *physically* in an engineering context.
+- Choose appropriate axis scales — linear-linear, semilog-y, or log-log — based on the data's dynamic range and on which features you want to make visible.
+- Interpret graph features as engineering evidence: the slope of $V(t)$ is voltage decay rate; the slope of $\text{position}(t)$ is speed; an asymptote is a steady-state value; a corner is a regime change.
+- Produce a sanity-check sketch *before* doing a precise calculation or simulation, and use the sketch to predict the answer's sign, magnitude, and qualitative shape.
+- Sketch a smooth curve together with its tangent line at a chosen point — a calculus preview that connects to the linearization of lesson 10.
+- Use small multiples (separate axes at the same scale) and overlays (multiple curves on shared axes) appropriately, and know when each is the better choice.
+- Diagnose the two most common sketching errors: drawing a linear function as a curve (always an arithmetic mistake), and forgetting to label axes with units (always destroys interpretability).
 
 ## Why It Matters
 
-Graphs show sensor calibration, battery discharge, motor response, altitude over time, error in a control loop, and simulation results. You need to read them like technical evidence.
+Sketching is the engineer's first reflex when confronted with an equation. A graph captures, in one picture, what would take paragraphs of text to describe; and a quick hand-sketch tells you whether a calculation or simulation is going to be in the right neighborhood before you commit hours to it. A short list of concrete contexts:
 
-## Concept
+1. **Reading a robot's position-versus-time graph.** A mobile robot logs $x(t)$, the distance from the start. The graph's slope at any instant is the speed; flat segments are stops; concave-up segments are accelerations; concave-down segments are decelerations. The example we will work through in this lesson — a robot that goes from $2$ m at $1$ s to $8$ m at $4$ s — is one tiny instance of this everyday task.
 
-A function connects an input to an output:
+2. **Sketching a sensor calibration curve before plugging in a sensor.** Given a datasheet that says $V = 0.02 d + 0.5$ for a distance sensor, you can sketch the calibration on a piece of paper and *immediately* spot non-linearity in any real measurement that deviates from your sketch. The sketch is a no-cost reference against which to judge experimental data.
 
-$$output = f(input)$$
+3. **Predicting an oscilloscope trace.** Before you connect a scope to a circuit, sketch what you expect: a square wave at 1 kHz with $5$ V amplitude, a slight rounding at the edges from cable capacitance, a small DC offset. The sketch sets your expectation; deviations from the sketch are bugs.
 
-For example, position as a function of time can be written:
+4. **Sketching a control-system step response to predict stability.** A first-order step response is a saturating exponential; a critically-damped second-order response is a smooth rise to the setpoint; an underdamped one rings before settling; an unstable one diverges. Sketching the expected shape before simulating saves you from confused interpretation when the simulation comes back.
 
-$$x = f(t)$$
+5. **Sketching an ML training-loss curve to anticipate overfitting.** Training loss falls monotonically; validation loss falls and then *rises* once the model starts memorizing the training set. The shape — falling, then bending up — is the visual signature of overfitting. If you have sketched the expected curves, you spot the divergence the moment it happens.
 
-The horizontal axis usually shows the input. The vertical axis usually shows the output.
+6. **Sketching the Bode plot of a filter to predict its frequency response.** A first-order low-pass filter has a flat magnitude at low frequency and rolls off at $-20$ dB per decade above the cutoff. A second-order filter rolls off at $-40$ dB per decade. Sketching the Bode plot on log-log axes from the filter's transfer function takes seconds and tells you immediately whether the cutoff and roll-off match the design intent.
 
-Slope describes rate of change:
+7. **Sketching a diode's I-V curve to find the operating point.** The diode passes essentially zero current below about $0.7$ V and rises sharply above. Sketching this curve, overlaying it with a resistor load line, and finding the intersection gives the circuit's operating point graphically — the canonical Q-point analysis.
 
-$$slope = \frac{change\ in\ output}{change\ in\ input}$$
+8. **Sketching battery discharge to estimate runtime.** A lithium battery's voltage versus time is roughly linear in the middle of the discharge curve, with knees at top and bottom. Sketching the linear portion and extrapolating to the cutoff voltage gives a quick runtime estimate that beats spreadsheets for back-of-envelope planning.
 
-For a position-time graph, slope is speed.
+9. **Sketching a drone trajectory to plan a flight.** A planned trajectory in 2D — takeoff, cruise, descent — is a position-versus-time graph in each axis. Sketching it before flying it tells you the peak velocity, peak acceleration, and required thrust at each phase.
 
-## Worked Example
+10. **Sketching the dependence of one variable on another in any debugging context.** When a piece of hardware misbehaves at high temperature, you sketch the failure rate as a function of temperature. When a server gets slow under load, you sketch latency as a function of request rate. Sketching is the universal first move when you are trying to find a relationship in messy data.
 
-A robot position changes from `2 m` at `1 s` to `8 m` at `4 s`.
+The unifying claim: in working engineering, the graph and the equation are *two views of the same object*. The graph captures shape and qualitative features at a glance. The equation captures precision and predictive power. Fluent engineers move between them constantly.
 
-The slope is:
+## Why This Idea Exists
 
-$$slope = \frac{8m - 2m}{4s - 1s}$$
+The deepest idea in this lesson — *every equation is a curve and every curve is an equation* — is not old. For most of mathematical history, geometry and algebra were separate subjects. The Greeks (Euclid, Apollonius, Archimedes) reasoned about curves using axiomatic geometry and physical construction. The medieval Arabic and Indian traditions (al-Khwarizmi, Brahmagupta) developed algebra as a manipulation of unknowns. Neither tradition wrote $y = 2x + 3$ and meant *the set of points whose coordinates satisfy that equation*.
 
-$$slope = \frac{6m}{3s} = 2m/s$$
+The fusion came in two near-simultaneous strokes in the 1630s. **Pierre de Fermat**, in a manuscript circulated around 1636 (*Ad locos planos et solidos isagoge*), and **René Descartes**, in *La Géométrie* — an appendix to his *Discours de la méthode* (1637) — independently invented what we now call **analytic geometry** or **Cartesian geometry**. They placed two perpendicular axes on the plane, labeled points by their coordinates, and wrote equations whose solution sets *were* curves. After 1637, an educated reader could write "the line $y = 2x + 3$" or "the parabola $y = x^2$" and mean a specific picture in the coordinate plane. Modern physics and engineering would have been unthinkable without this move.
 
-The robot's average speed is `2 m/s`.
+The next great step was the discovery, by **Isaac Newton** (in his manuscript *De methodis serierum et fluxionum*, 1671) and **Gottfried Wilhelm Leibniz** (in his 1684 *Acta Eruditorum* paper *Nova methodus pro maximis et minimis*), that one could draw a tangent line to a smooth curve at any point — and that the slope of that tangent line measured the curve's rate of change at that point. This is the foundation of calculus. For our purposes the relevant takeaway is that *every smooth curve has, at every point, a unique tangent line*, and that tangent line is the local linear approximation you already met as "linearization" in lesson 10.
 
-## Exercise
+In parallel with the algebra-geometry fusion, a tradition of *physical* curves grew up. **Christopher Wren** (mid-1600s) studied the **cycloid** — the curve traced by a point on a rolling wheel — and showed it had a closed-form arc length. **Christiaan Huygens** designed isochronous pendulum clocks using the curve. **Johann Bernoulli, Leibniz, Newton, and Jakob Bernoulli** (1690s) raced to solve the **brachistochrone** problem — the shape of the fastest slide between two points — and discovered it was again the cycloid. The **catenary**, the curve hung by a freely-suspended chain, was solved by Huygens, Leibniz, and Bernoulli in 1691. These were physical curves whose *equations* one could now write down — a triumph of the Cartesian program.
 
-Create a small table and sketch a graph for:
+Time-series graphs as we know them today were popularized by **William Playfair**, a Scottish engineer and political economist, in his *Commercial and Political Atlas* (1786). Playfair invented the **line graph for time-series data**, the **bar chart**, and (later) the **pie chart**. Most of the chart conventions you now take for granted — axes with labels, gridlines, a time axis running left to right — come from Playfair. (His historical role for *published* charts is treated in more depth in lesson 18 of the Math Re-entry Toolkit.)
 
-$$d = 3t$$
+In the twentieth century, **John W. Tukey** (1915–2000), in his book *Exploratory Data Analysis* (1977), re-emphasized that sketching is a *primary analytical tool*, not just a presentation device. Tukey's point: you should sketch the data, sketch your hypothesized model, sketch the residual between them, and *then* decide what statistical test to apply. The sketch is the thinking; the test is just the bookkeeping. This is exactly the spirit of the engineering sketch.
 
-Use `t = 0, 1, 2, 3, 4`. What does the slope mean?
+Today, despite the universal availability of plotting software, the hand-sketch remains the fastest way to communicate a model. A whiteboard sketch in a design review, a pen-and-paper plot on a napkin during a hallway conversation, a quick figure in a lab notebook — these are slower to type than to draw, and they capture in seconds what would take a paragraph of prose. Sketching is a *skill*, and it rewards practice. This lesson is the start of that practice.
+
+## Plain-Language Intuition
+
+A function is a machine: an input goes in, an output comes out (lesson 7). The **graph** is the machine's *fingerprint* — the visual signature of how its outputs depend on its inputs. Every function has a distinctive fingerprint:
+
+- A **linear** function has the fingerprint of a straight line. Two numbers — slope and intercept — fully specify it.
+- An **absolute-value** function has the fingerprint of a V, with a sharp corner at the vertex.
+- A **piecewise** function has the fingerprint of one shape on one interval and a different shape on another, glued together (sometimes smoothly, sometimes with a corner or a jump).
+- A **step** function has the fingerprint of a flat line, a vertical jump, and another flat line.
+- A **floor** function has the fingerprint of a staircase, with closed and open dots at every integer.
+
+With a few hours of practice, you can learn to *recognize the fingerprint at a glance* from the equation, and *draw the fingerprint at a glance* from the equation. That is the entire skill of this lesson.
+
+Going the other way — reading the function's properties off the graph — is just as important. From a graph alone, you should be able to read:
+
+- The **slope** (rate of change), wherever the graph is straight.
+- The **intercepts** (the values where the curve crosses the axes).
+- The **monotonicity** (is the curve going up, down, or flat?).
+- The **asymptotic behavior** (does the curve approach a horizontal or vertical line far from the origin?).
+- The **special points** (corners, jumps, peaks, troughs).
+
+These are the visual nouns of engineering. Every datasheet curve, every oscilloscope trace, every training-loss plot is described in this vocabulary.
+
+## Core Theory
+
+### The Graph of a Function
+
+The **graph** of a function $f$ with domain $D$ is the set of points
+
+$$\text{graph}(f) = \{ (x,\, f(x)) : x \in D \}$$
+
+plotted in the Cartesian $xy$-plane. The horizontal coordinate is the input; the vertical coordinate is the output. *Every* point on the graph satisfies $y = f(x)$, and conversely *every* pair $(x, y)$ that satisfies $y = f(x)$ lies on the graph. The graph is the equation, made visible.
+
+Two consequences are worth stating explicitly.
+
+- **Vertical-line test.** Any vertical line $x = c$ (with $c \in D$) crosses the graph at exactly one point, because $f$ assigns exactly one output to each input. A "curve" that fails this test — like a sideways parabola — is not the graph of a function. This is the vertical-line test from lesson 7.
+- **Two graphs are the same iff they consist of the same set of points.** Two different formulas that produce the same set of points (after simplification) define the same function and have the same graph.
+
+### Two Complementary Ways to Sketch
+
+There are exactly two routes from an equation to a graph.
+
+- **From equation to features to sketch.** Read the equation's form. Extract key features — slope, intercept, vertex, jump location, asymptotes. Place those features on the axes and draw. This is the fast route, and it is the route this lesson teaches.
+- **From equation to table to plot.** Pick a handful of input values. Compute the corresponding outputs. Plot the points. Connect them with the appropriate curve shape. This is the slow but foolproof route, and it is the right move when you do not yet recognize the function type.
+
+A fluent engineer uses the second route once or twice to confirm a shape, then switches permanently to the first route. The first route is the goal of this lesson.
+
+### Sketching a Line from $y = mx + b$ (Review and Consolidation)
+
+You already saw this procedure in lesson 10. The procedure has three steps.
+
+1. Plot the y-intercept at $(0, b)$.
+2. Use the slope as a "rise over run" step. Treat $m$ as a fraction: if $m = 2$, go right $1$ and up $2$ to a second point. If $m = -\tfrac{1}{2}$, go right $2$ and down $1$. Place a second dot.
+3. Connect the two dots with a straight line, and extend in both directions.
+
+That is it. *No table of values is required*. The line is determined by two points, you have produced both, and the slope-intercept form makes it trivial.
+
+### Sketching from Point-Slope Form $y - y_1 = m(x - x_1)$
+
+Point-slope form (lesson 11) is the right form when you know the slope and *some known point* on the line that is not the y-intercept. To sketch:
+
+1. Plot the known point $(x_1, y_1)$.
+2. Step from that point using slope $m$ as rise over run, to place a second point.
+3. Connect.
+
+No conversion to slope-intercept form is needed for sketching — just step from the known point.
+
+### Sketching from Standard Form $A x + B y = C$
+
+Standard form (lesson 11) is the right form when the line is part of a system, but it is also convenient for sketching by **intercepts**:
+
+1. Find the y-intercept: set $x = 0$, solve for $y$. Plot $(0, y_0)$.
+2. Find the x-intercept: set $y = 0$, solve for $x$. Plot $(x_0, 0)$.
+3. Connect.
+
+Two intercepts on the two axes define the line, and this is the fastest sketching method when the equation comes to you in standard form. (It fails if the line passes through the origin or is parallel to an axis — in which case you fall back to slope-intercept or to a single point and the slope.)
+
+### Sketching the Absolute-Value Function $f(x) = |x - a| + b$
+
+The absolute value of any number is its non-negative magnitude. The graph of $|x|$ is a V opening upward, with its vertex at the origin and arms of slope $+1$ and $-1$. The shifted form $|x - a| + b$ moves the V so its vertex sits at $(a, b)$.
+
+To sketch:
+
+1. Plot the vertex at $(a, b)$.
+2. Draw the right arm with slope $+1$ (or whatever coefficient multiplies $|x - a|$, if there is one).
+3. Draw the left arm with slope $-1$ (mirror of the right arm).
+
+If the function is $f(x) = c \cdot |x - a| + b$ with $c > 0$, the arms have slopes $+c$ and $-c$. If $c < 0$, the V opens *downward* and the arms have slopes $c$ and $-c$ with $c$ negative.
+
+### Sketching Piecewise Functions
+
+A piecewise function specifies a different rule on each piece of its domain. To sketch:
+
+1. For each piece, sketch the rule on its sub-domain using whatever technique applies (linear, absolute value, etc.).
+2. At each *boundary* between pieces, mark a closed circle (filled dot) at the value the function attains there, and an open circle (hollow dot) at any value it *does not* attain — for instance, if the rule on the left piece reaches up to but does not include the boundary, the left piece ends with an open circle.
+3. Inspect: is the function continuous (no jump) at each boundary, or is there a vertical jump?
+
+Engineering examples include saturating amplifiers (linear in the middle, flat at the rails), tax brackets (different linear slopes on different income ranges), and the diode I-V curve (zero below the threshold, rising above).
+
+### The Heaviside Step Function $u(t - a)$
+
+The **Heaviside step function** (lesson 8) is
+
+$$u(t - a) = \begin{cases} 0 & \text{if } t < a, \\ 1 & \text{if } t \ge a. \end{cases}$$
+
+To sketch:
+
+1. Draw a horizontal line at $y = 0$ for $t < a$, ending with an open circle at $(a, 0)$.
+2. Draw a horizontal line at $y = 1$ for $t \ge a$, starting with a closed circle at $(a, 1)$.
+3. The vertical jump from $0$ to $1$ at $t = a$ is *not* a line segment of the graph — it is just the visual indication of a discontinuity.
+
+The Heaviside step is the canonical "switch turns on at $t = a$" function. A scaled and shifted step like $5 \cdot u(t - 2)$ is "5 V applied at $t = 2$ seconds."
+
+### The Floor Function $\lfloor x \rfloor$
+
+The **floor function** (lesson 8) returns the largest integer not greater than $x$. Its graph is a *staircase*: flat on each interval $[n,\, n+1)$ at height $n$, with a closed circle at the left endpoint and an open circle at the right endpoint of each tread.
+
+To sketch:
+
+1. For each integer $n$, draw a horizontal segment from $(n, n)$ to $(n+1, n)$, closed circle on the left, open circle on the right.
+2. The function jumps up by $1$ at every integer.
+
+The floor function models quantization: an ADC converts a continuous voltage to a discrete count, an integer multiple of one LSB.
+
+### Reading Slope from a Graph
+
+Wherever a graph is locally straight, its slope is the rise over the run between any two points on that segment. *With units.* If the y-axis is in volts and the x-axis is in seconds, the slope is in volts per second. If the y-axis is in meters and the x-axis is in seconds, the slope is in meters per second (a speed). The sign of the slope matters: positive means increasing, negative means decreasing.
+
+A common error: reporting the *magnitude* of a slope without its sign. If a battery is discharging, the slope of $V(t)$ is *negative*, not just "the decay rate." Always carry the sign.
+
+### Reading Intercepts
+
+- **The y-intercept** is the value where the curve crosses the vertical axis. Read it off as the y-coordinate of the crossing point. In an engineering context, the y-intercept is the value of the output when the input is zero — the "starting value," "offset," or "bias."
+- **The x-intercept** (also called a **zero** or a **root**) is the value where the curve crosses the horizontal axis. In an engineering context, it answers the question "at what input does the output equal zero?" — for example, "at what time does the battery hit zero voltage?"
+
+### Reading Monotonicity
+
+A function is **increasing** on an interval if its graph goes up as you move right, **decreasing** if its graph goes down, **constant** if it is flat. A graph that switches between increasing and decreasing has a **local maximum** or **local minimum** at the switch.
+
+Monotonicity is a preview of calculus: when calculus formalizes the **derivative** $f'(x)$, increasing means $f' > 0$, decreasing means $f' < 0$, flat means $f' = 0$. For now, you can read monotonicity off the sketch by eye.
+
+### Reading Asymptotic Behavior
+
+An **asymptote** is a line the curve approaches arbitrarily closely but does not (generally) cross. There are three kinds.
+
+- **Horizontal asymptote**: the curve approaches a horizontal line $y = L$ as $x \to \infty$ or $x \to -\infty$. Example: a control system's response settles to a steady-state value. A first-order step response $V(t) = V_\infty (1 - e^{-t/\tau})$ has a horizontal asymptote at $V_\infty$ as $t \to \infty$.
+- **Vertical asymptote**: the curve shoots to $\pm \infty$ as $x$ approaches some finite value $a$. Example: $f(x) = 1/(x - a)$ has a vertical asymptote at $x = a$.
+- **Oblique (slant) asymptote**: the curve approaches a non-horizontal line as $x \to \pm \infty$. Less common, mostly in rational functions where the numerator degree exceeds the denominator degree by one.
+
+Asymptotes are previews of the *limit* concept in calculus. For now, read them off the sketch and use them to set your axis ranges.
+
+### Choosing Axis Scales: Linear vs Logarithmic
+
+A **linear axis** marks equally-spaced values (1, 2, 3, 4, ...). A **logarithmic axis** marks equally-spaced *powers of ten* (0.1, 1, 10, 100, 1000, ...) — in other words, the distance from $1$ to $10$ equals the distance from $10$ to $100$.
+
+Three common combinations:
+
+- **Linear-linear** (default). Both axes are linear. Use when the data spans at most about one or two orders of magnitude and you care about additive changes.
+- **Semilog-y** (log on the y-axis, linear on the x-axis). Use when the y-values span many orders of magnitude or when the underlying relationship is *exponential*. An exponential $y = A e^{kt}$ plotted on semilog-y axes becomes a *straight line* with slope $k / \ln(10)$ (in $\log_{10}$ terms) and intercept $\log_{10}(A)$. Most biology growth curves, capacitor discharge curves, and population decay curves are sketched on semilog-y.
+- **Log-log** (log on both axes). Use when both axes span many orders of magnitude, or when the underlying relationship is a *power law* $y = A x^n$. A power law on log-log axes becomes a straight line with slope $n$ (the exponent) and intercept $\log_{10}(A)$. Bode plots, noise power spectra, and turbulence cascade plots are sketched on log-log.
+
+The choice of axis is not cosmetic. It changes which features of the data are visually salient. On linear-linear axes, an exponential decay looks like a curve that asymptotes to zero; on semilog-y axes, it looks like a straight line and the slope is the decay rate. Engineers choose axes to *linearize* the expected relationship, because a straight line is the easiest visual reference.
+
+### Tangent Line Preview (Calculus)
+
+At any point $(x_0,\, f(x_0))$ on a smooth curve, there is a unique line that touches the curve at that point and matches the curve's direction. This is the **tangent line**. Its slope is the **derivative** $f'(x_0)$, which calculus tells you how to compute. The tangent-line equation in point-slope form is
+
+$$y - f(x_0) = f'(x_0) \cdot (x - x_0).$$
+
+This is exactly the **linearization** from lesson 10, applied at the operating point $x_0$. Near $x_0$, the tangent line is the line that *best* approximates the curve, and almost all "small-signal" engineering analysis lives in this approximation.
+
+You do not yet know how to compute $f'(x_0)$ from a formula — that is calculus. But you can already *sketch* a tangent line at any point on a curve you can draw: lay a straightedge tangent to the curve at the point, and that is your tangent line. With practice, you can eyeball the tangent line's slope to two significant figures, and you have a graphical preview of what calculus will eventually let you compute symbolically.
+
+### Multiple Graphs: Overlays vs Small Multiples
+
+When you want to compare *two or more* functions, you have two options.
+
+- **Overlay** (multiple curves on shared axes). Use when the curves are directly comparable in both their input and output units — for example, two sensor calibrations on the same axes (voltage vs. pressure), or measured-versus-predicted curves. The overlay makes differences between curves visually salient.
+- **Small multiples** (separate panels at the same scale). Use when the curves are *not* directly comparable — different units, different ranges, different physical quantities — but you still want side-by-side comparison. A two-panel figure with battery voltage on the left and motor current on the right, both versus time, is a small-multiples plot.
+
+The rule of thumb: if two quantities live in the same units and same range, overlay them. If they live in different units or vastly different ranges, separate them into small multiples at matched scales. Edward Tufte, in *The Visual Display of Quantitative Information* (1983), argued that small multiples are one of the most underused techniques in scientific graphics.
+
+## Visual or Mental Model
+
+### The Cartesian Plane with Units
+
+Every engineering sketch begins with a labeled coordinate plane. *Every* axis carries units.
+
+```text
+   V (volts)
+    |
+  4 +
+    |
+  3 +
+    |
+  2 +
+    |
+  1 +
+    |
+  0 +-----+-----+-----+-----+----- d (cm)
+    0    10    20    30    40
+```
+
+The axes are labeled. The numerical scale is marked. The unit appears in parentheses after the variable name. Without these, the graph is useless — a sketch of $V$ vs. $d$ that does not say whether $d$ is in cm or m is ambiguous to the point of harmful.
+
+### A Line Sketch via Y-Intercept and Slope
+
+For $y = 2x - 3$, plot $(0, -3)$ on the y-axis. Use slope $2 = \tfrac{2}{1}$: from the anchor, go right $1$, up $2$, to $(1, -1)$.
+
+```text
+   y
+   |
+ 2 +                  /
+   |                /
+ 1 +              /
+   |            /
+ 0 +----------/-------- x
+   |        / (1, -1)
+-1 +      .
+   |    /
+-2 +  /
+   |/
+-3 . (0, -3)
+   |
+   +---+---+---+---+--- x
+   0   1   2   3   4
+```
+
+### A V-Shape for Absolute Value
+
+For $f(x) = |x - 3| + 1$, vertex at $(3, 1)$, arms of slope $\pm 1$.
+
+```text
+   y
+   |
+ 4 +  \                 /
+   |    \             /
+ 3 +      \         /
+   |        \     /
+ 2 +          \ /
+   |           V
+ 1 +           . (3, 1)  vertex
+   |
+ 0 +-----------+----------- x
+   0   1   2   3   4   5
+```
+
+### A Staircase for the Floor Function
+
+For $f(x) = \lfloor x \rfloor$ on $[0, 4)$:
+
+```text
+   y
+   |
+ 3 +            o---o
+   |
+ 2 +       o---o
+   |
+ 1 +  o---o
+   |
+ 0 o---o
+   +---+---+---+---+--- x
+   0   1   2   3   4
+```
+
+Each closed dot is at $(n, n)$; each open dot is at $(n+1, n)$. The function jumps up by $1$ at every integer.
+
+### A Heaviside Step
+
+For $u(t - 2)$:
+
+```text
+   y
+   |
+ 1 +                  *--------------
+   |
+   |
+   |
+ 0 ------------------o
+   +---+---+---+---+--- t (s)
+   0   1   2   3   4
+```
+
+Open circle at $(2, 0)$, closed circle at $(2, 1)$.
+
+### A Smooth Curve with Its Tangent
+
+A curve $y = f(x)$ with its tangent line at $x_0 = 2$:
+
+```text
+   y
+   |              tangent line ____
+   |          ____/         curve
+   |     ___/        \____
+   |    /                  \____
+   |   /                        \___
+   |  /
+   | /
+   +-----+-----+-----+--- x
+              x0 = 2
+```
+
+The tangent touches the curve at $x_0$ and has the same direction; near $x_0$, the line and the curve are nearly indistinguishable.
+
+### Linear vs Semilog vs Log-Log for an Exponential
+
+Plot $V(t) = 10 \cdot e^{-t/2}$ on three different axis choices, all of the same data:
+
+```text
+Linear-linear (curve):                   Semilog-y (straight line):
+   V                                        log V
+10 +.                                     +.
+   | .                                    |  .
+ 5 +    .                                 |    .
+   |       . .                            |      .
+ 0 +---------- . . . . . . .              |        .
+   +---+---+---+---+---+--- t             +---+---+---+--- t
+   0   2   4   6   8   10                 0   2   4   6
+```
+
+On semilog-y, the exponential decay becomes a straight line with negative slope — much easier to read the decay constant. Engineers prefer the linearizing axis whenever they can.
+
+## Worked Examples
+
+### Example (a) — Sketch $y = 2x - 3$
+
+Read off slope $m = 2$ and y-intercept $b = -3$. Plot $(0, -3)$ on the y-axis. Use slope $2 = \tfrac{2}{1}$: from $(0, -3)$ go right $1$ and up $2$ to $(1, -1)$. Connect the two dots with a straight line and extend. The x-intercept (where $y = 0$) is at $x = 1.5$, which you can verify by solving $0 = 2x - 3$.
+
+The resulting line slopes upward (positive slope), crosses the y-axis below the origin (negative intercept), and crosses the x-axis at $x = 1.5$.
+
+### Example (b) — The $d = 3t$ Table and Sketch
+
+Sketch the line $d = 3t$ on the interval $t \in [0,\, 4]$ s. This is the seed lesson's exercise. The slope-intercept reading is $m = 3$, $b = 0$ — a line through the origin with slope $3$.
+
+Build a tiny table to confirm the shape:
+
+| $t$ (s) | $d$ (m) |
+|---:|---:|
+| 0 | 0 |
+| 1 | 3 |
+| 2 | 6 |
+| 3 | 9 |
+| 4 | 12 |
+
+Plot the five points and confirm they fall on a straight line through the origin. The line's slope is $3$ m/s — a speed. So the equation $d = 3t$ describes an object moving at a constant $3$ m/s starting from the origin at $t = 0$.
+
+```text
+   d (m)
+12 +              .
+   |           .
+ 9 +        .
+   |     .
+ 6 +  .
+   |.
+ 3 +.
+   |
+ 0 +---+---+---+---+--- t (s)
+   0   1   2   3   4
+```
+
+The slope, with units, is $3$ m/s. That is the speed of the object. The y-intercept is $0$ — the object starts at the origin.
+
+### Example (c) — The Robot Position Spine Example
+
+A robot's logged position goes from $2$ m at $t = 1$ s to $8$ m at $t = 4$ s. Sketch the position-vs-time graph and interpret.
+
+Compute the slope between the two known points:
+
+$$m = \frac{8\,\text{m} - 2\,\text{m}}{4\,\text{s} - 1\,\text{s}} = \frac{6\,\text{m}}{3\,\text{s}} = 2\,\text{m/s}.$$
+
+The robot's average speed over this interval is $2$ m/s. Using point-slope form (lesson 11) anchored at $(1, 2)$:
+
+$$d - 2 = 2 \cdot (t - 1), \quad \text{i.e.,} \quad d = 2 t + 0.$$
+
+So the line passes through the origin with slope $2$. Sketch:
+
+```text
+   d (m)
+10 +
+   |
+ 8 +              .  (4, 8)
+   |           .
+ 6 +        .
+   |     .
+ 4 +  .
+   |.
+ 2 +. (1, 2)
+   |
+ 0 +---+---+---+---+--- t (s)
+   0   1   2   3   4
+```
+
+Engineering interpretation: a straight position-vs-time line means *constant speed*. The slope is the speed, with units $2$ m/s. The y-intercept is $0$ — the robot was at the origin at $t = 0$, before either logged measurement. If the line were not straight — if the position-vs-time graph curved — then the speed would be changing (acceleration), and the slope at any instant would be the *instantaneous* speed at that instant.
+
+### Example (d) — The Sensor Calibration $V(d) = 0.02 d + 0.5$
+
+A distance sensor outputs voltage as a linear function of measured distance: $V = 0.02 d + 0.5$, with $V$ in volts and $d$ in cm. Sketch the calibration curve.
+
+Read off: slope $m = 0.02$ V/cm, y-intercept $b = 0.5$ V. Plot $(0, 0.5)$ on the y-axis. Pick a convenient second point: at $d = 50$ cm, $V = 0.02 \cdot 50 + 0.5 = 1.5$ V. Connect.
+
+```text
+   V (volts)
+ 2.5 +
+     |
+ 2.0 +
+     |                                .
+ 1.5 +                            .   (50, 1.5)
+     |                        .
+ 1.0 +                   .
+     |                .
+ 0.5 +.                             (0, 0.5) y-intercept
+     |
+ 0.0 +---+---+---+---+---+---+--- d (cm)
+     0  10  20  30  40  50  60
+```
+
+Engineering interpretation: at $d = 0$, the sensor outputs $0.5$ V (an electrical offset, not a measurement error per se — datasheets typically calibrate this out in firmware). As distance increases, the voltage rises linearly at $0.02$ V/cm. To recover distance from a measured voltage, invert: $d = (V - 0.5) / 0.02$.
+
+This is the calibration model you will see, in some form, in every analog sensor's datasheet.
+
+### Example (e) — Sketch $f(x) = |x - 3| + 1$
+
+The vertex is at $(3, 1)$. Arms slope $+1$ to the right and $-1$ to the left.
+
+Plot $(3, 1)$. From the vertex, right arm: go right $1$ and up $1$ to $(4, 2)$, right $2$ and up $2$ to $(5, 3)$. Left arm: go left $1$ and up $1$ to $(2, 2)$, left $2$ and up $2$ to $(1, 3)$. Connect each arm to the vertex.
+
+```text
+   y
+   |
+ 4 +.                       .
+   | \                     /
+ 3 + .                   .
+   |  \                 /
+ 2 +   .              .
+   |    \            /
+ 1 +     . . . . . .            (3, 1) vertex
+   |
+ 0 +---+---+---+---+---+---+--- x
+   0   1   2   3   4   5   6
+```
+
+The function attains its minimum value $1$ at $x = 3$ (the vertex). The graph is *not differentiable* at the vertex — there is a corner — but it is continuous everywhere.
+
+### Example (f) — Sketch the Heaviside Step $u(t - 2)$
+
+Flat at $0$ for $t < 2$. Open circle at $(2, 0)$. Closed circle at $(2, 1)$. Flat at $1$ for $t \ge 2$.
+
+```text
+   u
+   |
+ 1 +                  *-----------------
+   |                  (2, 1)
+   |
+   |
+ 0 ------------------o
+                     (2, 0)
+   +---+---+---+---+---+--- t (s)
+   0   1   2   3   4   5
+```
+
+Engineering interpretation: a control signal that is off until $t = 2$ s, then on at value $1$. The jump at $t = 2$ is *idealized* — no physical signal can rise instantly — but the Heaviside step is the right idealization for analyzing how systems respond to a sudden command.
+
+### Example (g) — A Piecewise Saturating Amplifier
+
+An amplifier produces output $y$ as a piecewise function of input $x$:
+
+$$y = \begin{cases} 2x & \text{if } 0 \le x \le 5, \\ 10 & \text{if } x > 5. \end{cases}$$
+
+On the first piece, the output is linear with slope $2$, starting at the origin. On the second piece, the output is saturated at $10$, regardless of how much larger $x$ becomes. The boundary is at $x = 5$; at that point, the first rule gives $y = 10$ and the second rule also gives $y = 10$, so the function is *continuous* at the corner (no jump). The slope changes abruptly from $2$ to $0$ — a corner, not a jump.
+
+Sketch:
+
+```text
+   y
+   |
+10 +              .------------------     saturated regime
+   |          .  *  (5, 10) corner
+ 8 +       .
+   |     .
+ 6 +   .
+   |  .                                    linear regime
+ 4 +.
+   |.
+ 2 +.
+   |.
+ 0 +---+---+---+---+---+---+---+--- x
+   0   1   2   3   4   5   6   7
+```
+
+Engineering interpretation: this is the canonical input-output curve of a saturating amplifier — linear in the design range and clamped at the rail beyond it. The same shape appears in op-amp outputs, ADC inputs, and rate-limited control commands.
+
+### Example (h) — Exponential Decay on Linear vs Semilog Axes
+
+Consider $V(t) = 10 \cdot e^{-t/2}$ on $t \in [0, 10]$ s. Lessons on exponentials and logarithms come later, but a preview here is useful.
+
+On **linear-linear** axes, the curve drops sharply at first and then flattens, asymptoting to $0$:
+
+```text
+   V (volts)
+10 +.
+   | .
+ 8 +  .
+   |   .
+ 6 +    .
+   |      .
+ 4 +        .
+   |           .
+ 2 +              . . .
+   |                     . . . . . .
+ 0 +---+---+---+---+---+--- t (s)
+   0   2   4   6   8  10
+```
+
+On **semilog-y** axes (where the y-axis is logarithmic), the same data becomes a *straight line*:
+
+```text
+   log V
+10 +.
+   | \.
+   |   \.
+ 1 +     \.
+   |       \.
+   |         \.
+0.1+           \.
+   |
+   +---+---+---+---+---+--- t (s)
+   0   2   4   6   8  10
+```
+
+The slope of the straight line on semilog-y is $-1/(2 \ln 10) \approx -0.217$ per second (in $\log_{10}$ units), and the y-intercept is $\log_{10}(10) = 1$. The decay constant is $\tau = 2$ s, read directly off the slope.
+
+Engineering lesson: whenever you suspect an exponential, plot on semilog-y *first*. If the data falls on a straight line, you have confirmed the exponential and read off its rate constant in one move.
+
+### Example (i) — Failure Mode: Linear Function Drawn as a Curve
+
+A student is asked to sketch $y = 2x - 3$. They correctly plot two points: $(0, -3)$ and $(1, -1)$. But when they connect them, they draw a gentle curve rather than a straight line, because they "want it to look more natural."
+
+**Diagnose**: $y = 2x - 3$ is a linear function. By definition, its graph is a *straight line*. If the connecting curve is anything but straight, the sketch is wrong. The fix is to use a ruler, or to be more disciplined about a freehand straight line.
+
+The deeper lesson is that the *shape* of the graph encodes information. A linear function has the unique signature of being straight; an absolute-value function has the signature of a V; an exponential has the signature of a smooth curve that bends always in one direction. If you draw the wrong shape, you have miscommunicated the function.
+
+### Example (j) — Failure Mode: Missing Axis Labels
+
+A student plots a sensor's voltage versus time and produces a beautiful curve — but the y-axis is labeled only "voltage" with no unit, and the x-axis is labeled only "time" with no unit. The professor asks, "what is the slope?"
+
+**Diagnose**: the student can compute a *numerical* slope by reading rise over run from the gridlines, but the *units* of the slope are unknowable. Is the time axis in milliseconds or seconds? Is the voltage axis in volts or millivolts? The slope might be $1.5$ V/s, or $1.5$ mV/ms (which is also $1.5$ V/s), or $1.5$ V/ms (which is $1500$ V/s), or any other combination. *Without units on the axes, the slope is meaningless.*
+
+The fix is non-negotiable: *every engineering graph carries unit labels on both axes*. The convention is variable name followed by units in parentheses: `time (s)`, `voltage (V)`, `current (mA)`, `position (m)`, `temperature (°C)`. Failing this single discipline destroys the interpretive value of the entire graph.
+
+### Example (k) — Reading Engineering Evidence from a Provided Graph
+
+A control engineer hands you a step-response trace: output $V_\text{out}(t)$ versus time $t$ after a step command of $1$ V at $t = 0$. The trace rises smoothly from $0$, overshoots to $1.4$ V around $t = 0.5$ s, oscillates with decaying amplitude, and settles to $1.0$ V around $t = 2.5$ s.
+
+Read off the features:
+
+- **Steady-state value** (horizontal asymptote): $1.0$ V. The system tracks the commanded value with no offset.
+- **Peak overshoot**: $1.4$ V at $t \approx 0.5$ s, i.e., $40\%$ above the setpoint.
+- **Settling time**: about $2.5$ s (when the trace stays within a small band of the setpoint).
+- **Damping**: underdamped — the system rings before settling. If the damping ratio were larger, the trace would rise monotonically with no overshoot.
+
+You have read four quantitative diagnostics off a single trace, none of which required a calculation. This is the engineering payoff of fluent graph reading: a glance at the sketch tells you the system's qualitative health.
+
+## Engineering Connections
+
+The graph-reading skill you have been practicing is the daily vocabulary of working engineering. A list of specific places it shows up:
+
+**Oscilloscope traces.** Every oscilloscope display is a voltage-vs-time graph. The slope $dV/dt$ at any point is a rate of voltage change (volts per second). Horizontal segments are constant-voltage holds. Sharp vertical jumps are edges (rising or falling). Cursors on the scope read out exact slopes and time intervals — but you should always *sketch the expected trace first*, so the actual trace surprises you only when something is wrong.
+
+**Bode plots.** A Bode plot is a pair of log-log graphs: magnitude (in decibels) vs. frequency, and phase (in degrees) vs. frequency. The magnitude axis is in dB (a logarithmic unit), and the frequency axis is logarithmic. A first-order low-pass filter has a flat magnitude region at low frequency, a $-3$ dB point at the cutoff frequency, and a $-20$ dB/decade roll-off at higher frequencies. Sketching the Bode plot from the filter's pole locations is a standard analog-design move.
+
+**ML training-loss curves.** Plot training loss and validation loss versus epoch on the same axes (overlay). Training loss should decrease monotonically. Validation loss should decrease, plateau, and eventually *rise* if the model overfits. The gap between the two curves at any epoch is the overfitting margin. Most ML engineers watch this plot in real time during training.
+
+**PID step response.** Plot output vs. time after a unit step command. Read off: rise time, peak overshoot, settling time, steady-state error. Each is a property the controller is supposed to meet. A bad PID tune is immediately visible as either sluggish (overdamped) or oscillatory (underdamped) response.
+
+**Battery discharge curves.** Plot voltage vs. time at constant load. The middle of the curve is roughly linear with a small negative slope — sketch it as a slope-intercept line and read off the discharge rate in V/hour. The "knees" at the top (full charge) and bottom (near-empty) are where the curve deviates from linear; those are the regimes where simple linear models break down.
+
+**Sensor calibration curves.** Plot output vs. input. Linearity is visible as straightness; departure from a straight line is non-linearity. Engineers often plot the *residual* (measurement minus best-fit line) on a separate axis to make non-linearity visible at much smaller scales than the calibration curve itself would reveal.
+
+**Pareto frontier (design tradeoffs).** Plot one performance metric vs. another (range vs. payload, accuracy vs. latency, weight vs. strength). The boundary of feasible designs is the Pareto frontier — a curve that you sketch from candidate design points. Designs *on* the frontier are optimal in the tradeoff sense; designs *inside* the frontier are dominated and should be improved or discarded.
+
+**Root locus (preview).** Plot the locations of a control system's closed-loop poles in the complex plane as a parameter (typically the feedback gain) varies. The result is a set of curves emanating from the open-loop pole positions. Stability requires all poles to remain in the left half-plane; the root locus shows which gains keep them there.
+
+**Network latency vs. payload size.** Plot round-trip latency vs. message size on log-log axes. Below the network's MTU you see one slope; above it you see a discontinuous jump as fragmentation kicks in. The shape of the curve diagnoses where in the stack latency is dominated by serialization, by transmission, or by buffering.
+
+In every one of these contexts, the engineer's reflex is the same: sketch the expected curve from first principles, plot the measured data, and let the discrepancy guide the investigation.
+
+## Practice Set
+
+### Warmups — Sketching from Equations
+
+For each, describe the resulting sketch in one or two sentences: anchor point(s), slope or vertex, and direction.
+
+1. Sketch $y = 3x - 2$.
+2. Sketch $y = -x + 4$.
+3. Sketch $y = \tfrac{1}{2} x$.
+4. Sketch $y = -5$ (a horizontal line).
+5. Sketch the standard-form line $3x + 2y = 12$ by intercepts.
+6. Sketch $f(x) = |x - 2|$.
+7. Sketch $f(x) = |x + 1| - 3$.
+8. Sketch the Heaviside step $u(t - 3)$.
+9. Sketch the floor function $\lfloor x \rfloor$ on $x \in [-1, 3)$.
+10. Sketch the piecewise function $f(x) = \begin{cases} x & \text{if } 0 \le x < 2, \\ 2 & \text{if } x \ge 2. \end{cases}$ Identify the corner.
+
+### Applied (Engineering Sketches)
+
+11. A drone's altitude follows $h(t) = 2t + 5$ for $0 \le t \le 10$ s, with $h$ in meters. Sketch $h(t)$. What is the climb rate? What is the initial altitude?
+
+12. A capacitor's voltage during charging follows $V(t) = 5 (1 - e^{-t/3})$, with $V$ in volts and $t$ in seconds. Sketch the curve qualitatively. What is the steady-state voltage? What feature would let you read the time constant $\tau = 3$ s off the sketch?
+
+13. A pressure sensor's calibration is $V = 0.04 p + 0.6$ with $V$ in volts and $p$ in psi. Sketch the calibration on a graph with $p$ from $0$ to $100$ psi. What are the slope and intercept, with units?
+
+14. A motor's torque-speed curve is $\tau = -0.01 \omega + 0.5$ with $\tau$ in N·m and $\omega$ in rpm. Sketch the curve from $\omega = 0$ to $\omega = 50$ rpm. What is the stall torque (torque at $\omega = 0$)? What is the no-load speed (speed at $\tau = 0$)?
+
+15. A power-amplifier output saturates at $\pm 10$ V. Below $\pm 10$ V, the amplifier is linear with gain $5$. Sketch $V_\text{out}$ vs. $V_\text{in}$ for $V_\text{in}$ from $-4$ V to $+4$ V.
+
+### Reading Graphs
+
+For each verbally-described graph, identify the slope (with units), the y-intercept, and any other key features.
+
+16. A line goes from $(0, 10)$ to $(5, 0)$, with the x-axis labeled `time (s)` and the y-axis labeled `voltage (V)`.
+
+17. A curve starts at $(0, 0)$, rises with decreasing slope, and asymptotes to $y = 5$ as $x \to \infty$. The x-axis is `time (s)` and the y-axis is `temperature (°C)`. What physical scenario could this represent?
+
+18. A graph shows a V-shape with vertex at $(4, 1)$ and arms of slope $\pm 2$. The x-axis is `time (s)` and the y-axis is `position error (m)`. What does this say about the system?
+
+### Error-Spotting
+
+19. A student sketches $y = 2x + 3$ and labels the y-intercept as $2$ and the slope as $3$. Diagnose.
+
+20. A student sketches the Heaviside step $u(t - 1)$ and draws a closed circle at $(1, 0)$ and an open circle at $(1, 1)$. Diagnose.
+
+### Challenge
+
+21. You measure the output of a sensor at many input levels. On linear-linear axes, the data looks like a curve that gets steeper at high inputs. On semilog-y axes, the data looks like a straight line. What function form does the data follow, and how do you read the parameters off the semilog plot?
+
+22. Sketch the piecewise function $f(x) = |x| + \lfloor x \rfloor$ on $x \in [-2, 3)$. (Compose: at every integer there is a vertical jump from the floor function; elsewhere the function follows the absolute value plus the current floor level.) Where are the discontinuities?
+
+### Answers
+
+1. Anchor $(0, -2)$. Slope $3$: right $1$, up $3$ to $(1, 1)$. Line slopes upward.
+2. Anchor $(0, 4)$. Slope $-1$: right $1$, down $1$ to $(1, 3)$. Line slopes downward.
+3. Through the origin. Slope $\tfrac{1}{2}$: right $2$, up $1$ to $(2, 1)$.
+4. Horizontal line at $y = -5$. No slope (slope is $0$).
+5. x-intercept at $(4, 0)$, y-intercept at $(0, 6)$. Connect.
+6. V-shape with vertex at $(2, 0)$, arms of slope $\pm 1$.
+7. V-shape with vertex at $(-1, -3)$, arms of slope $\pm 1$.
+8. Flat at $0$ for $t < 3$, open circle at $(3, 0)$, closed circle at $(3, 1)$, flat at $1$ for $t \ge 3$.
+9. Staircase at heights $-1, 0, 1, 2$ on intervals $[-1, 0), [0, 1), [1, 2), [2, 3)$. Closed dot on left, open dot on right of each tread.
+10. Line of slope $1$ from $(0, 0)$ to $(2, 2)$, then horizontal at $y = 2$. Corner at $(2, 2)$; function is continuous.
+11. Climb rate $2$ m/s (the slope). Initial altitude $5$ m (the y-intercept).
+12. Steady-state $V_\infty = 5$ V (the horizontal asymptote). The time constant $\tau$ is the time at which $V$ reaches about $63\%$ of $V_\infty$, i.e., $V(\tau) = 5(1 - e^{-1}) \approx 3.16$ V. Reading the time at which the curve hits $\approx 3.16$ V gives $\tau \approx 3$ s.
+13. Slope $0.04$ V/psi, intercept $0.6$ V. At $p = 100$ psi, $V = 4.6$ V.
+14. Stall torque $0.5$ N·m. No-load speed: $0 = -0.01 \omega + 0.5 \Rightarrow \omega = 50$ rpm. Line slopes down from $(0, 0.5)$ to $(50, 0)$.
+15. Linear with slope $5$ for $-2 \le V_\text{in} \le 2$ (since $5 \cdot 2 = 10$ is the saturation), saturating flat at $\pm 10$ V outside that input range.
+16. Slope $= (0 - 10)/(5 - 0) = -2$ V/s. Y-intercept $10$ V. The voltage is decreasing at $2$ V/s — possibly a discharging capacitor or a falling battery voltage.
+17. A saturating exponential rise. Steady-state $5$ °C. Could be a thermistor reaching equilibrium with a $5$ °C environment from an initial $0$ °C.
+18. The position error magnitude increases linearly with rate $2$ m/s on each side of $t = 4$ s. At $t = 4$ s, the error is at its minimum $1$ m — the system is closest to tracking but never reaches zero error.
+19. The labels are swapped. In $y = 2x + 3$, slope is the coefficient of $x$ (which is $2$), and y-intercept is the constant term (which is $3$). Student inverted them.
+20. The circles are reversed. The Heaviside step $u(t - 1)$ has the value $0$ for $t < 1$ and the value $1$ for $t \ge 1$ (inclusive), so the closed circle belongs at $(1, 1)$ and the open circle at $(1, 0)$.
+21. An exponential, $y = A e^{kx}$. On semilog-y, $\log_{10} y = \log_{10} A + k x \log_{10} e$, a straight line. The y-intercept (on the log axis) is $\log_{10} A$; the slope is $k \log_{10} e$, from which you can solve for $k$. If $k < 0$, you have exponential decay.
+22. The function $|x| + \lfloor x \rfloor$ has a jump of $+1$ at every integer (from the floor function) on top of the V from $|x|$. So at every integer $n$, the value jumps up by $1$. Between integers, the function is linear with slope $+1$ for $x > 0$ and slope $-1$ for $x < 0$ (from the absolute value; the floor is constant between integers). Discontinuities are at every integer $n$.
 
 ## Build Task
 
-Write a tiny script that prints a table of time and distance for a constant-speed robot. Stretch goal: plot it.
+Build a small Python utility `sketch_function` that plots a function over a specified range, labels axes with units, and (optionally) marks key features. Then apply it to five engineering scenarios you have already met in this lesson.
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def sketch_function(f, x_range, ax_labels=("x", "y"), title=None, *,
+                    features=None, ax=None, log_y=False, log_x=False):
+    """Sketch a single function f over x_range.
+
+    Parameters
+    ----------
+    f : callable
+        The function to plot. Must accept a numpy array and return a numpy
+        array of the same shape.
+    x_range : tuple (x_min, x_max)
+        The horizontal range to plot.
+    ax_labels : tuple (xlabel, ylabel)
+        Strings to display on the axes, including units in parentheses, e.g.
+        ("time (s)", "voltage (V)").
+    title : str, optional
+        Title for the plot.
+    features : list of (x, y, label) tuples, optional
+        Points to mark on the plot (e.g., intercepts, vertex).
+    ax : matplotlib axis, optional
+        If provided, plot onto this axis instead of creating a new figure.
+    log_y, log_x : bool
+        Use a log scale on the y or x axis.
+
+    Returns
+    -------
+    ax : matplotlib axis with the sketch drawn.
+    """
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(6, 4))
+
+    xs = np.linspace(x_range[0], x_range[1], 400)
+    ys = f(xs)
+
+    ax.plot(xs, ys, linewidth=2)
+    ax.axhline(0, color="gray", linewidth=0.5)
+    ax.axvline(0, color="gray", linewidth=0.5)
+    ax.set_xlabel(ax_labels[0])
+    ax.set_ylabel(ax_labels[1])
+    if title is not None:
+        ax.set_title(title)
+    if log_y:
+        ax.set_yscale("log")
+    if log_x:
+        ax.set_xscale("log")
+    if features:
+        for fx, fy, label in features:
+            ax.plot(fx, fy, "ro")
+            ax.annotate(label, xy=(fx, fy), xytext=(5, 5),
+                        textcoords="offset points", fontsize=9)
+    ax.grid(True, alpha=0.3)
+    return ax
+
+
+# ---- Five engineering scenarios ----
+
+# Scenario 1: the robot position spine example.
+def robot_position(t):
+    return 2.0 * t
+
+sketch_function(
+    robot_position, (0, 5),
+    ax_labels=("time (s)", "position (m)"),
+    title="Robot position vs. time (slope = speed = 2 m/s)",
+    features=[(1, 2, "(1, 2)"), (4, 8, "(4, 8)")],
+)
+plt.savefig("robot_position.png", dpi=150)
+plt.close()
+
+
+# Scenario 2: the d = 3t exercise.
+def constant_speed(t):
+    return 3.0 * t
+
+sketch_function(
+    constant_speed, (0, 4),
+    ax_labels=("time (s)", "distance (m)"),
+    title="d = 3t (slope = 3 m/s)",
+)
+plt.savefig("d_equals_3t.png", dpi=150)
+plt.close()
+
+
+# Scenario 3: the sensor calibration V = 0.02 d + 0.5.
+def sensor_calibration(d):
+    return 0.02 * d + 0.5
+
+sketch_function(
+    sensor_calibration, (0, 100),
+    ax_labels=("distance (cm)", "voltage (V)"),
+    title="Distance sensor calibration: V = 0.02 d + 0.5",
+    features=[(0, 0.5, "intercept 0.5 V")],
+)
+plt.savefig("sensor_calibration.png", dpi=150)
+plt.close()
+
+
+# Scenario 4: an exponential decay V(t) = 10 * exp(-t / 2),
+# shown on linear and semilog-y axes side by side (small multiples).
+def decay(t):
+    return 10.0 * np.exp(-t / 2.0)
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+sketch_function(
+    decay, (0, 10),
+    ax_labels=("time (s)", "voltage (V)"),
+    title="Linear-linear axes",
+    ax=axes[0],
+)
+sketch_function(
+    decay, (0, 10),
+    ax_labels=("time (s)", "voltage (V), log scale"),
+    title="Semilog-y axes (straight line)",
+    ax=axes[1],
+    log_y=True,
+)
+plt.tight_layout()
+plt.savefig("decay_lin_vs_semilog.png", dpi=150)
+plt.close()
+
+
+# Scenario 5: ML training-loss curve (qualitative).
+def training_loss(epoch):
+    return 1.0 / (1.0 + 0.5 * epoch) + 0.05
+
+def validation_loss(epoch):
+    base = 1.0 / (1.0 + 0.5 * epoch) + 0.05
+    # Overfitting: validation loss rises after epoch ~15.
+    overfit = np.maximum(0, 0.02 * (epoch - 15))
+    return base + overfit
+
+epochs = np.linspace(0, 40, 200)
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(epochs, training_loss(epochs), label="train loss", linewidth=2)
+ax.plot(epochs, validation_loss(epochs), label="val loss", linewidth=2, linestyle="--")
+ax.axvline(15, color="gray", linewidth=0.7, linestyle=":")
+ax.annotate("overfitting starts", xy=(15, 0.15), xytext=(18, 0.4),
+            arrowprops=dict(arrowstyle="->"))
+ax.set_xlabel("epoch")
+ax.set_ylabel("loss")
+ax.set_title("Training vs. validation loss")
+ax.legend()
+ax.grid(True, alpha=0.3)
+plt.savefig("ml_training_loss.png", dpi=150)
+plt.close()
+
+print("Wrote: robot_position.png, d_equals_3t.png, sensor_calibration.png,")
+print("       decay_lin_vs_semilog.png, ml_training_loss.png")
+```
+
+**Stretch goals.**
+
+- Add an absolute-value scenario: sketch $f(x) = |x - 3| + 1$ and mark the vertex.
+- Add a Heaviside scenario: sketch a control input that switches on at $t = 2$ s.
+- Add a Bode-plot scenario: sketch the magnitude (in dB) of a first-order low-pass filter $|H(j\omega)| = 1 / \sqrt{1 + (\omega/\omega_c)^2}$ on log-log axes with $\omega_c = 10$ rad/s, and verify the $-20$ dB/decade roll-off.
+- Add a `sketch_two(f, g, ...)` overlay function and a `sketch_grid(funcs, ...)` small-multiples function. Demonstrate the difference by plotting (a) two sensor calibrations on the same axes, and (b) a sensor calibration alongside a battery discharge on separate panels.
 
 ## Quiz
 
-1. What is a function?
-2. What does slope measure?
-3. In a position-time graph, what does slope represent?
-4. Why are graphs useful for sensors and simulations?
+1. Why does a line drawn from $y = mx + b$ only require two points — not a full table?
+2. What does monotonicity tell you about a function? How is it a preview of calculus?
+3. When is the right time to switch from a linear-linear axis to a semilog-y axis? To a log-log axis?
+4. What is the difference between *sketching* and *plotting precise data*? Which one belongs in a design review, and which in a publication?
+5. Why are unit labels on axes non-negotiable in engineering graphs?
+6. State the procedure for sketching the line $A x + B y = C$ by intercepts. When does the procedure fail?
+7. What is the visual signature of an exponential function on linear-linear axes? On semilog-y axes? Which is easier to read the decay constant from, and why?
+8. A graph shows a smooth curve passing through the point $(2, 5)$ with a tangent line at that point of slope $-1$. Write the equation of the tangent line. Why is this a useful approximation near $x = 2$?
+
+**Answers (compressed).** (1) Two points determine a unique line, so once you have plotted the y-intercept and stepped to a second point via the slope, you are done. A table of values is redundant. (2) Monotonicity tells you whether the function is increasing, decreasing, or constant on an interval. It previews the *sign of the derivative*: positive slope means increasing, negative slope means decreasing, zero slope means constant. (3) Switch to semilog-y when the y-values span many orders of magnitude or when you expect an exponential relationship (which becomes a straight line on semilog-y). Switch to log-log when both axes span many orders of magnitude or when you expect a power law $y = A x^n$ (which becomes a straight line on log-log). (4) Sketching is fast, freehand, and qualitative — it captures shape and key features. Plotting precise data is careful, scaled, and quantitative — it captures the actual numbers. Sketching belongs at the whiteboard and napkin level (design reviews, hallway conversations); plotted data belongs in formal documentation and publications. (5) Because the slope of a line on an unlabeled graph is dimensionally meaningless. A slope of "1.5" could be V/s or V/ms or m/hr — interpretation is impossible without units. (6) Set $x = 0$ to find the y-intercept; set $y = 0$ to find the x-intercept; plot both and connect. Fails when $C = 0$ (line through origin — both intercepts are the same point) or when $A = 0$ or $B = 0$ (a horizontal or vertical line). (7) On linear-linear, an exponential decay is a smooth curve that flattens toward a horizontal asymptote — visually it looks like "fast at first, slow later." On semilog-y, it is a straight line — slope-readable. The semilog version makes the decay constant directly readable as the slope, whereas the linear-linear version requires either a calculation or an eye estimate of the time at which the curve hits about 37% of its initial value. (8) Tangent line: $y - 5 = -1 \cdot (x - 2)$, i.e., $y = -x + 7$. Near $x = 2$, this line approximates the curve to first order — for small displacements from $x = 2$, the line and the curve agree to high precision. This is the linearization preview of calculus.
 
 ## Proof of Completion
 
-Submit the table, graph, script, and a short interpretation of what the graph says physically.
+You have finished this lesson when you can:
 
-## Next Lesson
+- Sketch any of the function types from lesson 8 — linear, absolute value, piecewise, Heaviside step, floor — directly from the equation, without consulting notes, in under thirty seconds per sketch.
+- Read off slope (with units), intercepts, monotonicity, and asymptotic behavior from a sketched graph.
+- Choose linear-linear, semilog-y, or log-log axes appropriately for a given function or dataset, and justify the choice.
+- Sketch a tangent line at a chosen point on a smooth curve, and identify its slope qualitatively as the local rate of change.
+- Commit the `sketch_function` utility from the Build Task, together with five engineering-scenario sketches: the robot position $d(t) = 2t$, the $d = 3t$ exercise, the sensor calibration $V = 0.02 d + 0.5$, the exponential decay on linear vs semilog axes, and the ML training-loss curve.
 
-Algebra for Engineering Systems.
+Push `sketch_function.py` and the five PNG outputs to your curriculum repository. In a one-paragraph note, identify for each scenario the slope (with units), the y-intercept (with units), and any key features (asymptotes, corners, jumps) visible in the sketch.
+
+## Sources and Further Study
+
+- **Serge Lang, *Basic Mathematics*, chapters on graphing functions.** Lang's treatment of coordinate geometry and elementary curves is rigorous and brief — a good complement to the more applied approach taken here.
+- **James Stewart, *Calculus*, chapter 1.** Reviews lines, functions, and graphing, with the introduction to tangent lines that motivates the derivative. Stewart's worked examples for sketching by hand are excellent.
+- **Edward Tufte, *The Visual Display of Quantitative Information* (1983).** The foundational reference on small multiples, data-ink, and the visual rhetoric of statistical graphics. (Treated in more depth in lesson 18.)
+- **John W. Tukey, *Exploratory Data Analysis* (1977).** The classic argument for sketching as a primary tool of analysis. Tukey's stem-and-leaf plots, box plots, and residual sketches are foundational. Read the first chapter even if you do not work through the whole book.
+- **Gilbert Strang, *Calculus* (free PDF from MIT OCW).** Strang's treatment of graph reading and tangent lines is unusually crisp; chapter 2 covers the tangent line and the derivative as a slope.
+- **MIT OpenCourseWare 18.01, *Single Variable Calculus*, lectures 1–2.** Professor David Jerison's first two lectures cover lines, slopes, and the tangent-line approximation — exactly the bridge from this lesson into calculus.
+- **René Descartes, *La Géométrie* (1637), modern English translation (Project Gutenberg).** Read the first 20 pages to see analytic geometry being invented.
+- **William Playfair, *The Commercial and Political Atlas* (1786).** The original line graphs of time-series economic data. Worth at least browsing for the historical experience of seeing the conventions being established.
+- **matplotlib documentation.** The official tutorial on `pyplot`, `Axes`, and `Figure` is the working reference for the build task. The "tight_layout" and "small multiples" examples are particularly useful.
+- **Cleveland and McGill (1984), "Graphical perception."** The foundational empirical paper on which graph types best convey numerical comparisons. The detailed treatment is in lesson 18; for now, know that position-on-a-common-scale (the basic line graph) tops the perception ladder.
+
+## Next Lesson Bridge
+
+Every function you have learned to sketch in this lesson is a *single equation* in two variables — one input, one output, one curve in the plane. But real engineering systems are rarely described by a single equation. A drone's flight dynamics involve six coupled equations of motion. A two-loop circuit involves two simultaneous Kirchhoff's-voltage-law equations. A robot's inverse kinematics involves as many equations as the robot has joints.
+
+The next lesson, *Algebra for Engineering Systems* (lesson 14), introduces **systems of linear equations** — what happens when you have *two or more equations at once* in two or more unknowns. The geometric picture you have built in this lesson generalizes immediately: a single linear equation in $x$ and $y$ is *one line* in the plane; *two* linear equations in $x$ and $y$ are *two lines* in the plane, and their solution — if it exists — is the unique point where the two lines *intersect*.
+
+That single observation — that *the solution of a $2 \times 2$ linear system is the intersection point of two lines* — is the geometric heart of all of linear algebra. Lesson 14 will teach you how to find that intersection point algebraically (by substitution and by elimination), how to recognize when no solution exists (parallel lines that never meet), how to recognize when infinitely many solutions exist (two identical lines), and how to generalize to three or more unknowns. From there, the path to matrix algebra, linear regression, and the everyday computational tools of modern engineering is short and direct. Your fluency in sketching single lines, built in lessons 9 through 13, is the visual foundation that makes all of that material intuitive.

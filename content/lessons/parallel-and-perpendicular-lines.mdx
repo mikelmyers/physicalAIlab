@@ -1,0 +1,624 @@
+# Parallel and Perpendicular Lines
+
+## Re-entry Promise
+
+This lesson closes the loop on the linear-equations arc. You have spent eleven lessons climbing here: you can solve and rearrange (lessons 1-5), reason about units (lesson 6), think functionally (lessons 7-8), pull a slope and an intercept out of a graph or a pair of points (lesson 9), and write the equation of a line in all three canonical forms — slope-intercept, point-slope, and standard (lessons 10-11). What is left is the *geometric relationship* between two lines.
+
+This lesson assumes lessons 1 through 11. It does not assume that you remember the slope-product rule for perpendicularity, that you can build a perpendicular line through a given point in one pass, or that you have ever connected the standard-form coefficients $(A, B)$ to the geometry of perpendicular vectors. We will build all of that from scratch and use it to do real engineering layout.
+
+By the end you will know exactly when two lines are parallel, exactly when they are perpendicular, and how to construct one or the other through a given point. You will recognize the horizontal-vertical pair as the special case where the slope-product rule fails but the geometry still works. And you will see the first hint of a deeper idea — *orthogonality* — that the next sub-module (Geometry, Trig & Vectors) will generalize from slopes of two lines to the dot product of two vectors in any dimension.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Identify when two lines are **parallel** from their equations by comparing slopes ($m_1 = m_2$).
+- Identify when two lines are **perpendicular** by checking the slope product ($m_1 \cdot m_2 = -1$).
+- Construct the equation of a line **parallel** to a given line through a given point, using point-slope form.
+- Construct the equation of a line **perpendicular** to a given line through a given point, using the negative-reciprocal slope.
+- Recognize the **horizontal-vertical** pair as the special case of perpendicularity where the slope-product rule breaks (one slope is undefined) but the geometry is still exact.
+- Read parallel and perpendicular relationships off **standard form** $Ax + By = C$ by comparing the $(A, B)$ coefficients, which foreshadows the normal-vector interpretation.
+- Apply slope relationships to engineering layouts: orthogonal coordinate frames in CAD, perpendicular approach directions for robot end-effectors, optical normals, drone grid-search patterns, surveying offsets.
+- Preview the **vector** notion of perpendicularity: two vectors are perpendicular iff their dot product is zero — the $n$-dimensional generalization of $m_1 \cdot m_2 = -1$.
+
+## Why It Matters
+
+Parallel and perpendicular relationships are the *default geometry* of every built thing. Curved layouts exist (lenses, gears, splines) but they are the exception; rectangular grids, orthogonal frames, and right-angled joints are the rule. A short list of contexts where these relationships are the working language:
+
+1. **CAD/CAM drawings.** Every mechanical drawing is built on orthogonal axes. A dimension call-out like "5.00 mm from the left edge" implicitly assumes "measured perpendicular to that edge." Walls, holes, slots, threads, mating surfaces — almost every feature is defined by parallel and perpendicular relationships to a reference datum.
+
+2. **Robotics end-effector orientation.** When a robotic arm drills a hole, sands a surface, or applies a sealant, the tool must approach the workpiece *perpendicular to the surface* (along the surface normal). Force-controlled tasks like polishing depend on knowing the perpendicular direction at every contact point.
+
+3. **Architecture and civil engineering.** Walls are perpendicular to floors; beams are perpendicular to columns; foundation footings are perpendicular to the ground load they carry. Buildings whose components are not properly orthogonal fail.
+
+4. **Optics.** The angle of incidence equals the angle of reflection, both measured from the *surface normal* — a line perpendicular to the mirror or lens. Snell's law of refraction is also formulated with respect to the normal. The whole geometric optics of camera lenses, telescopes, and laser systems is normal-line geometry.
+
+5. **Drone grid search.** A drone surveying a field for a missing object flies a "lawnmower pattern": parallel straight legs at fixed spacing, with perpendicular cross-tracks between legs. The geometry guarantees coverage.
+
+6. **Surveying.** Property boundaries are described as bearings and distances; right-angle offsets to landmarks ("90 feet perpendicular to the road centerline") are routine. The surveyor's transit measures angles to within a few arcseconds — the precision of perpendicularity matters.
+
+7. **Computer graphics — surface normals.** A surface in 3D is shaded by computing the angle between its normal vector and the light direction. Without normals there is no lighting, no shading, no realistic rendering. The standard-form coefficients $(A, B)$ for a 2D line are exactly its normal direction — a foreshadow of the surface normal in 3D, which will return in lesson 11's next echo.
+
+8. **PCB layout.** High-speed digital signal traces are typically routed at right angles on adjacent copper layers — horizontal on one layer, vertical on the next. This minimizes capacitive cross-talk between traces and is a standard EMI mitigation. The board's manufacturing fixtures use perpendicular fiducial marks for alignment.
+
+9. **Linear algebra — orthogonal matrices.** A rotation matrix has *orthonormal* columns: each column is a unit vector, and each column is perpendicular to every other column. This is the matrix-level generalization of perpendicularity. Every rotation in robotics, computer graphics, and signal processing relies on it. (Full treatment: linear algebra module.)
+
+10. **Signal processing — orthogonal basis functions.** Sines and cosines of different integer frequencies are *perpendicular in an integral sense*: $\int_0^{2\pi} \sin(mx) \cos(nx) \, dx = 0$ for integer $m, n$. This is the foundation of the Fourier transform — the workhorse of audio, image, and radio engineering. The same word, *orthogonality*, applies, and it is the same idea generalized.
+
+If you can fluently identify, construct, and reason about parallel and perpendicular lines now, you will recognize the same patterns when they reappear as orthogonal vectors, orthogonal matrices, and orthogonal functions later in the curriculum.
+
+## Why This Idea Exists
+
+Perpendicularity is one of the oldest formalized concepts in mathematics. **Euclid**, around 300 BCE, opened *Elements* Book I with definitions of point, line, straight line, and *right angle*: "when a straight line set up on a straight line makes the adjacent angles equal to one another, each of the equal angles is right, and the straight line standing on the other is called a *perpendicular* to that on which it stands" (Definition 10). Perpendicularity was a primitive notion — Euclid took it as a building block, not as something to be derived.
+
+From that foundation Euclid built an enormous edifice of geometric construction. The Pythagorean theorem (Book I, Proposition 47) — $a^2 + b^2 = c^2$ for a right triangle — is the deepest single relationship in elementary geometry, and it depends entirely on the perpendicularity of the two legs. Without perpendicularity, the Pythagorean theorem evaporates. Every distance formula, every metric, every measure of length in modern geometry traces back to that right angle.
+
+For nearly two thousand years, perpendicularity was a purely synthetic-geometric idea — defined by angle, verified by compass-and-straightedge construction. The bridge to algebra came with **René Descartes** in 1637 (*La Géométrie*, the same work that gave us coordinate geometry — see the lesson 10 history). Once two perpendicular axes had been placed and curves became equations in $(x, y)$, the geometric notion of perpendicularity had to be translatable into an *algebraic* condition on the equations. The slope-product rule $m_1 \cdot m_2 = -1$ was the result: a clean algebraic test for perpendicularity, derivable from rotating a rise-run triangle by 90 degrees in coordinate space.
+
+The slope-product rule has a well-known limitation: it fails when one of the lines is vertical (slope undefined). Geometers handle this by treating the horizontal-vertical pair as a special case, or by using a more general framework — the **vector** framework — in which perpendicularity is encoded by the **dot product** rather than the slope product.
+
+The vector framework, developed by **Hermann Grassmann** (1844), **William Rowan Hamilton** (1840s, via quaternions), and refined into modern form by **Josiah Willard Gibbs** and **Oliver Heaviside** (1880s), gave us the definition: two vectors $\vec{v}$ and $\vec{w}$ are **orthogonal** (the generalization of perpendicular) iff $\vec{v} \cdot \vec{w} = 0$. This works in any number of dimensions, has no special cases, and generalizes the slope-product rule perfectly. In two dimensions, if you write a line in standard form $Ax + By = C$, the vector $(A, B)$ is normal (perpendicular) to the line; two lines are perpendicular iff their normal vectors are perpendicular, i.e., $(A_1, B_1) \cdot (A_2, B_2) = A_1 A_2 + B_1 B_2 = 0$. We will see this connection at the end of the Core Theory, and you will meet it in full force in the next sub-module.
+
+In modern engineering, orthogonal layouts are the *default* in virtually every discipline. They are easy to measure (one ruler, one square), easy to manufacture (the standard machine tools — mills, lathes, presses — produce orthogonal features by default), and easy to verify (a dial indicator and a precision square can certify a right angle to within a few microns). Non-orthogonal layouts are used only when there is a compelling reason — a sloped roof for water shedding, an angled cooling fin for airflow, a chamfered edge for safety. The default is *square*, and the default is square because perpendicularity is a fundamental building block of both math and physical fabrication.
+
+## Plain-Language Intuition
+
+Two ideas, two rules.
+
+**Parallel lines never meet.** They run in the same direction forever. In coordinate-plane terms, "same direction" means *same slope*. If two lines have the same slope and different y-intercepts, they are parallel; they march along beside each other and never cross. (If they have the same slope *and* the same y-intercept, they are the same line — a degenerate kind of "parallel.")
+
+**Perpendicular lines meet at a right angle.** This is where the algebra is less obvious. The rule is: if one line has slope $m_1$ and another has slope $m_2$, they are perpendicular iff
+
+$$m_1 \cdot m_2 = -1.$$
+
+Equivalently, $m_2 = -1/m_1$. The slope of a perpendicular line is the **negative reciprocal** of the original slope. A line of slope $2$ has perpendiculars of slope $-1/2$. A line of slope $-3/4$ has perpendiculars of slope $4/3$. A line of slope $1$ has perpendiculars of slope $-1$. Easy once you see the pattern.
+
+There is one important special case the rule does not directly handle: a **horizontal line is perpendicular to a vertical line**. The horizontal line has slope $0$; the vertical line has *undefined* slope. The product $0 \cdot \text{undefined}$ is not $-1$, but the lines are clearly perpendicular — they make a right angle at the corner of every sheet of graph paper. The slope-product rule simply does not apply when one slope is undefined; you have to recognize the horizontal-vertical configuration geometrically. We will see this case explicitly in a worked example and a quiz question, because it trips up almost everybody at first.
+
+Once you can identify both relationships at sight and the special case from inspection, you can build the equation of a parallel or perpendicular line through any given point in three or four lines of algebra.
+
+## Core Theory
+
+### The Parallel Rule
+
+Two lines with slopes $m_1$ and $m_2$ are **parallel** iff
+
+$$m_1 = m_2 \quad (\text{and they are distinct lines, i.e., different y-intercepts}).$$
+
+If $m_1 = m_2$ *and* the y-intercepts are equal, the two equations describe the *same* line, not two parallel lines. Some textbooks call this a degenerate parallel case; some require parallel lines to be distinct. We will require distinctness — "parallel" means "same direction, never meeting."
+
+For vertical lines, $x = c_1$ and $x = c_2$: both have undefined slope. They are parallel iff $c_1 \neq c_2$, and coincident iff $c_1 = c_2$. The same logic applies, just with a different algebraic representation.
+
+### The Perpendicular Rule
+
+Two lines with slopes $m_1$ and $m_2$ (both defined, both nonzero) are **perpendicular** iff
+
+$$m_1 \cdot m_2 = -1.$$
+
+Equivalently, $m_2 = -1/m_1$.
+
+This is the **negative-reciprocal** rule. A line of slope $m$ has perpendiculars of slope $-1/m$. The slope of a perpendicular reverses sign and flips upside down.
+
+### Why the Slope Product Is $-1$
+
+The cleanest geometric argument: consider a line of slope $m$. Its direction is captured by a "rise-run" pair $(\Delta x, \Delta y) = (1, m)$ — one unit right, $m$ units up.
+
+Now rotate this rise-run pair by 90 degrees counterclockwise. The rule for a 90-degree counterclockwise rotation of a vector $(a, b)$ is
+
+$$(a, b) \longmapsto (-b, a).$$
+
+(You can verify this by sketching: a vector pointing right $(1, 0)$ rotates to a vector pointing up $(0, 1)$; a vector pointing up $(0, 1)$ rotates to a vector pointing left $(-1, 0)$.)
+
+Applied to $(1, m)$, the rotated vector is $(-m, 1)$. The slope of a line in the rotated direction is
+
+$$m_\perp = \frac{\text{rise}}{\text{run}} = \frac{1}{-m} = -\frac{1}{m}.$$
+
+So the perpendicular slope is $-1/m$, and the product $m \cdot m_\perp = m \cdot (-1/m) = -1$. The slope product is $-1$ because a 90-degree rotation maps the rise-run pair $(1, m)$ to $(-m, 1)$, whose slope is the negative reciprocal. The same calculation works for a 90-degree *clockwise* rotation, which sends $(a, b)$ to $(b, -a)$; applied to $(1, m)$, you get $(m, -1)$ with slope $-1/m$ — the same answer (perpendicular lines do not distinguish between "rotated left" and "rotated right" by 90 degrees).
+
+### The Special Case: Horizontal and Vertical Lines
+
+A **horizontal** line has equation $y = c$ for some constant $c$. Its slope is $0$.
+
+A **vertical** line has equation $x = c$ for some constant $c$. Its slope is *undefined* (the rise-run denominator is zero).
+
+A horizontal line and a vertical line are perpendicular. Geometrically: they meet at a right angle at the point $(c_{\text{vert}}, c_{\text{horiz}})$. Algebraically: the slope-product rule does not apply, because $0 \cdot \text{undefined}$ is not a defined product. You must recognize this case from the equations directly — "if one equation is $y = c$ and the other is $x = c'$, the lines are perpendicular," with no slope-product calculation.
+
+A pair of horizontal lines ($y = c_1$ and $y = c_2$, both slope $0$) are parallel. A pair of vertical lines ($x = c_1$ and $x = c_2$, both undefined slope) are parallel. The parallel rule generalizes naturally; it is just the perpendicular rule that has the awkward edge case.
+
+### Constructing a Parallel Line Through a Given Point
+
+Given a line of slope $m$ and a point $(x_0, y_0)$ *not on* the original line, the line through $(x_0, y_0)$ parallel to the original line has the same slope $m$. Using point-slope form (lesson 11):
+
+$$y - y_0 = m \cdot (x - x_0).$$
+
+That is the entire construction. Same slope, new anchor point.
+
+If you want to express the result in slope-intercept form, expand: $y = m x + (y_0 - m x_0)$. The new y-intercept is $y_0 - m x_0$.
+
+### Constructing a Perpendicular Line Through a Given Point
+
+Given a line of slope $m$ (with $m \neq 0$ and $m$ defined) and a point $(x_0, y_0)$, the line through $(x_0, y_0)$ perpendicular to the original line has slope $-1/m$. Using point-slope form:
+
+$$y - y_0 = -\frac{1}{m} \cdot (x - x_0).$$
+
+If $m = 0$ (original line is horizontal), the perpendicular is vertical: $x = x_0$. If the original line is vertical, the perpendicular is horizontal: $y = y_0$. Both of those are the special case, handled by inspection.
+
+### Slopes from Standard Form
+
+Recall from lesson 11 that the standard form $A x + B y = C$ (with $B \neq 0$) has slope $m = -A/B$.
+
+**Parallel in standard form.** Two standard-form lines $A_1 x + B_1 y = C_1$ and $A_2 x + B_2 y = C_2$ are parallel iff $-A_1/B_1 = -A_2/B_2$, i.e., $A_1 B_2 = A_2 B_1$. Equivalently, the coefficient pairs $(A_1, B_1)$ and $(A_2, B_2)$ are scalar multiples of each other. For example, $2x + 3y = 5$ and $4x + 6y = 11$ are parallel (the second pair is $2 \times$ the first); they have different constants $C$, so they are not the same line.
+
+**Perpendicular in standard form.** Two standard-form lines are perpendicular iff $(-A_1/B_1) \cdot (-A_2/B_2) = -1$, i.e., $A_1 A_2 = -B_1 B_2$, or equivalently
+
+$$A_1 A_2 + B_1 B_2 = 0.$$
+
+That expression is a **dot product**: if you regard $(A_1, B_1)$ and $(A_2, B_2)$ as vectors, the dot product is $A_1 A_2 + B_1 B_2$, and the perpendicularity condition is that the dot product equals zero. Two lines are perpendicular iff their coefficient vectors are perpendicular as vectors.
+
+This is the deepest sentence in this lesson. The coefficient pair $(A, B)$ in a standard-form line is *normal* (perpendicular) to the line itself. Two lines are perpendicular iff their normals are perpendicular. And perpendicularity of vectors is captured exactly by the dot product equaling zero — the algebraic condition that will be the foundation of vector geometry, of orthogonal matrices, of least-squares regression, and of the inner-product spaces of functional analysis.
+
+### Preview: Vector Perpendicularity
+
+In the next sub-module you will work with vectors in 2D and 3D. Two vectors $\vec{v} = (v_1, v_2)$ and $\vec{w} = (w_1, w_2)$ in 2D are **perpendicular** (or **orthogonal**) iff
+
+$$\vec{v} \cdot \vec{w} = v_1 w_1 + v_2 w_2 = 0.$$
+
+In 3D, the same condition with three components: $\vec{v} \cdot \vec{w} = v_1 w_1 + v_2 w_2 + v_3 w_3 = 0$. In any number of dimensions, perpendicularity is captured by a single algebraic equation — *the dot product equals zero*.
+
+The slope-product rule $m_1 \cdot m_2 = -1$ is the 2D-line version of this. The standard-form rule $A_1 A_2 + B_1 B_2 = 0$ is the same rule restated in vector language. The vector version is the most general and the most useful; you will spend the next sub-module getting fluent with it.
+
+## Visual or Mental Model
+
+### Three Parallel Lines
+
+Three lines with the same slope but different y-intercepts. They never cross.
+
+```
+   y
+ 6 +              /
+   |            /
+ 5 +          /         y = x + 5
+   |        /     /
+ 4 +      /     /
+   |    /     /         y = x + 3
+ 3 +  /     /     /
+   |/     /     /
+ 2 +    /     /         y = x + 1
+   |  /     /
+ 1 +/     /
+   |    /
+ 0 +--/-----------/---- x
+   |/          /
+-1 +         /
+   |0  1  2  3  4  5
+```
+
+All three lines have slope $1$. Different intercepts. They are parallel; the perpendicular distance between any two of them is constant along their length.
+
+### Two Perpendicular Lines with a Rise-Run Triangle
+
+A line of slope $2$ (going up steeply) and a line of slope $-1/2$ (going down gently) meeting at a right angle.
+
+```
+   y
+   |          /
+ 4 +        /              y = 2x  (slope +2)
+   |      /
+ 3 +    /
+   |  /
+ 2 +/                       (intersection at (1, 2))
+   |\
+ 1 + \
+   |  \                    y = -x/2 + 2.5  (slope -1/2)
+ 0 +-----\----+---------- x
+   |       \
+   |0  1  2  3  4  5
+```
+
+The rise-run triangle of the steep line is "right $1$, up $2$" — direction $(1, 2)$. Rotate it 90 degrees: $(1, 2) \mapsto (-2, 1)$, which means "left $2$, up $1$" — slope $1/(-2) = -1/2$. The two slopes multiply: $2 \cdot (-1/2) = -1$. ✓
+
+### Horizontal and Vertical: The Special Pair
+
+The simplest perpendicular configuration in the plane — and the one where the slope-product rule fails.
+
+```
+   y
+   |       |
+ 4 +       |       (vertical line: x = 3)
+   |       |
+ 3 +-------+----------- (horizontal line: y = 3)
+   |       |
+ 2 +       |
+   |       |
+ 1 +       |
+   |       |
+ 0 +-------+----------- x
+   |0  1  2  3  4  5
+```
+
+The horizontal line has slope $0$. The vertical line has undefined slope. The product $0 \cdot \text{undefined}$ is not $-1$ (it is not even a well-defined product), but the two lines are unambiguously perpendicular. The geometry is correct; the slope-rule formalism is the wrong tool. Recognize this configuration by inspection.
+
+### The Standard-Form Normal Vector
+
+For the line $A x + B y = C$, the vector $(A, B)$ points in the *normal* direction (perpendicular to the line). Picture:
+
+```
+        y
+        |              line: 2x + 3y = 6
+      2 +  *           (slope = -2/3)
+        |    *
+        |      * <----- normal vector (2, 3)
+      1 +        *
+        |          *      goes from a point on the line
+        |            *    out perpendicular to the line
+      0 +--------------*---- x
+        |0  1  2  3   *
+                       *
+```
+
+The line $2x + 3y = 6$ has slope $-2/3$. The vector $(2, 3)$ — the coefficient pair — has slope $3/2$. The slopes' product is $(-2/3) \cdot (3/2) = -1$. So the vector $(2, 3)$ is perpendicular to the line itself. This is the *normal vector* picture, and it will be the entry point to vector geometry in the next sub-module.
+
+## Worked Examples
+
+### Example (a) — Parallel Detection
+
+Are $y = 3x + 1$ and $y = 3x - 5$ parallel?
+
+Both lines are in slope-intercept form. Slopes: $m_1 = 3$, $m_2 = 3$. Same slope. Y-intercepts: $1$ and $-5$ — different. So the lines are parallel and distinct. Yes, parallel.
+
+### Example (b) — Perpendicular Detection
+
+Are $y = 2x + 1$ and $y = -\tfrac{1}{2} x + 4$ perpendicular?
+
+Slopes: $m_1 = 2$, $m_2 = -1/2$. Product: $2 \cdot (-1/2) = -1$. The slope-product is exactly $-1$, so the lines are perpendicular. Yes.
+
+### Example (c) — Construct a Parallel Line Through a Point
+
+Find the line parallel to $y = 4x - 7$ through the point $(1, 2)$.
+
+Original slope: $m = 4$. The parallel line has the same slope. Using point-slope form with $(x_0, y_0) = (1, 2)$:
+
+$$y - 2 = 4 (x - 1).$$
+
+Expanding to slope-intercept form: $y = 4x - 4 + 2 = 4x - 2$. Check: slope is $4$ (parallel to the original), passes through $(1, 2)$ — substitute: $4(1) - 2 = 2$. ✓
+
+### Example (d) — Construct a Perpendicular Line Through a Point
+
+Find the line perpendicular to $y = 4x - 7$ through the point $(1, 2)$.
+
+Original slope: $m = 4$. Perpendicular slope: $m_\perp = -1/4$. Using point-slope form with $(x_0, y_0) = (1, 2)$:
+
+$$y - 2 = -\frac{1}{4} (x - 1).$$
+
+Expanding to slope-intercept form: $y = -\tfrac{1}{4} x + \tfrac{1}{4} + 2 = -\tfrac{1}{4} x + \tfrac{9}{4}$.
+
+Check: slope $-1/4$, original slope $4$, product $4 \cdot (-1/4) = -1$. ✓ Passes through $(1, 2)$: $-\tfrac{1}{4}(1) + \tfrac{9}{4} = -\tfrac{1}{4} + \tfrac{9}{4} = \tfrac{8}{4} = 2$. ✓
+
+### Example (e) — Perpendicular Test in Standard Form
+
+Are $3x - 2y = 6$ and $4x + 6y = 9$ perpendicular?
+
+Compute slopes from standard form $m = -A/B$:
+
+- Line 1: $A_1 = 3$, $B_1 = -2$, $m_1 = -3/(-2) = 3/2$.
+- Line 2: $A_2 = 4$, $B_2 = 6$, $m_2 = -4/6 = -2/3$.
+
+Product: $(3/2) \cdot (-2/3) = -1$. Yes, perpendicular.
+
+Alternative check using the dot-product form: $A_1 A_2 + B_1 B_2 = 3 \cdot 4 + (-2) \cdot 6 = 12 - 12 = 0$. The coefficient vectors $(3, -2)$ and $(4, 6)$ are perpendicular. Same conclusion, no division required. (This is the vector-style check.)
+
+### Example (f) — Engineering: CAD Wall Perpendicular to a Beam
+
+A CAD drawing has a floor beam running from $(0, 0)$ to $(10, 4)$ on the floor plan (units: meters). A wall must be erected perpendicular to the beam, passing through the point $(5, 2)$ on the beam. Write the wall equation.
+
+Slope of the beam: $m_{\text{beam}} = (4 - 0)/(10 - 0) = 0.4$.
+
+Slope of the wall (perpendicular): $m_{\text{wall}} = -1/0.4 = -2.5$.
+
+Wall equation through $(5, 2)$ with slope $-2.5$:
+
+$$y - 2 = -2.5 (x - 5),$$
+
+which expands to $y = -2.5 x + 12.5 + 2 = -2.5 x + 14.5$.
+
+Check perpendicularity: $0.4 \cdot (-2.5) = -1$. ✓ Check the point: $-2.5(5) + 14.5 = -12.5 + 14.5 = 2$. ✓
+
+The wall layout line on the floor plan is $y = -2.5 x + 14.5$, with $x$ and $y$ in meters. A surveyor or layout tech would stake out two points on this line (say at $x = 4$ giving $y = 4.5$, and at $x = 6$ giving $y = -0.5$), then snap a chalk line between them to mark the foundation.
+
+### Example (g) — Engineering: Robot Approach Normal to a Surface
+
+A robotic sander is working on a surface that, in the workspace XY plane (units: meters), runs along the line $y = 0.3 x + 1$. The arm's tool tip is currently at $(2, 5)$ and must approach the surface along the *surface normal* — i.e., along a line perpendicular to the surface. Write the approach line.
+
+Slope of the surface: $m_{\text{surf}} = 0.3$.
+
+Slope of the approach (perpendicular): $m_{\text{app}} = -1/0.3 = -10/3 \approx -3.333$.
+
+Approach line through $(2, 5)$ with slope $-10/3$:
+
+$$y - 5 = -\frac{10}{3} (x - 2),$$
+
+which expands to $y = -\tfrac{10}{3} x + \tfrac{20}{3} + 5 = -\tfrac{10}{3} x + \tfrac{35}{3}$.
+
+The arm should move along this line toward the surface. The intersection of the approach line with the surface line is the contact point, where the tool meets the workpiece. (Solving for the intersection is a linear-system exercise; we will pick it up in the next sub-module.)
+
+This is exactly how a sanding, polishing, or drilling end-effector is path-planned in production: identify the surface, compute its local normal at the target contact point, and command the arm along that normal until contact is sensed.
+
+### Example (h) — Failure Mode: Horizontal and Vertical Perpendicular
+
+A student is asked: "What is the line through the origin perpendicular to the x-axis?"
+
+The student reasons: "The x-axis is $y = 0$, slope $0$. Perpendicular slope is $-1/0$, which is undefined or 'infinity.' So the perpendicular line is $y = \infty \cdot x$." They write this as the answer.
+
+This is wrong, but the *instinct* is right. The perpendicular to a horizontal line is a vertical line. A vertical line through the origin is $x = 0$ — the y-axis. There is no slope-intercept-form answer because vertical lines have undefined slope; they cannot be written as $y = m x + b$ for any $m$ and $b$.
+
+**Diagnose**: the slope-product rule $m_1 \cdot m_2 = -1$ requires both slopes to be defined and nonzero. When one line is horizontal (slope $0$) or vertical (slope undefined), the rule does not apply algebraically, and you must recognize the configuration geometrically: the perpendicular to a horizontal line is a vertical line, and vice versa.
+
+**Correct answer**: the line through the origin perpendicular to the x-axis is $x = 0$ (the y-axis).
+
+The deeper lesson is that the standard slope-intercept and slope-product machinery has a *blind spot* — the horizontal-vertical configuration. The vector framework (dot product $= 0$) does not have this blind spot, which is one reason linear algebra eventually supersedes the slope-product rule. For now: memorize the special case.
+
+## Engineering Connections
+
+**CAD orthogonality is the default.** Open any mechanical drawing — a bracket, a housing, a sheet-metal flange — and you will see dimensions called out from orthogonal datum planes. The notation assumes that "5 mm from datum A" means measured perpendicular to datum A. Every CAD package (SolidWorks, Onshape, Fusion 360, FreeCAD) is built on this assumption. When you create a feature with non-orthogonal geometry, you have to *explicitly* call out the angle — the orthogonal case is so common that it is implicit.
+
+**Robot end-effector approach angles.** A robot drilling a hole into a curved surface (for example, drilling a hole through aircraft skin) must align the drill bit perpendicular to the surface at the point of entry. Otherwise the hole walks across the surface, the bit grabs and breaks, or the resulting hole is oval rather than round. The approach geometry is computed by the motion planner from the surface normal at the target point — exactly the perpendicular construction of Example (g), generalized to 3D.
+
+**Optical perpendicularity is the entire game.** A laser interferometer measures distances by reflecting a beam off a mirror; the beam must strike the mirror perpendicular (so it returns along the same path) or the measurement is wrong. A camera lens focuses parallel rays from infinity to a single point; rays perpendicular to the lens pass through undeviated, and rays at an angle bend according to Snell's law referenced to the surface normal. The whole field of geometric optics is built on perpendicularity to surfaces.
+
+**PCB ground-plane stackup.** A four-layer PCB typically has signal traces on the top and bottom layers and copper ground planes on the two inner layers. The signal traces on the top and bottom are routed perpendicular to each other where possible — top traces run mostly east-west, bottom traces mostly north-south. This perpendicular routing minimizes mutual inductance and capacitive coupling between traces on adjacent layers (the two-trace coupling is proportional to the cosine of the angle between them; at 90 degrees the cosine is zero).
+
+**GPS and inertial coordinate frames.** The WGS-84 reference frame used by GPS is built on three mutually orthogonal axes (Earth-Centered, Earth-Fixed: X through the prime meridian at the equator, Z through the north pole, Y completing the right-handed triple). Inertial measurement units (IMUs) report angular rates about three mutually perpendicular axes. Drone autopilots, robot kinematics, and self-driving cars all operate in orthogonal frames.
+
+**Drone grid-search patterns.** A drone tasked with searching a rectangular area for a target (a lost hiker, an agricultural anomaly, a contamination plume) flies a "boustrophedon" (literally "ox-turning") pattern: parallel straight legs at fixed spacing, with perpendicular turns at the end of each leg. The geometry guarantees that every point in the area is within the sensor footprint. The leg spacing equals the sensor swath width, and the perpendicular turn geometry is what guarantees coverage with no missed strips.
+
+**Survey right-angle offsets.** A surveyor describing a property corner might write "Offset 25.00 ft perpendicular from station 3+50 on Main Street." The "perpendicular" is exact — the surveyor verifies it with a total station that measures the angle to within a few arcseconds. Construction documents lean heavily on right-angle offsets because they are the unambiguous, easily verifiable way to locate features.
+
+**Linear algebra preview.** A *rotation matrix* in 2D takes the form
+
+$$R = \begin{pmatrix} \cos \theta & -\sin \theta \\ \sin \theta & \cos \theta \end{pmatrix}.$$
+
+Its columns are $(\cos \theta, \sin \theta)$ and $(-\sin \theta, \cos \theta)$ — two unit vectors that are perpendicular to each other (you can verify: their dot product is $\cos \theta \cdot (-\sin \theta) + \sin \theta \cdot \cos \theta = 0$). Every rotation matrix has orthogonal columns. This is the matrix-level generalization of the perpendicularity you are learning here, and the same machinery extends to 3D and beyond. We will see it in detail in the linear algebra module.
+
+## Practice Set
+
+### Warmups — Parallel and Perpendicular Detection
+
+For each pair of lines, state whether the lines are parallel, perpendicular, or neither.
+
+1. $y = 2x + 3$ and $y = 2x - 5$.
+2. $y = 3x + 1$ and $y = -\tfrac{1}{3} x + 4$.
+3. $y = 4x - 2$ and $y = 4x - 2$.
+4. $y = -x + 5$ and $y = x - 5$.
+5. $y = \tfrac{2}{3} x + 1$ and $y = \tfrac{2}{3} x - 7$.
+6. $y = 5$ and $y = -3$.
+7. $y = 5$ and $x = 2$.
+8. $2x + y = 4$ and $y = -2x + 11$.
+
+### Constructions
+
+For each, write the equation of the requested line in slope-intercept form.
+
+9. Parallel to $y = 3x + 1$ through the point $(2, -1)$.
+10. Perpendicular to $y = 3x + 1$ through the point $(2, -1)$.
+11. Parallel to $y = -\tfrac{1}{2} x + 4$ through the point $(4, 0)$.
+12. Perpendicular to $y = -\tfrac{1}{2} x + 4$ through the point $(4, 0)$.
+13. Perpendicular to the x-axis through the point $(3, 5)$. (Watch for the special case.)
+
+### Applied (Engineering)
+
+14. **CAD layout.** A reference edge of a part runs from $(0, 0)$ to $(12, 5)$ in millimeters on the part drawing. A second edge must be perpendicular to the first and pass through the point $(6, 2.5)$ on the reference edge. Write the equation of the second edge in slope-intercept form.
+
+15. **Robot approach.** A robot's workpiece surface (in the workspace plane) runs along the line $y = 0.5 x + 0.2$, with coordinates in meters. The tool tip is at $(1.0, 2.0)$ and must approach the surface along the normal. Write the approach-line equation.
+
+16. **Drone grid search.** A drone is flying a search pattern over a field. The first leg of the pattern runs along the line $y = 0.1 x$ (a slight slope due to terrain orientation), in coordinates measured in meters. The drone reaches the end of the leg at the point $(100, 10)$ and must turn perpendicular to the leg to begin the next pass. Write the equation of the perpendicular cross-leg through $(100, 10)$.
+
+### Error-Spotting
+
+17. A student claims that the line perpendicular to $y = 2x + 3$ through $(0, 0)$ is $y = -2x$. Find the error and give the correct equation.
+
+18. A student claims that $y = 0.5 x + 2$ and $y = 2x - 1$ are perpendicular. Check, and either confirm or correct.
+
+### Challenge
+
+19. **Standard-form check.** Are $5x - 2y = 10$ and $4x + 10y = 15$ perpendicular? Solve using both the slope method and the coefficient-vector dot product method, and confirm they agree.
+
+20. **Vertical-line edge case.** A student writes: "The line perpendicular to $x = 5$ through the point $(3, 7)$ has slope $-1/\text{undefined} = 0$, so the line is $y = 0$." Diagnose the error. What is the correct perpendicular line?
+
+### Answers
+
+1. Same slope ($2$), different intercepts — **parallel**.
+2. Slope product: $3 \cdot (-1/3) = -1$ — **perpendicular**.
+3. Same equation — same line, not "parallel" in the distinct-line sense (some texts would still call this parallel; we exclude).
+4. Slope product: $-1 \cdot 1 = -1$ — **perpendicular**.
+5. Same slope — **parallel**.
+6. Both horizontal (slope $0$), different intercepts — **parallel**.
+7. Horizontal and vertical — **perpendicular** (special case; slope-product rule does not apply).
+8. Second line: $y = -2x + 11$, slope $-2$. First line $2x + y = 4 \Rightarrow y = -2x + 4$, slope $-2$. Same slope, different intercepts — **parallel**.
+
+9. Same slope $3$, through $(2, -1)$: $y + 1 = 3(x - 2) \Rightarrow y = 3x - 7$.
+10. Perpendicular slope $-1/3$, through $(2, -1)$: $y + 1 = -\tfrac{1}{3}(x - 2) \Rightarrow y = -\tfrac{1}{3} x + \tfrac{2}{3} - 1 = -\tfrac{1}{3} x - \tfrac{1}{3}$.
+11. Same slope $-1/2$, through $(4, 0)$: $y = -\tfrac{1}{2}(x - 4) = -\tfrac{1}{2} x + 2$.
+12. Perpendicular slope $2$, through $(4, 0)$: $y = 2(x - 4) = 2x - 8$.
+13. The x-axis is horizontal. Perpendicular is vertical. Vertical line through $(3, 5)$ is $x = 3$.
+
+14. Slope of reference edge: $5/12$. Perpendicular slope: $-12/5 = -2.4$. Through $(6, 2.5)$: $y - 2.5 = -2.4(x - 6) \Rightarrow y = -2.4 x + 14.4 + 2.5 = -2.4 x + 16.9$.
+15. Surface slope: $0.5$. Approach (normal) slope: $-1/0.5 = -2$. Through $(1.0, 2.0)$: $y - 2 = -2(x - 1) \Rightarrow y = -2x + 4$.
+16. Leg slope: $0.1$. Perpendicular slope: $-1/0.1 = -10$. Through $(100, 10)$: $y - 10 = -10(x - 100) \Rightarrow y = -10x + 1010$.
+
+17. The student kept the sign but did not take the *reciprocal*. The perpendicular slope is the *negative reciprocal* of $2$, which is $-1/2$, not $-2$. Correct line: $y = -\tfrac{1}{2} x$.
+18. Slope product: $0.5 \cdot 2 = 1$, not $-1$. The lines are *not* perpendicular. (They are also not parallel; they intersect at a non-right angle.) For perpendicularity to a line of slope $0.5$, the other slope would need to be $-2$.
+19. Slopes: $m_1 = -5/(-2) = 5/2$, $m_2 = -4/10 = -2/5$. Product: $(5/2)(-2/5) = -1$. **Perpendicular**. Coefficient-vector dot product: $(5)(4) + (-2)(10) = 20 - 20 = 0$. **Perpendicular**. Both methods agree.
+20. The student tried to apply the slope-product rule with one undefined slope. The rule does not apply when one line is vertical. Geometrically, the perpendicular to a vertical line ($x = 5$) is a horizontal line. A horizontal line through $(3, 7)$ is $y = 7$. (The student's answer $y = 0$ is horizontal — correct shape — but at the wrong height.)
+
+## Build Task
+
+Extend the `LinearModel` class from lesson 10 with four new methods that handle parallel and perpendicular relationships. Keep the existing `predict` and `fit` methods; add the four new methods alongside.
+
+```python
+import math
+import numpy as np
+
+
+class LinearModel:
+    """Slope-intercept linear model: y = slope * x + intercept.
+
+    Extended with parallel/perpendicular construction methods.
+    Vertical lines are not representable (slope would be undefined);
+    methods raise ValueError when asked to build one.
+    """
+
+    def __init__(self, slope=0.0, intercept=0.0):
+        self.slope = float(slope)
+        self.intercept = float(intercept)
+
+    # ---- existing methods (from lesson 10) ----
+
+    def predict(self, x):
+        x = np.asarray(x, dtype=float)
+        return self.slope * x + self.intercept
+
+    def fit(self, xs, ys):
+        xs = np.asarray(xs, dtype=float)
+        ys = np.asarray(ys, dtype=float)
+        x_mean, y_mean = xs.mean(), ys.mean()
+        denom = np.sum((xs - x_mean) ** 2)
+        if denom == 0:
+            raise ValueError("all xs identical; cannot fit a line")
+        self.slope = float(np.sum((xs - x_mean) * (ys - y_mean)) / denom)
+        self.intercept = float(y_mean - self.slope * x_mean)
+        return self
+
+    # ---- new methods (this lesson) ----
+
+    def is_parallel_to(self, other, tol=1e-9):
+        """Return True iff self and other have the same slope (within tol)
+        and are distinct lines (different intercepts)."""
+        if not isinstance(other, LinearModel):
+            raise TypeError("other must be a LinearModel")
+        same_slope = math.isclose(self.slope, other.slope, abs_tol=tol)
+        same_line = same_slope and math.isclose(
+            self.intercept, other.intercept, abs_tol=tol
+        )
+        return same_slope and not same_line
+
+    def is_perpendicular_to(self, other, tol=1e-9):
+        """Return True iff self.slope * other.slope == -1 (within tol).
+        Note: the horizontal-vertical special case is not handled here,
+        since this class cannot represent vertical lines."""
+        if not isinstance(other, LinearModel):
+            raise TypeError("other must be a LinearModel")
+        product = self.slope * other.slope
+        return math.isclose(product, -1.0, abs_tol=tol)
+
+    def parallel_through(self, point):
+        """Return a new LinearModel parallel to self through the given (x0, y0)."""
+        x0, y0 = point
+        new_intercept = y0 - self.slope * x0
+        return LinearModel(slope=self.slope, intercept=new_intercept)
+
+    def perpendicular_through(self, point):
+        """Return a new LinearModel perpendicular to self through (x0, y0).
+        Raises ValueError if self is horizontal (perpendicular would be vertical)."""
+        if math.isclose(self.slope, 0.0, abs_tol=1e-12):
+            raise ValueError(
+                "perpendicular to a horizontal line is vertical "
+                "(not representable as y = m x + b)"
+            )
+        x0, y0 = point
+        perp_slope = -1.0 / self.slope
+        new_intercept = y0 - perp_slope * x0
+        return LinearModel(slope=perp_slope, intercept=new_intercept)
+
+    def __repr__(self):
+        return f"LinearModel(slope={self.slope:.6g}, intercept={self.intercept:.6g})"
+
+
+# ---- Tests ----
+
+def main():
+    line = LinearModel(slope=2.0, intercept=3.0)
+
+    # parallel detection
+    twin = LinearModel(slope=2.0, intercept=-1.0)
+    not_twin = LinearModel(slope=3.0, intercept=-1.0)
+    assert line.is_parallel_to(twin)
+    assert not line.is_parallel_to(not_twin)
+    assert not line.is_parallel_to(line)  # same line is not "parallel" here
+
+    # perpendicular detection
+    perp = LinearModel(slope=-0.5, intercept=10.0)
+    assert line.is_perpendicular_to(perp)
+    assert not line.is_perpendicular_to(twin)
+
+    # parallel construction
+    par = line.parallel_through((1.0, 2.0))
+    assert math.isclose(par.slope, 2.0)
+    assert math.isclose(par.predict(1.0), 2.0)  # passes through (1, 2)
+    assert line.is_parallel_to(par)
+
+    # perpendicular construction
+    perp2 = line.perpendicular_through((4.0, 1.0))
+    assert math.isclose(perp2.slope, -0.5)
+    assert math.isclose(perp2.predict(4.0), 1.0)  # passes through (4, 1)
+    assert line.is_perpendicular_to(perp2)
+
+    # horizontal edge case
+    horiz = LinearModel(slope=0.0, intercept=5.0)
+    try:
+        horiz.perpendicular_through((2.0, 3.0))
+    except ValueError as e:
+        print(f"  expected ValueError: {e}")
+
+    print("All LinearModel parallel/perpendicular tests passed.")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+**Stretch — vector-form perpendicularity.** Add a method `normal_vector()` that returns the unit normal of the line. For a line in slope-intercept form $y = m x + b$, an unnormalized normal is $(m, -1)$ (or equivalently $(-m, 1)$); normalize by dividing by its magnitude $\sqrt{m^2 + 1}$. Then verify that for two perpendicular lines, the dot product of their normal vectors is *not* zero — wait, it should be zero only when the *normal vectors themselves* are perpendicular, which corresponds to the *original lines* being perpendicular... Actually the direction vector $(1, m)$ for a line of slope $m$ is along the line, and the normal is perpendicular to it: $(m, -1)$ or equivalently $(-m, 1)$. Two lines are perpendicular iff their direction vectors are perpendicular, iff their normals are perpendicular. Implement a check that for $m_1, m_2$ with $m_1 m_2 = -1$, the direction vectors $(1, m_1)$ and $(1, m_2)$ have dot product $1 + m_1 m_2 = 1 + (-1) = 0$. The slope-product rule and the dot-product-zero rule are the same condition.
+
+## Quiz
+
+1. State the slope condition for two lines to be parallel.
+2. State the slope condition for two lines to be perpendicular.
+3. Why does the slope product equal $-1$ for perpendicular lines? Give the geometric argument (rotating a rise-run triangle).
+4. Why does the slope-product rule fail for the horizontal-vertical case? What is the correct way to identify this perpendicular configuration?
+5. The standard form $A x + B y = C$ has slope $-A/B$. Express the perpendicularity condition for two lines in standard form purely in terms of the coefficients $A_1, B_1, A_2, B_2$. (Hint: it should resemble a dot product.)
+6. What is the geometric meaning of the vector $(A, B)$ for the standard-form line $A x + B y = C$?
+7. Two vectors $\vec{v} = (v_1, v_2)$ and $\vec{w} = (w_1, w_2)$ are perpendicular iff what algebraic condition?
+8. How does the notion of perpendicularity generalize to higher dimensions? (One sentence.)
+
+**Answers.** (1) The slopes are equal: $m_1 = m_2$ (and the y-intercepts differ, so the lines are distinct). (2) The slope product equals $-1$: $m_1 \cdot m_2 = -1$, or equivalently $m_2 = -1/m_1$. (3) A line of slope $m$ has a rise-run pair $(1, m)$. A 90-degree rotation maps $(a, b) \mapsto (-b, a)$, so $(1, m) \mapsto (-m, 1)$; the slope of the rotated direction is $1/(-m) = -1/m$. Product: $m \cdot (-1/m) = -1$. (4) The rule requires both slopes to be defined and nonzero. A horizontal line has slope $0$; a vertical line has undefined slope. The product is not a well-formed quantity. Recognize this configuration directly from the equations: $y = c$ and $x = c'$ are always perpendicular. (5) $A_1 A_2 + B_1 B_2 = 0$. This is a dot-product condition on the coefficient pairs $(A_1, B_1)$ and $(A_2, B_2)$. (6) The vector $(A, B)$ is *normal* (perpendicular) to the line — it points in the direction perpendicular to the line. (7) Their dot product equals zero: $v_1 w_1 + v_2 w_2 = 0$. (8) Same algebraic condition with more components: in $n$ dimensions, two vectors are perpendicular (orthogonal) iff their dot product $\sum_{i=1}^n v_i w_i$ equals zero. The condition extends from 2D to any number of dimensions without changing form.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- State the parallel and perpendicular slope rules from memory, and apply them to any pair of lines given in slope-intercept or standard form, without consulting notes.
+- Construct, in two or three lines of algebra, the equation of a line parallel or perpendicular to a given line through a given point.
+- Recognize the horizontal-vertical configuration as the special case and handle it correctly without trying to apply the slope-product rule.
+- Read perpendicularity off the standard-form coefficients via the dot-product condition $A_1 A_2 + B_1 B_2 = 0$, and explain why this is the same as the slope-product rule.
+- Apply the slope relationships to a real engineering layout problem (CAD wall, robot approach, drone search, optical normal) with units carried throughout.
+- Commit the extended `LinearModel` class with `is_parallel_to`, `is_perpendicular_to`, `parallel_through`, and `perpendicular_through` methods, all tests passing, and the horizontal-line edge case handled by raising `ValueError`.
+
+Push the extended `linear_model.py` to your curriculum repository, and add a one-paragraph note in plain language explaining the parallel rule, the perpendicular rule, and the special case where the perpendicular rule does not apply.
+
+## Sources and Further Study
+
+- **Euclid, *Elements*, Book I**, especially Definitions 10 (right angle, perpendicular) and Propositions 11-12 (constructing perpendiculars). Sir Thomas Heath's annotated translation (Dover, 1956) is the canonical English edition with extensive historical commentary. Read at least the first few pages to see perpendicularity defined as a *primitive* notion before any algebra existed.
+- **Serge Lang, *Basic Mathematics*, chapters 5-6.** Continues the rigorous treatment of coordinate geometry from lesson 10. Lang gives proofs of the parallel and perpendicular slope conditions.
+- **James Stewart, *Calculus*, chapter 1.** Stewart's review of lines includes the perpendicular slope condition and the tangent-normal-line distinction that becomes important in calculus.
+- **René Descartes, *La Géométrie* (1637).** Project Gutenberg has a free English translation. Skim the first 30 pages to see the moment when geometric perpendicularity is translated into an algebraic condition on coordinates.
+- **Gilbert Strang, *Introduction to Linear Algebra*, chapter 4 (Orthogonality).** The single best introduction to orthogonality as a general concept — perpendicular vectors, orthogonal matrices, the dot product, the Gram-Schmidt process. Read this chapter once your vectors lesson is complete.
+- **MIT OpenCourseWare 18.01, *Single Variable Calculus*, lecture 2.** David Jerison's coverage of lines, tangents, and normals; an excellent free video.
+- **MIT OpenCourseWare 18.06, *Linear Algebra*, lectures on orthogonality.** Gilbert Strang's lectures bring the concept to life and tie it to projection, least squares, and the QR factorization. These are advanced previews for now; revisit them in the linear algebra module.
+- **Philip Schneider and David Eberly, *Geometric Tools for Computer Graphics*.** A comprehensive reference for the perpendicular and parallel relationships that appear in real graphics, CAD, and robotics code. Chapter 5 (Distance in 2D) and chapter 6 (Intersection in 2D) are the most directly relevant to this lesson's content.
+
+## Next Lesson Bridge
+
+This lesson finishes the **linear arc** of the equations-units-and-graphs sub-module. Over twelve lessons you have moved from "what is an equation" (lesson 1) all the way to "given two engineering edges, when are they perpendicular and how do I construct one perpendicular through a given point" (this lesson). Every linear concept the engineering modules depend on is now in your toolkit: solving, rearranging, units, functions, slope, intercept, all three line forms, conversion fluency, and parallel-perpendicular relationships.
+
+Lessons 13 and 14 close out the equations-units-and-graphs sub-module. **Lesson 13 — graphing-functions-for-builders** — drills the habit of sketching any function (linear or otherwise) quickly and reading qualitative information off the sketch: intercepts, extrema, regions of increase and decrease, asymptotic behavior. **Lesson 14 — algebra-for-engineering-systems** — applies the rearrangement, modeling, and linearization skills from the whole sub-module to actual engineering systems: voltage dividers, sensor calibrations with offsets, simple loops with feedback. These two lessons round out the sub-module by *applying* everything you have built rather than introducing new theory.
+
+After that, the curriculum opens the next sub-module: **Geometry, Trig & Vectors**. The very first concept of that sub-module — vectors as ordered tuples with magnitude and direction — takes the orthogonality concept from this lesson and makes it a foundational operation. *Two vectors are perpendicular iff their dot product is zero* is the $n$-dimensional generalization of $m_1 \cdot m_2 = -1$. The dot product handles all the cases the slope-product rule cannot: vertical lines, vectors in three or more dimensions, perpendicularity of force decompositions in mechanics, orthogonality of basis functions in signal processing. The mental habit you started building here — "perpendicular means a specific algebraic condition on the directions" — is the habit that will carry you all the way to inner-product spaces and functional analysis. Stay with it; the payoff is enormous.

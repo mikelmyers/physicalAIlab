@@ -1,0 +1,724 @@
+# Point-Slope and Standard Forms of a Line
+
+## Re-entry Promise
+
+Lesson 10 gave you the canonical form $y = mx + b$ — the slope-intercept form — and the six-step modeling discipline that turns a verbal description into a working linear equation. You can now identify the slope and intercept of any line by inspection, sketch it in fifteen seconds, and apply the discipline to sensor calibrations, battery discharge curves, cost models, and Ohm's-law lines.
+
+This lesson assumes lessons 1 through 10: you can solve and rearrange linear equations (lessons 1 and 4), carry units through a calculation (lesson 6), plot points and read a graph (lesson 7), recognize linear functions (lesson 8), compute slope from two points (lesson 9), and write a slope-intercept equation from any reasonable input (lesson 10). It does *not* assume that you have ever written a line in *point-slope form* or *standard form* on purpose, or that you have ever needed to choose between three forms of the same line and pick the most convenient one.
+
+By the end of this lesson, you will own all three common ways to write the equation of a line, you will convert between them mechanically, and you will reach for whichever form is best suited to the question at hand. You will also rehabilitate the vertical line — the one geometric object that slope-intercept form cannot represent — by writing it in standard form. Lesson 12 then uses the slope (visible in two of the three forms) to detect when two lines are parallel or perpendicular, finishing the equations-units-and-graphs sub-module and putting you in a position to start systems of equations and analytic geometry in earnest.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Write the **point-slope form** $y - y_1 = m(x - x_1)$ of a line, given a point $(x_1, y_1)$ on the line and the slope $m$.
+- Write the **standard form** $A x + B y = C$ of a line, given a point and a slope or two points, and follow the conventional cleanup (integer coefficients, $A \ge 0$, $\gcd(A, B, C) = 1$).
+- Convert fluently in both directions among slope-intercept, point-slope, and standard form, and verify by spot-checking points.
+- Choose the form most convenient for a given task: slope-intercept for inspection and graphing, point-slope for tangent lines and waypoint problems, standard form for systems of equations and computer-graphics edge tests.
+- Express vertical lines as $x = c$, recognize that this is a standard-form equation with $B = 0$, and explain why no slope-intercept equation describes them.
+- Recognize that the three forms are not three different lines but **three different parameterizations of the same line** — a single geometric object dressed in different algebraic clothing.
+
+## Why It Matters
+
+The slope-intercept form you mastered last lesson is one of *three* common forms a working engineer keeps in their head. Each form is the most natural language for a different question, and switching between them fluently is part of the everyday literacy of analytical work.
+
+1. **Surveying and civil engineering.** A surveyor in the field rarely knows the y-intercept of a property line — they know one *measured corner* and the *bearing* (heading) from that corner. Bearing converts to slope; corner is a point. Point-slope form $y - y_1 = m(x - x_1)$ is the equation the surveyor writes down directly, with no rearrangement.
+
+2. **Robotics waypoints.** A robotic arm or mobile robot is given a *waypoint* (a position) and a *heading* (a direction). The straight-line path is exactly a point-slope equation. When the planner needs to check whether a target lies on the path, it evaluates the point-slope equation at the target's $x$-coordinate and compares to the target's $y$-coordinate.
+
+3. **Computer-graphics edge tests.** A triangle in 2D is defined by three vertex points, and each edge of the triangle is a line. Renderers and physics engines need to ask, thousands of times per frame: *is this pixel inside the triangle?* The standard form $A x + B y + C = 0$ makes the answer fast: evaluate $A x + B y + C$ at the pixel, look at the sign, and you know which side of the edge the pixel is on. Three sign checks (one per edge) decide inside-or-outside.
+
+4. **Linear programming constraints.** Every constraint in a linear program is naturally a standard-form line: "you can spend at most $C$ dollars" becomes $A_1 x_1 + A_2 x_2 \le C$, and the boundary is the standard-form line $A_1 x_1 + A_2 x_2 = C$. The simplex method, the workhorse algorithm of linear optimization, *requires* its constraints in standard form. Every airline scheduling system, every supply-chain optimizer, every diet planner is built on standard-form linear inequalities.
+
+5. **Systems of equations and matrix notation.** A system of two equations in two unknowns is most naturally written in standard form: the rows of the coefficient matrix $A$ in $A \mathbf{x} = \mathbf{b}$ are exactly the standard-form coefficients of each line. This is the bridge from this sub-module into the matrix algebra you will learn later in the curriculum.
+
+6. **Vertical-line geometry.** Walls in 2D floor plans, constant-time slices on a planning grid, the vertical asymptote of a function — all are vertical lines, and *none* of them can be written in slope-intercept form. Without a second form, your linear toolkit is missing an entire family of physically real lines.
+
+7. **Computer vision and 2D geometry.** A line in the image plane is conventionally stored as $A x + B y + C = 0$. The pair $(A, B)$ is a vector *normal* (perpendicular) to the line. The Hough transform, line-fitting algorithms (RANSAC), and most CAD systems store and manipulate lines in standard form precisely so that the normal vector is always one subscript away.
+
+8. **Aerospace and trajectory planning.** A flight planner often draws *constant-altitude* lines or *constant-time* lines on a planning grid. Constant-time lines are vertical; constant-altitude lines are horizontal. Standard form handles both without flinching.
+
+9. **CAD and collision detection.** Edge equations of polygons, half-plane representations of convex shapes, and the supporting-hyperplane formulation of convex sets all use standard form. When two polygons need to be tested for collision, the algorithm walks down each polygon's edges and evaluates standard-form expressions at the other polygon's vertices.
+
+10. **Calculus preview — tangent lines.** When you reach differential calculus, the very first geometric object you will build is the *tangent line* to a curve $y = f(x)$ at a specified point $(x_0, y_0)$. You will know the point (because you chose where to take the tangent) and the slope (because the derivative $f'(x_0)$ gives it to you). Point-slope form is exactly the right shape: $y - y_0 = f'(x_0) (x - x_0)$. This single formula will reappear in linearization, Newton's method, Taylor series, and almost every numerical algorithm you will ever read.
+
+If you take only one thing from "why it matters": the three forms are not redundant. Each one is the natural language for a class of problems, and the fluency to switch between them is a real engineering skill, not a school exercise.
+
+## Why This Idea Exists
+
+The three forms of a line did not arrive at the same time or in the same culture. Their history is a useful reminder that mathematical notation is a human invention, polished over centuries, with each generation contributing the form most useful to its own problems.
+
+The **standard form** $A x + B y = C$ is the oldest of the three. It descends from the linear equations studied by **Diophantus** of Alexandria (around 250 CE) in his *Arithmetica*, and from the medieval Arabic and European algebra traditions that developed methods for solving such equations long before coordinate geometry existed. When **Descartes** wrote *La Géométrie* in 1637 and **Fermat** circulated his *Ad locos planos et solidos isagoge* around 1636, they used standard-form-style equations to describe lines and curves in their newly invented coordinate system — *not* slope-intercept form, which had not yet been distinguished as a separate canonical shape.
+
+The **slope-intercept form** $y = mx + b$ is a 19th-century pedagogical innovation. It became popular in school algebra because it makes the two most useful features of a line — its slope and its y-intercept — readable at a glance. As mentioned in lesson 10, its widespread teaching in American secondary schools traces to **Wentworth's** *Plane Geometry* (1899) and the algebra textbooks of the early 20th century. The form is excellent for inspection, modeling, and graphing — and useless for vertical lines, which is part of why it is taught alongside, not in place of, the older forms.
+
+The **point-slope form** $y - y_1 = m(x - x_1)$ emerged from the demands of calculus. **Newton** (in the 1660s and 70s) and **Leibniz** (in the 1670s and 80s) needed a compact way to write down the tangent line to a curve at a specific point: a point was given by the geometry of the situation, a slope was given by the derivative, and the rest was algebra. The point-slope shape is the most direct expression of "the line through this point with this slope." It crystallized as a separate form in the 18th- and 19th-century calculus textbooks, where it was used to define linearization and the small-signal approximation that still drives most of analytical engineering.
+
+In modern practice, all three forms are alive and well, and they live in different parts of the engineering toolkit:
+
+- **Slope-intercept** is the form of modeling and prediction. A datasheet's sensitivity and offset are exactly a slope and an intercept.
+- **Point-slope** is the form of tangent lines and waypoint planning. Calculus, Newton's method, robotics, and linearization all reach for it.
+- **Standard form** is the form of systems and computational geometry. Matrix notation, linear programming, collision detection, and image-plane line storage all use it.
+
+There is one more reason the standard form has persisted across millennia: it **generalizes immediately**. A plane in 3D is $A x + B y + C z = D$. A hyperplane in $n$ dimensions is $A_1 x_1 + A_2 x_2 + \dots + A_n x_n = C$. A system of $m$ such equations becomes a matrix equation $A \mathbf{x} = \mathbf{b}$. Slope-intercept form generalizes awkwardly past 2D; point-slope generalizes more naturally; but standard form is the shape that linear algebra, optimization, and machine learning have settled on for serious work in any number of dimensions.
+
+## Plain-Language Intuition
+
+A line in the plane is one geometric object — a straight set of points stretching in two directions. But a line has many *descriptions*. Two of the descriptions you already know intuitively: "the line whose slope is $m$ and which crosses the y-axis at height $b$" (slope-intercept), and "the line through these two specific points" (the two-point description, which you have used to compute slopes).
+
+This lesson introduces two more. **Point-slope form** says: "the line through *this specific point*, with *this slope*." That is exactly what a surveyor knows about a property boundary (a corner and a bearing), and exactly what a calculus student knows about a tangent line (a point and a derivative). **Standard form** says: "the set of $(x, y)$ pairs satisfying $A x + B y = C$." That sounds abstract, but it is just the description that does not single out *any* feature of the line — neither a point nor an intercept — and instead treats the line as a constraint equation. This is the description that makes systems of equations, matrix notation, and computer-graphics edge tests work cleanly.
+
+The key insight is that all three forms describe the **same line**. There is no question like "is this line in point-slope or in standard form?" — that is like asking whether a person is in English or in French. The line is the line. The form is just the language you choose to talk about it in. Choose the language that makes the next step of your computation easiest, and switch when convenient.
+
+## Core Theory
+
+### Point-Slope Form
+
+The **point-slope form** of the equation of a line is
+
+$$y - y_1 = m (x - x_1),$$
+
+where $(x_1, y_1)$ is *any* point on the line and $m$ is the slope.
+
+**Why it works.** The slope is the change in $y$ per unit change in $x$. Start at the known point $(x_1, y_1)$ and move to any other point $(x, y)$ on the line. The horizontal displacement is $x - x_1$, the vertical displacement is $y - y_1$, and the ratio is the slope:
+
+$$\frac{y - y_1}{x - x_1} = m.$$
+
+Multiply both sides by $x - x_1$ and you get the point-slope form. (The form is valid for every $x \ne x_1$, and the case $x = x_1$ is the known point itself, which trivially satisfies the equation as $0 = 0$.)
+
+**When to use it.**
+
+- You know a point on the line and the slope, and you do *not* know (or care about) the y-intercept.
+- You are writing a tangent line at a specific point of a curve — calculus's most common single use of point-slope form.
+- You are planning a path through a known waypoint with a known heading.
+- You have two points; you compute the slope, then use point-slope with either of the two points to write the equation in one step.
+
+**A small subtlety.** The point $(x_1, y_1)$ in the point-slope form is your *choice*. Any point on the line works. Two different choices give two equations that *look* different but describe the same line, and they will agree once you simplify or convert to slope-intercept.
+
+### Standard Form
+
+The **standard form** of the equation of a line is
+
+$$A x + B y = C,$$
+
+where $A$, $B$, and $C$ are real numbers with $A$ and $B$ not both zero. (If both $A$ and $B$ were zero, the equation would either be the degenerate $0 = C$ with no solutions, or $0 = 0$ with every point a solution — neither of which is a line.)
+
+**Why it works.** This is the most general first-degree (linear) equation in two variables, and a first-degree equation in two variables is exactly what a line is. Every line in the plane — including vertical lines, horizontal lines, lines through the origin, and lines tilted at any angle — can be written in standard form.
+
+**A convention note.** Textbooks differ on how to "clean up" a standard-form equation. We will use the following convention throughout this lesson, which is the most common one in engineering and is the form most calculators and computer-algebra systems will display:
+
+- Coefficients $A$, $B$, $C$ are **integers** with no common factor (i.e., $\gcd(|A|, |B|, |C|) = 1$).
+- The leading coefficient $A$ is **non-negative**, with $A > 0$ when possible; if $A = 0$, then $B > 0$.
+
+This is purely cosmetic — multiplying both sides of $A x + B y = C$ by any nonzero number gives an equivalent equation describing the same line. The convention picks one representative from the infinite family. Other books write the equation as $A x + B y + C = 0$ (move everything to the left side) or use different sign conventions; pick one and be consistent.
+
+**When to use it.**
+
+- You are about to put the equation into a system with other lines: the standard-form coefficients are the rows of the matrix $A$ in $A \mathbf{x} = \mathbf{b}$.
+- You are doing a computer-graphics edge test: evaluate $A x + B y - C$ at a pixel and check the sign.
+- You are writing a linear-programming constraint: the boundary of the constraint is a standard-form line.
+- The line is *vertical*, and you cannot use slope-intercept.
+
+### Vertical Lines (Finally)
+
+A vertical line passes through every point with a fixed $x$-coordinate, regardless of $y$. Its equation is
+
+$$x = c$$
+
+for some constant $c$. In standard form, this is
+
+$$1 \cdot x + 0 \cdot y = c.$$
+
+Here $A = 1$, $B = 0$, and $C = c$ — perfectly legal coefficients (not both zero). The slope is *undefined*, because the rise-over-run denominator is zero. No slope-intercept equation describes a vertical line, full stop. The mistake "the slope of a vertical line is infinity" is a sloppy shorthand: in standard real arithmetic, dividing by zero does not give a number, and the appropriate description is *undefined slope* together with the standard-form equation $x = c$.
+
+Horizontal lines, by contrast, *can* be written in slope-intercept form ($y = c$, slope zero), but they can also be written in standard form: $0 \cdot x + 1 \cdot y = c$.
+
+### Converting Between the Three Forms
+
+The three forms are different costumes on the same line. Conversion is mechanical algebra. Here are the four conversions you should be fluent in, in both directions.
+
+**(1) Slope-intercept to point-slope.** Given $y = m x + b$, identify a point on the line. The y-intercept $(0, b)$ is always on the line, so write
+
+$$y - b = m (x - 0),$$
+
+which is point-slope form with $(x_1, y_1) = (0, b)$. If a different point is more natural (say, a known waypoint or measured corner), substitute that point instead.
+
+**(2) Point-slope to slope-intercept.** Given $y - y_1 = m(x - x_1)$, distribute and isolate $y$:
+
+$$y = m x - m x_1 + y_1.$$
+
+The slope is $m$ (unchanged), and the y-intercept is $b = y_1 - m x_1$. This is the same back-solve formula you used in lesson 10 to recover $b$ from a known point.
+
+**(3) Slope-intercept to standard form.** Given $y = m x + b$, move the $x$-term to the left:
+
+$$-m x + y = b.$$
+
+If $m$ is a fraction, multiply through by the denominator to clear it; then enforce $A \ge 0$ by multiplying by $-1$ if necessary. For example, $y = -\tfrac{2}{3} x + 4$ becomes $\tfrac{2}{3} x + y = 4$, multiply by $3$ to get $2 x + 3 y = 12$, which is in our convention ($A = 2 > 0$, $B = 3$, $C = 12$, $\gcd = 1$).
+
+**(4) Standard form to slope-intercept.** Given $A x + B y = C$ with $B \ne 0$, isolate $y$:
+
+$$B y = -A x + C, \qquad y = -\frac{A}{B} x + \frac{C}{B}.$$
+
+The slope is $-A/B$ and the y-intercept is $C/B$. If $B = 0$, the line is vertical (equation $x = C/A$) and there is no slope-intercept form.
+
+### From Two Points, Directly to Point-Slope
+
+If you are handed two points $(x_1, y_1)$ and $(x_2, y_2)$ and asked for the equation of the line, the *fastest* path is through point-slope form. First compute the slope (lesson 9):
+
+$$m = \frac{y_2 - y_1}{x_2 - x_1}.$$
+
+Then plug the slope and *either* of the two points directly into point-slope:
+
+$$y - y_1 = m (x - x_1).$$
+
+You are done. No back-solve required. If you also need slope-intercept or standard form, convert from point-slope using the formulas above.
+
+### A Worked Conversion Cycle
+
+To make the "three costumes, one line" idea concrete, here is the line through $(3, 7)$ with slope $2$, written in all three forms.
+
+- **Point-slope:** $y - 7 = 2(x - 3)$.
+- **Slope-intercept:** distribute and isolate — $y = 2x - 6 + 7 = 2x + 1$.
+- **Standard form:** move the $x$-term — $-2x + y = 1$; multiply by $-1$ to satisfy $A \ge 0$ — $2x - y = -1$.
+
+All three equations describe the same line. Verify with the original point $(3, 7)$:
+
+- Point-slope: $7 - 7 = 2(3 - 3) \Rightarrow 0 = 0$. ✓
+- Slope-intercept: $7 = 2(3) + 1 \Rightarrow 7 = 7$. ✓
+- Standard form: $2(3) - 7 = -1 \Rightarrow -1 = -1$. ✓
+
+Verify with a second point — say, the y-intercept $(0, 1)$ that the slope-intercept form gives you:
+
+- Standard form: $2(0) - 1 = -1$. ✓
+
+Same line, three languages.
+
+## Visual or Mental Model
+
+### Point-Slope: A Line Pivoting Around an Anchor
+
+Picture the point $(x_1, y_1)$ as a pin stuck into the plane. The line passes through the pin. The slope $m$ controls the *tilt* of the line, while the pin holds the line in place. Vary $m$ and the line rotates around the pin like a clock hand on its axle.
+
+```
+   y
+   |
+   |   m=3      m=1
+   |    \       /
+   |     \     /
+   |      \   /
+   |       \ /
+   |        X  <-- pin at (x_1, y_1)
+   |       / \
+   |      /   \
+   |     /     \
+   |   m=-1   m=-3
+   |
+---+-------------- x
+```
+
+Five different lines, all through the same pin, with five different slopes. The point-slope form $y - y_1 = m(x - x_1)$ is the explicit equation of any of them. The pin is the anchor; the slope is the free parameter.
+
+This picture is the calculus-tangent-line picture. The pin is the point $(x_0, f(x_0))$ on the curve; the slope is $f'(x_0)$, the derivative at that point. The tangent line is $y - f(x_0) = f'(x_0) (x - x_0)$. Same form, same picture.
+
+### Standard Form: A Line Defined by a Normal Vector
+
+In standard form $A x + B y = C$, the pair $(A, B)$ is a vector that is **perpendicular** to the line. (Lesson 12 will explore perpendicularity carefully, and a later module will rebuild this picture in the vocabulary of vectors and dot products. For now, just visualize.)
+
+```
+   y
+   |        \
+   |         \     ^
+   |          \   /  normal vector (A, B)
+   |           \ /
+   |            X
+   |           / \
+   |          /   v
+   |         /
+   |        /
+   |       /     line: A x + B y = C
+---+------/-------- x
+   |     /
+```
+
+Why does this matter? Two reasons.
+
+- **Edge tests in graphics.** If $A x + B y - C > 0$, the point $(x, y)$ is on the side of the line that the normal vector $(A, B)$ points toward. If $A x + B y - C < 0$, it is on the opposite side. If equal to zero, it is *on* the line. Three sign checks for a triangle's three edges decide whether a pixel is inside the triangle.
+- **Signed distance.** The signed distance from a point $(x_0, y_0)$ to the line $A x + B y = C$ is $\frac{A x_0 + B y_0 - C}{\sqrt{A^2 + B^2}}$. The sign tells you which side; the magnitude tells you how far. (Foreshadowing: you will derive this formula carefully when you reach the vector module.)
+
+The standard-form picture is the picture that connects lines to vectors and to higher dimensions. In 3D, the equation $A x + B y + C z = D$ is a *plane*, and the triple $(A, B, C)$ is a vector perpendicular to the plane. The 2D picture you just learned is the lower-dimensional case of the same idea.
+
+### Three Forms, Side by Side
+
+The same line, written three ways:
+
+```
+  Point-slope:       y - 7 = 2 (x - 3)
+  Slope-intercept:   y     = 2 x + 1
+  Standard form:     2 x - y = -1
+```
+
+Each form makes a different feature visible.
+
+- Point-slope highlights the anchor point $(3, 7)$ and the slope $2$.
+- Slope-intercept highlights the y-intercept $(0, 1)$ and the slope $2$.
+- Standard form highlights the constraint and the normal-vector pair $(2, -1)$.
+
+Choose the form that highlights the feature your current task needs.
+
+## Worked Examples
+
+### Example (a) — Write in Point-Slope, Convert to the Other Two
+
+Write the line through $(3, 7)$ with slope $2$ in point-slope form, then convert to slope-intercept and standard form.
+
+**Point-slope** directly from the inputs:
+
+$$y - 7 = 2 (x - 3).$$
+
+**Slope-intercept:** distribute and isolate $y$:
+
+$$y = 2x - 6 + 7 = 2x + 1.$$
+
+**Standard form:** move the $x$-term to the left:
+
+$$-2x + y = 1.$$
+
+Multiply by $-1$ to satisfy $A \ge 0$:
+
+$$2x - y = -1.$$
+
+The line in all three costumes. Verify with the anchor $(3, 7)$: $2(3) - 7 = -1$. ✓
+
+### Example (b) — Two Points to All Three Forms
+
+Find the line through $(-2, 5)$ and $(4, -1)$, and write it in all three forms.
+
+**Step 1 — slope** (lesson 9):
+
+$$m = \frac{-1 - 5}{4 - (-2)} = \frac{-6}{6} = -1.$$
+
+**Step 2 — point-slope** using the first point:
+
+$$y - 5 = -1 \cdot (x - (-2)) = -(x + 2).$$
+
+**Step 3 — slope-intercept:** distribute and isolate $y$:
+
+$$y = -x - 2 + 5 = -x + 3.$$
+
+**Step 4 — standard form:** move the $x$-term:
+
+$$x + y = 3.$$
+
+Coefficients $A = 1$, $B = 1$, $C = 3$, $\gcd = 1$, $A > 0$. Done.
+
+**Verify** with the second point $(4, -1)$: $4 + (-1) = 3$. ✓
+
+### Example (c) — Standard Form Back to Slope-Intercept and Point-Slope
+
+Convert $3x - 2y = 12$ to slope-intercept form, then write a point-slope form using the x-intercept as the anchor.
+
+**Slope-intercept:** isolate $y$:
+
+$$-2y = -3x + 12, \qquad y = \tfrac{3}{2} x - 6.$$
+
+Slope $\tfrac{3}{2}$, y-intercept $-6$.
+
+**Point-slope using the x-intercept.** The x-intercept is the point where $y = 0$:
+
+$$0 = \tfrac{3}{2} x - 6 \quad \Longrightarrow \quad x = 4.$$
+
+So the x-intercept is $(4, 0)$. Point-slope:
+
+$$y - 0 = \tfrac{3}{2} (x - 4), \qquad \text{i.e.,} \qquad y = \tfrac{3}{2} (x - 4).$$
+
+Notice this is the *same line* as $y = \tfrac{3}{2} x - 6$. Expanding the point-slope form: $y = \tfrac{3}{2} x - 6$. ✓
+
+This example shows the "any point you like" freedom of point-slope form. The y-intercept gives one point-slope equation; the x-intercept gives another that looks different but represents the same line.
+
+### Example (d) — A Vertical Line
+
+Write the equation of the vertical line through $(5, 7)$.
+
+**Standard form:** $1 \cdot x + 0 \cdot y = 5$, or just
+
+$$x = 5.$$
+
+**Slope-intercept form:** does not exist. The slope is undefined (rise over run has denominator zero). If you try to write $y = m x + b$, no value of $m$ and $b$ produces the equation $x = 5$. Vertical lines are the canonical example of why slope-intercept form is not enough.
+
+**Point-slope form:** also does not exist in the usual shape, because point-slope also needs a slope. The standard form $x = 5$ is the *only* form that handles this line.
+
+### Example (e) — Tangent-Line Preview (Calculus)
+
+(You will derive the slope in a future calculus lesson; for now, take it as given.) The curve $y = x^2$ has a tangent line at the point $(2, 4)$ whose slope is $4$. Write the tangent line in point-slope form, then convert to slope-intercept.
+
+**Point-slope** directly:
+
+$$y - 4 = 4 (x - 2).$$
+
+**Slope-intercept:** distribute and isolate $y$:
+
+$$y = 4x - 8 + 4 = 4x - 4.$$
+
+**Why point-slope is the natural form here.** You knew the point (because you chose where to take the tangent) and you knew the slope (because the derivative gave it to you). Point-slope $y - y_0 = f'(x_0) (x - x_0)$ writes the answer in one line, with no back-solve. If you had jumped straight to slope-intercept you would have had to compute the y-intercept as an intermediate value, which is unnecessary work and one more place for an arithmetic error to hide.
+
+This is the calculus tangent-line formula. Every linearization, every Newton's-method step, every first-order Taylor expansion you will ever read uses this point-slope shape.
+
+### Example (f) — A Linear-Programming Constraint (Standard Form Is Natural)
+
+A small workshop produces two products with limited budget: widgets at 3 dollars each, gadgets at 5 dollars each, and a total budget of 60 dollars. The constraint "total cost at most 60 dollars" is
+
+$$3 x + 5 y \le 60,$$
+
+where $x$ is the number of widgets and $y$ is the number of gadgets. The boundary of the constraint — the set of $(x, y)$ pairs where the budget is *exactly* spent — is the standard-form line
+
+$$3 x + 5 y = 60.$$
+
+This is already in our convention ($A = 3 > 0$, $B = 5$, $C = 60$, $\gcd = 1$). If you wanted to graph the constraint, you would convert to slope-intercept:
+
+$$5 y = -3 x + 60, \qquad y = -\tfrac{3}{5} x + 12.$$
+
+Slope $-\tfrac{3}{5}$ (every additional widget costs you $3/5$ of a gadget), y-intercept $12$ (twelve gadgets if you buy zero widgets), and you can also read the x-intercept by setting $y = 0$: $x = 20$ (twenty widgets if you buy zero gadgets). The two intercepts give the corners of the feasible region on the budget line.
+
+But notice: when this constraint enters a real linear program, alongside (say) labor constraints and inventory constraints, the *system* of constraints is most naturally written as a matrix of standard-form coefficient rows. The simplex method does not want to see slope-intercept rearrangements; it wants the raw standard-form coefficients. Standard form is the *system* form, even though slope-intercept is the *graphing* form.
+
+### Example (g) — Robotics Waypoint
+
+A robotic gripper must follow a straight-line path that passes through the waypoint $(1.0, 2.0)$ meters with a heading slope of $0.5$. Write the path equation, in the form most natural for the planner.
+
+**Point-slope** is the natural form, because a waypoint is a point and a heading is a slope:
+
+$$y - 2.0 = 0.5 (x - 1.0),$$
+
+with $x$ and $y$ in meters. To check whether a candidate target lies on the path, the planner substitutes the target's $x$ and checks whether the equation holds for the target's $y$.
+
+For a candidate target at $(3.0, 3.0)$ m: $3.0 - 2.0 = 0.5(3.0 - 1.0) \Rightarrow 1.0 = 1.0$. ✓ The target is on the path.
+
+For a candidate target at $(3.0, 4.0)$ m: $4.0 - 2.0 = 0.5(3.0 - 1.0) \Rightarrow 2.0 = 1.0$. ✗ The target is *off* the path; the difference $4.0 - 3.0 = 1.0$ m tells the planner the perpendicular-ish offset to correct.
+
+If the planner later needs to feed this path into a matrix of constraints (e.g., "stay within a corridor"), it converts to standard form:
+
+$$y = 0.5 x - 0.5 + 2.0 = 0.5 x + 1.5,$$
+
+then
+
+$$-0.5 x + y = 1.5, \qquad \text{or, clearing the fraction,} \qquad x - 2 y = -3.$$
+
+Same path, three forms, each useful for a different downstream computation.
+
+### Example (h) — Failure Mode: Trying to Force a Vertical Line into Slope-Intercept
+
+A student is asked for the equation of the vertical line through $x = 3$. They begin with $y = m x + b$ and try to plug in $x = 3$:
+
+$$y = 3 m + b.$$
+
+But $y$ should be allowed to be *anything* on a vertical line, and the right side is a single number. The student tries $m = 0$ and gets $y = b$ — but that is a *horizontal* line at $y = b$, not the vertical line $x = 3$. They try $m \to \infty$ — but infinity is not a real number. They are stuck.
+
+**Diagnose.** The slope of a vertical line is *undefined* (division by zero), so no slope-intercept equation can represent it. The correct form is standard form: $x = 3$, or equivalently $1 \cdot x + 0 \cdot y = 3$.
+
+**Lesson.** As soon as you suspect a line might be vertical, abandon $y = m x + b$ and reach for $x = c$. The point-slope form has the same problem (it requires a slope), so it also does not apply. Standard form is the one form that handles every line, including verticals, without flinching. This is exactly why standard form has survived as a serious working notation for two thousand years.
+
+## Engineering Connections
+
+A few concrete settings where the form-of-a-line choice has real consequences for working engineering practice.
+
+**Linear-programming constraints.** The simplex method, the workhorse algorithm of linear optimization, requires every constraint in standard form. Production planners, supply-chain optimizers, dietary-recommendation tools, and airline crew schedulers all build a matrix of standard-form constraint rows and feed it into a solver (the `linprog` function in SciPy or in MATLAB, the `CPLEX` engine in commercial systems). The boundary of every constraint is a standard-form line (in 2D) or hyperplane (in $n$D).
+
+**Computer-graphics edge equations.** Real-time renderers and game engines test, for every pixel inside the bounding box of a triangle, whether the pixel is inside the triangle by evaluating the standard-form edge expression $A x + B y - C$ for each of the three edges and checking the signs. Three multiplications and additions per edge per pixel; no division. The pair $(A, B)$ for each edge can be computed once when the triangle is set up. This is one of the inner loops of modern graphics hardware.
+
+**Signed distance from a point to a line.** The formula $\text{distance} = (A x_0 + B y_0 - C)/\sqrt{A^2 + B^2}$ requires the line in standard form. It is the foundation of feature-matching in computer vision (RANSAC computes how many image points lie within distance $\epsilon$ of a candidate line), of collision detection in robotics (how far is the gripper from a wall), and of path-following in autonomous vehicles (how far off-track am I, with which sign).
+
+**Surveying and CAD.** Land surveys and CAD systems often specify lines as "point and bearing" — directly the inputs to point-slope form. The CAD system then stores the line internally in standard form for system-level computations (intersections with other lines, perpendicular projections, distance queries), but reports it back to the human user as a point-and-bearing pair. The conversion happens in the software, transparently.
+
+**Calculus tangent lines.** Every tangent line you will ever write — at the start of a Newton's-method iteration, as the linearization of a control system around an operating point, as the first-order Taylor expansion of any smooth function — has the point-slope shape $y - y_0 = f'(x_0)(x - x_0)$. Lesson 10 mentioned this; this lesson gives you the form that makes it explicit. After enough practice, you will see point-slope structure in equations that have been simplified beyond visual recognition.
+
+**Linear algebra and matrix notation.** A system of two linear equations in two unknowns,
+
+$$A_1 x + B_1 y = C_1, \qquad A_2 x + B_2 y = C_2,$$
+
+is exactly the matrix equation
+
+$$\begin{bmatrix} A_1 & B_1 \\ A_2 & B_2 \end{bmatrix} \begin{bmatrix} x \\ y \end{bmatrix} = \begin{bmatrix} C_1 \\ C_2 \end{bmatrix},$$
+
+usually abbreviated $A \mathbf{x} = \mathbf{b}$. The rows of $A$ are *exactly* the standard-form coefficients $(A_i, B_i)$ of the constituent lines. When you reach linear algebra later in the curriculum, this is how individual lines stack into systems. There is no other form of the line equation that aligns this cleanly with matrix notation.
+
+**Optical interferometry and laser metrology.** An interferometer's optical paths are straight lines defined by a known mirror position (a point) plus a propagation direction (a slope, in 2D, or a direction vector in 3D). Point-slope (in 2D) or its vector generalization (in 3D) is the working representation that the instrument's calibration software manipulates.
+
+## Practice Set
+
+### Warmups
+
+Write the requested form.
+
+1. Point-slope form of the line through $(2, 5)$ with slope $3$.
+2. Point-slope form of the line through $(-1, 4)$ with slope $-\tfrac{1}{2}$.
+3. Slope-intercept form of $y - 6 = 4(x - 1)$.
+4. Slope-intercept form of $y + 2 = -3(x - 5)$.
+5. Standard form of $y = 2x + 7$ (with our convention).
+6. Standard form of $y = -\tfrac{3}{4} x + 2$ (clear the fraction).
+7. Slope-intercept form of $5x - 2y = 10$.
+8. Slope-intercept form of $3x + 4y = 24$.
+
+### Applied (Engineering Scenarios)
+
+9. A surveyor knows that a property line passes through the corner at $(120, 80)$ meters with a bearing whose slope is $-0.4$. Write the property line in point-slope form. Convert to standard form with integer coefficients.
+
+10. A robotic arm's straight-line trajectory passes through the waypoint $(0.3, 0.5)$ m with heading slope $1.2$. Write the trajectory in point-slope form. Does the point $(0.6, 0.86)$ m lie on the trajectory? (Substitute and check.)
+
+11. A computer-graphics triangle has an edge from $(0, 0)$ to $(4, 3)$. Find the standard-form equation of the line containing this edge. State the normal-vector pair $(A, B)$.
+
+12. A workshop's budget constraint is "at most 90 dollars total, with widgets at 6 dollars each and gadgets at 9 dollars each." Write the boundary of the constraint in standard form. Convert to slope-intercept and identify both intercepts.
+
+13. A vertical wall in a 2D floor plan lies along $x = 4.5$ m. Write the equation in standard form, identify the coefficients $A$, $B$, $C$, and explain in one sentence why you cannot use slope-intercept form.
+
+### Conversion Cycle
+
+For each line, write all three forms (point-slope, slope-intercept, standard) and verify with two points on the line.
+
+14. Line through $(1, -2)$ with slope $3$.
+15. Line through $(-3, 4)$ and $(2, -1)$.
+16. Standard-form line $4x + 5y = 20$. (Use the y-intercept as the anchor for point-slope.)
+
+### Error-Spotting
+
+17. A student converts the line "through $(2, 3)$ with slope $5$" to point-slope form and writes $y - 2 = 5(x - 3)$. What did they swap, and what is the correct point-slope form?
+
+18. A student converts $y = -\tfrac{1}{2} x + 3$ to standard form and writes $\tfrac{1}{2} x + y = 3$. What is missing from the cleanup, and what is the correct standard form under our convention?
+
+### Challenge
+
+19. Write the equation of the vertical line through the point $(7, -2)$ in standard form. Then write the equation of the horizontal line through the same point in slope-intercept *and* standard form. (Two equations total: one vertical, one horizontal.)
+
+20. The curve $y = x^3$ has a tangent line at the point $(1, 1)$ whose slope is $3$ (you will compute this in calculus). Write the tangent line in point-slope form, then convert to slope-intercept and to standard form. Verify by substituting the anchor point into all three forms.
+
+### Answers
+
+1. $y - 5 = 3(x - 2)$.
+2. $y - 4 = -\tfrac{1}{2}(x + 1)$.
+3. $y = 4x - 4 + 6 = 4x + 2$.
+4. $y = -3x + 15 - 2 = -3x + 13$.
+5. $-2x + y = 7$, multiply by $-1$ to get $2x - y = -7$.
+6. $\tfrac{3}{4} x + y = 2$, multiply by $4$ to get $3x + 4y = 8$.
+7. $-2y = -5x + 10 \Rightarrow y = \tfrac{5}{2} x - 5$.
+8. $4y = -3x + 24 \Rightarrow y = -\tfrac{3}{4} x + 6$.
+9. Point-slope: $y - 80 = -0.4 (x - 120)$. Convert: $y = -0.4 x + 48 + 80 = -0.4 x + 128$, then $0.4 x + y = 128$, multiply by $5$ to get $2x + 5y = 640$.
+10. Trajectory: $y - 0.5 = 1.2 (x - 0.3)$. Check $(0.6, 0.86)$: left side $0.86 - 0.5 = 0.36$, right side $1.2 (0.6 - 0.3) = 1.2 \cdot 0.3 = 0.36$. ✓ Yes, the point lies on the trajectory.
+11. Slope $m = (3 - 0)/(4 - 0) = \tfrac{3}{4}$. Slope-intercept: $y = \tfrac{3}{4} x$ (passes through origin). Standard: $-\tfrac{3}{4} x + y = 0$, multiply by $4$: $-3x + 4y = 0$; flip sign for $A \ge 0$: $3x - 4y = 0$. Normal vector pair $(3, -4)$.
+12. Boundary: $6 x + 9 y = 90$. Divide by $\gcd = 3$: $2 x + 3 y = 30$. Slope-intercept: $y = -\tfrac{2}{3} x + 10$. Y-intercept $10$ (ten gadgets if zero widgets), x-intercept $15$ (fifteen widgets if zero gadgets).
+13. Standard form: $1 \cdot x + 0 \cdot y = 4.5$, or $x = 4.5$. $A = 1$, $B = 0$, $C = 4.5$. Slope-intercept is impossible because the line is vertical and its slope is undefined.
+14. Point-slope: $y + 2 = 3(x - 1)$. Slope-intercept: $y = 3x - 5$. Standard: $-3x + y = -5$, multiply by $-1$: $3x - y = 5$. Verify $(1, -2)$: $3 - (-2) = 5$. ✓ Verify $(2, 1)$ (computed by stepping right one, up three from the anchor): $3(2) - 1 = 5$. ✓
+15. Slope $m = (-1 - 4)/(2 - (-3)) = -5/5 = -1$. Point-slope: $y - 4 = -1 (x + 3)$. Slope-intercept: $y = -x - 3 + 4 = -x + 1$. Standard: $x + y = 1$. Verify $(-3, 4)$: $-3 + 4 = 1$. ✓ Verify $(2, -1)$: $2 + (-1) = 1$. ✓
+16. Slope-intercept: $5 y = -4 x + 20 \Rightarrow y = -\tfrac{4}{5} x + 4$. Y-intercept $(0, 4)$. Point-slope at $(0, 4)$: $y - 4 = -\tfrac{4}{5}(x - 0)$. Verify $(5, 0)$ (the x-intercept): standard $4(5) + 5(0) = 20$. ✓; slope-intercept $-\tfrac{4}{5}(5) + 4 = 0$. ✓
+17. The student swapped the roles of $x_1$ and $y_1$. The point is $(2, 3)$, so $x_1 = 2$ and $y_1 = 3$. Correct point-slope: $y - 3 = 5(x - 2)$.
+18. The convention requires integer coefficients (so clear the fraction by multiplying through by $2$) and $A \ge 0$ (so flip sign if needed). Multiply by $2$: $x + 2y = 6$. Already has $A = 1 > 0$. Correct standard form: $x + 2y = 6$.
+19. Vertical line through $(7, -2)$: $x = 7$, or $1 \cdot x + 0 \cdot y = 7$. Horizontal line through $(7, -2)$: slope-intercept $y = -2$; standard form $0 \cdot x + 1 \cdot y = -2$, or just $y = -2$.
+20. Point-slope: $y - 1 = 3(x - 1)$. Slope-intercept: $y = 3x - 3 + 1 = 3x - 2$. Standard: $-3x + y = -2$, flip sign: $3x - y = 2$. Verify $(1, 1)$: point-slope $0 = 0$ ✓; slope-intercept $1 = 3 - 2$ ✓; standard $3 - 1 = 2$ ✓.
+
+## Build Task
+
+Extend the `LinearModel` class from lesson 10 with new **class-method constructors** for each of the three forms and **instance-method exporters** that return the model in any chosen form. Then write a *round-trip test* that takes a line, exports it to each form, re-imports it, and verifies that the original and round-tripped models agree to floating-point precision.
+
+```python
+import numpy as np
+
+
+class LinearModel:
+    """A line in the plane, internally stored as slope-intercept (y = m x + b).
+
+    For vertical lines (no slope), use the dedicated VerticalLine flag and
+    store the x-intercept in self.vertical_x.
+    """
+
+    def __init__(self, slope=0.0, intercept=0.0, vertical_x=None):
+        if vertical_x is not None:
+            self.vertical = True
+            self.vertical_x = float(vertical_x)
+            self.slope = None
+            self.intercept = None
+        else:
+            self.vertical = False
+            self.slope = float(slope)
+            self.intercept = float(intercept)
+            self.vertical_x = None
+
+    # ---- Constructors for each form ----
+
+    @classmethod
+    def from_slope_intercept(cls, m, b):
+        return cls(slope=m, intercept=b)
+
+    @classmethod
+    def from_point_slope(cls, point, slope):
+        x1, y1 = point
+        # y - y1 = m (x - x1)  ==>  y = m x + (y1 - m x1)
+        return cls(slope=slope, intercept=y1 - slope * x1)
+
+    @classmethod
+    def from_two_points(cls, p1, p2):
+        x1, y1 = p1
+        x2, y2 = p2
+        if x1 == x2:
+            # Vertical line: undefined slope.
+            if y1 == y2:
+                raise ValueError("two identical points do not define a line")
+            return cls(vertical_x=x1)
+        m = (y2 - y1) / (x2 - x1)
+        return cls.from_point_slope(p1, m)
+
+    @classmethod
+    def from_standard(cls, A, B, C):
+        # A x + B y = C
+        if A == 0 and B == 0:
+            raise ValueError("A and B cannot both be zero")
+        if B == 0:
+            # Vertical line: x = C / A
+            return cls(vertical_x=C / A)
+        return cls(slope=-A / B, intercept=C / B)
+
+    # ---- Exporters: return the model in each form ----
+
+    def to_slope_intercept(self):
+        if self.vertical:
+            raise ValueError("vertical line has no slope-intercept form")
+        return (self.slope, self.intercept)
+
+    def to_point_slope(self, point=None):
+        if self.vertical:
+            raise ValueError("vertical line has no point-slope form")
+        if point is None:
+            # Default anchor: the y-intercept.
+            point = (0.0, self.intercept)
+        x1, y1 = point
+        # Verify the point is on the line:
+        if not np.isclose(y1, self.slope * x1 + self.intercept):
+            raise ValueError(f"point {point} is not on the line")
+        return (point, self.slope)
+
+    def to_standard(self):
+        if self.vertical:
+            # x = vertical_x  ==>  1 * x + 0 * y = vertical_x
+            return (1.0, 0.0, float(self.vertical_x))
+        # y = m x + b  ==>  -m x + y = b  ==>  m x - y = -b  (flip sign for A>=0)
+        A, B, C = -self.slope, 1.0, self.intercept
+        if A < 0:
+            A, B, C = -A, -B, -C
+        return (A, B, C)
+
+    # ---- Convenience and equality ----
+
+    def predict(self, x):
+        if self.vertical:
+            raise ValueError("vertical line cannot predict y from x")
+        return self.slope * x + self.intercept
+
+    def approx_equal(self, other, tol=1e-9):
+        if self.vertical != other.vertical:
+            return False
+        if self.vertical:
+            return abs(self.vertical_x - other.vertical_x) < tol
+        return (abs(self.slope - other.slope) < tol
+                and abs(self.intercept - other.intercept) < tol)
+
+    def __repr__(self):
+        if self.vertical:
+            return f"LinearModel(vertical x={self.vertical_x:.6g})"
+        return f"LinearModel(slope={self.slope:.6g}, intercept={self.intercept:.6g})"
+
+
+# ---- Round-trip tests ----
+
+def round_trip_test(line, label):
+    print(f"\n{label}: {line}")
+    # Slope-intercept round-trip
+    if not line.vertical:
+        m, b = line.to_slope_intercept()
+        rt = LinearModel.from_slope_intercept(m, b)
+        assert line.approx_equal(rt), "slope-intercept round-trip failed"
+        print(f"  slope-intercept  -> ({m:.4f}, {b:.4f})  round-trip OK")
+        # Point-slope round-trip (default anchor)
+        pt, slope = line.to_point_slope()
+        rt = LinearModel.from_point_slope(pt, slope)
+        assert line.approx_equal(rt), "point-slope round-trip failed"
+        print(f"  point-slope      -> point={pt}, slope={slope:.4f}  round-trip OK")
+    # Standard-form round-trip (works for all lines, including verticals)
+    A, B, C = line.to_standard()
+    rt = LinearModel.from_standard(A, B, C)
+    assert line.approx_equal(rt), "standard-form round-trip failed"
+    print(f"  standard form    -> ({A:.4f}) x + ({B:.4f}) y = {C:.4f}  round-trip OK")
+
+
+# Test on three lines: a generic line, a horizontal line, and a vertical line.
+generic = LinearModel.from_point_slope((3, 7), 2)
+horizontal = LinearModel.from_slope_intercept(0, 5)
+vertical = LinearModel(vertical_x=4.5)
+
+round_trip_test(generic, "Generic line through (3, 7) with slope 2")
+round_trip_test(horizontal, "Horizontal line y = 5")
+round_trip_test(vertical, "Vertical line x = 4.5")
+
+# Also test from_two_points and from_standard
+from_pts = LinearModel.from_two_points((-2, 5), (4, -1))
+print(f"\nFrom two points (-2, 5) and (4, -1): {from_pts}")
+# Expected: slope -1, intercept 3
+assert from_pts.approx_equal(LinearModel.from_slope_intercept(-1, 3))
+
+from_std = LinearModel.from_standard(3, -2, 12)
+print(f"From standard 3x - 2y = 12: {from_std}")
+# Expected: slope 3/2, intercept -6
+assert from_std.approx_equal(LinearModel.from_slope_intercept(1.5, -6))
+
+print("\nAll round-trip tests passed.")
+```
+
+**Stretch goals.**
+
+- Add a `clean_standard()` method that returns integer coefficients with $\gcd = 1$ and $A \ge 0$, matching the convention used in this lesson. (Use `math.gcd` and `fractions.Fraction` for robustness.)
+- Add a `signed_distance(point)` method that returns the signed perpendicular distance from a point to the line, using the standard-form formula $(A x_0 + B y_0 - C)/\sqrt{A^2 + B^2}$. Verify on a known case (e.g., the distance from the origin to $3 x + 4 y = 25$ should be $5$).
+- Add an `intersect(other)` method that returns the intersection point of two `LinearModel` instances by solving the $2 \times 2$ standard-form system. Return `None` for parallel lines. (This previews lesson 12's parallel-line detection and the systems-of-equations module.)
+
+## Quiz
+
+1. State the point-slope form of a line and explain what each symbol represents.
+2. State the standard form of a line and explain why it can represent vertical lines while slope-intercept cannot.
+3. When is point-slope form more convenient than slope-intercept form? Give two concrete examples.
+4. When is standard form more convenient than the other two? Give two concrete examples.
+5. Convert $y - 3 = 2(x - 5)$ to slope-intercept form and to standard form (with our convention).
+6. What is the unique form for a vertical line? Give the equation of the vertical line through $(8, -3)$.
+7. Why does standard form generalize cleanly to higher dimensions while slope-intercept does not? Sketch what the 3D version of standard form looks like.
+8. What is the connection between the standard form of a line and matrix notation $A \mathbf{x} = \mathbf{b}$? Describe how the coefficients of two standard-form equations stack into a $2 \times 2$ matrix system.
+
+**Answers (compressed).** (1) $y - y_1 = m (x - x_1)$, where $(x_1, y_1)$ is any point on the line and $m$ is the slope. The form expresses "the line through *this point* with *this slope*." (2) $A x + B y = C$, with $A$ and $B$ not both zero. Vertical lines have undefined slope (division by zero in rise/run), so $y = m x + b$ cannot represent them; but $1 \cdot x + 0 \cdot y = c$ (i.e., $x = c$) is a perfectly valid standard-form equation with $B = 0$. (3) Point-slope is more convenient when you know a point and a slope, especially when the point is *not* the y-intercept. Examples: (a) tangent lines at a specified point of a curve (you know the point and the derivative gives the slope); (b) waypoint planning in robotics (you know the waypoint and the heading). (4) Standard form is more convenient when (a) the line is part of a system of equations (the standard-form coefficients are rows of the matrix $A$ in $A \mathbf{x} = \mathbf{b}$), or (b) you need to perform a sign-based geometric test like a graphics edge test or a signed-distance computation. It is also the *only* form that handles vertical lines. (5) Distribute: $y = 2x - 10 + 3 = 2x - 7$. Standard: $-2x + y = -7$, flip sign for $A \ge 0$: $2x - y = 7$. (6) Standard form $x = c$ (or $1 \cdot x + 0 \cdot y = c$). For $(8, -3)$: $x = 8$. (7) Slope-intercept $y = m x + b$ has one explicitly distinguished variable ($y$) on the left, with one slope $m$ and one intercept $b$; generalizing to three variables requires arbitrarily picking one variable to be "the output," which is unnatural for a plane in 3D. Standard form $A x + B y = C$ treats $x$ and $y$ symmetrically. In 3D, the natural generalization is $A x + B y + C z = D$ — a *plane*, with no awkward choice of which variable is special. The triple $(A, B, C)$ is the normal vector to the plane. (8) Two standard-form equations $A_1 x + B_1 y = C_1$ and $A_2 x + B_2 y = C_2$ stack directly into the matrix system $\begin{bmatrix} A_1 & B_1 \\ A_2 & B_2 \end{bmatrix} \begin{bmatrix} x \\ y \end{bmatrix} = \begin{bmatrix} C_1 \\ C_2 \end{bmatrix}$. Each row of the coefficient matrix is the $(A, B)$ pair of one line, and each entry of the right-hand vector is the corresponding $C$.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Write any line in any of the three forms (point-slope, slope-intercept, standard) given any of the standard inputs (slope and point, two points, slope and y-intercept, or standard-form coefficients).
+- Convert mechanically between the three forms and verify by spot-checking points.
+- Diagnose on sight when a problem calls for point-slope (you have a point and a slope, or a tangent line, or a waypoint), when it calls for slope-intercept (you need to read off slope and intercept, or to sketch quickly), or when it calls for standard form (a system of equations, a graphics edge test, or a vertical line).
+- Write the equation of a vertical line and explain why slope-intercept form cannot represent it.
+- Commit the extended `LinearModel` class from the build task, with class-method constructors `from_slope_intercept`, `from_point_slope`, `from_two_points`, `from_standard`, instance-method exporters `to_slope_intercept`, `to_point_slope`, `to_standard`, and a round-trip test that passes for generic, horizontal, and vertical lines.
+
+Push the extended `linear_model.py` to your curriculum repository, along with a one-paragraph note that names a real situation (from your own life or recent reading) where one of the three forms is most natural and explains why.
+
+## Sources and Further Study
+
+- **Serge Lang, *Basic Mathematics*, chapters 5–6.** Carefully treats all three forms of the line and the conversions between them, in Lang's typically austere style.
+- **James Stewart, *Calculus*, chapter 1 (review of lines) and chapter 2 (tangent lines).** Stewart introduces the point-slope form in the context of tangent lines, which is the form's natural home in calculus.
+- **Gilbert Strang, *Introduction to Linear Algebra*, chapter 1.** Shows how standard-form linear equations stack into the matrix system $A \mathbf{x} = \mathbf{b}$. This is the deepest connection lesson 11 makes; Strang's treatment is the canonical one.
+- **René Descartes, *La Géométrie* (1637), modern English translation.** The original fusion of algebra and geometry. The standard-form equation of a line predates this work, but Descartes is who made the equation a *picture* in the coordinate plane.
+- **MIT OpenCourseWare 18.01, *Single Variable Calculus*, lecture 2.** Professor Jerison introduces the tangent line and the point-slope form as the natural language for differential calculus.
+- **MIT OpenCourseWare 18.06, *Linear Algebra*, lecture 1.** Professor Strang shows the standard form as the row of a matrix and uses geometric intuition to explain the matrix equation $A \mathbf{x} = \mathbf{b}$. Watch even before you have done a formal linear-algebra course; the framing is illuminating.
+- **James D. Foley, Andries van Dam, et al., *Computer Graphics: Principles and Practice*.** The chapter on triangle rasterization develops the edge-equation form, the inside-or-outside test, and the relationship between the standard-form coefficients and the edge's normal vector.
+- **Dimitris Bertsimas and John Tsitsiklis, *Introduction to Linear Optimization*.** Chapter 1 and 2 develop the linear-programming standard form for constraints and the simplex method. The standard-form line you learned in this lesson is the 2D base case of the standard-form polytope that linear programming optimizes over.
+
+## Next Lesson Bridge
+
+You now own all three common forms of a linear equation and the conversion machinery between them. Lesson 12 — `parallel-and-perpendicular-lines` — uses the slope (visible directly in slope-intercept and point-slope, and computable from standard form as $-A/B$) to detect two important geometric relationships:
+
+- **Two lines are parallel** when their slopes are equal (and their intercepts differ — equal-slope-equal-intercept lines are the *same* line).
+- **Two lines are perpendicular** when their slopes multiply to $-1$ (equivalently, when one slope is the negative reciprocal of the other).
+
+These two relationships are the building blocks of geometric construction in engineering layouts: the walls of a building are perpendicular pairs, the lanes of a highway are parallel pairs, the structural members of a truss alternate between perpendicular and oblique relationships, the axes of a coordinate frame are mutually perpendicular. With lesson 12 in hand, you will be able to take any pair of lines (in any of the three forms) and immediately answer: are they parallel, perpendicular, or neither — and if neither, where do they intersect?
+
+That last question — "where do they intersect?" — is the doorway into the next sub-module of the curriculum, which builds systems of linear equations and the matrix methods (Gaussian elimination, Cramer's rule, eventually full linear algebra) that solve them at scale. Standard form, which you just mastered, is the form those methods take as input. You are now ready to begin treating lines as the *constituents of systems*, not just as isolated objects.

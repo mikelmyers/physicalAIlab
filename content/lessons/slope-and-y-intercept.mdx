@@ -1,0 +1,800 @@
+# Slope and y-Intercept
+
+## Re-entry Promise
+
+This lesson assumes you have finished lessons 1 through 8 of the Engineering Algebra and Geometry module. You can solve a linear equation in one unknown, rearrange a formula symbolically, plot a point on a coordinate plane, and you know the difference between a function and a non-function. From lesson 8 you also know the catalog of common function shapes — linear, constant, piecewise, step, quadratic, exponential — and you are aware that a *linear* function has two parameters that fully describe it.
+
+What this lesson does not assume: that you remember the formula $m = (y_2 - y_1)/(x_2 - x_1)$, what "rise over run" really means, why the same line gives the same slope no matter which two points you pick, what the y-intercept is in plain English, or how to attach engineering units to a slope. We will build all of it from scratch and stay close to physical examples the whole way.
+
+By the end of this lesson you will be able to extract the slope and the y-intercept from any representation of a linear relationship — a graph, a table, an equation, or a sentence of English describing a sensor or a vehicle — and you will be able to read the slope as a *rate* with proper units and the y-intercept as a *starting value*. The next lesson (10) will combine these two numbers into the canonical $y = mx + b$ form and use it for modeling. Right now we focus on the two parameters themselves: what they are, what they mean physically, and how to find them.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Compute the slope between two points using $m = (y_2 - y_1)/(x_2 - x_1)$ without confusion about which point is "first."
+- Compute the slope from a graph by picking two clear grid points and reading rise over run with correct sign.
+- Compute the slope from a table by checking that $\Delta y / \Delta x$ is constant across consecutive pairs — and recognize that this constancy is *the* test for whether the data is linear at all.
+- Compute the slope from an equation by reading off the coefficient of $x$ when $y$ is isolated on the left side.
+- Attach engineering units to a slope: V/cm for a sensor, m/s for a vertical-velocity profile, $^\circ$C/W for a thermal resistance, km/h for a vehicle speed.
+- Identify the y-intercept as the value $f(0)$ of a function, equivalently the point where the line crosses the y-axis.
+- Read the y-intercept from a graph (the y-coordinate of the crossing point) and from an equation (the constant term when $y$ is isolated).
+- Interpret slope as a *rate of change* and y-intercept as an *initial value* in real engineering contexts.
+- Recognize the four sign cases for slope — positive (increasing), negative (decreasing), zero (constant function, horizontal), and undefined (vertical line, not a function).
+- Diagnose the two most common slope mistakes: the reciprocal error ($\Delta x / \Delta y$ instead of $\Delta y / \Delta x$) and the units-forgotten error.
+
+## Why It Matters
+
+Slope and intercept are the two numbers that describe nearly every linear device, sensor, and control law you will ever touch. Here are ten concrete situations where being able to extract them is the working skill, not a textbook exercise.
+
+1. **Sensor calibration.** A pressure transducer outputs $0.5$ V at $0$ psi and $3.5$ V at $100$ psi. The *sensitivity* is the slope — $(3.5 - 0.5)/(100 - 0) = 0.03$ V/psi — and the *offset* is the y-intercept, $0.5$ V. The two numbers fully calibrate the device: pressure in, voltage out. Every linear sensor datasheet publishes these two numbers.
+
+2. **Battery discharge.** A lithium-ion cell starts at $4.2$ V and falls roughly linearly to $3.0$ V over an hour at constant current draw. The slope ($-0.02$ V/min) is the *discharge rate*; the intercept ($4.2$ V) is the *initial voltage*. State-of-charge estimators are built around this rate.
+
+3. **Drone fuel and payload.** A delivery drone's flight time depends linearly on payload mass over a working range: full battery, $40$ minutes at $0.0$ kg; $20$ minutes at $0.5$ kg. The slope ($-40$ min/kg) tells the operator the cost per gram, and the intercept ($40$ min) is the baseline endurance.
+
+4. **PID controller proportional gain.** The proportional term of a PID controller is $u = K_p \cdot e$, where $e$ is the error signal. $K_p$ is a slope: output per unit error, with units of (actuator units)/(error units). Tuning $K_p$ is literally tuning the slope of the proportional response.
+
+5. **Op-amp small-signal gain.** A non-inverting amplifier has voltage gain $A_v = V_\text{out} / V_\text{in}$ over its linear region. That gain is the *slope* of the output-vs-input transfer curve. When the op-amp saturates the slope drops to zero — the device clips.
+
+6. **Vehicle speed from position.** Position-vs-time data from GPS, plotted on a chart, gives instantaneous speed as the *slope* of the curve. For straight-and-level cruise the slope is constant — exactly the case of a linear function.
+
+7. **Acceleration from velocity.** Velocity-vs-time data has slope equal to acceleration. An accelerometer that calibrates its readings against a velocity profile is computing slopes.
+
+8. **Marginal cost.** Total manufacturing cost as a function of units produced is often locally linear: a fixed cost (y-intercept) plus a marginal cost per unit (slope). Bills of material and pricing models are built on these two numbers.
+
+9. **Linear regression in machine learning.** The simplest supervised learning algorithm — ordinary least squares — fits a slope and an intercept to noisy data. Every more sophisticated regression model is some generalization of this two-parameter fit.
+
+10. **Thermal resistance.** A power transistor's junction temperature rises linearly with dissipated power: $T_j = T_\text{ambient} + R_\theta \cdot P$. The y-intercept is the ambient temperature ($25\,^\circ$C, say) and the slope $R_\theta$ is the *thermal resistance* in $^\circ$C/W. Without this number, heatsink design is guesswork.
+
+If you can extract slope and intercept from any of these scenarios in under a minute and attach the right units, you have a skill that pays you for the rest of your engineering career.
+
+## Why This Idea Exists
+
+The idea of a "slope" — a ratio of one quantity's change to another's — is ancient in some forms and modern in others. Tracing it carefully is worth the effort, because each step of the story added an idea you now use every time you read a calibration curve.
+
+**Pythagoras** (6th century BCE) and **Euclid** (3rd century BCE) handled *ratios* with full rigor in geometric form, particularly through the theory of similar triangles. They understood that two right triangles with the same shape have the same ratio of corresponding sides — which is exactly why "rise over run" gives the same slope no matter which pair of points you pick on a line. But the Greeks worked entirely in geometric ratios, not in the algebraic form $\Delta y / \Delta x$ we use now.
+
+**Apollonius of Perga** (3rd century BCE), in his *Conics*, studied parabolas, ellipses, and hyperbolas using tangent and secant lines. The tangent to a curve at a point — a notion that would become central two millennia later in calculus — first appears in his work. The *slope* of a tangent line, in modern terms, was already being implicitly handled by Apollonius, though he had no coordinate system to write it down in.
+
+**René Descartes** (1596–1650) and **Pierre de Fermat** (1607–1665), working independently in the 1630s and 1640s, invented analytic geometry. Descartes's *La Géométrie* (1637) — an appendix to his philosophical work *Discours de la Méthode* — introduced the idea of representing geometric curves as algebraic equations on a coordinate plane. With coordinates available, the notion of slope as an algebraic quantity — a ratio of changes in coordinates — finally had a home. Descartes did not use the word "slope" or the formula $\Delta y / \Delta x$ in modern form, but his framework made both inevitable.
+
+**Isaac Newton** (1671 manuscript, published 1736) and **Gottfried Wilhelm Leibniz** (1684 paper) independently invented the differential calculus, whose central concept is the *slope of a curve at a point*. For a straight line the slope is constant and easy. For a curve, the slope changes from point to point, and computing it is the work of differentiation. The fact that we still teach "slope of a line" as the foundation for "derivative of a function" is a direct inheritance from Newton and Leibniz.
+
+**Modern terminology.** The word *slope* in its present sense — the steepness of a line in coordinate geometry — entered mathematics in the late 18th and early 19th centuries through surveying and engineering. "Rise over run" is a literal construction-trade phrase: how much a roof or a road *rises* vertically per unit of horizontal *run*. The metaphor has stuck because it is exactly right.
+
+The named **y-intercept** as a standard term — the constant in the $y = mx + b$ form — emerged in 19th-century textbooks, particularly with the systematic teaching of analytic geometry in American and European schools. The letters $m$ for slope and $b$ for intercept are entrenched in U.S. usage; in continental Europe the conventions differ slightly (sometimes $a$ for the leading coefficient and $b$ for the constant). The mathematical content is identical.
+
+Why does engineering care so much about slope and intercept? Because most physical devices are *locally linear* near their operating points, even if they are nonlinear globally. A diode is wildly nonlinear over its full operating range, but for small signals around a fixed bias point it behaves like a resistor — characterized by a single slope (the small-signal conductance) and an offset. A sensor that is nonlinear at extreme inputs is usually linearized over its working range. The slope and intercept of that linearization are the two numbers that go on the datasheet.
+
+## Plain-Language Intuition
+
+A linear relationship is a promise: *every time the input changes by one unit, the output changes by the same fixed amount*. The "fixed amount" is the slope. Once you know it, you know the rate.
+
+The y-intercept is the answer to a different question: *what is the output when the input is zero?* It is the starting value, the baseline, the value of $y$ when $x$ has not moved at all.
+
+Two examples, side by side.
+
+**A drone climbing.** The drone is at altitude $5$ m at time $t = 0$ s. Every second it climbs another $3$ m. Then:
+
+- The y-intercept is $5$ m — the starting altitude.
+- The slope is $3$ m/s — the climb rate.
+
+After $10$ s the drone is at $5 + 3 \cdot 10 = 35$ m. After $20$ s, $5 + 3 \cdot 20 = 65$ m. The slope tells you the rate; the intercept tells you where you started; together they tell you everything about the (linear) flight profile.
+
+**A pressure sensor.** A transducer outputs $0.5$ V at $0$ psi and increases its output by $0.03$ V for every additional psi. Then:
+
+- The y-intercept is $0.5$ V — the reading at zero pressure.
+- The slope is $0.03$ V/psi — the sensitivity.
+
+At $100$ psi the sensor reads $0.5 + 0.03 \cdot 100 = 3.5$ V. The two numbers together calibrate the device.
+
+In both examples, slope and intercept are the *only* numbers you need. Everything else follows. That is what we mean when we say slope and intercept "fully describe a linear relationship."
+
+## Core Theory
+
+### Slope From Two Points
+
+Given any two points $(x_1, y_1)$ and $(x_2, y_2)$ in the coordinate plane (with $x_1 \neq x_2$), the slope of the line through them is
+
+$$m = \frac{y_2 - y_1}{x_2 - x_1}.$$
+
+The numerator $y_2 - y_1$ is the *rise* — the change in $y$. The denominator $x_2 - x_1$ is the *run* — the change in $x$. The slope is rise divided by run.
+
+A more compact way to write this uses the Greek letter $\Delta$ (capital delta) for "change in":
+
+$$m = \frac{\Delta y}{\Delta x}.$$
+
+The notation $\Delta y$ is read "delta-y" and means "the change in $y$." Engineers use it constantly.
+
+### Why the Formula Does Not Care Which Two Points
+
+A natural worry: doesn't the slope depend on which two points you pick? Couldn't $(1, 3)$ and $(4, 9)$ give a different slope from $(1, 3)$ and $(2, 5)$, if both pairs are on the same line?
+
+No. The slope is the same. This is the defining property of a *line* — the ratio of rise to run is constant, no matter which two points you sample.
+
+The geometric reason is similar triangles. Any two pairs of points on the same line form two right triangles whose hypotenuses lie on the line. The two triangles are similar (same angles), so the ratios of corresponding sides are equal. The ratio rise/run is one such ratio. The Greeks proved this for us 2,300 years ago.
+
+You can also check it algebraically. Take any line $y = 2x + 1$. Points $(0, 1)$ and $(3, 7)$: slope $= (7-1)/(3-0) = 6/3 = 2$. Points $(1, 3)$ and $(5, 11)$: slope $= (11-3)/(5-1) = 8/4 = 2$. Same slope. The coefficient of $x$ wins.
+
+### Slope From a Graph
+
+Given a graph of a line on a grid, the procedure is:
+
+1. Pick two points where the line crosses *clearly visible* grid intersections — not points you estimate. Clean grid crossings give clean numbers.
+2. Identify the coordinates of each: $(x_1, y_1)$ and $(x_2, y_2)$.
+3. Compute $\Delta y = y_2 - y_1$ (count grid squares up or down, with sign).
+4. Compute $\Delta x = x_2 - x_1$ (count grid squares right or left, with sign).
+5. Divide: $m = \Delta y / \Delta x$.
+
+Sign matters. If you went *down* moving right, $\Delta y$ is negative and the slope is negative. If you went *up* moving right, both are positive and the slope is positive.
+
+### Slope From a Table
+
+When data is given as a table of $(x, y)$ pairs, you can check linearity and compute slope in one pass.
+
+| $x$ | $y$ | $\Delta x$ | $\Delta y$ | $\Delta y / \Delta x$ |
+|---|---|---|---|---|
+| 0 | 5 | — | — | — |
+| 1 | 8 | 1 | 3 | 3 |
+| 2 | 11 | 1 | 3 | 3 |
+| 3 | 14 | 1 | 3 | 3 |
+
+Every consecutive pair gives the same ratio: $3$. The data is linear, with slope $m = 3$.
+
+If the column $\Delta y / \Delta x$ is *not* constant, the data is *not* linear. That is the test. We will see an example below where the test fails.
+
+### Slope From an Equation
+
+When the equation is written with $y$ alone on the left side, the slope is the coefficient of $x$ on the right side. Lesson 10 will formalize this as the $y = mx + b$ canonical form. For now, a few examples:
+
+- $y = 3x + 4$: slope $= 3$, y-intercept $= 4$.
+- $y = -2x + 7$: slope $= -2$, y-intercept $= 7$.
+- $y = 0.5x - 1$: slope $= 0.5$, y-intercept $= -1$.
+- $y = 7x$: slope $= 7$, y-intercept $= 0$.
+- $y = 5$: slope $= 0$ (no $x$ term), y-intercept $= 5$.
+
+If the equation is *not* written with $y$ isolated — for example, $2x + 3y = 12$ — you must first isolate $y$ before reading off slope and intercept. Solve for $y$: $3y = -2x + 12$, then $y = -\tfrac{2}{3}x + 4$. Slope $= -2/3$, intercept $= 4$.
+
+### Units of Slope
+
+Slope inherits the units of $y$ divided by the units of $x$. This is the most important practical fact in this lesson.
+
+- A voltage-vs-distance graph (V on the y-axis, cm on the x-axis): slope has units of **V/cm**.
+- A position-vs-time graph (m on the y-axis, s on the x-axis): slope has units of **m/s** — a *speed*.
+- A velocity-vs-time graph (m/s on y, s on x): slope has units of **m/s$^2$** — an *acceleration*.
+- A pressure-sensor output curve (V on y, psi on x): slope has units of **V/psi** — the *sensitivity*.
+- A junction-temperature-vs-power curve ($^\circ$C on y, W on x): slope has units of **$^\circ$C/W** — the *thermal resistance*.
+
+A slope without units is half a number. Always carry the units along.
+
+### The y-Intercept
+
+The **y-intercept** is the value of $y$ when $x = 0$. Three equivalent definitions:
+
+1. The output of the function at zero input: $f(0)$.
+2. The point where the graph crosses the y-axis: $(0, b)$ for some number $b$.
+3. The constant term in the equation when $y$ is isolated: $y = mx + b$ has y-intercept $b$.
+
+All three give the same number. Use whichever is convenient.
+
+The y-intercept has *the same units as $y$*. If $y$ is in volts, the y-intercept is in volts. If $y$ is in meters, the y-intercept is in meters. The intercept is a value of $y$, not a rate.
+
+In engineering language, the y-intercept is often called the *offset* (in sensors), the *initial value* (in time-series), the *zero-input output* (in amplifiers), or the *fixed cost* (in cost models). The vocabulary varies; the number is the same.
+
+### The Sign of the Slope
+
+| Sign | Geometric picture | Function behavior | Example |
+|---|---|---|---|
+| Positive | Line goes up to the right | Increasing function | $y = 2x + 1$ |
+| Negative | Line goes down to the right | Decreasing function | $y = -3x + 5$ |
+| Zero | Horizontal line | Constant function | $y = 4$ |
+| Undefined | Vertical line | Not a function | $x = 2$ |
+
+A positive slope means $y$ grows as $x$ grows. A negative slope means $y$ shrinks as $x$ grows. A zero slope means $y$ stays put as $x$ changes — a constant function. An undefined slope corresponds to a vertical line, which is *not* the graph of a function at all (it fails the vertical-line test from lesson 7).
+
+The undefined case arises in the slope formula when $x_2 = x_1$: the denominator is zero, division is undefined, and the line is vertical.
+
+### Computing the y-Intercept From Two Points
+
+A natural next question is: given two points on a line, can you also find the y-intercept (not just the slope)? Yes. Find the slope first, then back-solve using one of the points. The full mechanics are the subject of lesson 10 (point-slope and slope-intercept forms), so we will only sketch the idea here.
+
+Given the slope $m$ and a point $(x_1, y_1)$ on the line, the y-intercept $b$ satisfies $y_1 = m x_1 + b$, so $b = y_1 - m x_1$. The pressure-sensor and drone-climb examples below use this exact mini-recipe.
+
+## Visual or Mental Model
+
+### Model 1: The Rise-Over-Run Triangle
+
+Picture a right triangle drawn on the grid with its hypotenuse on the line. The horizontal leg is the *run*; the vertical leg is the *rise*. Slope is the ratio of the two legs.
+
+```
+            (x2, y2) +
+                    /|
+                   / |
+                  /  | rise = y2 - y1
+                 /   |
+                /    |
+       (x1, y1)+_____|
+                run = x2 - x1
+```
+
+Pick any two points on the line; you get a right triangle. Change which two points and the triangle changes size, but the *ratio* rise/run stays the same — this is the similar-triangles argument made visual.
+
+### Model 2: The Staircase
+
+A line with slope $2$ is a staircase where every step is *one unit right and two units up*. A line with slope $-1$ is a staircase where every step is *one unit right and one unit down*. A line with slope $1/3$ is a long shallow staircase where every step is *three units right and one unit up*.
+
+The slope is "how much do you climb (or descend) per unit step to the right?"
+
+```
+slope = 2:
+              .
+             /
+            /
+           +
+          /
+         /
+        +
+       /
+      /
+     +
+```
+
+Every horizontal step is matched by *two* vertical steps. That is what "slope $2$" looks like.
+
+### Model 3: The y-Intercept on the y-Axis
+
+The y-intercept is one specific point on the graph: the spot where the line crosses the vertical (y) axis. It sits at $(0, b)$.
+
+```
+   y
+   |
+   |        line: y = 2x + 1
+   |        /
+   |       /
+   3+     /
+   |    /
+   2+  /
+   |  /
+   1+      <-- y-intercept is 1; this is the point (0, 1)
+   |/
+   +------+----+----+----+--- x
+   |  1   2    3    4
+```
+
+If you stand at $x = 0$ and look up to the line, you land on the y-intercept. Nothing else.
+
+### Model 4: Tilt of a Ramp
+
+Slope is the *tilt of a ramp*. A wheelchair ramp at slope $1/12$ rises one inch for every twelve inches of horizontal run — gentle. A roof at slope $1/2$ rises six inches per foot — moderate. A ski jump at slope $1$ rises a foot per foot — steep ($45^\circ$). A cliff at infinite slope is vertical.
+
+In construction, the inverse — *grade* — is sometimes used instead, expressed as a percentage: "a 6 percent grade" is a slope of $0.06$. Roads and rail lines specify grades; engineers specify slopes; they are the same number, with different display conventions.
+
+## Worked Examples
+
+### Example 1 — Slope From Two Points (Simple)
+
+Find the slope of the line through $(1, 3)$ and $(4, 9)$.
+
+Apply the formula directly:
+
+$$m = \frac{y_2 - y_1}{x_2 - x_1} = \frac{9 - 3}{4 - 1} = \frac{6}{3} = 2.$$
+
+The slope is $2$. Read it as: for every one-unit increase in $x$, $y$ increases by two units.
+
+### Example 2 — Slope From Two Points (Negative)
+
+Find the slope of the line through $(-1, 5)$ and $(3, -3)$.
+
+Pick $(x_1, y_1) = (-1, 5)$ and $(x_2, y_2) = (3, -3)$:
+
+$$m = \frac{-3 - 5}{3 - (-1)} = \frac{-8}{4} = -2.$$
+
+The slope is $-2$. Negative slope means the line goes down to the right: as $x$ moves from $-1$ to $3$, $y$ falls from $5$ to $-3$.
+
+A useful sanity check: swap which point you call "first" and "second." With $(x_1, y_1) = (3, -3)$ and $(x_2, y_2) = (-1, 5)$:
+
+$$m = \frac{5 - (-3)}{-1 - 3} = \frac{8}{-4} = -2.$$
+
+Same answer. The slope is invariant under swapping the order of the two points, as long as you swap them in *both* the numerator and the denominator.
+
+### Example 3 — Slope From a Table (Linear Data)
+
+Given the table
+
+| $x$ | 0 | 1 | 2 | 3 |
+|---|---|---|---|---|
+| $y$ | 5 | 8 | 11 | 14 |
+
+is the data linear, and if so, what is the slope?
+
+Compute consecutive differences:
+
+- From $(0, 5)$ to $(1, 8)$: $\Delta y / \Delta x = (8 - 5)/(1 - 0) = 3$.
+- From $(1, 8)$ to $(2, 11)$: $\Delta y / \Delta x = (11 - 8)/(2 - 1) = 3$.
+- From $(2, 11)$ to $(3, 14)$: $\Delta y / \Delta x = (14 - 11)/(3 - 2) = 3$.
+
+All three ratios are $3$. The data is linear with slope $m = 3$. The y-intercept can be read directly from the table — the value of $y$ at $x = 0$ is $5$, so the y-intercept is $5$.
+
+### Example 4 — Slope From a Table (Nonlinear Data)
+
+Given the table
+
+| $x$ | 0 | 1 | 2 | 3 |
+|---|---|---|---|---|
+| $y$ | 1 | 2 | 5 | 10 |
+
+is the data linear?
+
+Compute consecutive differences:
+
+- $(0, 1)$ to $(1, 2)$: $\Delta y / \Delta x = 1$.
+- $(1, 2)$ to $(2, 5)$: $\Delta y / \Delta x = 3$.
+- $(2, 5)$ to $(3, 10)$: $\Delta y / \Delta x = 5$.
+
+The ratios are $1$, $3$, $5$ — not constant. The data is **not linear**. Asking "what's the slope of this data?" is the wrong question; there is no single slope, because the relationship is not a straight line. (In fact this data looks like $y = x^2 + 1$ — a parabola.)
+
+This is the use of the consecutive-differences test: it diagnoses whether linearity even applies *before* you try to compute a slope.
+
+### Example 5 — Slope From an Equation
+
+For the equation $y = 7x - 2$:
+
+- Slope: the coefficient of $x$ is $7$. So $m = 7$.
+- y-intercept: the constant term is $-2$. So the line crosses the y-axis at $(0, -2)$.
+
+You can verify the y-intercept by plugging $x = 0$ into the equation: $y = 7 \cdot 0 - 2 = -2$. Check.
+
+### Example 6 — Engineering: Pressure Sensor Calibration
+
+A pressure transducer reads $0.5$ V at $0$ psi and $3.5$ V at $100$ psi. Find the sensor's sensitivity (slope) and offset (y-intercept). Then predict the voltage at $50$ psi.
+
+Treat pressure as $x$ (psi) and voltage as $y$ (V). The two calibration points are $(0, 0.5)$ and $(100, 3.5)$.
+
+Slope:
+
+$$m = \frac{3.5 - 0.5}{100 - 0} = \frac{3.0}{100} = 0.03\ \text{V/psi}.$$
+
+The slope has units of V/psi. This is the sensitivity — the number engineers will quote on the datasheet.
+
+y-intercept: at $x = 0$ the table says $y = 0.5$ V. So $b = 0.5$ V — the offset voltage.
+
+Predict the voltage at $50$ psi. Using the linear relationship (which we will write as $y = mx + b$ in lesson 10):
+
+$$y = 0.03 \cdot 50 + 0.5 = 1.5 + 0.5 = 2.0\ \text{V}.$$
+
+The sensor should read $2.0$ V at $50$ psi. A bench check with a calibrated pressure source confirms or rejects this prediction.
+
+### Example 7 — Engineering: Drone Climb Rate
+
+A drone is at altitude $5$ m at time $t = 0$ s, and at altitude $35$ m at time $t = 10$ s. Find the slope (with units) and the y-intercept (with units). What is the physical meaning of the slope?
+
+With $t$ as $x$ (s) and altitude $h$ as $y$ (m), the two points are $(0, 5)$ and $(10, 35)$.
+
+Slope:
+
+$$m = \frac{35 - 5}{10 - 0} = \frac{30}{10} = 3\ \text{m/s}.$$
+
+The slope is $3$ m/s. **Physical meaning: the vertical climb speed of the drone.** A slope on a position-vs-time graph is a velocity.
+
+y-intercept: at $t = 0$, $h = 5$ m. So $b = 5$ m — the initial altitude.
+
+Together: the drone started at $5$ m and is climbing at $3$ m/s.
+
+### Example 8 — Engineering: Car Approaching a Destination (Negative Slope)
+
+A car is $50$ km from its destination at $t = 0$ h and $30$ km from its destination at $t = 1$ h. Find the slope and explain its physical meaning.
+
+Two points: $(0, 50)$ and $(1, 30)$, with $t$ in hours and distance-to-destination in km.
+
+Slope:
+
+$$m = \frac{30 - 50}{1 - 0} = \frac{-20}{1} = -20\ \text{km/h}.$$
+
+The slope is negative because the distance-to-destination is *decreasing*. Magnitude: the car is approaching its destination at $20$ km/h. The sign carries the direction.
+
+If you had instead tracked *distance traveled* (starting at $0$ and increasing), the slope would have been $+20$ km/h. Same physical car, different sign of slope, because you chose a different quantity for $y$. **Lesson:** the sign of the slope depends on what quantity you put on the y-axis. Both signs are meaningful; both are correct.
+
+y-intercept: at $t = 0$, distance-to-destination is $50$ km. So $b = 50$ km — the starting distance.
+
+### Example 9 — Failure Mode: Reciprocal Slope
+
+A student computes the slope through $(2, 4)$ and $(6, 10)$ as
+
+$$m = \frac{x_2 - x_1}{y_2 - y_1} = \frac{6 - 2}{10 - 4} = \frac{4}{6} = \frac{2}{3}.$$
+
+This is the **reciprocal** of the correct slope. The formula has rise over run, not run over rise. Run over rise has a name — it is sometimes called the *inverse slope* — but it is not the slope.
+
+The correct computation is
+
+$$m = \frac{y_2 - y_1}{x_2 - x_1} = \frac{10 - 4}{6 - 2} = \frac{6}{4} = \frac{3}{2}.$$
+
+How to catch the mistake: do a sanity check with units. If the units of your "slope" are not [y units]/[x units], you wrote down the wrong ratio. On a position-vs-time graph, the slope should be m/s; if your calculation gives s/m, you have inverted the formula.
+
+The mnemonic is *rise over run*. Rise is vertical, run is horizontal — y change on top, x change on bottom.
+
+### Example 10 — Failure Mode: Slopes Without Units
+
+A student computes the slope of a sensor curve as $0.03$ and writes it down with no units. A week later, looking at three different sensor calibrations — one voltage-vs-pressure, one voltage-vs-temperature, one current-vs-voltage — the student tries to compare their "$0.03$" numbers and concludes (wrongly) that all three sensors have the same sensitivity.
+
+They do not. Here are the three slopes with units:
+
+- $0.03$ V/psi (pressure sensor, very small voltage change per psi of pressure)
+- $0.03$ V/$^\circ$C (thermal sensor, modest voltage change per degree)
+- $0.03$ A/V (a conductance: $0.03$ siemens, i.e., a $33\,\Omega$ resistor)
+
+These three numbers describe completely unrelated physical situations, and they cannot be meaningfully compared without units. Writing "0.03" with no units throws away the most important information in the calibration.
+
+**Rule:** every slope you compute carries units of [y units] / [x units], and you must write them down every time. The discipline takes one extra second per calculation and prevents a class of bugs that can be expensive in lab work.
+
+### Example 11 — Reading the y-Intercept From a Graph
+
+Suppose a graph shows a line that crosses the y-axis at the point $(0, -3)$ and goes up to the right with slope $1$. What are the slope and y-intercept?
+
+- The y-intercept is the y-coordinate of the crossing point: $b = -3$.
+- The slope is given as $1$ (one unit up for every one unit right).
+
+The equation of this line, written in the canonical form you will see in lesson 10, would be $y = x - 3$.
+
+### Example 12 — Reading Slope From an Equation Not in Standard Form
+
+Find the slope and y-intercept of $4x + 2y = 10$.
+
+The equation is not solved for $y$. Solve it first.
+
+$$2y = -4x + 10,$$
+
+$$y = -2x + 5.$$
+
+Now read off: slope $m = -2$, y-intercept $b = 5$.
+
+The lesson: before extracting slope and intercept from an equation, make sure $y$ is isolated on one side. If it is not, do the rearrangement first (lesson 4 territory).
+
+## Engineering Connections
+
+### Sensor Datasheets
+
+Open any datasheet for a linear analog sensor — pressure, temperature, light, force, current. You will find a section labeled something like *Transfer Function* or *Output Characteristics*. It will give two numbers:
+
+- **Sensitivity**: a slope, with units like mV/V/psi (for a Wheatstone-bridge pressure sensor), mV/$^\circ$C (for an LM35 temperature sensor), or A/W (for a photodiode).
+- **Offset** (or *zero output*): a y-intercept, with units of the output quantity.
+
+A typical pressure sensor entry: "Sensitivity: $30$ mV/V at full scale, $100$ psi. Offset: $\pm 1$ mV/V max." That is a slope and an intercept, with manufacturing tolerance on the intercept. Both numbers are needed; both define the sensor.
+
+### Op-Amp Voltage Gain
+
+In a non-inverting op-amp configuration with feedback resistors $R_1$ and $R_f$, the small-signal voltage gain is
+
+$$A_v = 1 + \frac{R_f}{R_1}.$$
+
+This $A_v$ is a slope: $\Delta V_\text{out} / \Delta V_\text{in}$ in the linear region. The plot of $V_\text{out}$ vs $V_\text{in}$ is a straight line with slope $A_v$ until the amplifier saturates, at which point the slope drops to zero (the clipping region). Reading the slope of a transfer curve tells you the gain; reading where the slope changes tells you the linear range.
+
+### PID Controllers
+
+The proportional term in a PID controller is $u_p = K_p \cdot e$, where $e$ is the tracking error. $K_p$ has units of [actuator output]/[error]. For a temperature controller, $K_p$ might be in W/$^\circ$C: how much heater power should be applied per degree of temperature error. Tuning $K_p$ — making it bigger to respond faster, smaller to reduce oscillation — is literally tuning a slope.
+
+### Oscilloscope Calibration
+
+An oscilloscope's vertical axis is calibrated in volts per division (V/div), and the horizontal axis in seconds per division (s/div). These are slopes — V/div is the slope of the displayed voltage versus screen division. Setting the V/div knob picks a slope. Knowing the slope lets you convert pixel measurements on the screen into voltage values in the circuit.
+
+### Linear Regression
+
+The simplest machine-learning algorithm — ordinary least-squares linear regression — fits a slope $m$ and intercept $b$ to a noisy cloud of $(x, y)$ data. The fitting criterion is "minimize the sum of squared vertical errors," and the algorithm returns the slope and intercept of the best-fit line. Every more sophisticated regression model (polynomial regression, neural networks, etc.) generalizes this two-parameter fit. The build task at the end of this lesson asks you to implement the linearity test that linear regression assumes.
+
+### Position, Velocity, and Acceleration
+
+In kinematics:
+
+- The slope of a position-vs-time graph is the velocity.
+- The slope of a velocity-vs-time graph is the acceleration.
+
+For motion at constant velocity, the position-vs-time graph is a straight line — and its slope is the constant velocity, with units of m/s. For constant acceleration, the velocity-vs-time graph is a straight line, and its slope is the acceleration, with units of m/s$^2$. These are the cleanest possible examples of slope = rate, and they are the foundation of every introductory physics course.
+
+### Lift Coefficient at Small Angles
+
+An aircraft wing produces a lift coefficient $C_L$ that is, for small angles of attack $\alpha$, approximately linear:
+
+$$C_L \approx C_{L_0} + C_{L_\alpha} \cdot \alpha.$$
+
+Here $C_{L_0}$ is the y-intercept (lift coefficient at zero angle of attack) and $C_{L_\alpha}$ is the slope (lift-curve slope, in units of 1/radian or 1/degree). The slope tells you how aggressively lift responds to angle changes; the intercept tells you whether the wing produces lift even when flying level. Aerodynamic design lives in these two numbers for small angles, and breaks down near stall when the curve becomes nonlinear.
+
+### Battery State-of-Charge
+
+A simple state-of-charge estimator assumes the open-circuit voltage of a battery is approximately linear in the state of charge:
+
+$$V_\text{oc} \approx V_\text{empty} + (V_\text{full} - V_\text{empty}) \cdot \text{SOC}.$$
+
+The intercept is $V_\text{empty}$ and the slope is $V_\text{full} - V_\text{empty}$. Reading these two numbers from a discharge curve calibrates the gauge. Real batteries deviate from linearity at the extremes, so the estimator is augmented with lookup tables — but the slope-and-intercept idea is the starting point.
+
+## Practice Set
+
+### Warmups: Slope From Two Points
+
+Compute the slope of the line through each pair of points.
+
+1. $(0, 0)$ and $(2, 6)$.
+2. $(1, 2)$ and $(4, 11)$.
+3. $(-2, 3)$ and $(2, 11)$.
+4. $(5, 7)$ and $(5, 12)$. (Watch out.)
+5. $(0, 4)$ and $(3, 4)$.
+6. $(-1, -1)$ and $(3, -9)$.
+7. $(2, 5)$ and $(6, 1)$.
+8. $(0.5, 1.0)$ and $(1.5, 4.0)$.
+9. $(-3, 6)$ and $(0, 0)$.
+10. $(10, -2)$ and $(-2, 22)$.
+
+### Applied
+
+11. **Table.** The output of a thermistor is recorded as
+
+    | $T$ ($^\circ$C) | 0 | 25 | 50 | 75 |
+    |---|---|---|---|---|
+    | $V$ (V) | 0.20 | 0.45 | 0.70 | 0.95 |
+
+    Is the data linear over this range? What is the slope (with units)? What is the y-intercept?
+
+12. **Graph.** A line passes through $(0, -2)$ and $(4, 6)$. Compute the slope, identify the y-intercept, and describe in one sentence what the line looks like.
+
+13. **Equation.** Find the slope and y-intercept of $y = -5x + 12$.
+
+14. **Equation, not in standard form.** Find the slope and y-intercept of $3x - y = 7$.
+
+15. **Engineering.** A thermal-resistance measurement on a power transistor gives the following data:
+
+    | $P$ (W) | 0 | 5 | 10 | 15 |
+    |---|---|---|---|---|
+    | $T_j$ ($^\circ$C) | 25 | 50 | 75 | 100 |
+
+    What is the thermal resistance $R_\theta$ (the slope of $T_j$ vs $P$, in $^\circ$C/W)? What is the ambient temperature (the y-intercept)?
+
+16. **Engineering.** A drone's battery voltage drops from $12.6$ V at $t = 0$ to $11.4$ V at $t = 30$ min during cruise. Compute the discharge rate (slope, V/min) and the y-intercept.
+
+### Error-Spotting
+
+17. A student computes the slope through $(1, 4)$ and $(5, 12)$ as $(5 - 1) / (12 - 4) = 4/8 = 0.5$. Diagnose.
+
+18. A student looks at the equation $y = 7$ and says "this has no slope." Diagnose. (Hint: there is a slope; it is a particular number.)
+
+19. A student computes the slope of a temperature-vs-time graph as $2$ and reports it without units, then tries to use the number $2$ in a heat-flow calculation where slope should be expressed in $^\circ$C/W instead of $^\circ$C/min. Diagnose.
+
+### Challenge
+
+20. **Linearity diagnosis.** A noisy sensor produces the following calibration data:
+
+    | $x$ | 0 | 1 | 2 | 3 | 4 | 5 |
+    |---|---|---|---|---|---|---|
+    | $y$ | 1.02 | 2.97 | 5.01 | 6.98 | 9.04 | 10.99 |
+
+    Compute consecutive $\Delta y / \Delta x$ ratios. They are not exactly equal (noise). Is the underlying relationship plausibly linear? What slope and y-intercept would you report? (Use the average of the consecutive ratios for the slope; use the first $y$ value at $x = 0$ for the y-intercept.)
+
+21. **Sensor calibration with noise.** A pressure sensor is tested at $20$, $40$, $60$, $80$ psi and produces voltages $1.10$, $1.68$, $2.32$, $2.91$ V. Compute the four-point slope using only the endpoints (a "two-point calibration"). Then compute three consecutive $\Delta V / \Delta P$ ratios to gauge whether the response is linear. Are they close enough that a linear calibration is reasonable?
+
+### Answers
+
+1. $3$.
+2. $3$.
+3. $2$.
+4. Undefined (vertical line; $x_2 = x_1$).
+5. $0$ (horizontal line).
+6. $-2$.
+7. $-1$.
+8. $3$.
+9. $-2$.
+10. $-2$.
+
+11. Differences: $0.25/25 = 0.01$, $0.25/25 = 0.01$, $0.25/25 = 0.01$. Constant; data is linear. Slope $= 0.01$ V/$^\circ$C $= 10$ mV/$^\circ$C. y-intercept $= 0.20$ V.
+
+12. Slope $= (6 - (-2))/(4 - 0) = 8/4 = 2$. y-intercept $= -2$. The line goes up to the right with slope $2$, crossing the y-axis at $-2$.
+
+13. Slope $-5$, y-intercept $12$.
+
+14. Solve for $y$: $y = 3x - 7$. Slope $3$, y-intercept $-7$.
+
+15. Slope $R_\theta = (100 - 25)/(15 - 0) = 75/15 = 5\,^\circ$C/W. y-intercept (ambient) $= 25\,^\circ$C.
+
+16. Slope $= (11.4 - 12.6)/(30 - 0) = -1.2/30 = -0.04$ V/min. y-intercept $= 12.6$ V.
+
+17. Reciprocal mistake. The student wrote $\Delta x / \Delta y$ instead of $\Delta y / \Delta x$. Correct: $(12 - 4)/(5 - 1) = 8/4 = 2$.
+
+18. $y = 7$ is a constant function. Its slope is $0$ (zero), not "no slope." A horizontal line has a perfectly well-defined slope of zero. "No slope" — meaning undefined slope — describes a vertical line, which $y = 7$ is not.
+
+19. Units mistake. A slope on a temperature-vs-time graph has units of $^\circ$C/min (or $^\circ$C/s), which is a *rate of temperature change* — not a thermal resistance. Thermal resistance is the slope of temperature versus *power*, in $^\circ$C/W. The two quantities have completely different units and meanings; the student conflated them by stripping units off.
+
+20. Differences: $1.95, 2.04, 1.97, 2.06, 1.95$. Close to $2$ within noise of about $\pm 0.06$. Underlying relationship is plausibly linear with slope $\approx 2$. Reported slope: average $= 1.994 \approx 2$. y-intercept: $\approx 1.02$ (the $y$ value at $x = 0$).
+
+21. Endpoint slope: $(2.91 - 1.10)/(80 - 20) = 1.81/60 \approx 0.0302$ V/psi. Consecutive ratios: $(1.68 - 1.10)/20 = 0.029$, $(2.32 - 1.68)/20 = 0.032$, $(2.91 - 2.32)/20 = 0.0295$. All within about $\pm 0.002$ of the two-point slope. The response is linear within measurement noise; a linear calibration is reasonable.
+
+## Build Task
+
+Write `slope_intercept.py`. Implement the following functions and run them on a real-ish calibration dataset.
+
+```python
+"""slope_intercept.py — slope and y-intercept utilities.
+
+For the Physical AI Lab Engineering Algebra & Geometry module, lesson 9.
+"""
+
+from typing import Iterable, Tuple, List
+import statistics
+
+
+Point = Tuple[float, float]
+
+
+def slope_from_points(p1: Point, p2: Point) -> float:
+    """Return the slope of the line through two points.
+
+    Raises ValueError if the line is vertical (slope undefined).
+    """
+    x1, y1 = p1
+    x2, y2 = p2
+    if x2 == x1:
+        raise ValueError("Vertical line: slope is undefined.")
+    return (y2 - y1) / (x2 - x1)
+
+
+def y_intercept_from_point_and_slope(point: Point, slope: float) -> float:
+    """Return b such that y = slope*x + b passes through `point`."""
+    x, y = point
+    return y - slope * x
+
+
+def is_linear(xs: Iterable[float], ys: Iterable[float], tol: float = 1e-3) -> bool:
+    """Return True if the consecutive Delta y / Delta x ratios all agree within `tol`.
+
+    `tol` is the absolute deviation allowed between any consecutive-pair slope and
+    the mean of all consecutive-pair slopes. Set `tol` larger for noisy data.
+    """
+    xs = list(xs)
+    ys = list(ys)
+    if len(xs) != len(ys) or len(xs) < 2:
+        raise ValueError("Need at least two points and matching list lengths.")
+    slopes = []
+    for i in range(1, len(xs)):
+        dx = xs[i] - xs[i - 1]
+        if dx == 0:
+            return False  # vertical step; not a function
+        slopes.append((ys[i] - ys[i - 1]) / dx)
+    mean_slope = statistics.mean(slopes)
+    return all(abs(s - mean_slope) <= tol for s in slopes)
+
+
+def fit_line_endpoints(xs: List[float], ys: List[float]) -> Tuple[float, float]:
+    """Return (slope, intercept) using the first and last data points only.
+
+    A two-point calibration. Cheap and good when data is clean.
+    """
+    p1 = (xs[0], ys[0])
+    pn = (xs[-1], ys[-1])
+    m = slope_from_points(p1, pn)
+    b = y_intercept_from_point_and_slope(p1, m)
+    return m, b
+
+
+# --- demo / smoke tests ---
+
+if __name__ == "__main__":
+    # Sanity tests.
+    assert slope_from_points((1, 3), (4, 9)) == 2.0
+    assert slope_from_points((-1, 5), (3, -3)) == -2.0
+    assert y_intercept_from_point_and_slope((4, 6), 2) == -2.0
+    assert is_linear([0, 1, 2, 3], [5, 8, 11, 14], tol=1e-9)
+    assert not is_linear([0, 1, 2, 3], [1, 2, 5, 10], tol=1e-9)
+    print("Unit tests passed.")
+
+    # Pressure-sensor calibration data (from worked example 6, extended).
+    pressures_psi = [0, 20, 40, 60, 80, 100]
+    voltages_v   = [0.50, 1.10, 1.68, 2.32, 2.91, 3.50]
+
+    print(f"Linear within tol=0.005? {is_linear(pressures_psi, voltages_v, tol=0.005)}")
+
+    m, b = fit_line_endpoints(pressures_psi, voltages_v)
+    print(f"Sensitivity (slope): {m:.4f} V/psi")
+    print(f"Offset    (intercept): {b:.4f} V")
+    print(f"Predicted voltage at 50 psi: {m * 50 + b:.4f} V")
+```
+
+Then plot the data and the fitted line. The matplotlib snippet below uses only standard library plus matplotlib — no scikit-learn — so you implement the fit yourself.
+
+```python
+import matplotlib.pyplot as plt
+
+pressures_psi = [0, 20, 40, 60, 80, 100]
+voltages_v   = [0.50, 1.10, 1.68, 2.32, 2.91, 3.50]
+m, b = fit_line_endpoints(pressures_psi, voltages_v)
+
+fit_xs = [0, 100]
+fit_ys = [m * x + b for x in fit_xs]
+
+plt.scatter(pressures_psi, voltages_v, label="Calibration data")
+plt.plot(fit_xs, fit_ys, label=f"Fit: V = {m:.4f} P + {b:.2f}")
+plt.xlabel("Pressure (psi)")
+plt.ylabel("Sensor output (V)")
+plt.title("Pressure sensor calibration")
+plt.legend()
+plt.grid(True)
+plt.savefig("pressure_sensor_calibration.png", dpi=120)
+plt.show()
+```
+
+Run the script. Verify the assertions pass. Inspect the printed slope and intercept. Open the saved plot and check that the line passes through the data cleanly. If the data has visible noise or curvature, the `is_linear` test will fail at the requested tolerance — that is informative, not a bug.
+
+Stretch goals:
+
+- Replace `fit_line_endpoints` with a least-squares fit that uses *all* the points, not just the endpoints. Compare the two slopes on noisy data; the least-squares fit should be more robust.
+- Add a function `predict(slope, intercept, x)` that returns $y$ for a given $x$ — the workhorse calibration operation.
+- Add a residuals plot: compute the difference between each measured $y$ and the fit's prediction; plot residuals vs $x$. Patterns in the residuals indicate nonlinearity that the slope-and-intercept summary missed.
+
+## Quiz
+
+1. State the slope formula $m = \frac{y_2 - y_1}{x_2 - x_1}$ in words. Why does the order of subtraction not matter, as long as you are consistent?
+
+2. Why is the slope of a vertical line undefined? Express the answer in terms of the slope formula.
+
+3. Why does every pair of points on the same line give the same slope? (Hint: similar triangles.)
+
+4. What are the units of the slope of a graph that plots current (A) on the y-axis and voltage (V) on the x-axis? What physical quantity has those units?
+
+5. Suppose two sensors both have "sensitivity 0.02." Why can you not compare them without more information?
+
+6. The y-intercept is defined as the value of $y$ when $x = 0$. Write down two other equivalent ways to describe the y-intercept.
+
+7. A line on a graph rises to the right but very gently. Is its slope positive or negative? Is its slope large or small in magnitude?
+
+8. For the equation $2y - 4x = 10$, compute the slope and y-intercept after first solving for $y$.
+
+### Answers
+
+1. The slope is the change in $y$ divided by the change in $x$ between two points on a line. Order does not matter because if you flip both the numerator and the denominator, you multiply both by $-1$, and the two minus signs cancel. What is forbidden is flipping *one* but not the other.
+
+2. For a vertical line, $x_2 = x_1$, so the denominator $x_2 - x_1 = 0$. Division by zero is undefined, so the slope is undefined. Geometrically, the "tilt" of a vertical line cannot be expressed as a finite rise-over-run.
+
+3. Any two pairs of points on the same line form two right triangles whose hypotenuses lie on the line. The two triangles share the line's angles, so they are similar; the ratios of corresponding sides are equal. Rise/run is one such ratio. Therefore every pair gives the same slope.
+
+4. Units: A/V. This is a *conductance*, measured in siemens (S). The reciprocal — V/A — is the resistance, measured in ohms ($\Omega$).
+
+5. Sensitivity has units of [output]/[input], and those units depend on what the sensor measures. A "0.02 V/psi" sensor and a "0.02 V/$^\circ$C" sensor have the same numerical sensitivity in two different physical domains; they cannot be compared without specifying what each measures.
+
+6. (a) $f(0)$, the value of the function at zero input. (b) The y-coordinate of the point where the line crosses the y-axis, i.e., the point $(0, b)$.
+
+7. A line rising to the right has positive slope. "Very gently" means the magnitude is small — between $0$ and $1$.
+
+8. Solve $2y - 4x = 10 \implies 2y = 4x + 10 \implies y = 2x + 5$. Slope $m = 2$, y-intercept $b = 5$.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Compute the slope between any two points in seconds, with correct sign, without rechecking the formula.
+- Diagnose whether tabular data is linear by computing consecutive $\Delta y / \Delta x$ ratios.
+- Read slope and y-intercept off any linear equation, whether or not $y$ is isolated when you start.
+- Attach proper engineering units to a slope (V/cm, m/s, $^\circ$C/W, V/psi, etc.) every time you compute one, without prompting.
+- Identify the y-intercept on a graph by looking at where the line crosses the y-axis.
+- Explain in plain English what slope and y-intercept *mean* in an engineering context: rate of change and starting value, respectively.
+- Run `slope_intercept.py` with the inline tests passing, fit a slope and intercept to a real-ish calibration dataset, and plot the data and the fit together.
+- Pass the inline lesson check at 100% on first attempt.
+
+The committed artifact is `slope_intercept.py` plus the generated `pressure_sensor_calibration.png` (or your own dataset's plot), checked in to your study repository.
+
+## Sources and Further Study
+
+- **Serge Lang, *Basic Mathematics***, chapters 5–6 on coordinate geometry and the slope of a line. Lang's exposition is the gold standard for rigorous pre-calculus, written by one of the great 20th-century mathematicians.
+- **James Stewart, *Calculus: Early Transcendentals***, chapter 1 on linear models and functions. Stewart introduces slope as the foundation for derivative; this lesson's content is the prerequisite for his chapter 2.
+- **Howard Anton, *Calculus***, chapter 1. A second perspective on linear functions and the lead-in to calculus.
+- **René Descartes, *La Géométrie* (1637)**, available in English translation by Smith and Latham (Dover). The founding text of analytic geometry. Read sections 1–2 for the introduction of coordinate methods.
+- **MIT OpenCourseWare 18.01 *Single Variable Calculus*, lectures 1 and 2.** Free video lectures by David Jerison. Lecture 1 introduces the derivative as a slope; lecture 2 generalizes to curves. The same slope concept you learn here is the building block.
+- **MIT OpenCourseWare 6.002 *Circuits and Electronics*.** The treatment of op-amp small-signal gain as the slope of the transfer characteristic, and the linearization of nonlinear devices around an operating point.
+- **Ramón Pallás-Areny and John G. Webster, *Sensors and Signal Conditioning*** (Wiley). The reference text on linear sensor calibration. Their treatment of sensitivity, offset, linearity error, and the two-point calibration procedure is exactly the engineering use of this lesson's content.
+- **NIST Engineering Statistics Handbook** (free online), the chapter on linear regression. The statistical formalization of "fit a slope and intercept to noisy data."
+
+## Next Lesson Bridge
+
+You can now extract the slope and y-intercept of a linear relationship from any representation — a pair of points, a table, a graph, an equation, or a sentence of English. You know what they mean: slope is a *rate* with engineering units, and y-intercept is an *initial value* with the units of $y$.
+
+Lesson 10 — *Slope-Intercept Form* — takes the two parameters you can now find and combines them into the single canonical equation
+
+$$y = mx + b,$$
+
+which is the standard form of every linear function. Knowing slope and intercept separately is useful; combining them into one equation lets you predict $y$ for any $x$, model real engineering situations as linear functions, and lay the groundwork for the deeper modeling work in the calculus and statistics modules ahead. You will also meet the *point-slope form* $y - y_1 = m(x - x_1)$, which is the most convenient form when you know one point and the slope but not the intercept — exactly the situation in many sensor-calibration tasks.
+
+After that, lessons 11–14 build out the algebra of linear systems: two-variable systems, equations of lines through given points, parallel and perpendicular lines, and the linear-equation toolkit you will use every day in coordinate geometry, dynamics, and machine learning. The two-number slope-and-intercept skill from this lesson is the foundation for all of it.

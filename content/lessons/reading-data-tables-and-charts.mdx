@@ -1,0 +1,617 @@
+# Reading Data Tables and Charts
+
+## Re-entry Promise
+
+This lesson is about *reading*, not making. Every engineering paper, datasheet, benchmark report, and dashboard is a wall of tables and charts. If you cannot decode them quickly and skeptically, you cannot read the literature, you cannot tell a good benchmark from a misleading one, and you cannot judge your own results. Data literacy is the unspoken prerequisite for every later quantitative subject — statistics, machine learning, control theory, physics — but it is rarely taught directly.
+
+This lesson assumes basic arithmetic, scientific notation (lesson 15), and significant figures (lesson 16). It does *not* assume any prior training in data visualization, statistics, or graphical perception. We start from "what is an axis" and end at "why this Bloomberg chart is lying to you." By the end you should be able to walk through a published table or figure, identify its variables and units, spot the standard deceptions, and judge whether the chart actually supports the author's claim.
+
+The vocabulary you build here — *truncated y-axis*, *log scale*, *dual-axis abuse*, *Cleveland's perception hierarchy*, *small multiples*, *data-ink ratio* — is the working language of every working scientist and engineer who reads charts critically. We will keep returning to it for the rest of the curriculum.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Read a published table or chart and identify the variables, their units, the data source, and what is being claimed.
+- Distinguish linear from logarithmic scales and explain when each is appropriate.
+- Spot the standard chart deceptions: truncated y-axis, misleading area encodings, dual-y-axis games, inconsistent ranges across small multiples, cherry-picked time windows, absolute-vs-per-capita confusion, cumulative-vs-rate confusion.
+- Pick the right chart type for a given dataset: line for continuous trends, bar for categorical comparisons, scatter for relationships, histogram for distributions, box plot for grouped summaries, small multiples for cross-group comparisons.
+- Apply Cleveland's perception hierarchy (position > length > angle > area > color) to judge a chart's *decodability*.
+- Sanity-check a published numerical claim using Fermi estimation (lesson 17).
+- Read an op-amp Bode plot, a benchmark latency CDF, a stress-strain curve, and an ML training-loss plot fluently.
+- Justify in writing why a particular chart is good or bad, citing specific perceptual or statistical reasons.
+
+## Why It Matters
+
+Charts and tables are the *primary* interface for technical information. A small selection of contexts where reading them well is a working necessity:
+
+1. **Sensor logs and oscilloscope traces.** A scope shows voltage versus time, often on log time scales. A bad reading — confusing peak with peak-to-peak, ignoring the units on the cursor — leads directly to a blown component.
+
+2. **Datasheets.** An op-amp datasheet has a frequency-response curve (log-log Bode plot), a propagation-delay table (rows are conditions, columns are typical/min/max), a thermal-derating curve, and noise plots. Reading them wrong costs you the project.
+
+3. **Benchmark reports.** MLPerf, GPU benchmarks, network throughput numbers, database TPC-H. Every benchmark has a chart, and every benchmark chart is fighting a marketing battle. "1.2x faster" with a truncated y-axis is the oldest trick in the book.
+
+4. **Scientific papers.** Every empirical paper has tables and figures. The tables hold the precise numbers; the figures hold the patterns the authors want you to see. Reviewers spend more time on figures than on text. You need to read them the same way.
+
+5. **Government and central-bank data.** FRED (Federal Reserve Economic Data), EIA (Energy Information Administration), Census, BLS. These are the source-of-truth datasets for most macro claims you will hear. Reading their charts correctly is a literacy skill for citizenship as much as engineering.
+
+6. **Climate and earth science.** Temperature anomaly charts, CO₂ concentration time series (the Keeling curve), sea-level reconstructions. The single most contested figure in modern science is the "hockey stick" — a chart. Knowing how to read it is non-optional.
+
+7. **Your own ML training curves.** Loss vs epoch, validation vs training, learning-rate schedules, gradient-norm plots. A trained intuition for these curves is the difference between debugging a model in an hour and debugging it in a week.
+
+8. **Drone and robot telemetry.** Flight-controller logs from PX4 or ArduPilot are megabytes of multivariate time-series data. Reading them well is the difference between "the drone crashed because the battery sagged at full throttle" and "I have no idea why the drone crashed."
+
+9. **Wireshark and packet captures.** A network capture is a sortable table. Reading it well lets you diagnose TLS handshakes, dropped packets, and retransmission storms.
+
+10. **Presenting your own results.** Eventually you become the one drawing the chart. Every bad chart you have ever seen has someone behind it who did not know better. Don't be that person.
+
+The skill is *fast, skeptical reading*. Slow reading is for math. Fast skeptical reading is for tables and figures.
+
+## Why This Idea Exists
+
+Data visualization is younger than you might think. For most of human history, quantitative information was tabular at best.
+
+**William Playfair** (1759–1823), a Scottish engineer, is widely credited as the inventor of modern statistical graphics. In his *Commercial and Political Atlas* (1786) he introduced the **line chart** (showing England's trade balance over time) and the **bar chart** (showing Scottish imports and exports). In *Statistical Breviary* (1801) he introduced the **pie chart**. Playfair grasped immediately that "lines on paper" could convey patterns that columns of numbers could not. His charts are still readable today and would not look out of place in a modern publication.
+
+**Florence Nightingale** (1820–1910) — better known as a reformer of nursing — was also an accomplished statistician. Her "coxcomb" diagrams (a kind of polar bar chart) showed the causes of British military deaths in the Crimean War. By demonstrating visually that more soldiers died of preventable disease than of battle wounds, she persuaded Parliament to fund sanitation reform. The chart literally saved lives. She was the first woman elected to the Royal Statistical Society.
+
+**Charles Joseph Minard** (1781–1870) drew, in 1869, what is often called the greatest statistical graphic ever produced: a chart of Napoleon's 1812 Russian campaign. It encodes *six* variables — the army's path on a map, the size of the army (as a band's thickness), the direction of march, the temperature on the return, the time, and the latitude/longitude — in a single image. Tufte calls it the prototype of the "thick" graphic that rewards close study.
+
+**John W. Tukey** (1915–2000) reinvented exploratory statistics with *Exploratory Data Analysis* (1977). He introduced the **box plot** (also called the box-and-whisker plot), the **stem-and-leaf display**, and a whole vocabulary for looking at data before formally modeling it. Tukey's argument: most statistical disasters come from leaping to models without first *looking* at the data.
+
+**Edward Tufte** (b. 1942) wrote *The Visual Display of Quantitative Information* (1983), the modern canon of charting. His principles — maximize the **data-ink ratio**, eliminate **chartjunk**, prefer **small multiples** to one over-decorated plot — are the default style guide of every serious chart-maker today.
+
+**William S. Cleveland** (b. 1943), then at AT&T Bell Labs, did the empirical work behind the principles. His 1984 paper with Robert McGill, *Graphical Perception: Theory, Experimentation, and Application to the Development of Graphical Methods* (*Journal of the American Statistical Association*, 79: 531–554), ran controlled experiments asking subjects to decode visual encodings of quantitative data. The ranking they discovered — position on a common scale > position on an aligned non-common scale > length > angle/slope > area > volume > color hue — is the empirical foundation of modern visualization advice.
+
+**Leland Wilkinson** (1944–2021) wrote *The Grammar of Graphics* (1999), which provides the *conceptual* foundation: any statistical graphic decomposes into a small number of orthogonal pieces (data, geometric objects, scales, coordinate systems, statistical transformations, facets). This decomposition is what `ggplot2` (R) and Plotly, Vega-Lite, Altair, and the newer `seaborn.objects` interface (Python) all implement.
+
+The lineage from Playfair to Tufte to Cleveland to Wilkinson is the intellectual history of data visualization. Every good modern chart sits on these shoulders.
+
+## Plain-Language Intuition
+
+A chart is a **translation of numbers into geometry your eye can decode**. That is the entire game.
+
+The translation is good when the geometry preserves the underlying quantitative relationships and the eye can recover them accurately. The translation is bad when the geometry distorts the numbers, demands skills the eye does not have, or hides what is actually going on.
+
+Two facts dominate the design space:
+
+1. **Humans decode position on a common scale very accurately.** Show me two dots on the same number line and I can tell you which is bigger and by roughly how much.
+2. **Humans decode angle, area, and color very inaccurately.** Show me two pie slices that differ by 10% and I will probably mis-rank them. Show me two bubbles whose areas differ by a factor of 2 and I will probably guess a factor of 1.4.
+
+Almost every charting decision flows from these two facts. Bar charts are good because they use position (the top of the bar) on a common scale (the y-axis). Pie charts are bad because they force the eye to compare angles. Bubble charts are bad because they force the eye to compare areas. Heatmaps with rainbow color scales are bad because rainbow hue is unordered.
+
+The other half of the game is **honesty**. A chart that visually exaggerates a 1.05× ratio into a 5× ratio (by truncating the y-axis) is a *lie*, even if the underlying numbers are correct. Reading charts critically means asking, "Does what my eye sees match what the numbers say?"
+
+That's it. Position over angle, area, and color. Honest scales. Everything else is variations on the theme.
+
+## Core Theory
+
+### Anatomy of a Chart
+
+Every chart has the same parts. Learn to look for each:
+
+- **Title.** What is being shown? Should be a complete declarative sentence ("US GDP grew 2.1% in 2023") or at minimum a noun phrase ("US GDP, 1947–2023").
+- **Axes.** Each axis carries a *quantity* and a *unit*. "Time (seconds)", "Voltage (mV)", "Frequency (Hz)". An axis without units is a bug.
+- **Tick marks and gridlines.** Where are the reference values? Are they evenly spaced (linear) or by powers of ten (log)?
+- **Plotted data.** Lines, points, bars. What geometric encoding is used for what variable?
+- **Legend.** Which color/shape means which group?
+- **Source/caption.** Where did the data come from? When was it collected? Who measured it?
+- **Annotations.** Any callouts, error bars, fitted curves, or shaded regions?
+
+A chart missing any of these is incomplete. A chart with all of them done correctly is rare and beautiful.
+
+### Anatomy of a Table
+
+Tables are charts' under-appreciated sibling. They sacrifice gestalt for precision: you cannot eyeball a trend, but every number is exact.
+
+A good table has:
+
+- **Title or caption.** What does the table contain?
+- **Column headers with units.** "Mass (kg)", "Length (m)", "Conductivity (S/m)".
+- **Row labels.** Often a categorical variable: device, country, model, condition.
+- **Footnotes.** What does "*" mean? What does "n.d." mean?
+- **Source.** Where did the data come from?
+- **A sensible number of significant figures.** A table of "1.0000023421" values is almost always over-precise; a table of "1.0" values is often under-precise.
+
+A common datasheet convention: typical / min / max columns. A common scientific paper convention: mean ± standard deviation, with n (sample size) in a footnote.
+
+### Units Always
+
+The single most common chart-reading error is unit confusion. Some examples:
+
+- mm vs cm vs m (factor 10, 100, 1000)
+- ms vs s vs minutes (factor 1000, 60000)
+- Hz vs kHz vs MHz vs GHz (factors of 1000)
+- bits vs bytes (factor 8)
+- bits/sec vs bytes/sec (factor 8 again — and conventionally Mb means megabits in networking, MB means megabytes in storage)
+- percent vs basis points (1% = 100 bps)
+- W vs kW vs MW
+- raw count vs per-capita rate
+- linear vs log axis (factor: arbitrarily large)
+- nominal vs inflation-adjusted dollars
+- gross vs net
+
+If a chart shows a "doubling" between 1980 and 2024, but the y-axis is nominal dollars, the doubling might be entirely inflation. Always read the unit *first*.
+
+### Linear vs Logarithmic Scales
+
+A **linear scale** has evenly-spaced tick marks; equal *distances* correspond to equal *differences*. The distance from 10 to 20 is the same as the distance from 90 to 100.
+
+A **logarithmic scale** has tick marks evenly spaced in the exponent; equal *distances* correspond to equal *ratios*. The distance from 10 to 100 is the same as the distance from 100 to 1000 and from 1000 to 10000. Tick marks at $10^0, 10^1, 10^2, 10^3, \dots$ are the giveaway.
+
+Use a log scale when:
+
+- The data spans more than ~2 orders of magnitude (so a linear plot would compress small values into the baseline).
+- The natural unit of change is *multiplicative* (a "30% increase" is the meaningful thing, not a "+5 units" increase).
+- The underlying process is exponential (population growth, Moore's law, radioactive decay, viral spread, compounding returns).
+- You want to convert an exponential into a straight line for easier visual comparison.
+
+Use a linear scale when:
+
+- The data spans less than 2 orders of magnitude.
+- The natural unit of change is additive.
+- Zero is meaningful and you want the eye to see relative size against zero.
+
+A subtle point: on a log scale, you cannot show zero or negative numbers (since $\log 0 = -\infty$). A chart that needs to show a zero (e.g., zero failures) must use a linear scale, or use a creative encoding like "$10^{-1}$" as a stand-in for "below detection limit."
+
+### Cleveland's Perception Hierarchy
+
+From Cleveland and McGill's 1984 experiments, ranked by *accuracy* of decoding (best first):
+
+1. **Position on a common scale.** (Two dots on the same number line.)
+2. **Position on aligned non-common scales.** (Two dots on parallel number lines.)
+3. **Length.** (Two bars not sharing a baseline.)
+4. **Angle and slope.** (Two pie slices, or two line segments.)
+5. **Area.** (Two circles, or two map regions.)
+6. **Volume.** (Two 3-D bars.)
+7. **Color saturation.** (Light vs dark blue.)
+8. **Color hue.** (Red vs green.)
+
+This hierarchy directly produces design rules:
+
+- A **bar chart** uses position-on-a-common-scale (the top of each bar against the y-axis). Excellent.
+- A **scatterplot** uses position-on-a-common-scale on both axes. Excellent.
+- A **pie chart** uses angle and area. Bad.
+- A **3-D bar chart** uses volume. Worse.
+- A **rainbow-colored heatmap** uses color hue, which is unordered (purple is not "more than" green). Bad.
+
+When you can choose the encoding, pick the highest-accuracy one consistent with showing what you need to show.
+
+### Picking the Right Chart Type
+
+A quick cheat sheet:
+
+- **Line chart.** Continuous trend over a continuous variable (usually time). One series per line.
+- **Bar chart.** Categorical comparison. One bar per category. Sort by value, not alphabetically, unless the category order is meaningful (months, severity).
+- **Scatterplot.** Two continuous variables. Look for trend, cluster, outlier.
+- **Histogram.** Distribution of a single continuous variable. Bin width matters.
+- **Box plot.** 5-number summary (min, Q1, median, Q3, max) of one variable, often by group. Great for comparing distributions across categories.
+- **Violin plot.** Like a box plot but shows the full distribution shape.
+- **Small multiples.** A grid of identical-scale charts, one per group. Tufte's recommendation for any "many groups" problem.
+- **Heatmap.** Two categorical (or binned) variables and one numerical. Use a perceptually-ordered colormap (viridis, magma) — never rainbow.
+- **Map.** Geographic data. Always think about whether absolute counts or per-capita is appropriate.
+
+### When NOT to Use a Pie Chart
+
+Pie charts are defensible only in a narrow case: two or three categories, where the parts-of-a-whole interpretation matters and the differences are large. Outside that case, *sort the values and use a bar chart*. The bar chart will always be more readable.
+
+Things that make a pie chart actively bad:
+
+- More than 4 slices. (The eye cannot rank them.)
+- Comparing across multiple pies. ("Slice A in Pie 1 is bigger than Slice B in Pie 2" — almost impossible to judge.)
+- 3-D pie charts. (The tilt distorts the apparent angle.)
+- Exploded slices. (Distorts the angle and the area.)
+
+### Dual-Y-Axis Charts and Their Abuses
+
+A dual-y-axis chart plots two different variables (with different units) against time on a shared x-axis. Example: housing prices (left axis, dollars) and S&P 500 (right axis, index value).
+
+The problem: the relative scaling of the two axes is *arbitrary*. By choosing the right scale, you can make any two series appear to "move together," or appear to "diverge," or appear to have any relationship you want. The chart implicitly claims a correlation that the data may not actually support.
+
+Defensible uses:
+
+- Both series are physically the same quantity in different units (e.g., temperature in C and F).
+- One series is a derived rate of the other (e.g., position and velocity).
+- The reader is sophisticated and the caption explicitly disclaims the scaling.
+
+In nearly every other case, *split the chart into two stacked plots* or *normalize both series to a common scale* (e.g., percent change from start).
+
+### Common Deceptions
+
+The following recur so often that they deserve names:
+
+- **Truncated y-axis ("Fox News chart").** The y-axis starts at, say, 35% instead of 0%, making a 36%-vs-35% comparison look like a 10× ratio. The bar chart needs a baseline of 0 to be honest. (Line charts of, say, stock prices reasonably do not start at 0, but the eye must be careful.)
+- **Inconsistent scales across small multiples.** Each small chart has a different y-axis range, defeating the visual comparison the format is designed to enable.
+- **Cumulative quantity masquerading as a rate.** A cumulative-COVID-cases chart only ever goes up; that does not mean cases are accelerating. The relevant series is the *daily new cases*.
+- **Absolute counts where per-capita is needed.** "California has the most COVID deaths" — sure, it has the most people. Per-capita is the rate that compares places.
+- **Misleading area encodings.** A bubble chart where the *radius* (not the area) is proportional to the quantity makes a 4× quantity look like a 16× area.
+- **Cherry-picked time windows.** "Temperatures haven't risen since 1998" — only if 1998 was the unusually hot year you start the window at.
+- **Simpson's paradox.** An aggregate trend goes one way while every subgroup trend goes the other. The remedy is to disaggregate (use small multiples).
+- **Logarithmic deception.** A log-scale chart of exponential growth looks linear, which can lull a reader into ignoring the magnitudes. (Conversely, a linear chart of decades of population growth crushes early data into the baseline.)
+- **Double-counting.** Stacked bars where the same units are counted in multiple categories.
+- **Missing data unmarked.** Gaps in a time series silently replaced by interpolation or zeros, with no indication.
+
+A trained reader scans every published chart for these deceptions automatically. It takes a few hundred reps to become automatic.
+
+## Visual or Mental Model
+
+### Model 1: A Bar Chart Done Right vs Wrong
+
+Consider three values: A = 102, B = 100, C = 101.
+
+A *truncated y-axis* (starting at 99) bar chart looks like:
+
+```
+ |     |##|
+ |##|  |##|  |##|
+ |##|  |##|  |##|
+ |##|  |##|  |##|
+ +-----+----+----+
+   A    B    C
+```
+
+A bar chart with y-axis starting at 0 looks like:
+
+```
+ |##|  |##|  |##|
+ |##|  |##|  |##|
+ |##|  |##|  |##|
+ |##|  |##|  |##|
+ |##|  |##|  |##|
+ (...30 more rows...)
+ |##|  |##|  |##|
+ +-----+----+----+
+   A    B    C
+```
+
+Same data, vastly different impression. The honest version says "these three are essentially equal." The truncated version says "A is huge compared to B." If the underlying claim is "model X is 1.02× faster than model Y," the honest chart conveys that; the truncated one inflates it visually.
+
+### Model 2: The Perception Stack
+
+Imagine a vertical stack of encoding choices, ordered by decoding accuracy:
+
+```
+        BEST decoded by the human eye
+   |  position on common scale     | (scatter, bar)
+   |  position on aligned scale    | (small multiples)
+   |  length                       | (unaligned bars)
+   |  angle, slope                 | (pie, line slope)
+   |  area                         | (bubble, treemap)
+   |  volume                       | (3D bars)
+   |  color saturation             | (heatmap)
+   |  color hue                    | (rainbow palette)
+        WORST decoded by the human eye
+```
+
+When you draw a chart, pick the encoding as high on the stack as the data allows. When you read a chart, ask: which encoding did the author choose, and does it match the importance of the comparison?
+
+### Model 3: The Data-Ink Ratio
+
+Tufte's mental model: of all the ink on a chart, what fraction encodes actual data?
+
+$$\text{data-ink ratio} = \frac{\text{ink used for data}}{\text{total ink}}$$
+
+A chart with thick borders, gradients, drop shadows, 3-D bars, and decorative icons has a *low* data-ink ratio. Most of the ink is decoration. A bare scatterplot with axis labels and nothing else has a *high* data-ink ratio.
+
+The principle: maximize the data-ink ratio. Strip everything that is not data. Add back only what helps the reader decode the data faster (gridlines, axis labels, captions). Everything else is chartjunk.
+
+This is a heuristic, not a law. A small amount of "non-data ink" can dramatically aid comprehension (a fitted regression line, a reference value, a callout for the largest outlier). The point is to make every mark earn its presence.
+
+### Model 4: Linear and Log Side by Side
+
+US population, 1790–2020 (rough numbers in millions):
+
+```
+year    pop
+1790    4
+1850    23
+1900    76
+1950    151
+2000    281
+2020    331
+```
+
+On a **linear** y-axis, the early data points (1790–1850) crush down near zero and the eye sees nothing but a curve rising fast in the 20th century.
+
+On a **log** y-axis, the data points spread out evenly and the eye sees that growth was approximately exponential at a steady rate from 1790 to about 1950, then *slowed* (the line bends downward) from 1950 onward. The log scale reveals the demographic transition that the linear scale hides.
+
+Same data. Different choice of scale. Different story.
+
+## Worked Examples
+
+### Example 1 — The Truncated ML Benchmark
+
+A vendor publishes a bar chart titled "Inference latency, lower is better." Model X has a bar at $\sim$ 95% of the chart height; model Y has a bar at $\sim$ 80%. The y-axis is labeled "Latency (ms)" with tick marks at 9.5, 10.0, 10.5, 11.0. The caption reads, "X is 1.2× faster than Y."
+
+What's wrong? The y-axis starts at 9.5, not 0. The actual numbers are X = 10.4 ms, Y = 10.9 ms. The ratio is 10.9 / 10.4 = 1.048, or about 5% faster — not 20%.
+
+The visual impression is amplified by the truncation. Once you redraw with the y-axis starting at 0, the two bars look essentially identical.
+
+The lesson: for any "X is N times Y" claim, compute N from the raw numbers, not from the visual ratio of the bars.
+
+### Example 2 — Log-Scale Moore's Law
+
+A famous chart shows transistor count vs year for CPUs from 1970 to 2020, with the y-axis on a log scale ranging from $10^3$ to $10^{11}$. The data fall approximately on a straight line.
+
+A naive reader looks at the slope and says "transistors grow linearly with time." That is wrong. On a log y-axis, a straight line means *exponential* growth in the underlying quantity. The straight line is the visual fingerprint of Moore's law: transistor count doubles every 18–24 months, multiplying by about 1.4 each year. Over 50 years, that is a factor of $1.4^{50} \approx 10^7$ growth.
+
+A correct reading: the slope of the line on a log-y plot is $\log_{10}(\text{growth factor})$ per unit time. A line that climbs one decade (a factor of 10) per 5 years implies a $10^{1/5} \approx 1.58$ multiplicative growth per year.
+
+The lesson: on log scales, slope is not "rate of change" — it is "rate of multiplicative change."
+
+### Example 3 — Twelve-Slice Pie Chart, Redrawn
+
+A consultant's report has a pie chart titled "Q4 revenue by product line" with 12 slices. The labels are tiny. Several slices are nearly indistinguishable. There is no clear ranking.
+
+The fix: take the same 12 numbers and draw a **sorted horizontal bar chart**, longest at the top. Now the eye reads (a) which product is biggest, (b) the rough size of the top 3, (c) which products are negligibly small.
+
+The pie chart hid all of this behind angles the eye cannot decode. The bar chart makes it instantly readable.
+
+Optional improvement: collapse all "$<$ 2% of revenue" slices into a single "Other" category and label them in a footnote.
+
+### Example 4 — The Dual-Axis Housing-and-Stocks Deception
+
+A blog post shows housing prices (left y-axis, in thousands of dollars) and the S&P 500 (right y-axis, in index points) from 2000 to 2024, both on the same chart with two y-axes. The two lines appear to move together. The blogger argues, "Housing and stocks are tightly correlated."
+
+What's wrong? The *visual* correlation depends entirely on how you scaled the two y-axes against each other. Shift the right y-axis up by 500 points and the lines suddenly look uncorrelated. There is no objective standard for the dual-axis comparison.
+
+The honest fix:
+
+1. **Normalize both series.** Divide each by its January 2000 value. Now both are unitless "growth multiples" on the same y-axis. The actual correlation becomes visually decodable.
+2. **Or: stack two separate charts.** Same x-axis (time), two separate y-axes (one per panel). The reader can compare without being misled by arbitrary scaling.
+3. **Or: compute and report the actual correlation coefficient.** A number, not a visual impression.
+
+The lesson: dual-y-axis charts almost always make a claim the chart cannot support. Treat them as a red flag.
+
+### Example 5 — Scatterplot with a Cluster and an Outlier
+
+A scatterplot of GPU memory bandwidth (x, GB/s) vs ML inference throughput (y, images/sec) for 30 different GPUs. Most points fall along a clear line: throughput is roughly proportional to bandwidth. One point sits far above the line.
+
+The outlier is informative. Possibilities:
+
+- A measurement error (recompute, double-check).
+- A genuinely different architecture (e.g., a GPU with on-chip SRAM that makes it less bandwidth-bound).
+- A different workload (mislabeled in the source).
+
+What the scatterplot does *well* is reveal the outlier visually. A table of 30 rows would have buried it. The clustering of the other 29 points around a line is itself a finding: throughput is bandwidth-limited, which has design implications.
+
+Annotate the outlier with a label and a callout. Do not omit it; do not silently smooth it.
+
+### Example 6 — Small Multiples for Country-Level Time Series
+
+The "small multiples" format: a grid of small charts, one per country, all sharing the same axes and scales. Each shows, say, daily COVID cases per 100,000 people over the same time window. The reader scans the grid and sees at a glance:
+
+- Which countries had early waves vs late waves.
+- Which countries had a single peak vs multiple peaks.
+- Which countries had similar trajectories (cluster visually).
+- Which countries had unusual patterns (outliers in the grid).
+
+This is Tufte's preferred format for "many groups" data. It works because each small chart uses position-on-a-common-scale, and the shared axes let the eye compare across panels without re-calibrating.
+
+The trap to avoid: letting each panel auto-scale to its own y-axis. Now the grid is unreadable — a small bump in one country looks the same as a giant peak in another. *Always lock the scales across panels in a small-multiples grid.*
+
+### Example 7 — Sensor Log Without Checking Units
+
+A drone hobbyist downloads a flight log and plots "battery" over time. The numbers range from 11000 to 14000. The hobbyist concludes the battery is "discharging from 14000 to 11000 mV" — i.e., from 14 V to 11 V — over the flight.
+
+What went wrong? The log column is *labeled* `Vbat` but the value is in *millivolts*, and the units were not checked. The hobbyist's interpretation is correct *only because* he happened to recognize 11–14 V as a plausible 3-cell LiPo range. Had he assumed it was volts directly, he would have thought the battery was at 11000 V (impossible) and panicked.
+
+Worse: in some firmware versions, the same `Vbat` field is logged in tenths of a volt, or in raw ADC counts. Always check the unit *in the firmware documentation* before interpreting a sensor log.
+
+The general lesson: the value of a sensor reading without its unit is meaningless. The plot needs the unit on the axis. The code needs the unit on the variable.
+
+### Example 8 — A Bode Plot
+
+An op-amp datasheet shows "open-loop gain" on a log-log plot: x-axis is frequency (Hz) from $10^1$ to $10^7$, y-axis is gain (dB) from 0 to 120. The curve starts flat at 100 dB, then bends downward, falling at 20 dB/decade beyond about 10 Hz, crossing 0 dB at about $10^6$ Hz.
+
+Reading this fluently:
+
+- The op-amp has a low-frequency gain of $100$ dB, or $10^5 = 100{,}000$.
+- The "unity-gain bandwidth" — the frequency at which gain is 1 (0 dB) — is about 1 MHz.
+- The "dominant pole" is at about 10 Hz (where the curve begins to fall).
+- The gain falls 20 dB per decade above the pole, which is the canonical first-order rolloff.
+
+A reader who has not internalized Bode-plot conventions sees a meaningless curve. A reader who has reads the entire frequency response of the device in a few seconds. This is the high-bandwidth communication that log-log plots enable for circuit and control work.
+
+## Engineering Connections
+
+### Op-Amp Datasheet Frequency Response
+
+The Bode plot from Example 8 is the working interface to every analog circuit design decision. Gain-bandwidth product, slew rate, phase margin — all read directly off the datasheet's log-log plots. An engineer who cannot read these is locked out of analog design.
+
+### Benchmark Latency CDF
+
+MLPerf, Google's Borg, every database benchmark, and every distributed-systems paper plots latency as a **cumulative distribution function**: x-axis is latency, y-axis is the fraction of requests with latency $\le$ x. Often the y-axis goes from 0 to 1, or (in a log-tail variant) from 0.9 to 0.99999 to highlight the tail.
+
+Reading it: the "P99 latency" is the x-value where y = 0.99. The "median" is where y = 0.5. The "tail" is the steep climb near y = 1, and is the part that matters for user experience. A flat tail means good worst-case performance; a long tail (latencies $\gg$ median) means some user requests are pathologically slow.
+
+### Stress-Strain Curve from a Materials Lab
+
+A tensile test plots stress (force per area, MPa) on the y-axis vs strain (fractional length change) on the x-axis. The curve typically:
+
+- Rises linearly (elastic region — slope is the Young's modulus).
+- Bends over at the yield point (plastic deformation begins).
+- Rises slowly (strain hardening).
+- Reaches an ultimate stress.
+- Falls slightly (necking).
+- Terminates at fracture.
+
+A materials engineer reads all of this off a single plot. The slope, the yield point, the ultimate strength, and the strain to failure are each a number with engineering meaning.
+
+### ML Training Loss Curve
+
+A loss-vs-epoch plot is the primary instrument for diagnosing model training. What to look for:
+
+- **Smooth monotonic decrease.** Training is converging.
+- **Plateau.** Learning rate may be too low or the model has converged.
+- **Oscillation.** Learning rate may be too high; gradient instability.
+- **Training loss falling while validation loss rises.** Overfitting; reduce model capacity or add regularization.
+- **Both losses flat.** Stuck; try learning-rate restart or different init.
+- **Sudden spike.** Numerical instability, often from a bad batch (NaN gradients).
+
+A log y-axis is often appropriate for loss curves because loss can span orders of magnitude across training.
+
+### Wireshark Capture Summary
+
+A Wireshark capture is a long table: each row is a packet, with columns for timestamp, source, destination, protocol, length, info. Reading it fluently:
+
+- Sort by source to find chatty hosts.
+- Filter by protocol (`http`, `tcp.port == 443`, `dns`) to isolate one conversation.
+- Look at the "I/O graph" for traffic over time.
+- Watch for retransmits, duplicate ACKs, and RST packets — signs of network distress.
+
+The combination of a sortable table and a time-series chart is the basic interface for network diagnostics.
+
+### Flight Controller PID-Tuning Logs
+
+A drone flight controller log includes setpoint, measured-state, and motor-output time series for each axis (roll, pitch, yaw). PID tuning is the iterative process of adjusting gains and reading the response curve:
+
+- **Sluggish response** (measured lags setpoint): increase $K_p$.
+- **Oscillation** (measured overshoots and rings): decrease $K_p$ or increase $K_d$.
+- **Steady-state error** (measured plateaus below setpoint): increase $K_i$.
+- **Slow drift** (integrator windup): decrease $K_i$ or add anti-windup.
+
+Each of these diagnoses is a *chart-reading* task. The PID-tuning literature is largely a library of chart shapes and their causes.
+
+## Practice Set
+
+For each prompt, find a real, public chart matching the description. Save a screenshot or link. Audit it using the rubric below.
+
+### Find and Audit
+
+1. A bar chart from a vendor announcing a new GPU. Check the y-axis baseline and the actual ratios.
+2. A line chart from the **EIA** (energy.gov) showing US electricity generation by source over time. Identify the variables, units, and source.
+3. A chart from **FRED** (Federal Reserve Economic Data, fred.stlouisfed.org) showing inflation. Decide whether linear or log is appropriate.
+4. A **MLPerf** benchmark chart from mlperf.org. What is being compared? What is the y-axis?
+5. A figure from a scientific paper in your domain (use arxiv.org). Identify which chart-type the authors chose and why.
+6. A **chart from a popular news article** (Bloomberg, NYT, FT). Find at least one deception or judgment call.
+7. A **Bode plot** from any op-amp datasheet (e.g., LM358, TL072, OPA627). Read the gain-bandwidth product off the chart.
+8. A **latency CDF** from a systems paper (search "latency CDF" on arxiv-systems papers). Identify the median and the P99.
+9. A chart from a **government statistical agency** (BLS, Census, ONS, Eurostat). Spot any chart that could be drawn differently to support a different conclusion.
+10. A **climate chart** from NASA's GISS, NOAA, or the IPCC. Decide whether the y-axis baseline is honestly chosen.
+
+### Audit Rubric
+
+For each chart, write down:
+
+- **Variables.** What is on each axis (and color/size/shape)?
+- **Units.** Are the units stated? Are they appropriate?
+- **Scale.** Linear, log, or other? Is it the right choice?
+- **Encoding.** Which Cleveland-hierarchy level does it use? Could a higher-level encoding be used?
+- **Baseline.** Where does the y-axis start? Honest or truncated?
+- **Source.** Is the data source cited? Is the source credible?
+- **Sample size.** How many data points? Are they enough for the claim?
+- **Time window.** Cherry-picked or representative?
+- **Claim.** What is the chart asserting? Does the chart support the assertion?
+- **Better version.** How would you redraw it?
+
+## Build Task
+
+Write `chart_sanity.py`. Build a small `Chart` class that wraps `matplotlib` with sanity-checking defaults.
+
+Required features:
+
+1. **Bar-chart baseline guard.** By default, bar charts have `ylim` starting at 0. To override (e.g., for a stock-price chart that does not naturally start at zero), require an explicit argument `allow_truncated_baseline=True` and print a warning.
+2. **Log-scale suggestion.** Compute the ratio of max/min positive values in the dataset. If that ratio exceeds $10^2$, print a recommendation: "Data spans X decades; consider `yscale='log'`."
+3. **Data-ink ratio sanity check.** Count the number of ink elements that are *not* data (gridlines, frames, ticks, titles) vs the number that *are* (bars, points, lines). Print a rough ratio. (This will be imprecise — the point is to surface the question.)
+4. **Required-labels guard.** Refuse to render a chart unless `xlabel`, `ylabel`, and `title` are set. (Empty string raises an error too.)
+5. **Unit annotation.** Require that each axis label include a unit in parentheses, e.g., "Time (s)". Raise an error otherwise.
+
+Example usage:
+
+```python
+from chart_sanity import Chart
+
+c = Chart(title="Inference latency by model",
+          xlabel="Model (name)",
+          ylabel="Latency (ms)")
+c.bar(["X", "Y", "Z"], [10.4, 10.9, 11.2])
+c.show()
+# Prints: data-ink ratio sanity check: ~0.4
+# No log-scale suggestion (data spans 0.03 decades)
+# Baseline auto-set to 0
+```
+
+Then deliberately misuse it:
+
+```python
+c = Chart(title="X is 1.2x faster!",
+          xlabel="Model",
+          ylabel="Latency (ms)")
+c.bar(["X", "Y"], [10.4, 10.9], allow_truncated_baseline=True)
+# Prints: WARNING: bar-chart y-axis baseline is not 0. Visual ratio may not match numeric ratio.
+```
+
+Apply the class to a real dataset of your choosing (e.g., download MLPerf results or a FRED time series). Save the resulting figure and write a 2-paragraph commentary on what the sanity checks caught.
+
+Stretch goals:
+
+- Add a `dual_axis` method that *forces* the caller to acknowledge with `i_know_dual_axis_is_misleading=True` before plotting.
+- Add a `pie` method that refuses if `len(data) > 4` unless explicitly overridden.
+- Add a `colormap_check` that warns if the user picks `jet` or `rainbow`.
+- Add a `small_multiples` method that automatically locks all sub-panel y-axes to the same range.
+
+## Quiz
+
+1. State Cleveland's perception hierarchy from best to worst. Give one example of a chart type that uses each encoding.
+2. Why is angle a hard encoding for the human eye to decode? (Hint: think about why pie charts are hard to read.)
+3. When is a dual-y-axis chart defensible? Give two specific cases.
+4. When is a pie chart actually fine? Give the conditions.
+5. Why is the Minard chart of Napoleon's Russian campaign considered exceptional? Name at least four of the six variables it encodes.
+6. A bar chart's y-axis starts at 95 instead of 0, with bars at 100, 102, and 105. Compute (a) the actual ratio of the tallest to the shortest, and (b) the visual ratio the chart implies. What's the deception factor?
+7. You have a dataset with values from $10^{-3}$ to $10^7$. Linear or log y-axis? Why?
+8. You are diagnosing an ML training run. Training loss is falling smoothly but validation loss has been rising for the last 10 epochs. What is happening, and what chart-shape would confirm it?
+
+### Answers
+
+1. Position-on-common-scale (scatter, bar) > position-on-aligned-scale (small multiples) > length (unaligned bars) > angle/slope (pie, line slope) > area (bubble) > volume (3-D bar) > color saturation (heatmap) > color hue (rainbow palette).
+2. Humans estimate angles poorly because the visual system is not calibrated to decode angular ratios into numeric ratios. Two pie slices of 30% and 40% look much more similar than the same values shown as bars of length 30 and 40 against a common axis.
+3. Defensible cases: (a) both series are physically the same quantity in different units (temperature in C and F); (b) one series is the rate-of-change of the other (position and velocity).
+4. A pie chart is fine when there are 2–4 categories, the parts-of-a-whole interpretation is the main point, and the differences between slices are visually obvious. Outside these conditions, prefer a sorted bar chart.
+5. The Minard chart of Napoleon's 1812 campaign is exceptional because it integrates six variables into one image without visual clutter. The variables: (1) army size (band thickness), (2) geographic location (the band's path on a map of Russia), (3) direction of travel (advance vs retreat, color-coded), (4) date, (5) temperature on the return, (6) latitude/longitude.
+6. The actual numeric ratio is $105 / 100 = 1.05$, i.e., the tallest is 5% bigger than the shortest. With the y-axis truncated to start at 95, the bar heights drawn are $105-95=10$, $102-95=7$, and $100-95=5$, so the visual ratio is $10/5 = 2$. The deception factor is $2 / 1.05 \approx 1.9$ — the chart visually inflates the difference by nearly $2\times$.
+7. Log y-axis. The data spans 10 orders of magnitude. On a linear axis, all values below $10^5$ would be visually indistinguishable from zero. A log axis lets the eye decode the relative magnitudes across the entire range.
+8. The model is **overfitting**: it is memorizing training data while losing generalization. The confirming chart shape is the classic "divergence" of two loss curves on the same plot — training loss continues down, validation loss has formed a U-shape with its minimum some epochs ago. Fix: regularize, reduce model capacity, augment data, or early-stop at the validation minimum.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Pass the inline lesson check at 100% on first attempt.
+- Read a Bode plot, latency CDF, stress-strain curve, and ML training-loss plot fluently and explain each.
+- Apply the audit rubric (variables, units, scale, encoding, baseline, source, sample size, time window, claim, better version) to any chart you encounter in the wild.
+- Identify Cleveland's perception hierarchy on any given chart and judge whether a higher-accuracy encoding could have been used.
+- Build the `chart_sanity.py` class and apply it to a real dataset.
+
+The capstone artifact: **commit a Jupyter notebook (`data_literacy_notebook.ipynb`) containing 5 real charts you downloaded from public sources** (one each from: a scientific paper, a vendor benchmark, a government statistical agency, a news article, a datasheet). For each chart, write a markdown cell with:
+
+- The audit-rubric fields filled in.
+- What the chart does well.
+- What it does badly or misleadingly.
+- A redraw, if you can produce one, using the `Chart` class from the Build Task.
+
+Push the notebook to your curriculum repo. This artifact will become the reference you re-read every time you draft a chart of your own.
+
+## Sources and Further Study
+
+- **Edward R. Tufte, *The Visual Display of Quantitative Information*** (Graphics Press, 2nd ed. 2001). The canonical book. Read cover-to-cover at least once. Tufte's *Envisioning Information* (1990) and *Visual Explanations* (1997) extend the argument.
+- **William S. Cleveland, *The Elements of Graphing Data*** (Hobart Press, 2nd ed. 1994). The empirical companion to Tufte's principles. Cleveland is where the perception hierarchy comes from.
+- **William S. Cleveland and Robert McGill, "Graphical Perception: Theory, Experimentation, and Application to the Development of Graphical Methods"**, *Journal of the American Statistical Association*, Vol. 79, No. 387 (Sept. 1984), pp. 531–554. The primary source for the perception hierarchy. Worth reading in full; the experimental design is a model of cleanness.
+- **Leland Wilkinson, *The Grammar of Graphics*** (Springer, 2nd ed. 2005). The conceptual basis of `ggplot2`, Vega-Lite, Altair, Plotly Express, and `seaborn.objects`. Heavy reading; skim then return.
+- **Kieran Healy, *Data Visualization: A Practical Introduction*** (Princeton University Press, 2018). Free online at socviz.co. Excellent practical R / ggplot2 tutorial.
+- **Claus O. Wilke, *Fundamentals of Data Visualization*** (O'Reilly, 2019). Free online at clauswilke.com/dataviz. The best modern "how to choose the right chart" reference.
+- **John W. Tukey, *Exploratory Data Analysis*** (Addison-Wesley, 1977). Where box plots and stem-and-leaf displays come from. A foundational text.
+- **Darrell Huff, *How to Lie with Statistics*** (Norton, 1954). A short, witty classic on chart deceptions. The examples are dated but the principles remain.
+- **MIT 6.S077 *Statistics for Research Projects***. Lecture notes online. Useful complement when you start lessons 19–20.
+- **The matplotlib gallery (matplotlib.org/stable/gallery) and seaborn documentation (seaborn.pydata.org).** Browse the gallery; for each chart type, ask, "When would I use this?"
+- **Andy Cotgreave, Steve Wexler, Jeffrey Shaffer, *The Big Book of Dashboards*** (Wiley, 2017). The applied counterpart, for dashboard design.
+
+## Next Lesson Bridge
+
+Lesson 19 — *Basic Probability Intuition* — picks up where this one leaves off. Once you can read distributions and histograms, probability gives you the vocabulary for *what they mean*: random variables, expected value, variance, joint and marginal distributions, conditional probability. The chart shapes you have learned to decode here (histograms, box plots, scatterplots) are about to acquire formal mathematical interpretations.
+
+Specifically: a histogram is an estimate of a probability density function; a box plot summarizes its quartiles; a scatterplot is a sample from a joint distribution; a correlation coefficient is a one-number summary of a scatterplot. The data-literacy skills you are practicing now are the *graphical* face of the probability concepts you are about to formalize.
+
+Then lesson 20 (*basic statistics intuition*) closes the Math Re-entry Toolkit by combining probability with these reading skills: how do we judge whether a difference between two measured values is *real* (statistically significant) or just noise? That question, and the tools to answer it, depend on both the probability of lesson 19 and the chart-reading of this lesson.
+
+After that, the full upper-math sequence (pre-calc, calculus, linear algebra, real analysis, optimization, statistics) builds on every Math Re-entry lesson, and the chart-reading skills here become a constant background tool. Every paper you read for the rest of the curriculum will have figures. You will spend the rest of your engineering life reading them.

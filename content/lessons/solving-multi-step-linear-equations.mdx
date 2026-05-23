@@ -1,0 +1,648 @@
+# Solving Multi-Step Linear Equations
+
+## Re-entry Promise
+
+In the previous lesson you rebuilt algebra as a practical tool: an equation is a balance statement, and solving means keeping that balance while you undo what was done to the variable. You can already handle one-step and two-step equations such as $x + 5 = 12$, $2x = 14$, and $3x - 4 = 11$, and you can rearrange formulas like $V = IR$ for any of their letters.
+
+This lesson does not assume any algebra beyond that. We will not re-derive the balance metaphor, the inverse-operation table, or the substitution check — those are already in your toolbox. Instead, we will pick up exactly where lesson 1 left off and ask the next obvious question: *what happens when one side of the equation is messy?*
+
+A real engineering equation almost never arrives in the clean form $3x - 4 = 11$. A loop equation from a circuit looks like $5I + 3I + 8I = 12$. A controller expression looks like $K_p(r - y) + K_i \cdot e = u$. Before you can apply lesson 1's two-step recipe, you have to *clean up* each side. That is what this lesson teaches: how to simplify expressions by combining like terms, how to clear parentheses with the distributive property, how to handle three-to-five-step isolations without losing your place, and how to verify your answer so a single sign error does not derail an entire calculation.
+
+By the end you will own the mechanics chapter of linear algebra. Lesson 3 will then take these tools and apply them to equations where *both* sides contain variable terms.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Identify **like terms** in an algebraic expression and combine them by adding or subtracting their coefficients.
+- Apply the **distributive property** $a(b + c) = ab + ac$ to clear parentheses, in either direction (expanding and factoring), including the tricky negative-sign case $-(x - 3) = -x + 3$.
+- Carry out **three- to five-step isolations** of a variable using a disciplined order: simplify each side independently, then undo additions and subtractions, then undo multiplications and divisions.
+- Use **back-substitution** as a non-negotiable verification habit, catching sign flips and arithmetic mistakes before they propagate.
+- Recognize and repair the most common student errors: forgetting to distribute the negative, dropping a term, combining unlike terms, and skipping the verification step.
+- Translate a multi-term engineering relationship — a Kirchhoff loop, a force balance, a controller output — into a multi-step equation and solve it for the quantity of interest.
+
+## Why It Matters
+
+A linear equation with one term on each side is a textbook artifact. Real engineering produces equations with many terms, parentheses, and structure that has to be tamed before any solving happens. A short tour:
+
+1. **Circuit-loop equations from Kirchhoff's voltage law.** Walk around any closed loop in a circuit. Every resistor contributes a voltage drop $IR$; every battery contributes its EMF. Summing them to zero gives equations like $R_1 I + R_2 I + R_3 I - V = 0$. Solving for the current $I$ requires combining the three $I$ terms before you can divide.
+
+2. **Mechanical equilibrium.** For a stationary object, all forces sum to zero: $\sum F = 0$. A bracket pulled by three cables along the same axis gives $F_1 + F_2 + F_3 - W = 0$. If two of those forces share a multiplier (say $F_1 = T \cos\theta$ and $F_3 = 2T \cos\theta$), you must combine like terms in $T$ before isolating it.
+
+3. **PID controller tuning.** The output of a proportional-integral-derivative controller is $u = K_p e + K_i \int e \, dt + K_d \dot{e}$. To predict closed-loop pole locations, you write a polynomial equation in the gains, and you spend most of your time combining $K_p$ and $K_i$ terms across multi-term expressions.
+
+4. **Calibration line-fitting.** A linear sensor obeys $y = mx + b$. To find the slope from two calibration points, you write the two equations and subtract them — a process that produces multi-term expressions on both sides and requires careful like-term arithmetic.
+
+5. **Thermodynamics and heat transfer.** The steady-state heat equation through a multi-layer wall gives $Q = \frac{T_1 - T_2}{R_1 + R_2 + R_3}$. To find an unknown thermal resistance from a measured heat flow, you rearrange a multi-term denominator.
+
+6. **Robotics inverse kinematics (1D case).** A simple 2-link arm pinned along one axis gives position $x = L_1 \cos\theta_1 + L_2 \cos\theta_2$. For small-angle linearizations the cosines drop out and you are left isolating a variable in a sum of products.
+
+7. **Telemetry equations.** A drone reports altitude as a linear combination of barometric and GPS estimates: $h = w_b h_b + w_g h_g$, with $w_b + w_g = 1$. Two equations, two unknowns, lots of multi-term linear rearrangement.
+
+8. **Machine learning closed-form linear regression.** Setting $\nabla \text{loss} = 0$ gives a matrix equation whose scalar version is exactly the same multi-term linear arithmetic you are about to practice.
+
+Every one of these workflows comes apart the moment you cannot reliably combine like terms or distribute correctly. That is why this lesson is not optional.
+
+## Why This Idea Exists
+
+Combining like terms and distributing did not fall from the sky as obvious rules — they were invented and named, slowly, over centuries.
+
+**Diophantus of Alexandria** (3rd century CE) wrote *Arithmetica*, the earliest surviving European treatise that uses symbolic notation for unknowns. He did not have a distributive property yet, but he did manipulate multi-term expressions for rational solutions to polynomial equations. His symbols for "unknown" and "squared unknown" were the first hint that algebra could become a written language rather than a verbal one.
+
+**Muhammad ibn Musa al-Khwarizmi**, working in 9th-century Baghdad, gave the field its modern name and its core operations. His *al-Kitab al-mukhtasar fi hisab al-jabr wa'l-muqabala* (c. 820 CE) — the *Compendious Book on Calculation by Completion and Balancing* — introduced two named techniques: ***al-jabr***, meaning "completion" or "restoring," which is the operation of adding the same term to both sides to remove a negative; and ***al-muqabala***, meaning "balancing," which is what we now call combining like terms across the equality. The Latinized form of *al-jabr* gave us the word *algebra*. Al-Khwarizmi solved problems like "a square and ten of its roots equals thirty-nine" — i.e., $x^2 + 10x = 39$ — by completing the square, a procedure that absolutely depends on disciplined like-term combination.
+
+**Francois Viete** (1591, *In Artem Analyticem Isagoge*) made the next conceptual leap: he introduced **literal coefficients**, using letters for both knowns and unknowns. Before Viete, algebra dealt only with specific numerical problems; after him, you could write the general quadratic $ax^2 + bx + c = 0$. The distributive property became visible as a *rule about letters*, not a trick about numbers.
+
+**Rene Descartes** (1637, *La Geometrie*) finalized the notation we still use. He established the convention that letters near the end of the alphabet ($x$, $y$, $z$) denote unknowns while letters near the beginning ($a$, $b$, $c$) denote known constants. He also introduced superscript notation for exponents. With Descartes' notation, a multi-step equation like $3(2x + 4) - 2(x - 1) = 5(x + 3)$ became a manipulable object.
+
+**Isaac Newton's** mechanics in the *Principia* (1687) made multi-term rearrangement an everyday physics skill. To extract a force, a velocity, or a time from his second law in a multi-particle system, you had to combine, distribute, and isolate fluently — which is why no physicist today gets very far without these mechanics.
+
+The four-step discipline you are about to learn — distribute, combine, undo sums, undo products — is a 1,200-year-old technique sitting on a 350-year-old notation. You inherit it cheaply.
+
+## Plain-Language Intuition
+
+In lesson 1 we said an equation is a balanced scale, and solving means undoing what was done to the unknown while keeping the scale balanced. That mental picture still applies. The only new thing here is that *before* you can start undoing, you may need to clean up what is sitting on each pan.
+
+Imagine the left pan has three small bags of identical weight, plus two more small bags of the same weight, plus a 4-gram block. Before you start removing weights, you would naturally count the small bags: three plus two equals five small bags. That is **combining like terms**. The equation $3x + 2x - 4 = 11$ literally says "five bags minus four grams equals eleven grams" — but only *after* you have noticed that the three bags and the two bags are the same kind of thing.
+
+Now suppose the left pan has, instead of bags, a sealed box that the manufacturer labeled "two bags and a 3-gram block." If you want to know what is really on the pan, you open the box and put the bags and the block on the pan directly. Opening that box is the **distributive property**. The expression $2(x + 3)$ is a sealed box; opening it gives $2x + 6$.
+
+The order matters. If you try to undo addition and subtraction before you have opened the boxes and counted the bags, the scale arithmetic will not work out — you will be doing operations on things you have not yet identified. So the discipline is:
+
+1. **Open every box** (distribute).
+2. **Count every kind of bag and every loose weight** (combine like terms).
+3. **Move the loose weights off the variable's pan** (undo additions and subtractions).
+4. **Strip the coefficient off the variable** (undo multiplications and divisions).
+5. **Put the answer back on the scale and confirm it balances** (verify).
+
+Combining like terms relies on a basic intuition you have had since childhood: three apples plus two apples is five apples. The symbolic statement $3x + 2x = 5x$ says exactly the same thing — *if* you read $x$ as "one of whatever kind of thing this variable represents." You cannot combine apples and oranges, and you cannot combine $x$ and $x^2$. Same idea.
+
+## Core Theory
+
+### Like Terms
+
+Two terms are **like terms** if they have the same variable raised to the same power. The coefficients can be different; the variable part must match exactly.
+
+- $3x$ and $5x$ are like terms (both are "some number of $x$").
+- $3x$ and $5x^2$ are *not* like terms — the powers differ.
+- $7$ and $-2$ are like terms (both are constants, which we can think of as having the implicit variable part $x^0 = 1$).
+- $4xy$ and $-2xy$ are like terms.
+- $4xy$ and $4x$ are not.
+
+The reason for the restriction is that the variable part determines the "kind of thing" the term represents. Three meters plus two meters is five meters; three meters plus two square meters is not anything you can compress further.
+
+### Combining Like Terms
+
+To combine like terms, add or subtract their **coefficients** and keep the variable part unchanged:
+
+$$3x + 5x = (3 + 5)x = 8x$$
+
+$$7x - 2x = (7 - 2)x = 5x$$
+
+$$4x - 9x = (4 - 9)x = -5x$$
+
+Constants combine the same way:
+
+$$7 + (-2) = 5$$
+
+A mixed expression combines each *kind* separately:
+
+$$3x + 7 + 5x - 2 = (3 + 5)x + (7 - 2) = 8x + 5$$
+
+You cannot collapse it further than $8x + 5$ because $8x$ and $5$ are not like terms.
+
+### The Distributive Property
+
+The distributive property is the rule that connects multiplication and addition. For any numbers or expressions $a$, $b$, $c$:
+
+$$a(b + c) = ab + ac$$
+
+$$a(b - c) = ab - ac$$
+
+It works in both directions. Reading left-to-right is **expanding** or **distributing**; reading right-to-left is **factoring**.
+
+Examples:
+
+$$3(x + 4) = 3x + 12$$
+
+$$5(2x - 7) = 10x - 35$$
+
+$$-2(x + 3) = -2x - 6$$
+
+The last example matters. The minus sign in front of the parenthesis is part of the coefficient. The coefficient is $-2$, and it must multiply *every term* inside.
+
+The trickiest special case is a bare minus sign in front of a parenthesis, which means a coefficient of $-1$:
+
+$$-(x - 3) = -1 \cdot (x - 3) = -x + 3$$
+
+Note the sign flip on *both* inside terms. This is the single most common student error in all of algebra. We will return to it in Worked Example (e).
+
+### The Properties of Equality, Reviewed
+
+From lesson 1, if $a = b$ then $a + c = b + c$, $a - c = b - c$, $ac = bc$, and $a/c = b/c$ when $c \neq 0$. These are unchanged. They are the four legal moves you can make on an equation. Combining like terms and distributing are not "moves on the equation" — they are moves *within one side* that change the appearance of that side without changing its value. You can do them at any time, on either side, independently.
+
+### Order of Operations within an Isolation
+
+When the equation is multi-step, the order you apply operations matters. The discipline is:
+
+1. **Distribute** to clear parentheses on each side.
+2. **Combine like terms** within each side, independently.
+3. **Add or subtract** to move constants off the variable's side.
+4. **Multiply or divide** to strip the remaining coefficient.
+
+Steps 1 and 2 happen *on each side separately*. They do not involve "doing something to both sides" because no equality move is happening yet — you are just rewriting expressions in simpler form. Steps 3 and 4 are the equality moves, and they are exactly what you practiced in lesson 1.
+
+A useful way to remember this: **simplify first, then solve**. You earn the right to apply equality moves only after both sides are as clean as you can make them.
+
+### Verification by Back-Substitution
+
+This is the non-negotiable discipline. After every solve, plug your candidate answer back into the *original* equation — not the simplified one, the original. Compute both sides as separate arithmetic problems and check that they match.
+
+Two reasons this matters:
+
+1. A sign error or a distribution error can produce a perfectly clean-looking but completely wrong answer. The substitution step is the only reliable detector.
+2. Substituting into the simplified equation will not catch errors you made during the simplification itself. Substituting into the original *will*.
+
+We will see this protect us in Worked Example (f).
+
+## Visual or Mental Model
+
+### The Sediment Picture
+
+Imagine an expression like $3x + 7 + 5x - 2 + 2x$ as a jar of mixed sediment. Each layer is a different kind of material — $x$-grains and constant-grains. Combining like terms is sifting: pour all the $x$-grains into one pile, all the constants into another. The compressed expression $10x + 5$ is the sifted result.
+
+This picture stops you from accidentally combining unlike terms. If you can see in your mind's eye that $x$-grains and $x^2$-pebbles are physically different, you will not try to add them.
+
+### The Stacked-Scale Picture
+
+The balance scale from lesson 1 still applies. The only change: the pans now hold piles of mixed weights — some labelled blocks of mass $x$, some loose grams. The "simplify first, then solve" discipline maps cleanly: first organize the pile on each pan, then start moving things between pans.
+
+Specifically:
+
+- The left pan might hold three $x$-blocks, a sealed box marked "two $x$-blocks plus six grams," and a $-4$ gram correction.
+- You open the box first (distribute): now the pan has three $x$-blocks, two $x$-blocks, six grams, and a $-4$ gram correction.
+- You consolidate (combine): five $x$-blocks plus two grams.
+- *Only now* do you start moving things to the other pan to isolate the unknown.
+
+This picture justifies the order. Equality moves only make sense once both pans are clean.
+
+### The Box Diagram for Distribution
+
+To see why $a(b + c) = ab + ac$, draw a rectangle of width $a$ and height $b + c$. Its area is $a(b+c)$. Now split the height into a stack of $b$ on top of $c$. The total rectangle is now two stacked sub-rectangles: one of area $ab$ and one of area $ac$. The total area must be the same, so $a(b+c) = ab + ac$.
+
+This geometric picture is exactly how Euclid presented the distributive property in *Elements* (Book II, Proposition 1), 2,300 years ago. It still works.
+
+## Worked Examples
+
+### (a) Combine, then isolate
+
+Solve:
+
+$$3x + 5x - 4 = 12$$
+
+**Step 1: Distribute.** Nothing to distribute. Skip.
+
+**Step 2: Combine like terms** on the left:
+
+$$3x + 5x = 8x$$
+
+The equation becomes:
+
+$$8x - 4 = 12$$
+
+**Step 3: Undo subtraction.** Add 4 to both sides:
+
+$$8x = 16$$
+
+**Step 4: Undo multiplication.** Divide both sides by 8:
+
+$$x = 2$$
+
+**Verify** by substituting into the *original* equation:
+
+$$3(2) + 5(2) - 4 = 6 + 10 - 4 = 12 \;\checkmark$$
+
+The left side equals 12, matching the right side. Done.
+
+### (b) Distribute first
+
+Solve:
+
+$$2(x + 3) - 5 = 11$$
+
+**Step 1: Distribute** the 2 across the parenthesis:
+
+$$2 \cdot x + 2 \cdot 3 - 5 = 11$$
+
+$$2x + 6 - 5 = 11$$
+
+**Step 2: Combine like terms** on the left (the constants $6$ and $-5$):
+
+$$2x + 1 = 11$$
+
+**Step 3: Undo addition.** Subtract 1 from both sides:
+
+$$2x = 10$$
+
+**Step 4: Undo multiplication.** Divide by 2:
+
+$$x = 5$$
+
+**Verify:**
+
+$$2(5 + 3) - 5 = 2 \cdot 8 - 5 = 16 - 5 = 11 \;\checkmark$$
+
+### (c) Distribute, combine, then isolate
+
+Solve:
+
+$$4(x - 2) + 3x = 27$$
+
+**Step 1: Distribute** the 4:
+
+$$4x - 8 + 3x = 27$$
+
+**Step 2: Combine like terms** on the left ($4x$ and $3x$ are like; $-8$ is alone):
+
+$$7x - 8 = 27$$
+
+**Step 3: Undo subtraction.** Add 8 to both sides:
+
+$$7x = 35$$
+
+**Step 4: Undo multiplication.** Divide by 7:
+
+$$x = 5$$
+
+**Verify:**
+
+$$4(5 - 2) + 3(5) = 4 \cdot 3 + 15 = 12 + 15 = 27 \;\checkmark$$
+
+### (d) Kirchhoff's voltage law in a series circuit
+
+A circuit has a 12 V battery driving a current $I$ through three resistors in series: $R_1 = 10\,\Omega$, $R_2 = 20\,\Omega$, $R_3 = 30\,\Omega$. Kirchhoff's voltage law says the sum of voltage drops around the loop equals the battery voltage:
+
+$$R_1 I + R_2 I + R_3 I = V_\text{batt}$$
+
+**Step 1: Distribute.** Nothing to distribute. Skip.
+
+**Step 2: Combine like terms.** All three terms on the left have $I$ as the variable part:
+
+$$(R_1 + R_2 + R_3) I = V_\text{batt}$$
+
+**Step 3: No additive constants to remove.** Skip.
+
+**Step 4: Undo multiplication.** Divide both sides by $(R_1 + R_2 + R_3)$:
+
+$$I = \frac{V_\text{batt}}{R_1 + R_2 + R_3}$$
+
+This is **Ohm's law for a series circuit**, and notice that we did not memorize it — we derived it from KVL using exactly the four-step discipline.
+
+**Substitute numerical values:** $R_1 + R_2 + R_3 = 60\,\Omega$, so
+
+$$I = \frac{12\,\text{V}}{60\,\Omega} = 0.2\,\text{A} = 200\,\text{mA}$$
+
+**Verify by plugging back in:**
+
+$$10 \cdot 0.2 + 20 \cdot 0.2 + 30 \cdot 0.2 = 2 + 4 + 6 = 12 \;\checkmark$$
+
+**Units check:** $\text{V} / \Omega = \text{A}$, which is what current should be. Both the arithmetic and the units pass.
+
+### (e) Failure mode — wrong distribution of a negative
+
+A student is asked to simplify $-(x - 3) + 5$. They write:
+
+$$-(x - 3) + 5 = -x - 3 + 5 = -x + 2$$
+
+**This is wrong.** The error is in the distribution step. The leading $-$ is shorthand for a coefficient of $-1$, which must multiply *both* terms inside the parenthesis, including the $-3$. A negative times a negative is a positive, so:
+
+$$-(x - 3) = -1 \cdot x + (-1) \cdot (-3) = -x + 3$$
+
+The correct simplification is:
+
+$$-(x - 3) + 5 = -x + 3 + 5 = -x + 8$$
+
+To see how dangerous this is, suppose the full equation is:
+
+$$-(x - 3) + 5 = 12$$
+
+The correct solve:
+
+$$-x + 8 = 12 \implies -x = 4 \implies x = -4$$
+
+The student's wrong solve:
+
+$$-x + 2 = 12 \implies -x = 10 \implies x = -10$$
+
+A different answer by a factor of 2.5, with no warning unless you verify. **Verifying $x = -10$ against the original**:
+
+$$-(-10 - 3) + 5 = -(-13) + 5 = 13 + 5 = 18 \neq 12$$
+
+The check catches it. The check always catches it.
+
+**Rule of thumb:** when you see a minus sign in front of a parenthesis, mentally write $-1 \cdot$ before the parenthesis, then distribute. Every term inside flips sign.
+
+### (f) Failure mode — skipping verification
+
+Solve:
+
+$$5(x + 2) - 3(x - 1) = 17$$
+
+A hasty solve:
+
+$$5x + 10 - 3x - 3 = 17$$
+
+The student writes $-3(x - 1) = -3x - 3$, dropping the sign on the inner $-1$. Continuing with the bad expression:
+
+$$2x + 7 = 17 \implies 2x = 10 \implies x = 5$$
+
+The answer $x = 5$ looks clean. The student moves on. **But verifying against the original**:
+
+$$5(5 + 2) - 3(5 - 1) = 5 \cdot 7 - 3 \cdot 4 = 35 - 12 = 23 \neq 17$$
+
+The check fails — $23 \neq 17$ — so we know we made a mistake somewhere. Going back, the correct distribution is $-3(x - 1) = -3x + 3$ (not $-3x - 3$). Redo:
+
+$$5x + 10 - 3x + 3 = 17$$
+
+$$2x + 13 = 17$$
+
+$$2x = 4$$
+
+$$x = 2$$
+
+**Verify** $x = 2$:
+
+$$5(2 + 2) - 3(2 - 1) = 5 \cdot 4 - 3 \cdot 1 = 20 - 3 = 17 \;\checkmark$$
+
+The check is the difference between $x = 5$ (wrong) and $x = 2$ (right). The check is not optional.
+
+### (g) Challenge — multiple distributions
+
+Solve:
+
+$$3(2x + 4) - 2(x - 1) = 5(x + 3) + 1$$
+
+(*Note: the right side has only constants in the variable position beyond what fits this lesson's "variable on one side" scope — we will treat the right-side variable carefully but not yet master the full both-sides technique, which is lesson 3's job.*)
+
+**Step 1: Distribute** on every parenthesis:
+
+Left: $3(2x + 4) = 6x + 12$, and $-2(x - 1) = -2x + 2$.
+
+So the left becomes $6x + 12 - 2x + 2$.
+
+Right: $5(x + 3) = 5x + 15$, plus the extra $+1$, gives $5x + 16$.
+
+The equation is now:
+
+$$6x + 12 - 2x + 2 = 5x + 16$$
+
+**Step 2: Combine like terms** on each side independently.
+
+Left: $6x - 2x = 4x$, and $12 + 2 = 14$. The left is $4x + 14$.
+
+Right: $5x + 16$ is already simplified.
+
+$$4x + 14 = 5x + 16$$
+
+At this point we have variables on both sides — a situation lesson 3 will handle in full generality. For now, use one move from lesson 1: subtract $4x$ from both sides to gather the variable terms.
+
+$$14 = x + 16$$
+
+**Step 3: Undo addition.** Subtract 16 from both sides:
+
+$$-2 = x$$
+
+so $x = -2$.
+
+**Verify** against the original:
+
+Left: $3(2(-2) + 4) - 2((-2) - 1) = 3(-4 + 4) - 2(-3) = 3 \cdot 0 - (-6) = 0 + 6 = 6$.
+
+Right: $5(-2 + 3) + 1 = 5 \cdot 1 + 1 = 6$.
+
+Both sides equal 6. $\checkmark$
+
+Notice how many places this problem could have gone wrong: any of four distributions, any of three like-term combinations, the sign on $-2((-2) - 1)$ in the verification. The four-step discipline plus the substitution check makes a problem with this many moving parts manageable.
+
+## Engineering Connections
+
+### Series Circuits and Kirchhoff's Voltage Law
+
+Worked Example (d) was not a toy. Every time you analyze a series circuit, you write KVL as a sum of $IR$ terms, combine the like $I$ terms by factoring, and divide to get current. A three-mesh circuit produces three KVL equations, each with multi-term linear structure. The general technique — distribute, combine, isolate — extends directly to systems of equations (a future lesson), but at every step the *atomic* operation is the one you are practicing here.
+
+### Static Equilibrium in Robotics
+
+A robotic arm holds a payload of weight $W$ with two parallel cables, each with tension $T$. A third cable, also parallel, supports an additional $2T$ tension because of a 2:1 pulley arrangement. The force balance is:
+
+$$T + T + 2T - W = 0$$
+
+Combine like terms: $4T = W$, so $T = W/4$. Trivial — *because* like-term arithmetic is fluent. In a real robot the geometry produces sums of trigonometric terms multiplying $T$, and the like-term step becomes the workhorse of the calculation.
+
+### PID Controller Output
+
+A discrete PID controller computes
+
+$$u = K_p e + K_i \cdot (\text{integral term}) + K_d \cdot (\text{derivative term})$$
+
+When you are tuning, you often want to find the gain values that put a closed-loop pole at a specific location. The closed-loop characteristic equation is a polynomial in $s$ with coefficients that combine $K_p$, $K_i$, and $K_d$ multi-term. To solve, say, "what $K_p$ makes the system critically damped?", you set up an equation with $K_p$ appearing in several terms, combine, and isolate. This is exactly the workflow of this lesson.
+
+### Linear Regression Closed Form
+
+The least-squares slope for two-point calibration is
+
+$$m = \frac{(y_2 - y_1)}{(x_2 - x_1)}$$
+
+To derive it, you minimize $(y_1 - (m x_1 + b))^2 + (y_2 - (m x_2 + b))^2$, take the derivative with respect to $m$, and set it to zero. The derivative is a multi-term expression in $m$ and $b$; collapsing it to a clean form requires distributing the squares and combining like terms. Every machine-learning closed-form derivation runs on this same engine.
+
+### Thermal Resistance Networks
+
+A wall consists of three layers with thermal resistances $R_1$, $R_2$, $R_3$ in series. The heat flow $Q$ from inside temperature $T_\text{in}$ to outside $T_\text{out}$ is governed by
+
+$$T_\text{in} - T_\text{out} = Q R_1 + Q R_2 + Q R_3$$
+
+Same structure as Kirchhoff's voltage law. Combine the $Q$ terms, divide, get $Q = (T_\text{in} - T_\text{out}) / (R_1 + R_2 + R_3)$. The structural similarity between voltage and temperature problems is one of the great unifying patterns in engineering — and it depends on you fluently combining like terms.
+
+## Practice Set
+
+### Warmups: Combining Like Terms
+
+Simplify each expression. Do not solve — just collect like terms.
+
+1. $4x + 7x$
+2. $9y - 3y$
+3. $5a + 2a - 4$
+4. $6x + 3 - 2x + 7$
+5. $8m - 5 - 3m + 9$
+6. $7p + 4q - 2p + q$
+7. $3x^2 + 5x - x^2 + 2x$
+8. $-2x + 5 + 6x - 8$
+9. $11t - 4 + 3 - 7t$
+10. $2x + 3y - x + 4y - 2$
+
+### Warmups: Distribute
+
+Expand each expression.
+
+1. $3(x + 5)$
+2. $4(2x - 1)$
+3. $-2(x + 7)$
+4. $-(x - 4)$
+5. $5(3x - 2) + 6$
+6. $-3(2x + 1) - 4$
+
+### Applied: Multi-Step Equations
+
+Solve and verify. Answers in parentheses; do not peek until you have tried.
+
+1. $4x + 2x - 7 = 17$ ($x = 4$)
+2. $3(x - 2) + 4 = 13$ ($x = 5$)
+3. $2(x + 5) - 3 = 9$ ($x = 1$)
+4. $5(x - 1) + 2x = 23$ ($x = 4$)
+5. $-(x - 3) + 4x = 18$ ($x = 5$)
+6. $3(2x + 1) - 2(x - 3) = 25$ ($x = 4$)
+
+### Error-Spotting
+
+For each, identify the mistake and produce the correct answer.
+
+1. *Student work:* $-(x + 4) = -x + 4$. *Original problem:* Simplify $-(x + 4) + 7$.
+2. *Student work:* $3x + 5 - 2x + 7 = x + 12$. *(Is this right? Diagnose carefully.)*
+3. *Student work:* Solve $2(x - 3) = 8$. *Student writes:* $2x - 3 = 8$, $2x = 11$, $x = 5.5$.
+
+### Challenge
+
+1. Solve $\frac{1}{2}(4x - 6) + \frac{1}{3}(9x + 3) = 11$.
+2. Solve $2(3(x + 1) - (x - 2)) = 18$. (Parentheses inside parentheses — distribute from the inside out, or the outside in; both work, but pick one and be careful.)
+
+## Build Task
+
+Build a small symbolic equation solver in Python using SymPy. It takes a multi-step linear equation as a string, returns the solution, and prints each algebraic step along the way.
+
+Create a file `step_solver.py`:
+
+```python
+"""
+step_solver.py
+
+A small step-by-step linear equation solver built on SymPy.
+Takes an equation like "3*(2*x + 4) - 2*(x - 1) = 5*(x + 3) + 1"
+and prints the simplification + isolation steps.
+"""
+
+import sympy as sp
+
+
+def solve_with_steps(equation_str: str, var: str = "x"):
+    """Parse an equation 'lhs = rhs' and print step-by-step solution."""
+    x = sp.symbols(var)
+
+    if "=" not in equation_str:
+        raise ValueError("Equation must contain an '=' sign.")
+    lhs_str, rhs_str = equation_str.split("=", 1)
+    lhs = sp.sympify(lhs_str)
+    rhs = sp.sympify(rhs_str)
+
+    print(f"Original:        {lhs} = {rhs}")
+
+    # Step 1: distribute / expand each side
+    lhs_exp = sp.expand(lhs)
+    rhs_exp = sp.expand(rhs)
+    if lhs_exp != lhs or rhs_exp != rhs:
+        print(f"Expand both:     {lhs_exp} = {rhs_exp}")
+
+    # Step 2: combine like terms (sp.collect handles this)
+    lhs_col = sp.collect(lhs_exp, x)
+    rhs_col = sp.collect(rhs_exp, x)
+    if lhs_col != lhs_exp or rhs_col != rhs_exp:
+        print(f"Collect like:    {lhs_col} = {rhs_col}")
+
+    # Step 3+4: move everything to one side and solve
+    expression = sp.simplify(lhs_col - rhs_col)
+    print(f"Move to one side: {expression} = 0")
+
+    solutions = sp.solve(expression, x)
+    if not solutions:
+        print("No solution.")
+        return None
+    if len(solutions) > 1:
+        print(f"Multiple solutions: {solutions}")
+        return solutions
+
+    sol = solutions[0]
+    print(f"Solution:        {var} = {sol}")
+
+    # Verify by back-substitution into the original
+    check_lhs = lhs.subs(x, sol)
+    check_rhs = rhs.subs(x, sol)
+    ok = sp.simplify(check_lhs - check_rhs) == 0
+    print(f"Verify:          {check_lhs} ?= {check_rhs}  -> {'OK' if ok else 'FAIL'}")
+    return sol
+
+
+if __name__ == "__main__":
+    # Test on three worked examples from the lesson.
+    print("--- (a) ---")
+    solve_with_steps("3*x + 5*x - 4 = 12")
+    print("--- (b) ---")
+    solve_with_steps("2*(x + 3) - 5 = 11")
+    print("--- (g) ---")
+    solve_with_steps("3*(2*x + 4) - 2*(x - 1) = 5*(x + 3) + 1")
+```
+
+Run with `python step_solver.py`. You should see each equation simplify, isolate, and verify.
+
+**Stretch goal:** wrap the function in a small command-line interface using Python's `argparse` so you can invoke `python step_solver.py "3*(x+2) = 12"` from the shell.
+
+**Why this matters:** writing the solver forces you to articulate every step explicitly. SymPy's `expand` and `collect` are the algorithmic versions of "distribute" and "combine like terms." Watching a computer perform these steps reinforces the mental discipline.
+
+## Quiz
+
+1. Why is it usually better to distribute parentheses *before* combining like terms across the equation?
+2. Can you skip the "combine like terms" step entirely? Under what circumstances?
+3. Why should you substitute the candidate solution into the *original* equation rather than into the simplified version?
+4. What is the difference between a coefficient and a like term?
+5. In the expression $-(x - 5)$, why does the inner $-5$ become $+5$ after distributing?
+6. If the verification step fails, what is the rational next move? (Hint: it is not "panic.")
+7. What is the geometric interpretation of the distributive property $a(b + c) = ab + ac$, and why is that picture stable across all positive numbers?
+8. Suppose you arrive at $4x + 14 = 5x + 16$ partway through a solve. Which side should you "gather $x$ onto," and why does the choice not affect the final answer?
+
+### Quiz Answer Key
+
+1. Parentheses hide terms that may turn out to be like terms with things outside the parentheses. Until you distribute, you cannot fully see the like-term structure of the side.
+2. Yes — when each side is already simplified, like in $3x - 4 = 11$. But the habit of *checking* whether like-term combination is possible should never be skipped; only the act of doing it when unnecessary can be skipped.
+3. Errors during simplification (a missed distribution sign, a wrong coefficient sum) propagate into the simplified equation. Substituting into the simplified equation cannot catch those errors because they are baked in. The original is the ground truth.
+4. A **coefficient** is the numerical multiplier of a variable in a single term (the 3 in $3x$). **Like terms** are two or more terms with identical variable parts (such as $3x$ and $5x$, or $7$ and $-2$). Coefficients are a property of one term; like-ness is a relationship between two terms.
+5. The implicit coefficient is $-1$. $-1 \cdot (-5) = +5$. A negative times a negative is positive.
+6. Redo the problem from the original equation, checking each step in order. Most often, the error is a sign mistake during distribution of a negative coefficient.
+7. The rectangle of width $a$ and height $b + c$ can be sliced into stacked sub-rectangles of areas $ab$ and $ac$. Total area is preserved either way. Because area arithmetic is closed under positive reals, the identity is stable for all positive $a, b, c$ — and a separate sign-bookkeeping argument extends it to negatives.
+8. Either side works. Subtracting $4x$ leaves $x$ on the right ($14 = x + 16$); subtracting $5x$ leaves $-x$ on the left, requiring an extra sign flip. Both routes give $x = -2$. By convention, gather onto whichever side keeps the coefficient positive — it reduces sign-flip errors.
+
+## Proof of Completion
+
+Submit, in your build log:
+
+- The `step_solver.py` file, committed to your work repository.
+- Output of running `step_solver.py` on **at least five** equations: the three Worked Examples (a), (b), and (g) from this lesson, plus two equations of your own design (one with a negative-distribution trap, one with parentheses inside parentheses).
+- Hand-written solutions for the six **applied** practice problems, including the verification step for each.
+- Diagnoses and corrections for the three **error-spotting** problems.
+- A brief note (3-5 sentences) describing one moment in the practice set where the verification step caught a mistake you would have otherwise missed. If you never made a mistake, write the note describing why the discipline is still important.
+
+## Sources and Further Study
+
+- **Serge Lang, *Basic Mathematics*** (Springer, 1971; reprinted 1988). Chapter 1, "Numbers," and Chapter 2, "Linear Equations." The canonical pre-calculus reference written by one of the great 20th-century algebraists. Terse and demanding; the right level for serious self-study.
+- **I. M. Gelfand and Alexander Shen, *Algebra*** (Birkhäuser, 1993). A short, deeply elegant text from the Russian mathematical school. Strong on combining-like-terms intuition and the distributive property's geometric interpretation.
+- **MIT OpenCourseWare, 18.01 Single Variable Calculus, Algebra Review.** The pre-flight algebra review used by MIT before students start calculus. Notes are freely available and exactly the right depth.
+- **Muhammad ibn Musa al-Khwarizmi, *al-Kitab al-mukhtasar fi hisab al-jabr wa'l-muqabala*** (c. 820 CE). Available in modern English translation (Frederic Rosen, *The Algebra of Mohammed ben Musa*, 1831, reprinted by Cambridge). Worth skimming to see the geometric completing-the-square arguments — algebra before symbolic notation.
+- **Khan Academy: Algebra 1, "Solving equations" and "Distributive property"** modules. Useful as drill material with a large bank of automatically-graded problems. Best used after this lesson, not before.
+- **SymPy documentation** at `docs.sympy.org`. The `expand`, `collect`, `simplify`, and `solve` functions are the algorithmic counterparts of the mental moves in this lesson.
+- **Euclid, *Elements*, Book II, Proposition 1.** The geometric distributive property, 2,300 years old, still rigorous. Available in David Joyce's online edition.
+
+## Next Lesson Bridge
+
+You now have the tools to clean up *each side* of an equation independently: distribute every parenthesis, combine every set of like terms, then apply equality moves and verify by substitution. The four-step discipline holds whenever the variable lives on just one side of the equals sign.
+
+Worked Example (g) hinted at something the discipline does *not* fully cover: equations where both sides have variable terms after simplification, such as $5x - 3 = 2x + 9$ or the messier $4x + 14 = 5x + 16$. We could subtract one side's $x$-term from both sides — and we did, in (g) — but we never developed a systematic strategy for choosing *which side* to gather the variable onto, or what to do when the coefficient is negative, or what happens when the variables cancel completely (giving either no solution or infinitely many).
+
+Lesson 3, **Equations with Variables on Both Sides**, takes exactly your current toolkit and adds the discipline of variable consolidation. You will learn the standard order (distribute, combine, gather variables to the side with the larger coefficient, then isolate), and you will encounter the two strange cases — *no solution* (e.g., $2x + 3 = 2x + 7$) and *every $x$ is a solution* (e.g., $2x + 3 = 2x + 3$). Both make perfect sense once you have the consolidation move.
+
+You are ready for lesson 3 when you can solve any of the six applied practice problems above without looking back at the worked examples, and your verification step catches at least one of your own mistakes in the process.

@@ -1,0 +1,743 @@
+# Engineering Estimation and Fermi Problems
+
+## Re-entry Promise
+
+Order-of-magnitude estimation is the skill of producing a *useful answer to a quantitative question in five minutes, on the back of an envelope, from almost no data*. It is one of the most powerful and most undertaught engineering disciplines.
+
+How many piano tuners are there in Chicago? How many liters of water does the United States use to grow corn? How much electricity does it take to send a text message? How many floating-point operations did it take to train GPT-4? How thick would the total surface of all the leaves on an oak tree be if you laid them flat?
+
+A first-year physics student trained in Fermi estimation can produce a defensible answer to any of these in a few minutes, accurate to within a factor of 3 to 10. A practicing engineer who has *not* learned this technique will often guess wildly wrong, or worse, refuse to guess at all and delegate the question to a long, expensive investigation that returns an answer six weeks later that turns out to be 100x off.
+
+This lesson assumes you are comfortable with **scientific notation** (lesson 15) and basic mental arithmetic. It does not assume you have ever produced a Fermi estimate, or that you remember any constants of nature, or that you know what "geometric mean" means. We will build the whole discipline from scratch, in the style of Sanjoy Mahajan's *Street-Fighting Mathematics* (MIT Press, 2010), the modern canonical text.
+
+By the end you should have a working Fermi-estimation reflex: when you hear a numerical question, your first instinct should be to break it into a chain of factors, estimate each factor to within a factor of 10, multiply them in scientific notation, and produce an answer with an explicit uncertainty bracket.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Convert a vague quantitative question ("how many X are there?") into a **chain of estimable factors** using divide-and-conquer.
+- Apply **geometric-mean estimation**: when you believe a quantity lies between $L$ and $H$, take $\sqrt{L \cdot H}$ as your point estimate.
+- Explain *why* a chain of factor-of-10-accurate estimates often produces a final answer accurate to within a factor of 3 to 10 — the **random-walk-of-log-error** argument.
+- Use the **"$\pi \times 10^7$ s/yr"** mnemonic and a small library of memorized constants (Avogadro, Earth radius, speed of light, etc.) to skip lookup.
+- Estimate **energy, power, and cost budgets** for engineering systems (drones, data centers, vehicles).
+- **Sanity-check published numbers** — news claims, ML benchmark numbers, capacity statements — by reproducing the order of magnitude yourself.
+- Recognize when Fermi estimation will *fail* (heavy-tailed distributions, correlated errors, problems dominated by a single unknown factor).
+- Build a small Python "estimator" that propagates log-space uncertainty through products and quotients.
+
+## Why It Matters
+
+Order-of-magnitude estimation is the universal first move of practical engineering and applied science. A small selection of contexts where it is the difference between getting the right answer and wasting weeks:
+
+1. **Capacity planning for servers.** "Will this service handle 10 million daily users at 5 requests each?" That is $5 \times 10^7$ requests/day, or $\sim 600$ requests/sec averaged, with a peak factor of 5 giving $\sim 3000$ requests/sec at the peak. At 50 ms per request per CPU thread, you need $\sim 150$ threads, or about 4 machines with 40 vCPU each. This kind of estimate takes 30 seconds and tells you whether the project is plausible *before* you write a line of code.
+
+2. **Battery sizing for drones.** A quadcopter weighing $0.5$ kg flying for 30 minutes consumes roughly $100$ W of power, so it needs $100 \cdot 1800 = 1.8 \times 10^5$ J of stored energy. A lithium battery has $\sim 7 \times 10^5$ J/kg, so you need about $0.25$ kg of battery — half the drone's mass. Done in 60 seconds; tells you whether the design is realistic.
+
+3. **Sanity-checking ML compute claims.** A widely circulated estimate puts GPT-4 training at $\sim 2 \times 10^{25}$ floating-point operations. Is that plausible? At $\sim 10^{15}$ FLOPS per H100 GPU and $\sim 25{,}000$ H100s running for $\sim 100$ days at $50\%$ utilization, that is $10^{15} \cdot 2.5 \times 10^4 \cdot 8.6 \times 10^6 \cdot 0.5 = 10^{26}$ FLOPs — within a factor of 5 of the claim. The claim is plausible. A Fermi check like this catches the difference between real numbers and hype.
+
+4. **Civil engineering rough cost estimates.** A new bridge: $\sim 1$ km long, $\sim 20$ m wide, $\sim 5$ m deep deck. Volume $\sim 10^5$ m³ of concrete and steel at about \$1,000/m³ installed = about \$100 million. That is the order of magnitude. A real cost estimate adds permitting, ROW, environmental, mobilization, contingency — but the first-cut Fermi number tells you whether the project budget should have an 8 or a 10 in front of it.
+
+5. **Sanity-checking news claims.** A news article says "this hurricane caused \$50 billion in damage." Plausible? Total damaged-area population $\sim 10^7$ people, about \$10,000 damage per person on average = \$100 billion. Same order of magnitude. Reasonable. If the article had said "\$50 trillion," you would know it was wrong without a fact-check.
+
+6. **Top-tier interview questions.** Google, McKinsey, Jane Street, and most top engineering and consulting firms ask Fermi questions in interviews — *not* because they care about the answer, but because they want to see whether the candidate can decompose a problem and reason under uncertainty. The candidate who answers "I don't know, I'd need to look it up" is rejected. The candidate who walks through a four-factor decomposition and produces a defensible bracket is hired.
+
+7. **War-time decisions.** Fermi's most famous estimate, dropping scraps of paper at the Trinity atomic-bomb test in 1945 and using their displacement to back-calculate the bomb's yield at $\sim 10$ kilotons, was performed seconds after the blast and used zero instrumentation. Sophisticated instruments later confirmed the yield at $21$ kilotons — within a factor of 2 of Fermi's seat-of-the-pants estimate. The technique scales from cocktail-napkin questions to historical pivot points.
+
+8. **Back-of-envelope before committing engineering effort.** Most engineering proposals can be killed in 5 minutes with a Fermi estimate if they are unphysical (perpetual motion, beyond-Carnot efficiency, batteries with more energy than the chemical bonds permit). The estimate is the cheapest possible filter against bad ideas. Every senior engineer has the reflex; every junior engineer who learns it accelerates their career by years.
+
+The estimation reflex is what separates "useful engineer" from "engineer who has to wait for a calculation." Fluent practitioners spend a lifetime saying things like "that's about $10^5$, give or take a factor of 3," and being right almost every time.
+
+## Why This Idea Exists
+
+The technique is named for **Enrico Fermi** (1901–1954), an Italian physicist who emigrated to the United States in 1938 and helped lead the Manhattan Project. Fermi was famous in his lifetime not just for his Nobel-winning work on the first nuclear reactor, but for a particular intellectual style: he could produce useful numerical answers to almost any question, on no preparation, using only what he could carry in his head.
+
+### Trinity, July 16, 1945
+
+The most legendary single example is the Trinity test. Fermi was at base camp $10$ miles from the world's first nuclear explosion. Seconds after the blast, he dropped a handful of torn paper scraps from his hand and watched how far the shock wave pushed them as it passed — about $2.5$ meters. From that displacement, and a rough mental calculation of shock-wave physics, he immediately announced that the bomb had yielded about $10$ kilotons of TNT equivalent. The official instrumented analysis, completed days later, gave $21$ kilotons. Fermi's paper-scrap estimate was within a factor of 2 of one of the most precisely measured numbers of the 20th century. The story is now told in every physics introductory course as the foundational Fermi anecdote.
+
+### Piano Tuners in Chicago
+
+The classroom version of the technique comes from Fermi's teaching at the University of Chicago after the war. He would walk into a class and ask "How many piano tuners are there in Chicago?" Students were given no data, no time to look anything up, only their own knowledge of the world. The expected answer was something like: Chicago has $\sim 3 \times 10^6$ people, $\sim 1$ piano per $\sim 50$ households, $\sim 1$ tuning per piano per year, $\sim 200$ tunings per tuner per year (one per workday). That gives $(3 \times 10^6 / 2.5) / 50 / 200 \sim 100$ to $200$ piano tuners. The Chicago Yellow Pages of the era listed about 150. The point of the exercise was not the answer; it was that *the structure of the world is connected*, and a thoughtful person can recover useful estimates from very little information by chaining reasonable factors.
+
+### Institutionalization
+
+Fermi's method was adopted enthusiastically at the postwar national labs (Los Alamos, Argonne, Brookhaven), at AT&T's **Bell Labs** in the 1950s–70s, and at MIT, where physicist **Philip Morrison** (1915–2005) taught the same style for decades. Morrison's book *Powers of Ten* (with Charles and Ray Eames, 1982) is essentially a visual training in order-of-magnitude thinking. The technique passed into engineering culture through generations of physics-trained engineers.
+
+### Mahajan and the Modern Synthesis
+
+The modern canonical text is **Sanjoy Mahajan**'s *Street-Fighting Mathematics* (MIT Press, 2010), freely available as a PDF and as MIT OpenCourseWare course 18.098. Mahajan, an MIT physicist, distilled the Fermi tradition into a teachable curriculum, naming and systematizing five core techniques: dimensional analysis, easy cases, lumping, pictorial proofs, taking out the big part, and reasoning by analogy. His follow-up *The Art of Insight in Science and Engineering* (MIT Press, 2014) extends the same approach to harder problems. Lawrence Weinstein and John Adam's *Guesstimation* (Princeton, 2008) and John Harte's *Consider a Spherical Cow* (1988) round out the modern literature.
+
+### Why The Idea Survives
+
+The deeper reason Fermi estimation matters is that precise numerical answers are rare in real engineering and science. Most of the time you are working with incomplete information, unverified assumptions, or proprietary data you cannot access. The choice is between *no answer* and a *good-enough order-of-magnitude answer*. A trained estimator chooses the second every time and is, on average, right enough to make useful decisions. The untrained engineer, terrified of being wrong, refuses to estimate and ends up making decisions on instinct alone — which is far worse.
+
+## Plain-Language Intuition
+
+### The Core Trick: Divide and Conquer
+
+A Fermi problem looks impossible because the quantity being asked about is opaque. "How many piano tuners in Chicago?" No one knows. But the answer is *composed* of simpler things: how many people are in Chicago (everyone has a rough sense), how many pianos per person (you can estimate from your social circle), how often pianos are tuned (you can guess once a year), how many pianos a tuner handles per year (you can guess from working hours).
+
+Each of these factors is something you *can* estimate to within a factor of 10 from common knowledge. Multiply them in scientific notation, and you have an answer.
+
+The trick is the decomposition. The original question is dark. The factors are bright. Each factor is a separate small Fermi problem you already know how to solve.
+
+### Why Chained Estimates Are Better Than One Big Guess
+
+This is the deepest and most surprising fact about Fermi estimation. Suppose you have to estimate a quantity that depends on 4 factors. You can either (a) guess the whole thing in one shot, or (b) guess each factor separately and multiply.
+
+Naively, you might think (b) is *worse* — four guesses, four sources of error. The opposite is true.
+
+When you guess a single quantity, your error has nothing to push back against. You could easily be 100x off either way. When you decompose into factors and guess each one, the errors in each factor are partly *uncorrelated*. Some of your factor guesses are too high; some are too low. **Statistical cancellation** kicks in.
+
+Mathematically: in *log* space, the error in a product is the *sum* of the errors in the factors. If each factor has log-error standard deviation $\sigma$, the total log-error standard deviation is $\sigma \sqrt{n}$ for $n$ factors. The error grows with $\sqrt{n}$, not with $n$. This is a **random walk in log space** — the same statistics that governs Brownian motion and the central-limit theorem.
+
+So decomposing into 4 factors with one-order-of-magnitude error each gives you a total error of about $\sqrt{4} = 2$ orders of magnitude — still a factor-of-100 spread, but better than blind guessing. With 9 factors at half an order of magnitude each, the total error is $0.5 \sqrt{9} = 1.5$ orders. With 16 factors at a quarter-order each, the total is $0.25 \cdot 4 = 1$ order. The more (well-chosen, low-error, *independent*) factors you have, the better the chain.
+
+### Estimating vs. Guessing
+
+A *guess* is a number pulled from intuition with no defense. An *estimate* is a number that comes from an explicit decomposition and explicit per-factor reasoning. Estimates are *defensible*: if someone disagrees with the answer, they have to identify *which factor* they think you got wrong, by how much. This makes estimates collaborative and improvable; guesses are not.
+
+The discipline of Fermi estimation is the discipline of producing defensible estimates instead of indefensible guesses.
+
+## Core Theory
+
+### Definition: Order of Magnitude
+
+The **order of magnitude** of a positive number $N$ is the integer power of 10 closest to $N$ on a logarithmic scale. Formally:
+
+$$\text{order}(N) = \text{round}(\log_{10} N)$$
+
+So $\text{order}(4) = 1$ (since $\log_{10} 4 \approx 0.6$, rounds to 1; $4$ is closer to $10^1 = 10$ than to $10^0 = 1$ on a log scale). And $\text{order}(3) = 0$ (since $\log_{10} 3 \approx 0.48$, rounds to 0).
+
+The boundary between "order 0" and "order 1" is at $\sqrt{10} \approx 3.16$. Numbers below $3.16$ are order $10^0$; numbers from $3.16$ to $31.6$ are order $10^1$; and so on.
+
+In practice, when working a Fermi problem, you usually pick the nearest power of 10 by inspection rather than computing $\log_{10}$.
+
+### The Geometric Mean as a Bracket Estimator
+
+Suppose you believe a quantity lies between a lower bound $L$ and an upper bound $H$. (E.g., "the number of piano tuners is at least 10 and at most 10,000.") What single number is the best point estimate?
+
+The naive answer is the **arithmetic mean** $(L + H)/2$. This is *wrong* for quantities that span more than a factor of 3. If $L = 10$ and $H = 10{,}000$, the arithmetic mean is $5005$ — but the true answer, if you have no information beyond the bounds, is much more likely to be near $\sqrt{10 \cdot 10{,}000} = \sqrt{10^5} = 316$. The geometric mean is *centered* on the log scale, which is the right scale when you genuinely do not know within a factor of 1000.
+
+$$\text{geomean}(L, H) = \sqrt{L \cdot H}$$
+
+Equivalently, in log space:
+
+$$\log_{10} \text{geomean}(L, H) = \frac{\log_{10} L + \log_{10} H}{2}$$
+
+This is the standard Fermi point estimate when you only have bounds. It is also the *maximum-likelihood* estimate under a log-uniform prior over $[L, H]$, which is usually the right prior for a quantity you do not have direct information about.
+
+**Examples:**
+
+- "Piano tuners in Chicago between 10 and 10,000." Geomean = $\sqrt{10^5} \approx 316$. (Actual: about 150–200.)
+- "FLOPs to train GPT-4 between $10^{23}$ and $10^{27}$." Geomean = $10^{25}$.
+- "Heartbeats in a lifetime between $10^8$ and $10^{10}$." Geomean = $10^9$. (Actual: $\sim 3 \times 10^9$.)
+
+The geomean is the safest single estimate when you only have a bracket.
+
+### Why Chained Estimates Often Land Within a Factor of 3–10
+
+Let each factor in your decomposition have an estimate $\hat{x}_i$ whose true value $x_i$ satisfies $\log_{10}(x_i / \hat{x}_i) \sim \mathcal{N}(0, \sigma^2)$ — i.e., your log-error is a Gaussian with standard deviation $\sigma$. (A typical well-thought-out Fermi factor has $\sigma \approx 0.3$ to $0.5$, i.e., about a factor of 2 to 3 of one-sigma uncertainty.)
+
+The product $P = \prod x_i$ has log-error:
+
+$$\log_{10}\left(\frac{P}{\hat{P}}\right) = \sum_i \log_{10}\left(\frac{x_i}{\hat{x}_i}\right) \sim \mathcal{N}(0, n\sigma^2)$$
+
+So the total log-error standard deviation is $\sigma\sqrt{n}$.
+
+**Example.** With $n = 4$ factors each at $\sigma = 0.4$ (about a factor of 2.5):
+
+$$\sigma_{\text{total}} = 0.4 \sqrt{4} = 0.8$$
+
+The 1-sigma multiplicative uncertainty is $10^{0.8} \approx 6.3$. So the final answer is correct to within a factor of about 6, one-sigma. Two-sigma (95%) is a factor of $10^{1.6} \approx 40$.
+
+If instead you had guessed the whole thing in one shot with $\sigma = 1$ (one order of magnitude, optimistic for a blind guess), your 1-sigma error would already be a factor of 10. The decomposition reduces your error from 10x to 6x — and is *defensible*, which the blind guess is not.
+
+The central-limit theorem also tells you the final error is approximately Gaussian *in log space*, even if individual factor errors are not — so the bound holds robustly under most realistic decompositions.
+
+### When This Argument Fails
+
+The random-walk argument assumes:
+
+1. **Factor errors are independent.** If you systematically over-count "people who own pianos" in a way that also over-counts "frequency of piano tuning," your errors will compound, not cancel.
+2. **Factor errors have finite variance.** This fails for heavy-tailed distributions (Pareto, power-law). One dominant factor can swamp everything.
+3. **No factor is itself a Fermi problem on the same order of difficulty as the original.** If you "decompose" into one easy factor and one factor that is just as hard, the gain is zero.
+
+When these conditions hold, decomposition wins. When they fail, you need to be more careful — usually by either decomposing further or by acknowledging that the answer is genuinely unknowable to within a factor of 10.
+
+### Mahajan's Divide-and-Conquer Trees
+
+Mahajan formalizes the decomposition as a *tree*. The root is the original question. Each node is either a known quantity, an estimable factor, or a subquestion that gets its own subtree.
+
+Example tree for piano tuners in Chicago:
+
+```
+Tuners in Chicago
+├── Pianos in Chicago
+│   ├── People in Chicago         (3 × 10^6, known)
+│   ├── People per household       (2.5, known)
+│   └── Pianos per household       (1 / 50, estimate)
+├── Tunings per piano per year     (1, estimate)
+└── Tunings per tuner per year
+    ├── Workdays per year          (200, known)
+    ├── Tunings per workday        (4, estimate)
+    └── (so 800 tunings/tuner/yr)
+```
+
+Each leaf is either a known number or a one-factor Fermi estimate. The tree structure makes the decomposition *visible* and *criticizable*: another estimator can disagree with one leaf without rejecting the whole tree.
+
+A good decomposition tree has:
+
+- Leaves that are easy to estimate (within a factor of 3) from common knowledge.
+- A small number of leaves (ideally 3 to 7).
+- Approximately independent leaves (no shared hidden assumptions).
+
+### Useful Constants to Memorize
+
+The Fermi practitioner carries a small "table of go-to constants" in their head. These are the most common ones, each chosen because they appear in dozens of estimation problems:
+
+| Quantity | Value | Notes |
+|---|---|---|
+| Seconds in a year | $\pi \times 10^7$ | $3.14 \times 10^7$, accurate to ~$0.5\%$. Mnemonic. |
+| Avogadro's number | $6 \times 10^{23}$ | Atoms per mole. |
+| Earth radius | $6.4 \times 10^6$ m | $\sim 6400$ km. |
+| Earth surface area | $5.1 \times 10^{14}$ m² | $4\pi r^2$. |
+| Speed of light | $3 \times 10^8$ m/s | One foot per ns. |
+| Mass of proton | $1.67 \times 10^{-27}$ kg | |
+| Boltzmann constant | $1.38 \times 10^{-23}$ J/K | $kT$ at room temp ≈ $4 \times 10^{-21}$ J. |
+| 1 eV | $1.6 \times 10^{-19}$ J | |
+| US population | $3 \times 10^8$ | |
+| World population | $8 \times 10^9$ | |
+| 1 barrel of oil | $6 \times 10^9$ J | 159 L, $\sim 42$ gallons. |
+| 1 gallon of gasoline | $1.2 \times 10^8$ J | $\sim 33$ kWh. |
+| Human metabolic power | $\sim 100$ W | Resting; peak ~10x. |
+| Earth's atmosphere mass | $5 \times 10^{18}$ kg | |
+| Solar constant (at Earth) | $1400$ W/m² | Power per area at top of atmosphere. |
+| 1 calorie (food) | $4.2 \times 10^3$ J | "Calorie" on a food label is actually a kcal. |
+| Density of water | $10^3$ kg/m³ | Also $1$ g/mL. |
+| Density of air | $1.2$ kg/m³ | At sea level. |
+
+The **"$\pi \times 10^7$ s per year"** mnemonic deserves special mention. It is one of the most famous coincidences in physics: there are approximately $3.1536 \times 10^7$ seconds in a year, which is astonishingly close to $\pi \times 10^7 = 3.14159 \times 10^7$. The agreement is within $0.4\%$ — closer than the accuracy of most Fermi factors. This means in any estimate involving "per year" or "per second" conversions, you can mentally substitute $\pi \times 10^7$ and your answer remains accurate. The mnemonic is universal in physics curricula and a small badge of having been trained in the tradition.
+
+### The Bracket-Then-Geomean Technique
+
+When you genuinely have no idea what a factor is, but you can construct lower and upper bounds you are *very confident in*, use the geomean of those bounds. This is the workhorse Fermi move.
+
+Example: "How many cells in the human body?"
+
+- Lower bound: at least $10^{12}$ (a million million — clearly more than a small organism).
+- Upper bound: at most $10^{15}$ (clearly less than the atoms in the body, $\sim 10^{27}$, and clearly less than $1000$ trillion).
+
+Geomean: $\sqrt{10^{12} \cdot 10^{15}} = \sqrt{10^{27}} = 10^{13.5} \approx 3 \times 10^{13}$.
+
+Best modern biological estimate: $3.7 \times 10^{13}$. The geomean nailed it.
+
+The bracket-then-geomean technique converts "I don't know" into "I am sure it is between L and H, so my best estimate is $\sqrt{LH}$." It is the single most useful move in Fermi estimation.
+
+## Visual or Mental Model
+
+### Model 1: The Tree of Estimates
+
+Picture the question as a tree. The root is the answer. Each internal node is a product of its children. Each leaf is either a known constant or a one-shot estimate. Your job is to construct the tree, fill in the leaves, and propagate the product up to the root.
+
+```
+                         ANSWER
+                            |
+              ┌─────────────┼─────────────┐
+              |             |             |
+          factor A      factor B      factor C
+              |
+        ┌─────┼─────┐
+        |     |     |
+       A1    A2    A3
+```
+
+A *good* Fermi solution is one where the tree is visible — each leaf labeled with its estimated value and a brief justification, the product written out explicitly. A *bad* Fermi solution is a number with no tree behind it.
+
+### Model 2: The Log-Error Random Walk
+
+Each factor's log-error is a random step on a number line. The total log-error after $n$ factors is the sum of $n$ steps — a random walk:
+
+```
+   factor 1   factor 2   factor 3   factor 4
+      ↑          ↓         ↓           ↑
+   +0.4σ      -0.3σ      -0.5σ      +0.2σ
+                                       |
+                                       v
+                          total log-error: -0.2σ
+                          (much smaller than individual!)
+```
+
+The miracle of the random walk is that it grows as $\sqrt{n}$, not $n$. Errors don't add up; they partially cancel.
+
+This is the same statistics as Brownian motion. After $n$ steps of size $\sigma$, the typical displacement is $\sigma \sqrt{n}$, not $\sigma n$. The factor of $\sqrt{n}$ is the central-limit theorem in action.
+
+### Model 3: The Log-Scale Ruler
+
+Visualize all positive numbers on a logarithmic ruler from $10^{-30}$ to $10^{30}$:
+
+```
+   10^-9   10^-6   10^-3   10^0   10^3   10^6   10^9   10^12
+     |       |       |      |      |      |      |       |
+    nano   micro   milli   one    kilo   mega   giga    tera
+```
+
+An order-of-magnitude estimate places the answer on this ruler within one tick. The geomean of two ticks is the midpoint *on the ruler* — not the arithmetic average. The Fermi estimator lives on the log ruler; this is the right mental space for order-of-magnitude work.
+
+### Model 4: The Confidence Bracket
+
+Every Fermi estimate should be reported as a point estimate plus a bracket. "$N \approx 10^5$" alone is incomplete. "$N \approx 10^5$, between $3 \times 10^4$ and $3 \times 10^5$ (one order-of-magnitude bracket)" is complete.
+
+A good report:
+
+```
+Answer: ~ 200 piano tuners
+Bracket: 70 to 600  (factor-of-3 each way)
+Dominant uncertainty: pianos-per-household (could be 1/20 to 1/100)
+```
+
+The bracket disciplines you to acknowledge what you don't know, and to mark the dominant uncertainty for future refinement.
+
+## Worked Examples
+
+### Example (a) — Piano Tuners in Chicago (The Classic)
+
+**Question.** How many piano tuners are there in Chicago?
+
+**Tree.**
+
+```
+Tuners
+├── Pianos in Chicago = (people / households) × (pianos / household)
+└── (tunings/year) / (tunings/tuner/year)
+```
+
+**Leaves.**
+
+- Chicago population: $\sim 3 \times 10^6$ (memorable fact about US cities).
+- People per household: $\sim 2.5$ (US average).
+- Households: $3 \times 10^6 / 2.5 = 1.2 \times 10^6$.
+- Pianos per household: $\sim 1/50$ (most homes have no piano; some have one). Bracket: $1/20$ to $1/200$. Geomean: $\sim 1/60$. Round to $1/50$.
+- Pianos in Chicago: $1.2 \times 10^6 / 50 \approx 2.4 \times 10^4$.
+- Tunings per piano per year: $\sim 1$ (recommended yearly; many homes skip; some piano teachers tune more often). Estimate: $1$.
+- Total tunings needed per year: $2.4 \times 10^4$.
+- Tunings per tuner per workday: $\sim 4$ (one piano takes a couple of hours including travel).
+- Workdays per year: $\sim 250$ (with weekends and vacations).
+- Tunings per tuner per year: $4 \times 250 = 10^3$.
+
+**Answer.**
+
+$$\text{Tuners} = \frac{2.4 \times 10^4}{10^3} = 24$$
+
+Hmm. The Chicago Yellow Pages of Fermi's era listed about $150$ tuners. We are low by about a factor of $6$ — within the bracket but on the low side. The most likely error: "pianos per household" — schools, churches, concert halls, music conservatories all have pianos and don't appear in our household-based estimate. Adding institutional pianos (call it another factor of 3 to 5) brings the answer to $\sim 100$, which matches reality. Lesson: *always check what your decomposition is missing.*
+
+**Bracket.** $10$ to $300$ tuners. Final point estimate (with institutional correction): $\sim 100$.
+
+### Example (b) — kg of CO₂ per Mile Driven
+
+**Question.** How much CO₂ does a typical car emit per mile?
+
+**Tree.**
+
+```
+CO2 per mile = (gallons / mile) × (CO2 mass / gallon)
+```
+
+**Leaves.**
+
+- Fuel economy: $\sim 25$ mpg for a typical sedan (US average). So $1/25 = 0.04$ gal/mile.
+- CO₂ per gallon: gasoline is mostly octane, $C_8 H_{18}$, molar mass $114$ g/mol. Burning it produces $8$ CO₂ per octane molecule, so CO₂ mass per gasoline mass is $8 \cdot 44 / 114 \approx 3.1$. (Each carbon in the fuel becomes a CO₂; the oxygen is added from the air, so CO₂ mass exceeds fuel mass.)
+- Mass of one gallon of gasoline: gasoline density is $\sim 0.74$ kg/L, and a gallon is $\sim 3.8$ L, so $\sim 2.8$ kg per gallon.
+- CO₂ per gallon: $2.8 \times 3.1 \approx 8.7$ kg.
+
+**Answer.**
+
+$$\text{CO}_2 / \text{mile} = 0.04 \cdot 8.7 \approx 0.35 \text{ kg/mile}$$
+
+EPA published figure: $\sim 0.4$ kg/mile for an average car. We are within $15\%$. Excellent.
+
+**Engineering insight.** A $10{,}000$ mile/year driver emits $\sim 4 \times 10^3$ kg = $4$ tonnes of CO₂ per year — about a quarter of a US per-capita carbon footprint.
+
+### Example (c) — Leaves on a Typical Oak Tree
+
+**Question.** How many leaves are on a mature oak tree?
+
+**Tree.**
+
+```
+Leaves = (canopy volume / leaf spacing³) or
+       = (canopy surface area / leaf area) × layers
+```
+
+The second decomposition is cleaner. Leaves capture sunlight, so they roughly fill a surface (in multiple layers) facing the sun.
+
+**Leaves.**
+
+- Canopy radius: $\sim 8$ m (rough estimate for a mature oak).
+- Canopy surface area: take half a sphere = $2 \pi r^2 = 2 \pi \cdot 64 \approx 400$ m².
+- Leaf area: an oak leaf is $\sim 10$ cm × $\sim 5$ cm = $50$ cm² = $5 \times 10^{-3}$ m².
+- Leaves per layer: $400 / 5 \times 10^{-3} = 8 \times 10^4$.
+- Layers: $\sim 3$ to $5$ (oaks have moderately dense canopies; pines have many more layers; deciduous shade trees have fewer). Estimate: $4$.
+
+**Answer.**
+
+$$\text{Leaves} = 8 \times 10^4 \cdot 4 \approx 3 \times 10^5$$
+
+Published estimates for mature oaks: $\sim 2 \times 10^5$ to $5 \times 10^5$ leaves. We are within a factor of 2.
+
+**Bracket.** $10^5$ to $10^6$.
+
+### Example (d) — Cells in the Human Body
+
+**Question.** How many cells in a typical human body?
+
+**Tree.**
+
+```
+Cells = body mass / mass of one cell
+```
+
+**Leaves.**
+
+- Body mass: $70$ kg.
+- Volume of one cell: cells vary wildly (a red blood cell is $\sim 10$ µm diameter, an egg cell is $\sim 100$ µm, a neuron's body is $\sim 20$ µm). Take a typical cell at $\sim 20$ µm = $2 \times 10^{-5}$ m diameter. Volume $\sim (2 \times 10^{-5})^3 = 8 \times 10^{-15}$ m³.
+- Cell mass: density of cells $\sim 10^3$ kg/m³ (mostly water). So mass per cell $\sim 8 \times 10^{-12}$ kg.
+
+**Answer.**
+
+$$\text{Cells} = \frac{70}{8 \times 10^{-12}} \approx 9 \times 10^{12}$$
+
+Best modern biological estimate (Bianconi et al., 2013): $3.7 \times 10^{13}$ cells. We are low by about a factor of 4.
+
+**Diagnosis.** A "typical" cell is smaller than $20$ µm — red blood cells alone (which dominate by *number*, since there are $\sim 25$ trillion of them at $\sim 7$ µm each) are smaller. Recomputing with $7$ µm cells: $(7 \times 10^{-6})^3 = 3.4 \times 10^{-16}$ m³, mass $3.4 \times 10^{-13}$ kg, cells $= 70 / 3.4 \times 10^{-13} \approx 2 \times 10^{14}$. Now we are high by a factor of 5. The truth is in between — the body is a mix of small and large cells, and a simple geomean of our two estimates gives $\sqrt{9 \times 10^{12} \cdot 2 \times 10^{14}} = \sqrt{1.8 \times 10^{27}} \approx 4 \times 10^{13}$, matching literature.
+
+**Lesson.** When a "typical cell size" is itself a wide distribution, the answer depends on which size you pick. Always sanity-check by trying both extremes.
+
+### Example (e) — FLOPs to Train GPT-4
+
+**Question.** Roughly how many floating-point operations did it take to train GPT-4?
+
+**Tree.**
+
+```
+Total FLOPs = 6 × parameters × training tokens   (Chinchilla scaling law)
+```
+
+The factor of $6$ comes from the Kaplan/Chinchilla scaling-law analysis: each token requires roughly $6N$ FLOPs (2 for forward pass, 4 for backward pass, $N$ = parameter count).
+
+**Leaves.**
+
+- GPT-4 parameter count: rumored at $\sim 1.7 \times 10^{12}$ parameters (mixture-of-experts model, with ~$8 \times 220$B). Take $\sim 10^{12}$.
+- Training tokens: rumored at $\sim 1.3 \times 10^{13}$ tokens. Take $\sim 10^{13}$.
+
+**Answer.**
+
+$$\text{FLOPs} = 6 \cdot 10^{12} \cdot 10^{13} = 6 \times 10^{25}$$
+
+Independent industry estimates: $\sim 2 \times 10^{25}$ FLOPs. We are within a factor of 3.
+
+**Engineering cross-check.** $\sim 25{,}000$ H100 GPUs, each doing $\sim 10^{15}$ FLOPS (FP16), running for $\sim 100$ days at $50\%$ utilization: $2.5 \times 10^4 \cdot 10^{15} \cdot 8.6 \times 10^6 \cdot 0.5 \approx 10^{26}$ FLOPs. Two independent estimates within a factor of 5 of each other — the claim is well-supported.
+
+### Example (f) — Quadcopter Battery for 30-Minute Flight
+
+**Question.** What size battery do you need to fly a $0.5$ kg quadcopter for 30 minutes?
+
+**Tree.**
+
+```
+Battery mass = (power × time) / (energy density × efficiency)
+Power needed ≈ (thrust × hover-induced-velocity) for a hovering rotor
+```
+
+**Leaves.**
+
+- Mass of drone: $0.5$ kg (given), so weight = $5$ N.
+- Hover power for a rotor: from momentum theory, $P \approx W \sqrt{W / (2 \rho A)}$ where $W$ is weight, $\rho$ is air density, $A$ is total rotor disk area.
+- Rotor disk area: a small quad with $0.1$ m radius rotors × 4 rotors gives $A = 4 \pi (0.1)^2 \approx 0.13$ m².
+- Air density: $1.2$ kg/m³.
+- $P = 5 \cdot \sqrt{5 / (2 \cdot 1.2 \cdot 0.13)} = 5 \cdot \sqrt{16} = 5 \cdot 4 = 20$ W (ideal). Real drones are perhaps 2-3x worse due to motor and propeller losses. Take $\sim 60$ W.
+- Time: 30 min = $1800$ s.
+- Energy: $60 \cdot 1800 = 1.08 \times 10^5$ J.
+- LiPo battery energy density: $\sim 5 \times 10^5$ J/kg = $\sim 150$ Wh/kg.
+- Battery mass: $1.08 \times 10^5 / 5 \times 10^5 \approx 0.22$ kg.
+
+**Answer.** About $0.2$ kg of battery, $40\%$ of the drone's empty mass. (And the drone now weighs $0.7$ kg total, so the *real* power needed is higher, and the calculation should iterate — but to first order, $\sim 0.2$ kg is right.)
+
+**Engineering insight.** This is why small quadcopters get $\sim 20$ minutes of flight time: the battery is most of the mass, and adding more battery costs you more hover power. There is an optimum battery fraction (roughly $40$ to $60\%$ of takeoff weight) beyond which more battery actually shortens flight time.
+
+### Example (g) — Failure Mode: A Wildly Wrong Estimate
+
+**Question.** "How much water does the average American use per year for showering?"
+
+**Bad tree.**
+
+- Showers per year: $\sim 365$.
+- Volume per shower: $\sim 1$ gallon. (Guessed without thinking.)
+- Answer: $\sim 365$ gallons/year.
+
+**Reality.** A typical shower head flows at $\sim 2.5$ gallons/minute, and an average shower is $\sim 8$ minutes. That is $\sim 20$ gallons per shower, not $1$. The correct answer is $\sim 7300$ gallons/year.
+
+**Diagnosis.** The single bad factor — "volume per shower" — was off by 20x. The decomposition was *correct in structure* (showers/year × volume/shower), but one factor was wildly wrong because the estimator did not pause to break it down further (gpm × duration). When one factor dominates the error budget, the rest of the chain cannot save you.
+
+**Lesson.** If any single factor in your tree has $> 1$ order of magnitude uncertainty, decompose *it* further until each leaf is within a factor of 3 to 5. Never accept a factor like "volume per shower" as a leaf — break it into "flow rate" × "duration."
+
+This is Mahajan's principle: *the cost of further decomposition is small; the cost of a single bad leaf is large.*
+
+## Engineering Connections
+
+### Performance Budgets
+
+Software systems have **latency budgets**: a target end-to-end response time, allocated across the components of the request path.
+
+A typical web request budget for a "feels instant" target of 100 ms:
+
+| Component | Budget |
+|---|---|
+| Network round-trip | 30 ms |
+| Load balancer + ingress | 5 ms |
+| App server compute | 20 ms |
+| Database query | 25 ms |
+| Cache lookups (×3) | 5 ms |
+| Response serialization | 5 ms |
+| Browser render | 10 ms |
+| **Total** | **100 ms** |
+
+Each component is a Fermi estimate: order-of-magnitude target. If the database query budget is 25 ms and the actual query takes 250 ms, you have a 10x over-budget problem to debug. The budget is the *spec*; the Fermi estimate sets the spec.
+
+### Capacity Planning for Data Centers
+
+A new service is expected to handle $10^7$ users at $10$ requests each per day. Capacity:
+
+- Total requests/day: $10^8$.
+- Average requests/second: $10^8 / (10^5 \text{ s/day}) \approx 10^3$.
+- Peak factor: $5$x average ($5 \times 10^3$ rps peak).
+- Per-request CPU time: $50$ ms.
+- Concurrent threads needed at peak: $5 \times 10^3 \cdot 0.05 = 250$ threads.
+- At 32 vCPU per machine, $\sim 8$ machines at peak.
+- Add 50% headroom: 12 machines.
+
+The whole capacity analysis is a Fermi estimate. The answer is provisional and gets refined with real traffic data, but it gives you the cost order-of-magnitude (12 machines × $200/month = $2400/month) *before* you spend any engineering time. If the order of magnitude is too high (say, $10^4$ machines), the project plan changes.
+
+### Thermal Budgets for Embedded Devices
+
+A drone flight controller dissipates $\sim 1$ W in a $50$ cm² PCB. Heat flux $\sim 2 \times 10^2$ W/m². Natural convection from a PCB to air gives heat transfer coefficient $h \sim 10$ W/m²K. So temperature rise:
+
+$$\Delta T = q / h \approx 200 / 10 = 20 \text{ K}$$
+
+At $25$°C ambient, the board sits at $45$°C — well within silicon limits. If you doubled the dissipation to $2$ W, the rise doubles to $40$°C, and now the board is at $65$°C — getting warm. At $5$ W, you need active cooling. The Fermi estimate tells you *whether* you need a fan, a heatsink, or nothing, in $30$ seconds.
+
+### Sanity-Checking ML Benchmark Claims
+
+A paper claims a model trains in $4$ hours on a single A100 GPU. An A100 does $\sim 3 \times 10^{14}$ FLOPS (TF32). $4$ hours = $1.4 \times 10^4$ s. So total: $4 \times 10^{18}$ FLOPs. For a 1B-parameter model at 6 FLOPs/parameter/token, that is $4 \times 10^{18} / (6 \times 10^9) = 7 \times 10^8$ tokens. Plausible for a fine-tune; implausible for from-scratch training (which typically needs $\sim 10^{12}$ tokens). The claim is consistent with a fine-tuning run, not a full pretrain. Fermi check resolves it in two minutes.
+
+### Back-of-Envelope Feasibility for Drone Missions
+
+"Can a small drone deliver a $0.5$ kg package across town ($10$ km)?" Flight time at $20$ m/s = $500$ s = $8$ minutes. Power at $1$ kg total weight ≈ $100$ W. Energy ≈ $5 \times 10^4$ J = $14$ Wh. Battery for that energy at $200$ Wh/kg ≈ $70$ g. Tiny. Trivially feasible. Now scale to a $20$ km mission: doubles time and energy. Still feasible. Scale to $200$ km: now $2$ hours, $200$ Wh ≈ $1$ kg battery — battery as much as the payload. Mission feasibility decays nonlinearly with distance. The Fermi estimate exposes the operating envelope.
+
+### Mahajan's Textbook Examples
+
+*Street-Fighting Mathematics* opens with a famous Fermi estimate: how high can a tree grow? Mahajan shows that the limit is set by the strength of materials (the trunk must support the weight) and the rate at which water can be lifted from roots to leaves against gravity. The answer comes out to $\sim 100$ m, matching the tallest known redwood ($\sim 116$ m). The estimate teaches you that biological limits are sometimes physics limits in disguise — a beautiful pedagogical move.
+
+Other Mahajan favorites: estimating the heat capacity of a solid from atomic physics ($3k_B$ per atom, the Dulong–Petit law), estimating drag on a falling raindrop, estimating the depth of the ocean from the speed of tidal waves.
+
+The unifying theme: a small amount of physics + a willingness to estimate = surprising amount of the real world recovered from first principles.
+
+## Practice Set
+
+Each problem asks for a Fermi estimate. Show your tree and your bracket. Hints provided; full solutions are *not*.
+
+### Warmups (Single-Factor or Two-Factor)
+
+1. **Bathtubs of water in an Olympic swimming pool.** Hint: pool is $50 \times 25 \times 2$ m; bathtub holds $\sim 200$ L.
+2. **Seconds in a year.** Hint: use the $\pi \times 10^7$ mnemonic. Why does this work?
+3. **Heartbeats in an 80-year lifetime.** Hint: $70$ beats/min × time conversion.
+4. **Breaths in a lifetime.** Hint: $\sim 15$ breaths/min.
+5. **Words spoken in a lifetime.** Hint: $\sim 16{,}000$ words/day on average for an adult.
+
+### Applied (Three-to-Five-Factor)
+
+6. **Meters of DNA in your body.** Hint: one cell has $\sim 2$ m of DNA when stretched; how many cells in the body?
+7. **Mass of all ants on Earth.** Hint: estimated $10^{16}$ ants on Earth; mass of one ant $\sim 5$ mg.
+8. **Watts to send a text message.** Hint: $\sim 1$ J per text sent (rough estimate including network and infrastructure); send time $\sim 1$ s.
+9. **Storage to record every WhatsApp message worldwide for one day.** Hint: $\sim 100$ B messages/day at $\sim 100$ bytes each.
+10. **Pages of text generated by Twitter/X daily.** Hint: $\sim 500$M tweets/day, $\sim 50$ characters each; a page holds $\sim 2{,}500$ characters.
+11. **Cost of Hoover Dam in current dollars.** Hint: built 1931–1936 for about \$50M nominal. Inflation factor since then is $\sim 22$x. So current dollars ≈ $1.1$B. Now ask: would it actually cost that today, or is real construction cost higher? (It would cost $\sim 5$–$10\times$ that, due to labor, environmental review, and regulation.)
+12. **Cars on the road in the US right now.** Hint: US has $\sim 280$M registered vehicles; what fraction are on the road at any moment?
+
+### Challenge (Six+ Factors or Subtle Physics)
+
+13. **Power needed by all data centers globally.** Hint: a hyperscale data center draws $\sim 100$ MW; how many such facilities are there?
+14. **CO₂ emitted by your annual web browsing.** Hint: $\sim 1$ kWh per $10$ hours of streaming video; $\sim 400$ g CO₂/kWh on a typical grid.
+15. **Volume of all human blood in the world.** Hint: $5$ L per person × population.
+16. **Speed at which fingernails grow vs. continental drift.** Hint: both $\sim$ cm/year? Check.
+17. **Total length of all roads in the US.** Hint: $\sim 4$M miles, but estimate it from population density and rural road density before looking up.
+
+### Error-Spotting
+
+18. A student estimates "leaves on a tree" by guessing $1000$ branches × $10$ leaves per branch = $10{,}000$. They get the right order of magnitude. What is wrong with their estimate?
+19. A student estimates "human energy use per day" by multiplying $2000$ kcal × $4.2$ J/cal = $8400$ J. What is wrong?
+20. A student estimates "data centers consume $10\%$ of world electricity" and concludes "we must shut down all training." What is wrong with the reasoning?
+
+### Hints Summary
+
+For (1): $50 \cdot 25 \cdot 2 = 2500$ m³ = $2.5 \times 10^6$ L. Bathtub = $200$ L. Answer: $\sim 12{,}000$ bathtubs.
+
+For (3): $70 \cdot 60 \cdot 24 \cdot 365 \cdot 80 \approx 3 \times 10^9$.
+
+For (6): $3.7 \times 10^{13}$ cells × $2$ m = $7.4 \times 10^{13}$ m = $5 \times 10^{11}$ AU. Far more than the diameter of the solar system.
+
+For (7): $10^{16} \cdot 5 \times 10^{-6}$ kg = $5 \times 10^{10}$ kg = comparable to total human biomass ($\sim 4 \times 10^{11}$ kg). Famous result.
+
+For (19): a "calorie" on a food label is actually $1000$ chemistry-calories ($1$ kcal). The right answer is $2000 \cdot 4200 = 8.4 \times 10^6$ J, not $8400$. Three-order-of-magnitude unit error.
+
+## Build Task
+
+Write `fermi_estimator.py`.
+
+The `Estimate` class holds a *value* and a *log-uncertainty* (in decades, i.e., factors of 10). Internally, the class tracks $\mu = \log_{10}(\text{value})$ and $\sigma$ (the standard deviation of $\log_{10}$).
+
+Required operations:
+
+1. **Construction.** `Estimate(value, sigma_decades)` — e.g., `Estimate(150, 0.5)` for "about 150, plus or minus half a decade (factor of ~3)."
+2. **Construction from bracket.** `Estimate.from_bracket(low, high)` — given a low and high estimate, set value = geomean(low, high) and sigma = $(\log_{10} H - \log_{10} L)/4$ (i.e., 95% CI = ±2σ = the bracket width).
+3. **Multiplication.** `a * b` returns a new `Estimate` with $\mu = \mu_a + \mu_b$ and $\sigma = \sqrt{\sigma_a^2 + \sigma_b^2}$.
+4. **Division.** Similarly, $\mu = \mu_a - \mu_b$ and $\sigma = \sqrt{\sigma_a^2 + \sigma_b^2}$.
+5. **Powers.** `a ** k` returns $\mu = k\mu_a$ and $\sigma = |k|\sigma_a$.
+6. **Bracket reporting.** `e.bracket(decades=2)` returns `(low, high)` for the $\pm$decades-σ bracket.
+7. **Geomean of bounds.** `geomean(low, high)` returns $\sqrt{\text{low} \cdot \text{high}}$.
+
+**Skeleton.**
+
+```python
+import math
+from dataclasses import dataclass
+
+@dataclass
+class Estimate:
+    mu: float       # log10 of the value
+    sigma: float    # standard deviation of log10
+
+    @classmethod
+    def from_value(cls, value, sigma_decades=0.5):
+        return cls(math.log10(value), sigma_decades)
+
+    @classmethod
+    def from_bracket(cls, low, high):
+        mu = (math.log10(low) + math.log10(high)) / 2
+        sigma = (math.log10(high) - math.log10(low)) / 4
+        return cls(mu, sigma)
+
+    @property
+    def value(self):
+        return 10 ** self.mu
+
+    def bracket(self, sigmas=2):
+        return (10 ** (self.mu - sigmas * self.sigma),
+                10 ** (self.mu + sigmas * self.sigma))
+
+    def __mul__(self, other):
+        return Estimate(self.mu + other.mu,
+                        math.sqrt(self.sigma**2 + other.sigma**2))
+
+    def __truediv__(self, other):
+        return Estimate(self.mu - other.mu,
+                        math.sqrt(self.sigma**2 + other.sigma**2))
+
+    def __pow__(self, k):
+        return Estimate(k * self.mu, abs(k) * self.sigma)
+
+    def __repr__(self):
+        lo, hi = self.bracket(2)
+        return f"Estimate({self.value:.2g}, 95% CI [{lo:.2g}, {hi:.2g}])"
+
+
+def geomean(low, high):
+    return math.sqrt(low * high)
+```
+
+**Apply to a practice problem.** Estimate piano tuners in Chicago:
+
+```python
+people     = Estimate.from_value(3e6, 0.1)         # well-known
+per_house  = Estimate.from_value(2.5, 0.1)
+households = people / per_house
+pianos_per_house = Estimate.from_bracket(1/200, 1/20)
+pianos     = households * pianos_per_house
+tunings_per_piano = Estimate.from_bracket(0.5, 2)
+total_tunings     = pianos * tunings_per_piano
+tunings_per_tuner = Estimate.from_bracket(500, 2000)
+tuners = total_tunings / tunings_per_tuner
+print(tuners)
+```
+
+Output should look something like:
+```
+Estimate(150, 95% CI [25, 900])
+```
+
+**Stretch goals.**
+
+- Add a `Quantity` subclass that also tracks units and propagates them.
+- Add a Monte Carlo sampler: draw $10^4$ samples from the log-normal distribution implied by each `Estimate`, multiply them through, and report the empirical distribution. Verify it matches the analytical log-space Gaussian.
+- Build a tree visualizer that prints the decomposition tree alongside the per-node estimate and uncertainty.
+- Add a "sanity check" mode: if the final bracket spans more than $4$ orders of magnitude, warn the user that the estimate is too uncertain to be useful and suggest decomposing further.
+
+## Quiz
+
+1. **When does Fermi estimation fail?** Answer: when the quantity is dominated by a single rare but extreme factor (heavy-tailed distribution); when factor errors are correlated; or when the decomposition itself relies on a sub-question as hard as the original.
+
+2. **Why doesn't a Fermi estimate need to be unbiased?** Answer: the random-walk argument relies on errors *partially canceling* across factors. Small biases on each factor are forgiven by the central-limit-theorem-like averaging. As long as no single factor is wildly biased and errors are roughly independent, the final estimate stays accurate.
+
+3. **Why does the geometric mean dominate the arithmetic mean for bracketing?** Answer: when a quantity is unknown to within a factor of $> 3$, the correct uncertainty distribution is log-uniform or log-normal, not uniform. The geomean is the maximum-likelihood estimate under a log-uniform prior, which matches the typical state of knowledge in Fermi problems. The arithmetic mean dramatically overweights the high end of the bracket.
+
+4. **Why does chaining estimates often improve accuracy compared to a single guess?** Answer: in log space, factor errors are summed. By the central-limit theorem, the sum of $n$ independent errors with standard deviation $\sigma$ has standard deviation $\sigma \sqrt{n}$ — not $\sigma n$. The per-factor error grows sub-linearly with the number of factors, so $n$ factor estimates with one-decade error each give a total error of $\sqrt{n}$ decades, often much less than a single one-decade blind guess.
+
+5. **Why is the "$\pi \times 10^7$ s/year" mnemonic so useful?** Answer: because seconds-per-year shows up in almost every time-scale Fermi estimate, and $\pi \times 10^7 \approx 3.14 \times 10^7$ matches the true value $3.156 \times 10^7$ to within $0.5\%$. The mnemonic is more accurate than the rest of your Fermi factors and gives you a memorable handle for the conversion.
+
+6. **What is the most common source of error in Fermi problems?** Answer: a single factor with much wider uncertainty than the others. The chain is only as good as its weakest link; if one factor has 3+ decades of uncertainty, the whole estimate inherits that uncertainty regardless of how careful you were elsewhere. Always decompose the widest-uncertainty factor further.
+
+7. **Why might a Fermi estimate that produces a "right" answer still be wrong?** Answer: if it gets the answer right by *canceling errors* (one factor 10x high, another 10x low), the structure is wrong even though the number is right. A defensible Fermi estimate has *each leaf factor* approximately correct, not just the final product. This is why Fermi estimates should always show their tree.
+
+8. **What's the difference between a Fermi estimate and a blind guess?** Answer: a Fermi estimate is *decomposed* and *defensible*. Each factor in the chain is justified independently. A critic who disagrees with the answer can point to a specific factor and argue for a different value. A blind guess offers no such target and cannot be improved by collaboration or feedback.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Solve a Fermi problem from scratch in $\sim 5$ minutes, including drawing the decomposition tree and reporting a final point estimate with bracket.
+- Produce all five canonical worked examples (piano tuners, CO₂ per mile, oak leaves, body cells, GPT-4 FLOPs) without consulting the lesson.
+- Recall at least 10 of the constants in the "useful constants to memorize" table from memory.
+- Explain the random-walk-of-log-errors argument to a non-physicist.
+- Identify three real-world claims (in news, marketing, or technical papers) and sanity-check them with a Fermi estimate.
+- Run your `fermi_estimator.py` module on at least 5 problems and produce documented outputs with brackets.
+
+**Concrete artifact.** Commit a Jupyter notebook `fermi_problems.ipynb` to your repo containing:
+
+1. The piano-tuners-in-Chicago tree, fully decomposed, with each leaf justified.
+2. The CO₂-per-mile tree.
+3. The oak-leaves tree.
+4. The cells-in-the-human-body tree.
+5. The GPT-4-FLOPs tree.
+
+For each, use your `Estimate` class to propagate uncertainty, and report a final point estimate with a $\pm 2\sigma$ bracket. Compare each result against a published reference value and discuss any discrepancy of more than a factor of 3.
+
+## Sources and Further Study
+
+- **Sanjoy Mahajan, *Street-Fighting Mathematics*** (MIT Press, 2010). The modern canonical text. Free PDF at MIT OCW 18.098. The single best book for training the Fermi reflex.
+- **Sanjoy Mahajan, *The Art of Insight in Science and Engineering*** (MIT Press, 2014). Mahajan's follow-up; broader and more physical. Free PDF online.
+- **Lawrence Weinstein and John Adam, *Guesstimation*** (Princeton, 2008). A collection of ~$80$ Fermi problems with worked solutions. Excellent practice volume. Followed by *Guesstimation 2.0* (2012).
+- **John Harte, *Consider a Spherical Cow*** (1988) and *Consider a Cylindrical Cow* (2001). Environmental Fermi problems; the original "spherical cow" textbook.
+- **Robert Serber, *The Los Alamos Primer*** (declassified 1965, MIT Press reissue 1992). The original Manhattan Project lecture notes, including Fermi's bomb-yield analysis.
+- **Eames Brothers, *Powers of Ten* (1968 film)**. Visual training in order-of-magnitude thinking. Under 10 minutes; freely viewable online.
+- **MIT OpenCourseWare 18.098 / 6.099 (Street-Fighting Mathematics)**. Mahajan's MIT course, full lecture videos and notes.
+- **MIT OpenCourseWare 6.041 (Probability and Stochastic Processes)**. For the formal random-walk and central-limit-theorem justification of why log-error chains $\sigma\sqrt{n}$.
+- **Wikipedia: "Fermi problem"** and **"Order of magnitude"**. Reference and example links.
+- **Wired magazine, "How to Solve a Fermi Problem"** (various articles in the 2010s). Accessible introductions for non-physicists.
+
+## Next Lesson Bridge
+
+Lesson 18 — *Reading Data Tables and Charts* — turns the lens around. In this lesson you learned to estimate quantities *from scratch*. In the next lesson you learn to extract quantities *from published charts and tables*: linear and log axes, scatter plots, line graphs, bar charts, error bars, log-log plots and the slopes that reveal power laws.
+
+The two skills are complementary. Fermi estimation lets you predict what a chart *should* show before you read it. Chart reading lets you check your Fermi estimate against published data. A trained practitioner does both as a matter of habit: predict, then read, then reconcile any factor-of-3-or-more discrepancy. The reconciliation step is where most learning happens — every discrepancy is either an error in your model (improve the tree) or a surprising fact about the world (update your priors).
+
+Together, lessons 17 and 18 form the "numerical sanity-checking" toolkit. Combined with lesson 16 (significant figures) and lesson 15 (scientific notation), you have the four core habits of *quantitative literacy* — the foundation on which every later quantitative course, from probability to ML, rests.

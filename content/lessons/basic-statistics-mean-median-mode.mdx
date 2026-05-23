@@ -1,0 +1,806 @@
+# Basic Statistics: Mean, Median, Mode, and Spread
+
+## Re-entry Promise
+
+Statistics is the language of *data with noise*. Every measurement an engineer makes — a sensor reading, a benchmark score, a latency timestamp, a wind-tunnel force — comes with scatter. Statistics gives you the compact summaries (center, spread) that let you reason about that scatter without drowning in raw numbers.
+
+This lesson assumes you are comfortable with fractions and decimal arithmetic (lessons 9–10), with the basic probability ideas from lesson 19 (event, distribution, expected value), and with the measurement-uncertainty thinking of lesson 16 (significant figures, the idea that a reported number has a hidden $\pm$). It does **not** assume calculus, does **not** assume linear algebra, and does **not** assume any previous statistics course. We will build up from raw data to the normal distribution and the $68$-$95$-$99.7$ rule from scratch.
+
+By the end you should be able to compute, by hand or with code, the mean, median, mode, range, sample variance, sample standard deviation, percentiles, quartiles, and the IQR of any dataset; sketch a histogram and a box plot; distinguish a *sample statistic* from a *population parameter*; sketch the normal distribution and recite the $68$-$95$-$99.7$ rule; convert any measurement to a Z-score; and — crucially — recognize when the summary statistics are *hiding* the real story (Anscombe's quartet, bimodal distributions, fat tails).
+
+This is the on-ramp to all of statistics: the much-later statistics module (probability theory, estimation, hypothesis testing, Bayesian inference, regression) will assume every concept on this page is second nature.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Compute the **mean**, **median**, and **mode** of a dataset and choose the right one for the job.
+- Compute the **range**, **variance**, and **standard deviation**, distinguishing the *sample* form ($s^2$, divided by $n-1$) from the *population* form ($\sigma^2$, divided by $N$).
+- Explain Bessel's correction — why we divide by $n - 1$ for sample variance — in terms of degrees of freedom.
+- Distinguish a **sample statistic** (computed from data, denoted with Roman letters $\bar{x}$, $s$) from a **population parameter** (a true underlying value, denoted with Greek letters $\mu$, $\sigma$).
+- Compute the **percentiles** ($p_5$, $p_{50}$, $p_{95}$, $p_{99}$) and **quartiles** ($Q_1$, $Q_2$, $Q_3$) of a dataset, and the **interquartile range** (IQR).
+- Sketch and interpret a **box plot** and a **histogram**, and produce the **5-number summary** (min, $Q_1$, median, $Q_3$, max).
+- Identify outliers using the $1.5 \times \text{IQR}$ rule of thumb.
+- Sketch the **normal distribution** specified by $\mu$ and $\sigma$, and apply the $68$-$95$-$99.7$ rule.
+- Compute a **Z-score** $z = (x - \mu) / \sigma$ and interpret it as "standard deviations from the mean."
+- State (in words) the **Central Limit Theorem** and explain why the normal distribution shows up everywhere.
+- Recognize when summary statistics *fail* to describe the data — bimodal distributions, fat tails, Anscombe's quartet — and what to do about it.
+- Apply these tools to real engineering data: sensor noise, latency distributions, A/B test outcomes, ML benchmark results.
+
+## Why It Matters
+
+Statistics is not a "soft" subject for engineers — it is the *primary* tool you use to interpret any number you measure. A non-exhaustive tour of where the ideas in this lesson show up daily:
+
+1. **Sensor noise on a datasheet.** Every analog sensor, op-amp, and ADC datasheet specifies "output noise" as a standard deviation, often in volts RMS — for example, *"input-referred noise: $\sigma = 1.2$ mV RMS, $0.1$ Hz to $10$ Hz."* That number is the SD of the noise process. To know whether your $1$ mV signal is detectable, you need to compare it to that $\sigma$.
+
+2. **Tail latency in distributed systems.** A web service report says "average response time: $80$ ms." Meanwhile, $1\%$ of users see $2{,}000$ ms responses. Mean latency hides the tail. SREs and backend engineers track $p_{50}$, $p_{95}$, $p_{99}$, and $p_{99.9}$ — *percentile* latencies — because the slow tail is what users actually complain about.
+
+3. **Statistical process control and Six Sigma.** In a manufacturing line producing parts with a target dimension, *yield* — the fraction of parts within spec — is determined by the mean and SD of the process distribution. "Six Sigma" means the spec limits are $\pm 6\sigma$ from the mean, corresponding to about $3.4$ defects per million.
+
+4. **A/B testing.** Did the new checkout flow really increase conversion? You collect a control group and a treatment group, compute the mean conversion of each, and use a two-sample test (built from sample mean and sample SD) to decide whether the difference is real or just noise.
+
+5. **ML model evaluation.** A published ML paper that reports *"accuracy: 91.3%"* with no error bars is hiding the run-to-run variance. The standard is *"$91.3 \pm 0.4\%$ over 5 random seeds"* — mean and SD across seeds. Without that you cannot tell whether a $0.2\%$ improvement is meaningful.
+
+6. **GPS accuracy ("3 m CEP").** *CEP* = Circular Error Probable. A "$3$ m CEP" GPS receiver means $50\%$ of position fixes fall within a $3$ m radius circle. CEP is a percentile (the $50\%$-ile distance) of the 2D position-error distribution.
+
+7. **Signal-to-noise ratio (SNR).** A communications channel has SNR = (signal power) / (noise power). For Gaussian noise, the noise power is $\sigma^2$. Designers express SNR in decibels: $\text{SNR}_{\text{dB}} = 10 \log_{10}(P_s / P_n)$, or $20 \log_{10}(\sigma_s / \sigma_n)$ for amplitude ratios. A 30 dB SNR means signal amplitude is $\sim 32 \times$ noise amplitude.
+
+8. **Image sensors and shot noise.** When $N$ photons arrive at a pixel, the standard deviation of the count is $\sqrt{N}$ (Poisson statistics, which approaches normal for large $N$). SNR scales like $\sqrt{N}$: more light $\to$ better images. This is why long-exposure astronomy works.
+
+9. **Climate data.** A line like *"global mean surface temperature anomaly: $+1.1\,°\text{C} \pm 0.1\,°\text{C}$ relative to 1850–1900 baseline"* is a mean with an SD. Reading climate science requires comfort with mean, SD, percentile (e.g., "the hottest $5\%$ of years"), and confidence intervals.
+
+10. **Estimating the noise floor of a control system.** You record a $10{,}000$-sample log from a sensor. The mean is your bias; the SD is your noise floor. The bias you can calibrate out; the noise sets a *lower bound* on how precisely the loop can act. There is no way to do this without statistics.
+
+Every one of these examples uses ideas defined on this page. There is no engineering or research career in which you can avoid them.
+
+## Why This Idea Exists
+
+The mean, the median, and the mode were known to ancient mathematicians and merchants — averaging cargoes, ranking grades — but formal statistical theory is a relatively recent invention, driven by *measurement*.
+
+**Pierre-Simon Laplace and Carl Friedrich Gauss** (early 1800s) were both wrestling with astronomical measurement: given many noisy observations of the position of a comet or asteroid, what is the best estimate of its true position? Their answer — the **method of least squares** combined with the **normal (Gaussian) distribution** of measurement errors — became the foundation of modern statistics. Gauss's *Theoria Motus Corporum Coelestium* (1809) introduced the normal distribution as the error law. Laplace's *Théorie analytique des probabilités* (1812) gave the Central Limit Theorem in nearly modern form.
+
+**Adolphe Quetelet** (1830s) made the radical leap of applying probability and the normal distribution not to *measurement errors* but to *human populations*. His *l'homme moyen* — "the average man" — was the first attempt to describe a population by its mean and spread. The whole modern apparatus of demographic statistics descends from Quetelet.
+
+**Francis Galton** (1880s) added **regression toward the mean** and **correlation**. Studying inheritance of height, he noticed that tall fathers tend to have somewhat-less-tall sons (regression toward the population mean), and he formalized how to quantify the strength of association between two variables.
+
+**Karl Pearson and Ronald Fisher** (early 1900s) built modern statistical theory: Pearson formalized correlation and the chi-squared test; Fisher invented maximum-likelihood estimation, the analysis of variance (ANOVA), and the design of experiments. Fisher's *Statistical Methods for Research Workers* (1925) is the proximate ancestor of every modern statistics textbook.
+
+**William Sealy Gosset**, who published under the pseudonym **"Student"** in 1908 because his employer (Guinness Brewery, Dublin) considered statistical work a trade secret, introduced the **t-distribution** for small-sample inference. The motivation was extremely practical: Guinness needed to do quality control on small batches of barley and hops without assuming infinite-sample asymptotics. Gosset's "Student's t-test" is still the workhorse of A/B testing.
+
+**Walter Shewhart** (Bell Labs, 1920s) invented **statistical process control** and the control chart, applying statistical thinking to manufacturing. His framework is the direct ancestor of Six Sigma and modern quality engineering.
+
+**John Tukey** (Bell Labs / Princeton, 1960s–1970s) created **exploratory data analysis** (EDA): the discipline of *looking* at data first — through histograms, box plots, stem-and-leaf plots — before fitting models. His *Exploratory Data Analysis* (1977) is one of the founding texts. He also invented the term *bit* (for binary digit) and coined *software*.
+
+The **21st-century rise of data science** is statistics + computing + huge datasets. The classical theory still applies; the scale and speed have changed.
+
+**Why engineers need it:** any time you have data with noise — and that is *every time you have data* — statistics is the language. Calling something "noisy" without specifying its standard deviation is hand-waving. Reporting an "average" without checking the shape of the distribution is a category of bug that ships products.
+
+## Plain-Language Intuition
+
+Suppose I hand you a list of numbers — twenty test scores, fifty latency samples, a thousand sensor readings. You want to *describe* them without showing all the raw numbers.
+
+You need two things:
+
+- A measure of **center** — where do the numbers tend to cluster?
+- A measure of **spread** — how scattered are they around the center?
+
+**Center.** The three classic measures:
+
+- **Mean** ($\bar{x}$): add all the numbers and divide by how many. The mean is the "balance point" of the data — if the dataset were a row of weights on a seesaw, the mean would be the pivot point. It is the most common summary, but a single huge outlier can drag it far from where most of the data sits.
+- **Median**: sort the numbers and take the middle one. The median is the "middle value" — half the data is below, half above. It is *robust*: a billionaire walking into the bar barely moves it.
+- **Mode**: the most frequently occurring value. Useful mostly for categorical data ("most common eye color") or for distributions with a clear peak. Often there are ties (bimodal, multimodal) or no repeats at all.
+
+**Spread.** The three classic measures:
+
+- **Range**: max minus min. Cheap but throws away everything except the two extremes.
+- **Variance** ($\sigma^2$ or $s^2$): the *average squared distance* from the mean. Squaring keeps everything positive and weights big deviations heavily.
+- **Standard deviation** ($\sigma$ or $s$): square root of variance. Same units as the data. The "typical distance from the mean."
+
+If your data are *normal-shaped* (the bell curve), the SD has a beautiful interpretation: about $68\%$ of values lie within $1\sigma$ of the mean, about $95\%$ within $2\sigma$, and about $99.7\%$ within $3\sigma$. This is the famous **$68$-$95$-$99.7$ rule** and you should burn it into long-term memory.
+
+The catch — the lesson behind Anscombe's quartet, behind every misleading "average" in the news — is that *center and spread are not enough* to describe a distribution. Two datasets can have identical mean and SD and look completely different. Always look at the data.
+
+## Core Theory
+
+### Notation
+
+A dataset is a list of $n$ numbers:
+
+$$x_1, x_2, x_3, \ldots, x_n$$
+
+We will use **$n$** for the size of a *sample* (a finite dataset in hand) and **$N$** for the size of a *population* (the underlying universe from which the sample was drawn — often infinite or unknown in size).
+
+**Greek letters** ($\mu$, $\sigma$, $\sigma^2$) denote *population parameters* — fixed but unknown true values.
+
+**Roman letters** ($\bar{x}$, $s$, $s^2$) denote *sample statistics* — computed from observed data, themselves random because the sample is.
+
+This distinction is one of the most important things in the lesson. If you mix them up, the formulas (and the conclusions) come out wrong.
+
+### Mean
+
+The (arithmetic) mean of a sample:
+
+$$\bar{x} = \frac{1}{n} \sum_{i=1}^{n} x_i = \frac{x_1 + x_2 + \cdots + x_n}{n}$$
+
+The population mean (for a finite population of size $N$):
+
+$$\mu = \frac{1}{N} \sum_{i=1}^{N} x_i$$
+
+The mean is the *balance point*: $\sum (x_i - \bar{x}) = 0$ exactly. Deviations above and below the mean cancel.
+
+The mean is sensitive to outliers. One extreme value can move it arbitrarily far.
+
+### Median
+
+To compute the median, sort the data $x_{(1)} \le x_{(2)} \le \cdots \le x_{(n)}$.
+
+- If $n$ is odd: median $= x_{((n+1)/2)}$ — the middle value.
+- If $n$ is even: median $= (x_{(n/2)} + x_{(n/2 + 1)}) / 2$ — the average of the two middle values.
+
+The median is the *50th percentile*: half the data lies below, half above.
+
+The median is **robust** — it is insensitive to extreme outliers. If you change the largest value in your dataset from $100$ to $10^9$, the median does not move.
+
+### Mode
+
+The mode is the value (or values) that occur most frequently. For continuous data, the "mode" usually refers to the peak of a fitted distribution or histogram, since exact repeats are rare.
+
+A distribution can be:
+
+- **Unimodal** — one clear peak (e.g., test scores around a class average).
+- **Bimodal** — two peaks (e.g., heights of a mixed adult population, peaks for women and men).
+- **Multimodal** — many peaks.
+- **No mode** — all values distinct, no repeats.
+
+The mode is most useful for *categorical* data ("most common car color") and for spotting bimodal structure that mean and median would smear over.
+
+### Range
+
+$$\text{Range} = x_{(n)} - x_{(1)} = \max(x) - \min(x)$$
+
+The simplest spread measure. Uses only two numbers, so very sensitive to outliers and uninformative about the bulk of the data.
+
+### Variance and Standard Deviation
+
+The **population variance** is the average squared deviation from the mean:
+
+$$\sigma^2 = \frac{1}{N} \sum_{i=1}^{N} (x_i - \mu)^2$$
+
+The **sample variance** uses $n - 1$ instead of $n$ in the denominator (Bessel's correction):
+
+$$s^2 = \frac{1}{n - 1} \sum_{i=1}^{n} (x_i - \bar{x})^2$$
+
+The **standard deviation** is the square root of variance:
+
+$$\sigma = \sqrt{\sigma^2}, \quad s = \sqrt{s^2}$$
+
+Standard deviation has the same units as the data — if $x$ is in volts, $s$ is in volts. Variance is in volts-squared, which is why we usually report SD rather than variance even though variance is the more natural mathematical object.
+
+### Why $n - 1$? (Bessel's Correction)
+
+This trips up everyone. The intuition:
+
+You only get *one* dataset. To compute $s^2$, you have to estimate $\mu$ first — you use $\bar{x}$ as a stand-in. But $\bar{x}$ is the value that *minimizes* $\sum (x_i - \bar{x})^2$. So $\sum (x_i - \bar{x})^2$ is *systematically smaller* than $\sum (x_i - \mu)^2$ would have been if you had known $\mu$.
+
+Dividing by $n$ would underestimate the variance. Dividing by $n - 1$ corrects exactly for this — it produces an *unbiased* estimator: $\mathbb{E}[s^2] = \sigma^2$.
+
+The $n - 1$ is the **degrees of freedom** of the sample variance: out of $n$ deviations $x_i - \bar{x}$, only $n - 1$ are free, because they must sum to zero. The $n$-th one is determined by the other $n - 1$.
+
+A full proof comes in a real statistics course. For now, remember: **use $n - 1$ for sample variance, $N$ for population variance.** Most software (NumPy `np.var(x, ddof=1)`, R's `var()`, Excel's `STDEV.S`) gives you a choice; the default conventions differ, so always check.
+
+### Percentiles
+
+The **$k$th percentile** of a dataset is the value below which $k\%$ of observations fall. Equivalently, it is the $k/100$ quantile.
+
+- $p_{50}$ = median (50% below).
+- $p_{25}$ = first quartile $Q_1$.
+- $p_{75}$ = third quartile $Q_3$.
+- $p_{99}$ = the value such that 99% of observations are smaller — the start of the "top 1%."
+
+Several slightly different definitions of percentile exist (linear interpolation, nearest rank, etc.). For large $n$ the differences vanish; for small $n$ they matter, which is why NumPy's `np.percentile` has a `method=` parameter with nine choices.
+
+### Quartiles and the IQR
+
+The **quartiles** divide the sorted data into four equal-sized groups:
+
+- $Q_1 = p_{25}$ — 25% of data below.
+- $Q_2 = p_{50}$ — the median.
+- $Q_3 = p_{75}$ — 75% of data below.
+
+The **interquartile range**:
+
+$$\text{IQR} = Q_3 - Q_1$$
+
+The IQR is a *robust* measure of spread — it captures the middle 50% of the data and is unaffected by outliers in the tails.
+
+### 5-Number Summary and Box Plot
+
+The **5-number summary** is the compact description:
+
+$$(\min, Q_1, \text{median}, Q_3, \max)$$
+
+A **box plot** draws this visually:
+
+```
+            Q1     median   Q3
+             |       |       |
+    |--------[=======|=======]---------|
+   min                                max
+```
+
+Whiskers extend to the most extreme non-outlier values (often defined as the most extreme points within $Q_1 - 1.5 \cdot \text{IQR}$ and $Q_3 + 1.5 \cdot \text{IQR}$). Anything beyond is plotted as an individual outlier point.
+
+### Outlier Rule of Thumb
+
+A common (Tukey) criterion: a value $x$ is an outlier if
+
+$$x < Q_1 - 1.5 \cdot \text{IQR} \quad \text{or} \quad x > Q_3 + 1.5 \cdot \text{IQR}$$
+
+For a normal distribution, this flags roughly $0.7\%$ of values as "outliers." That doesn't mean they're bad data — it just means they're far from the bulk and worth a look.
+
+### The Normal Distribution
+
+The **normal distribution** (Gaussian) is the bell-shaped curve fully specified by its mean $\mu$ and standard deviation $\sigma$. Its probability density:
+
+$$f(x) = \frac{1}{\sigma \sqrt{2\pi}} \exp\!\left( -\frac{(x - \mu)^2}{2\sigma^2} \right)$$
+
+Properties:
+
+- Symmetric about $\mu$.
+- Mean, median, and mode all equal $\mu$.
+- Inflection points at $\mu \pm \sigma$.
+- Total area under the curve is $1$ (it's a probability density).
+
+### The 68-95-99.7 Rule
+
+For any normal distribution, the probability of being within $k$ standard deviations of the mean is:
+
+| $k$ | $P(\mu - k\sigma \le X \le \mu + k\sigma)$ |
+|---|---|
+| $1\sigma$ | $\approx 68.27\%$ |
+| $2\sigma$ | $\approx 95.45\%$ |
+| $3\sigma$ | $\approx 99.73\%$ |
+| $4\sigma$ | $\approx 99.9937\%$ |
+| $5\sigma$ | $\approx 99.99994\%$ |
+| $6\sigma$ | $\approx 99.9999998\%$ (about $2$ defects per billion) |
+
+Memorize: $68$, $95$, $99.7$. This is the most-used arithmetic fact in applied statistics. If a noise process is normal with $\sigma = 1.2$ mV, you know immediately that *most* samples ($68\%$) will be within $\pm 1.2$ mV of zero, and *essentially all* ($99.7\%$) will be within $\pm 3.6$ mV.
+
+### Z-Score
+
+The **Z-score** rescales a value to "standard deviations from the mean":
+
+$$z = \frac{x - \mu}{\sigma}$$
+
+A Z-score of $+2$ means "$2\sigma$ above the mean." A Z-score lets you compare apples to oranges — a student who scored $1.5\sigma$ above the mean on the math SAT and a student who scored $1.5\sigma$ above the mean on the verbal SAT are equally far above their respective peers, even though the raw scores differ.
+
+For normal data, you can read probabilities directly from the Z-score using the standard normal table (or `scipy.stats.norm.cdf`).
+
+### The Central Limit Theorem (statement only)
+
+The **Central Limit Theorem (CLT)** says, roughly:
+
+> If you average a large number of independent samples from *any* distribution with finite mean and variance, the distribution of the sample mean is approximately normal — regardless of the shape of the original distribution.
+
+More precisely: if $X_1, X_2, \ldots, X_n$ are iid with mean $\mu$ and variance $\sigma^2$, then
+
+$$\frac{\bar{X}_n - \mu}{\sigma / \sqrt{n}} \xrightarrow{d} \mathcal{N}(0, 1) \quad \text{as } n \to \infty.$$
+
+The CLT is the reason the normal distribution appears everywhere: sensor noise is the sum of many small independent effects; population heights are the sum of many small genetic and environmental contributions; measurement errors are the sum of many small disturbances. Sums of many small independent things tend toward the normal.
+
+A full proof and the conditions for CLT come in the statistics module. For now: this is *why* the bell curve shows up so often, and why the $68$-$95$-$99.7$ rule is so widely useful.
+
+### Skewness, Kurtosis (Name Only)
+
+- **Skewness** measures asymmetry. A distribution is *right-skewed* (positively skewed) when it has a long right tail (e.g., income); in that case, mean $>$ median. *Left-skewed* is the mirror image. For symmetric distributions, mean $=$ median.
+- **Kurtosis** measures tail heaviness. *Leptokurtic* ("fat-tailed") distributions have more probability in the extremes than the normal. Financial returns are famously fat-tailed: the normal-distribution assumption seriously underestimates the frequency of crashes.
+
+You will meet both in the statistics module proper. For now, just know the words and the rough meaning.
+
+### Anscombe's Quartet
+
+In 1973, statistician **F. J. Anscombe** published four datasets, each with 11 $(x, y)$ pairs, designed to have:
+
+- Identical means of $x$ ($9.0$) and $y$ ($7.5$).
+- Identical variances of $x$ ($11.0$) and $y$ ($4.12$).
+- Identical correlation ($0.816$).
+- Identical linear regression line ($y = 3 + 0.5x$).
+- Identical regression $R^2$ ($0.67$).
+
+Yet plotted, the four look completely different:
+
+- **I**: a roughly linear cloud — the model fits.
+- **II**: a clean parabola — a linear fit misses the curvature entirely.
+- **III**: a perfect line plus one outlier — the outlier pulls the regression off the real line.
+- **IV**: all $x$-values are 8 except one at 19; the regression slope is determined entirely by a single point.
+
+The point: **summary statistics are not enough.** You must plot the data. Anscombe's paper is short and worth reading.
+
+A modern extension is the **Datasaurus Dozen** (Matejka & Fitzmaurice, 2017): twelve datasets — including one shaped like a dinosaur — all with identical mean, SD, and correlation to two decimal places. Same lesson, more vivid pictures.
+
+## Visual or Mental Model
+
+### Histogram
+
+A histogram bins the data along the $x$-axis and stacks frequency on the $y$-axis. Sketch for an approximately normal dataset with $\bar{x} \approx 50$, $s \approx 10$:
+
+```
+freq
+ |
+ |               ###
+ |             #######
+ |           ###########
+ |          #############
+ |         ###############
+ |        #################
+ |      #####################
+ |    #########################
+ |__###############################__
+    20   30   40   50   60   70   80   x
+                    ^mean
+```
+
+The peak corresponds to the mode of the empirical distribution. Width of the bulk corresponds to $\sigma$.
+
+### Box Plot
+
+```
+       Q1   median   Q3
+        |     |      |
+   |----[=====|======]---|    o    o
+   min                  max   outliers
+                |--IQR--|
+```
+
+The box spans $Q_1$ to $Q_3$ (the middle 50% of the data). The whiskers reach the most extreme non-outliers. Points beyond are plotted individually.
+
+### Bell Curve with 68/95/99.7 Regions
+
+```
+                       ___
+                      / ###\
+                    /  #####  \
+                  /  ##67-95-#  \
+                /  ## ##95-99##  \
+               | ###############|
+               |##99.7%##########|
+   ____________|_________________|___
+        μ-3σ  μ-2σ  μ-σ  μ  μ+σ  μ+2σ  μ+3σ
+        |_______________________|
+              99.7%
+            |_____________|
+                 95%
+                |_____|
+                  68%
+```
+
+Burn this picture into memory. Most of the analytical-statistics intuition you'll ever need fits in this diagram.
+
+### Mean as Balance Point
+
+If the data are weights on a seesaw at positions $x_1, \ldots, x_n$, the mean is the *pivot point* that balances them:
+
+```
+   weights:   *   **  ***  ****  *   *
+   positions: 1   2   3    4     6   9
+                       ^mean = 4.0 (balance point)
+                       
+       _____________________________
+                      ^
+                     pivot
+```
+
+Outliers — the lonely $*$ at position 9 — pull the pivot toward themselves. This is exactly why the mean is sensitive to outliers and the median is not.
+
+## Worked Examples
+
+### Example 1 — Mean, Median, Mode of a Small Dataset
+
+Dataset: $\{3, 7, 7, 2, 9, 4, 7, 8\}$.
+
+Mean: $(3 + 7 + 7 + 2 + 9 + 4 + 7 + 8)/8 = 47/8 = 5.875$.
+
+Sort: $\{2, 3, 4, 7, 7, 7, 8, 9\}$. With $n = 8$ (even), median $= (x_{(4)} + x_{(5)})/2 = (7 + 7)/2 = 7$.
+
+Mode: $7$ occurs three times, more than any other value. Mode $= 7$.
+
+Note: mean ($5.875$) $<$ median ($7$). The dataset is somewhat *left-skewed* (the small values $2, 3, 4$ pull the mean down).
+
+### Example 2 — Bill Gates Walks Into a Bar (Outlier Sensitivity)
+
+Annual incomes of 10 people in a bar: $\{40, 45, 50, 50, 55, 60, 65, 70, 75, 90\}$ (in thousands of dollars).
+
+Mean: $\bar{x} = 600/10 = 60$ k. Median: $(55 + 60)/2 = 57.5$ k.
+
+Bill Gates walks in. His income (rough order): $5 \times 10^9$ dollars/yr = $5{,}000{,}000$ k.
+
+New dataset has $n = 11$. Mean becomes:
+
+$$\bar{x} = \frac{600 + 5{,}000{,}000}{11} = \frac{5{,}000{,}600}{11} \approx 454{,}600 \text{ k}.$$
+
+The new mean is about $454.6$ *million dollars per person*. Bill alone moved the "average" from $60$ k to half a million k — the "average person in the bar" now appears to be vastly wealthier than anyone in the room.
+
+The median of the new sorted dataset is $x_{(6)} = 60$ k. Median moved by $2.5$ k. Essentially unchanged.
+
+**Moral:** for skewed distributions (income, wealth, web traffic, latency, file sizes), the median is almost always the better summary of "typical."
+
+### Example 3 — Sample Variance and SD by Hand
+
+The textbook dataset: $\{2, 4, 4, 4, 5, 5, 7, 9\}$, $n = 8$.
+
+**Step 1.** Mean: $\bar{x} = (2 + 4 + 4 + 4 + 5 + 5 + 7 + 9)/8 = 40/8 = 5$.
+
+**Step 2.** Deviations $x_i - \bar{x}$: $-3, -1, -1, -1, 0, 0, 2, 4$.
+
+**Step 3.** Squared deviations $(x_i - \bar{x})^2$: $9, 1, 1, 1, 0, 0, 4, 16$. Sum $= 32$.
+
+**Step 4a.** *Population* variance (dividing by $N = 8$): $\sigma^2 = 32/8 = 4$. So $\sigma = 2$.
+
+**Step 4b.** *Sample* variance (dividing by $n - 1 = 7$): $s^2 = 32/7 \approx 4.571$. So $s \approx 2.138$.
+
+If you treat the eight numbers as the entire universe, the SD is exactly $2$. If you treat them as a sample from some larger population, the unbiased estimate of the population SD is about $2.14$.
+
+When you see "standard deviation is $2$" for this dataset in textbooks, the author is using the population formula (dividing by $n$). When NumPy reports `np.std(x)` it defaults to dividing by $n$; `np.std(x, ddof=1)` divides by $n - 1$. Different software defaults to different conventions — *always check*.
+
+### Example 4 — Percentiles and IQR
+
+Dataset (already sorted): $\{1, 3, 4, 5, 7, 9, 10, 12, 15, 18, 20, 22\}$, $n = 12$.
+
+Quartiles using linear interpolation:
+
+- $Q_2$ (median): position $(12+1)/2 = 6.5$, so $(9 + 10)/2 = 9.5$.
+- $Q_1$ (25th percentile): position $0.25 \cdot 13 = 3.25$. Interpolate between $x_{(3)} = 4$ and $x_{(4)} = 5$: $4 + 0.25 \cdot (5 - 4) = 4.25$.
+- $Q_3$ (75th percentile): position $0.75 \cdot 13 = 9.75$. Interpolate between $x_{(9)} = 15$ and $x_{(10)} = 18$: $15 + 0.75 \cdot (18 - 15) = 17.25$.
+
+$\text{IQR} = Q_3 - Q_1 = 17.25 - 4.25 = 13.0$.
+
+Outlier fences: $Q_1 - 1.5 \cdot \text{IQR} = 4.25 - 19.5 = -15.25$; $Q_3 + 1.5 \cdot \text{IQR} = 17.25 + 19.5 = 36.75$. No values lie outside the fences, so no outliers.
+
+5-number summary: $(1, 4.25, 9.5, 17.25, 22)$.
+
+Different percentile conventions give slightly different answers. Don't be alarmed when NumPy, R, and Excel disagree by a fraction.
+
+### Example 5 — Applying the 68-95-99.7 Rule (IQ Scores)
+
+IQ scores are *defined* to be normally distributed with $\mu = 100$ and $\sigma = 15$.
+
+Question: what fraction of people have IQ above $130$?
+
+$130 = \mu + 2\sigma$. By the $68$-$95$-$99.7$ rule, $95\%$ of people lie within $\pm 2\sigma$ of the mean — that is, between $70$ and $130$. The remaining $5\%$ lies in the two tails, equally split (the distribution is symmetric): $2.5\%$ below $70$ and $2.5\%$ above $130$.
+
+So roughly **$2.5\%$ of people have IQ $> 130$.** (Precise value from a Z-table: $2.275\%$.)
+
+Question: what fraction have IQ between $85$ and $115$?
+
+This is $\mu \pm 1\sigma$. By the rule: $\approx 68\%$.
+
+Question: what is the IQ of the $99.85$th percentile?
+
+The right tail beyond $\mu + 3\sigma$ is $(100 - 99.7)/2 = 0.15\%$. So $\mu + 3\sigma = 100 + 45 = 145$ is the $99.85$th percentile.
+
+This is why "Mensa cutoff at $\text{IQ} = 130$" corresponds to roughly the top $2$-$3\%$ of the population.
+
+### Example 6 — Sensor Noise from ADC Readings
+
+A 12-bit ADC samples a grounded input (true value $= 0$) 100 times. The readings (in counts) vary slightly due to noise. Suppose the sample mean is $\bar{x} = -0.03$ counts and the sample standard deviation is $s = 0.5$ counts. The ADC's reference is $5.0$ V, so each count is $5.0 / 4096 \approx 1.22$ mV.
+
+- The mean of $-0.03$ counts $\approx -0.04$ mV is the **DC bias** (offset). You can subtract it.
+- The SD of $0.5$ counts $\approx 0.61$ mV is the **noise floor**.
+
+If you want to measure a signal that varies by $0.1$ mV, you cannot — it is buried in noise (much less than $\sigma$). If you want to measure a signal that varies by $5$ mV ($\approx 8\sigma$), you can resolve it easily — even single samples will show a swing of $\sim 8\sigma$, far above the noise.
+
+A standard trick: averaging $N$ independent samples reduces the noise SD by $\sqrt{N}$ (this is the CLT in action: $\sigma_{\bar{x}} = \sigma / \sqrt{N}$). Averaging $100$ samples reduces our noise floor by $\sqrt{100} = 10\times$, from $0.61$ mV to $0.061$ mV. Now we can resolve a $0.1$ mV signal.
+
+This SNR-improvement-by-averaging is one of the most important tricks in instrumentation.
+
+### Example 7 — p50/p95/p99 Latency in a Web Service
+
+A web service logs the response time of $100{,}000$ requests over an hour. Summary:
+
+| Metric | Value |
+|---|---|
+| mean | $85$ ms |
+| $p_{50}$ (median) | $60$ ms |
+| $p_{95}$ | $250$ ms |
+| $p_{99}$ | $1{,}200$ ms |
+| $p_{99.9}$ | $4{,}500$ ms |
+| max | $12{,}000$ ms |
+
+Interpretation:
+
+- $50\%$ of users see $\le 60$ ms — fast.
+- $95\%$ see $\le 250$ ms — still acceptable.
+- $1\%$ ($\sim 1{,}000$ users) see $\ge 1.2$ s — noticeable delay.
+- $0.1\%$ ($\sim 100$ users) see $\ge 4.5$ s — likely to bounce.
+
+Reporting only the mean ($85$ ms) hides the long tail. The distribution is heavily right-skewed (mean $>$ median), typical of latency distributions where occasional cache misses, GC pauses, network retries, or load spikes create slow requests.
+
+This is why production systems track $p_{95}$, $p_{99}$, and $p_{99.9}$ as the primary SLOs (service-level objectives), not mean latency.
+
+### Example 8 — Failure Mode: Bimodal Distribution Hidden by the Mean
+
+A customer-service team reports: *"Our average wait time is $5$ minutes."*
+
+Investigation: the wait-time distribution is bimodal.
+
+- $60\%$ of customers use self-service (FAQ chatbot). Wait time: $\sim 30$ seconds. Median $\sim 0.5$ min.
+- $40\%$ need a live agent. Wait time: $\sim 12$ minutes. Median $\sim 12$ min.
+
+Overall mean: $0.6 \cdot 0.5 + 0.4 \cdot 12 = 0.3 + 4.8 = 5.1$ min — matches the report.
+
+But *no individual customer experiences anything close to a 5-minute wait*. They experience either a fast bot or a long agent wait. Reporting the mean as "what a typical customer sees" is misleading.
+
+The right reporting: two cohorts, two summaries. Or a histogram. Or at minimum: median (would be $0.5$ min) and $p_{95}$ (would be near the agent-wait tail) alongside the mean.
+
+This is the kind of summary-statistics failure that costs companies real money — engineers optimize for a metric that doesn't reflect any real user's experience.
+
+### Example 9 — Anscombe's Quartet
+
+The four Anscombe datasets, each with 11 $(x, y)$ pairs:
+
+| | I | II | III | IV |
+|---|---|---|---|---|
+| $\bar{x}$ | 9.0 | 9.0 | 9.0 | 9.0 |
+| $s_x$ | 3.32 | 3.32 | 3.32 | 3.32 |
+| $\bar{y}$ | 7.5 | 7.5 | 7.5 | 7.5 |
+| $s_y$ | 2.03 | 2.03 | 2.03 | 2.03 |
+| $r$ | 0.816 | 0.816 | 0.816 | 0.816 |
+| best-fit line | $y = 3 + 0.5x$ | (same) | (same) | (same) |
+
+Yet:
+
+- **I** is a noisy but real linear relationship.
+- **II** is a perfect parabola — a linear model is the wrong family.
+- **III** is a perfect line through 10 of the 11 points, but an outlier pulls the regression line off.
+- **IV** has all $x = 8$ except one outlier at $x = 19$; the regression slope is entirely determined by that single point.
+
+A statistics package would *fit a line* to each and report identical $R^2$. Only a plot reveals what is actually happening.
+
+**Always plot the data.** This is the single most actionable engineering takeaway in the lesson.
+
+## Engineering Connections
+
+### Datasheet Noise Specs
+
+Sensor and amplifier datasheets quote noise as a standard deviation, almost always in some flavor of RMS:
+
+- "Input voltage noise density: $4.5$ nV/$\sqrt{\text{Hz}}$"
+- "Output noise: $1.2$ mV RMS over the $0.1$–$10$ Hz band"
+- "ENOB (effective number of bits): $14.2$" — implicitly an SNR / quantization-noise ratio
+
+The "RMS" value is essentially the standard deviation of the noise signal (treating it as zero-mean). You use it to predict how detectable a small signal will be.
+
+### Signal-to-Noise Ratio in Decibels
+
+For amplitudes (voltages, currents, sound pressures):
+
+$$\text{SNR}_{\text{dB}} = 20 \log_{10}\!\left( \frac{\sigma_{\text{signal}}}{\sigma_{\text{noise}}} \right)$$
+
+For powers:
+
+$$\text{SNR}_{\text{dB}} = 10 \log_{10}\!\left( \frac{P_{\text{signal}}}{P_{\text{noise}}} \right)$$
+
+Typical reference points: telephone-quality audio $\sim 30$ dB; CD audio $\sim 96$ dB; a well-designed lab DAQ $\sim 100$–$120$ dB.
+
+### Shot Noise in Image Sensors
+
+When $N$ photons land on a pixel, the *count* follows a Poisson distribution. For Poisson with mean $N$, $\sigma = \sqrt{N}$. So SNR $= N / \sqrt{N} = \sqrt{N}$.
+
+Doubling exposure doubles $N$ and multiplies SNR by $\sqrt{2} \approx 1.41$ ($\sim 3$ dB). Quadrupling exposure doubles SNR ($+6$ dB). To halve image noise, quadruple the light.
+
+This is why astronomers stack many short exposures rather than taking one very long one — but also why a *single* long exposure of $4 \times$ duration outperforms $4$ stacks of $1\times$ in read-noise-dominated regimes. Real instrumentation has multiple noise sources.
+
+### Latency in Distributed Systems
+
+Production-grade observability tools (Prometheus, Datadog, Honeycomb) emphasize *percentile* metrics, not mean latency. The standard dashboard shows $p_{50}$, $p_{95}$, $p_{99}$ over time. SLOs are stated as "$p_{99}$ latency $<$ 500 ms for 99.9% of 5-minute windows."
+
+The reason is the *tail-amplification problem*: if a user request requires hitting 10 backends in parallel and waits for the slowest, the user's effective latency is the *max* of 10 backend latencies — which is dominated by the slow tail. A backend with $p_{99} = 1$ s creates user-visible slow requests far more often than its mean suggests.
+
+### Six Sigma and Process Yield
+
+In manufacturing, with mean $\mu$ centered on the spec target and SD $\sigma$, the fraction of parts within tolerance $\mu \pm k\sigma$ is given by the normal CDF:
+
+- $\pm 3\sigma$: $99.73\%$ within spec — $2{,}700$ defects per million (DPM).
+- $\pm 6\sigma$: $99.9999998\%$ within spec — $0.002$ DPM in the ideal case.
+
+The "Six Sigma" methodology budgets for a $1.5\sigma$ long-term drift of the mean, which produces the famous $3.4$ DPM target at the $6\sigma$ level. Whatever the details, the lesson is: yield is determined by mean and SD, and a process improvement that *halves* $\sigma$ has enormous quality consequences.
+
+### ML Benchmark Reporting
+
+The currently-acceptable format for ML benchmark results:
+
+> "Our model achieves $84.2 \pm 0.3$% accuracy on ImageNet (mean $\pm$ SD over 5 seeds)."
+
+Without the SD, you cannot tell whether a $+0.2\%$ improvement over the prior state of the art is real or a coin flip. The Z-score of the improvement ($0.2 / 0.3 \approx 0.7$) tells you immediately: nope, within noise.
+
+A common (and bad) practice is to report only the *best* of $K$ seeds. This systematically overstates real progress — the maximum of $K$ samples from a noisy distribution has higher expected value than the mean. The community is slowly outgrowing this anti-pattern.
+
+### A/B Testing
+
+When the control group and the treatment group each have means $\bar{x}_1$ and $\bar{x}_2$ with standard errors $\text{SE}_1$ and $\text{SE}_2$, the **two-sample t-statistic** is
+
+$$t = \frac{\bar{x}_2 - \bar{x}_1}{\sqrt{\text{SE}_1^2 + \text{SE}_2^2}}.$$
+
+A $|t| > 2$ corresponds (very roughly) to "significant at $p < 0.05$" — meaning the observed difference would happen by chance less than $5\%$ of the time if there were no real effect. The Z-score and the t-statistic are the same idea applied to a difference of means.
+
+A/B-testing infrastructure at Google, Meta, Microsoft and similar runs thousands of these tests per day. Mean and standard error are the daily currency.
+
+## Practice Set
+
+Answers follow the final problem.
+
+### Warmups: Center
+
+1. Dataset: $\{4, 6, 6, 7, 9, 11\}$. Compute mean, median, mode.
+2. Dataset: $\{1, 2, 2, 3, 3, 3, 4, 5\}$. Compute mean, median, mode.
+3. Dataset: $\{10, 10, 10, 10, 10\}$. Compute mean, median, mode, range, SD.
+4. Dataset: $\{1, 100\}$. Compute mean, median, range. Which feels like the "typical" value here?
+
+### Spread and SD
+
+5. Compute the *sample* variance and standard deviation of $\{1, 2, 3, 4, 5\}$ by hand. Show every step.
+6. Compute the *population* variance and SD of the same dataset.
+7. The dataset $\{2, 4, 4, 4, 5, 5, 7, 9\}$ has (population) SD = $2$. What is its sample SD?
+8. Without computing, predict whether the following dataset has larger or smaller SD than $\{1, 2, 3, 4, 5\}$: dataset is $\{2, 2, 3, 4, 4\}$. Then check by computing.
+
+### Z-Scores and the 68-95-99.7 Rule
+
+9. SAT scores have $\mu = 1050$ and $\sigma = 200$ (approximate). What Z-score does a score of $1450$ correspond to? What percentile (approximately)?
+10. Adult male height in the US: $\mu \approx 175$ cm, $\sigma \approx 7$ cm. What fraction of adult males are taller than $189$ cm?
+11. A capacitor specification says: nominal $100$ µF, tolerance $\pm 10\%$ at $3\sigma$. What is $\sigma$ in µF? What fraction of parts will be within $\pm 5\%$?
+12. A drone GPS reports "3 m CEP." Roughly what is the $95\%$-confidence position radius?
+
+### Percentiles and Quartiles
+
+13. Sorted dataset $\{2, 4, 5, 6, 8, 9, 11, 13, 14, 17\}$. Compute the 5-number summary and IQR.
+14. From the 5-number summary $(2, 6, 9, 13, 25)$, sketch a rough box plot and identify any outliers under the $1.5 \cdot \text{IQR}$ rule.
+15. A latency distribution has $p_{50} = 80$ ms and $p_{99} = 800$ ms. If the distribution were normal with $p_{50} = 80$ ms and SD $\sigma$, what $\sigma$ would put the $p_{99}$ at $800$ ms? (Hint: $p_{99}$ corresponds to about $z = 2.33$.) Does the answer suggest the latency distribution *is* normal?
+
+### When to Use Mean vs Median
+
+16. For each of these summaries, would you report mean or median (or both, with a histogram)? Justify in one sentence.
+    a) Class test scores (out of 100).
+    b) Time to complete a marathon for a field of $20{,}000$ runners.
+    c) Household income in a US city.
+    d) Daily temperature in a city, over a year.
+    e) Number of bugs filed per week in a software project.
+    f) File sizes in a backup archive.
+
+### Error Spotting
+
+17. A friend says: "On average, my dataset has values around $10$, with standard deviation $-2$." What's wrong?
+18. A report says: "$60\%$ of users have above-average load times." Is this surprising? Why or why not?
+19. An ML paper reports: "We tried $20$ random seeds and report the best: $87.4\%$ accuracy." What is the problem with this reporting?
+20. A control engineer writes `np.std(data)` in Python and reports the result as "the sample standard deviation." What might be wrong?
+
+### Answers
+
+1. Mean $= 43/6 \approx 7.17$; median $= (6+7)/2 = 6.5$; mode $= 6$.
+2. Mean $= 23/8 = 2.875$; median $= (3+3)/2 = 3$; mode $= 3$.
+3. Mean = median = mode = $10$. Range $= 0$. SD $= 0$.
+4. Mean $= 50.5$; median $= 50.5$; range $= 99$. Neither "typical." The dataset is just too small and too spread to have a "typical" value.
+5. $\bar{x} = 3$. Deviations: $-2, -1, 0, 1, 2$. Squared: $4, 1, 0, 1, 4$, sum $= 10$. Sample variance $s^2 = 10/4 = 2.5$. Sample SD $s = \sqrt{2.5} \approx 1.581$.
+6. Population variance $= 10/5 = 2.0$. Population SD $= \sqrt{2} \approx 1.414$.
+7. We had $\sum (x_i - \bar{x})^2 = 32$, $n = 8$. Sample variance $= 32/7 \approx 4.571$. Sample SD $\approx \sqrt{4.571} \approx 2.138$.
+8. Smaller. The values are more clustered around the mean of $3$. Mean $=3$, deviations $-1, -1, 0, 1, 1$, squared $1,1,0,1,1$, sum $= 4$. Sample variance $= 4/4 = 1$. SD $= 1$, vs $\approx 1.58$ for the original.
+9. $z = (1450 - 1050)/200 = 2$. $\approx 97.7$th percentile (one-sided $1 - 2.5\% = 97.5\%$ from the 68-95-99.7 rule; more precisely $97.7\%$).
+10. $z = (189 - 175)/7 = 2$. Right tail: about $2.5\%$.
+11. $\pm 10\% = 3\sigma$, so $\sigma = 10\%/3 \approx 3.33\%$ or $3.33$ µF. $\pm 5\%$ corresponds to $z = 5/3.33 = 1.5$, which is about $86.6\%$ of parts within $\pm 5\%$ (from a normal table).
+12. CEP is the $50\%$-ile radius. For a Rayleigh distribution of position error, the $95\%$-ile radius is roughly $2.08 \times$ CEP, so about $6.2$ m.
+13. $\min = 2$, $\max = 17$. Median: $(8+9)/2 = 8.5$. $Q_1$: median of lower half $\{2,4,5,6,8\}$ = $5$. $Q_3$: median of upper half $\{9,11,13,14,17\}$ = $13$. (NumPy's linear-interpolation method gives slightly different values; this is the simple "tukey" method.) IQR $= 13 - 5 = 8$.
+14. IQR $= 13 - 6 = 7$. Upper fence: $13 + 1.5 \cdot 7 = 23.5$. The max value $25$ is just above the fence — flagged as an outlier. Lower fence: $6 - 10.5 = -4.5$. Min $= 2$ is fine.
+15. $\sigma = (800 - 80)/2.33 \approx 309$ ms. The median plus $2.33 \sigma$ at $309$ ms each gives $80 + 720 = 800$. But then $p_{99.9}$ should be near $80 + 3.09 \cdot 309 \approx 1{,}035$ ms — and real latency distributions have $p_{99.9}$ much higher than that. The distribution is not normal — it has a much heavier right tail.
+16. (a) Mean; class scores are usually roughly symmetric. (b) Both; median for "typical finisher," mean for total runner-hours; check histogram for the lead-pack vs main-pack bimodality. (c) Median; income is heavily right-skewed. (d) Both; daily temperature is roughly symmetric within a season but multimodal (seasons) over a year. (e) Probably median plus histogram; bug rates often have a Poisson-ish right tail. (f) Median plus histogram; file sizes are wildly right-skewed (a few huge backups + many small).
+17. SD is the square root of a sum of squares — it cannot be negative. SD $\ge 0$ always.
+18. Not surprising. If load times are right-skewed (long tail), the mean is pulled up by the slow tail, and *most* users (more than $50\%$) experience below-mean load times. Equivalently: median $<$ mean, so most users are at or below the median, which is below the mean.
+19. The maximum of $20$ samples from a noisy distribution is biased upward. The reported number overstates real model quality. Standard practice: report mean and SD over all seeds.
+20. NumPy's `np.std` defaults to `ddof=0` — population SD (divides by $n$), not sample SD. To get the sample SD use `np.std(data, ddof=1)`. The discrepancy is small for large $n$ but real, and gets you into trouble for small $n$.
+
+## Build Task
+
+Write `summary_stats.py`. Implement, *from scratch* (no `statistics` module, no `numpy` for the core math), the function:
+
+```python
+def summary_stats(data):
+    """Return a dict of summary statistics for a 1D list of numbers."""
+    ...
+```
+
+The returned dict must contain at minimum:
+
+- `n`, `min`, `max`, `range`
+- `mean`, `median`, `mode`
+- `variance` (sample, $n-1$), `std` (sample, $n-1$)
+- `q1`, `q3`, `iqr`
+- `p5`, `p95`, `p99`
+
+Cross-check every value against `numpy` / `scipy.stats` on a synthetic dataset. Tolerate small float differences; document any percentile-method discrepancies.
+
+Then apply your function to **two** datasets:
+
+1. **Synthetic.** Draw $n = 10{,}000$ samples from $\mathcal{N}(\mu = 0, \sigma = 1)$ using `numpy.random.default_rng(0).standard_normal(10_000)`. Confirm $\bar{x} \approx 0$, $s \approx 1$, $p_{2.5} \approx -1.96$, $p_{97.5} \approx +1.96$, and roughly $68\%$ within $\pm 1$.
+
+2. **Engineering.** Either:
+   - Download a real accelerometer or temperature dataset (UCI ML Repository has many free options), or
+   - Simulate sensor noise as `signal + np.random.normal(0, noise_sd, n)` where `signal` is a slow ramp or sinusoid you know exactly. Recover the noise SD from the residuals.
+
+Plot a histogram with the mean and median marked as vertical lines, plus shaded regions for $\pm 1\sigma$ and $\pm 2\sigma$. The plot is what you commit as the artifact for proof of completion.
+
+Stretch goals:
+
+- Add a `compare_with_normal(data)` function that overlays a fitted normal curve on the histogram and reports the fraction of points within $\pm k\sigma$ for $k \in \{1, 2, 3\}$, comparing to the expected $68 / 95 / 99.7$.
+- Implement Anscombe's quartet as a built-in demo: hardcode the four datasets, compute summary stats for each $(x, y)$ pair, confirm they're identical, then produce four scatterplots side by side.
+- Add **bootstrap confidence intervals** for the mean: resample your data with replacement $1{,}000$ times, compute the mean of each bootstrap sample, and report the $2.5$ and $97.5$ percentiles of those means. This is a beautiful preview of nonparametric statistics.
+
+## Quiz
+
+1. Why do we divide by $n - 1$ instead of $n$ for the sample variance? Answer in your own words, in two sentences.
+2. When is the median a better summary of "typical" than the mean? Give one engineering example.
+3. State the $68$-$95$-$99.7$ rule precisely.
+4. A web service has $p_{99}$ latency $= 2$ s. What does this number mean operationally? Why does it matter more than mean latency?
+5. Why does Anscombe's quartet matter for an engineer who runs `np.mean`, `np.std`, and `np.corrcoef` on a new dataset?
+6. The Central Limit Theorem: state it, in one sentence, in your own words. Why is it the *explanation* for why so many real-world distributions look normal?
+7. You compute the SD of a 1000-sample dataset and get $s = 0$. What does that tell you about the data?
+8. Two engineers disagree on the SD of the same dataset. One reports $1.20$; the other reports $1.21$. Without seeing their code, what is the most likely explanation?
+
+### Quiz Answers
+
+1. Because $\bar{x}$ already "spends" one degree of freedom from the sample to estimate $\mu$; the remaining sum of squared deviations is too small by a factor of $(n-1)/n$. Dividing by $n - 1$ instead of $n$ exactly cancels that bias.
+2. When the distribution is right-skewed and the mean is dragged up by a heavy tail — e.g., HTTP request latencies, income data, file sizes. The median represents the typical user / observation; the mean is dominated by the tail.
+3. For any normal distribution, approximately $68\%$ of observations lie within $\pm 1\sigma$ of the mean, $95\%$ within $\pm 2\sigma$, and $99.7\%$ within $\pm 3\sigma$.
+4. "$99\%$ of requests complete in $\le 2$ s, and $1\%$ take longer." It matters more than the mean because a user-visible page often fans out to many backend requests, so the tail of backend latencies dominates the user experience.
+5. Summary statistics can be identical for radically different datasets. Without plotting, you can't distinguish "a noisy linear trend" from "a clean parabola" from "a constant with one outlier." Plot before you fit.
+6. Sums and averages of many independent random variables tend toward a normal distribution. Many real-world noisy quantities are sums of many small effects (genetic, environmental, measurement), so they end up normal whatever the underlying micro-mechanisms.
+7. All values in the dataset are identical (no variation at all). Either a real constant signal, or a broken / saturated sensor, or a copy-paste bug.
+8. Different conventions for sample vs population SD ($n$ vs $n-1$). For $n = 1000$, the ratio $\sqrt{1000/999}$ produces a $\sim 0.05\%$ change in SD — about the size of the discrepancy. Always specify which estimator you mean.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Recite the $68$-$95$-$99.7$ rule from memory without thinking.
+- Compute sample mean and sample SD for any small dataset *by hand*.
+- Distinguish $\sigma$ (population) from $s$ (sample) and $\mu$ from $\bar{x}$ on sight.
+- Read a sensor datasheet and translate "$1.2$ mV RMS noise" into a noise floor for your application.
+- Read a latency dashboard ($p_{50}$, $p_{95}$, $p_{99}$) and explain to a colleague why those metrics, not mean, drive user experience.
+- Run your `summary_stats.py` and produce annotated histograms for both a synthetic normal dataset and a real engineering dataset.
+- Look at a one-line summary ("average X is Y") and instinctively ask: *what's the spread? what does the histogram look like? is the distribution unimodal? are there outliers?*
+
+Commit the `summary_stats.py` script and the two annotated histograms (synthetic and real-engineering) to the curriculum repo as the proof artifact.
+
+## Sources and Further Study
+
+- **F. J. Anscombe, "Graphs in Statistical Analysis,"** *The American Statistician* 27(1), 1973. The original Anscombe's quartet paper. Short, lucid, and disturbingly relevant 50 years later.
+- **John W. Tukey, *Exploratory Data Analysis*** (Addison-Wesley, 1977). The founding text of EDA — box plots, stem-and-leaf, rank-based methods, robustness. Tukey is the source of half the visualization conventions in use today.
+- **Morris H. DeGroot and Mark J. Schervish, *Probability and Statistics*** (Pearson, 4th ed). A widely-adopted upper-undergraduate statistics textbook.
+- **George Casella and Roger L. Berger, *Statistical Inference*** (Duxbury, 2nd ed). The standard graduate-level reference. Worth knowing exists; not your starting point.
+- **Larry Wasserman, *All of Statistics*** (Springer, 2004). Subtitle: "A Concise Course in Statistical Inference." Aimed at math/CS/engineering grad students who want statistics fast and rigorous. Strongly recommended for the Physical AI Lab learner — a great bridge from this lesson to the full statistics module.
+- **MIT 18.05, *Introduction to Probability and Statistics*** (OCW). Free; covers all the foundations at MIT undergraduate depth.
+- **Joe Blitzstein, Harvard Stat 110.** Lectures on YouTube. Outstanding probability foundations; pair with a more applied book for statistics.
+- **The seaborn and matplotlib galleries.** Type "seaborn examples" or "matplotlib gallery" — both have hundreds of annotated example plots, including histograms, KDEs, box plots, violin plots, and pair plots. The *Datasaurus Dozen* repo (Matejka & Fitzmaurice) is also worth a look.
+- **The Pandas documentation on `.describe()`** — the one-line summary statistics function you will use in every notebook for the next decade.
+
+## Next Lesson Bridge
+
+**This lesson completes the Math Re-entry Toolkit.**
+
+Twenty lessons ago, the goal was modest: rebuild the arithmetic foundation needed for technical work, from the ground up, at MIT-undergraduate depth, with no apology for going slowly. Twenty lessons in, the toolkit is built. You have, from scratch:
+
+- Place value and the decimal system (lessons 1–2).
+- Addition, subtraction, multiplication, division — including negative numbers (lessons 3–6).
+- Fractions, decimals, percents, ratios (lessons 7–11).
+- Order of operations, integer exponents, roots and radicals (lessons 12–14).
+- Scientific notation, significant figures, Fermi estimation (lessons 15–17).
+- Reading and producing charts and tables (lesson 18).
+- Basic probability — outcomes, distributions, expected value (lesson 19).
+- Basic statistics — center, spread, percentiles, the normal distribution, and the $68$-$95$-$99.7$ rule (this lesson).
+
+That is the floor of MIT undergraduate technical literacy, rebuilt from scratch. Every formula you will meet in calculus, physics, signals, control systems, optimization, linear algebra, probability theory, mathematical statistics, or machine learning is *written in this notation* — fractions, exponents, scientific notation, percentages, expected values, sample means, standard deviations. With the toolkit in place, the next layer is no longer translation — it's just new ideas.
+
+Take a moment to register the milestone. This is the slowest, most foundational, most patient module in the entire Physical AI Lab curriculum. It exists because hand-waving past the basics is the single biggest reason engineers and researchers later hit invisible walls in advanced courses. With this module done, those walls are out of your way.
+
+**The next module is Engineering Algebra & Geometry.** It builds on this toolkit with symbolic algebra (manipulating expressions, solving equations, working with functions), Euclidean and analytic geometry (triangles, circles, conics, coordinates), trigonometry (angles, the unit circle, the sine and cosine functions, the Pythagorean identities), and a brief introduction to vectors in the plane. The first lesson of that module — **solving-equations-from-zero** — already exists in the curriculum; it picks up where this module leaves off, treating an equation as a *constraint* that you can manipulate to extract an unknown, at the same patient depth as everything you've just done.
+
+Beyond Engineering Algebra & Geometry come pre-calculus, single-variable calculus, multivariable calculus, linear algebra, differential equations, real analysis, mathematical statistics, optimization, and the full physical-AI sequence (mechanics, electromagnetism, signal processing, control, computer vision, reinforcement learning, robotics). Each one of those modules sits on the foundation you just finished building.
+
+Congratulations on finishing the Math Re-entry Toolkit. The hardest, slowest part of the curriculum is now behind you. The fun starts next.
