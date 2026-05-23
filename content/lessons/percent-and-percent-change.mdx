@@ -1,0 +1,731 @@
+# Percent and Percent Change
+
+## Re-entry Promise
+
+A percent is not a new kind of number. It is a fraction with denominator 100, written with the special symbol `%`. That is the entire definition. Once you internalize that, everything you have learned about fractions and decimals transfers immediately to percents.
+
+This lesson assumes you can convert between fractions and decimals (lesson 9) and that you remember the basic fraction operations from lessons 6 and 7. It does not assume you remember the formulas for percent change, simple interest, or tolerance — we will derive all of them.
+
+The reason percents get their own lesson — and a careful one — is that they are the *most consistently mis-used* mathematical idea in engineering and business communication. Almost every common percent error you have ever seen in the news, in a sloppy data sheet, or in a confused investor pitch is a real arithmetic mistake, not a presentation choice. Things like "the stock fell 20% then rose 20%, so it's back where it started" are wrong. Once you finish this lesson you will see them immediately, and your numerical writing will become noticeably more credible.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- State the definition of a percent and convert seamlessly between percent ↔ fraction ↔ decimal.
+- Compute "$X$% of $N$" as a multiplication.
+- Solve the three classes of percent problems: (a) given the percent and whole, find the part; (b) given the part and whole, find the percent; (c) given the part and percent, find the whole.
+- Compute **percent change** (increase and decrease) correctly: $\text{change \%} = \frac{\text{new} - \text{old}}{\text{old}} \cdot 100\%$.
+- Apply consecutive percent changes correctly by multiplication of factors (not addition).
+- Use **multiplicative factors** ($1 + r$ for an $r$% increase, $1 - r$ for a decrease) for fast arithmetic.
+- Distinguish **percent change** from **percentage-point change** (and never confuse them).
+- Apply percent reasoning to engineering tolerance, sensor accuracy specs, signal-to-noise ratios, battery state-of-charge, efficiency, and growth rates.
+- Identify and explain the most common percent fallacies, including the asymmetric-percent-change error, the base-rate confusion, and the percent-of-a-percent compounding mistake.
+
+## Why It Matters
+
+Percents are the universal language of comparison in business, engineering, and science. A few places they show up:
+
+1. **Sensor accuracy specifications.** A datasheet says "accuracy ±2% of full scale." A pressure sensor with 100 kPa full scale has ±2 kPa error band — meaningful when you are trying to detect a 1 kPa pressure change.
+
+2. **Battery state of charge.** "Battery at 47%." This is a fraction $\frac{47}{100}$ of the usable charge range. The drone flight controller turns this into expected remaining flight time using ratio arithmetic.
+
+3. **Component tolerance.** A "1% resistor" actually has resistance between $0.99 R$ and $1.01 R$. A 10 kΩ 1% resistor is anywhere from 9.9 kΩ to 10.1 kΩ. Cascading tolerances through a circuit is a percent-change calculation.
+
+4. **Power efficiency.** A motor is "85% efficient" if 85% of the input electrical power becomes mechanical output, and 15% becomes heat. Knowing this lets you size cooling and battery.
+
+5. **Signal-to-noise and gain.** "20 dB SNR" is a logarithmic ratio, but the underlying calculation is a percent / power ratio. Same for amplifier gain, antenna efficiency, etc.
+
+6. **Growth and decay rates.** "Population grows 3% per year" is a percent multiplier applied repeatedly. The same arithmetic governs compound interest, half-life decay, learning curves, and stock returns.
+
+7. **ML and statistics.** Accuracy, precision, recall, F1 score — all reported as percentages. A 95% confidence interval is a probability of 0.95.
+
+8. **Industrial process control.** A factory operates at "75% capacity." A delivery is "92% on time." A web service has "99.9% uptime" (= 0.1% downtime = 8.76 hours per year). Production engineering lives in percent.
+
+Most people *think* they understand percents and *do not*. The most common errors are not algebraic — they are conceptual misuses of percent change. We will fix all of them in this lesson.
+
+## Why This Idea Exists
+
+The word "percent" comes from Latin *per centum*, "by the hundred." The idea of expressing fractions out of 100 dates to ancient Rome, where taxes and tributes were often levied as fixed numbers per 100 units of grain or coin. The symbol `%` evolved slowly from medieval Italian commercial abbreviations of *per cento*.
+
+Percents took off in medieval European commerce because they are *cognitively easier* than fractions for comparison. Comparing the fractions $\frac{17}{40}$ and $\frac{19}{50}$ requires either common denominator (LCD 200: $\frac{85}{200}$ vs $\frac{76}{200}$, so $\frac{17}{40}$ wins) or cross-multiplication. But as percents: $\frac{17}{40} = 42.5\%$ vs $\frac{19}{50} = 38\%$. The percent form is faster to read and more comparable across contexts.
+
+In the modern era, percents became the universal display format for ratios in commerce, science, and engineering — but the underlying arithmetic is just the fraction arithmetic from lessons 6-9. The "trick" of percents is that everyone shares the implicit denominator 100, so the numerator alone is enough to communicate the ratio.
+
+The percent-change formula has a separate history. It emerged from accounting and was formalized in the 19th century. The fact that consecutive percent changes are *multiplicative* — not additive — is a recurring source of confusion that has persisted for centuries. Even economists publishing in 2026 still get this wrong on television. The math is simple; the cultural muscle memory is hard.
+
+## Plain-Language Intuition
+
+A percent is just a fraction over 100, written with the `%` symbol.
+
+$$25\% = \frac{25}{100} = \frac{1}{4} = 0.25$$
+
+To compute "$X$% of $N$", multiply: $\frac{X}{100} \cdot N$.
+
+To compute the percent change from old value $A$ to new value $B$:
+
+$$\text{change \%} = \frac{B - A}{A} \cdot 100\%$$
+
+If $B > A$, this is an increase (positive percent). If $B < A$, a decrease (negative percent). The *denominator* in this formula is the *old* value — the original baseline — not the new value. This is the most common source of confusion.
+
+To **apply** a percent change, multiply by $1 + r$ (where $r$ is the change as a decimal). A 20% increase multiplies by $1.20$. A 20% decrease multiplies by $0.80$.
+
+Consecutive percent changes multiply: a 20% increase followed by a 20% decrease is $1.20 \cdot 0.80 = 0.96$, a *net 4% decrease*, not a net 0% change. This single fact catches more people than any other in elementary numeracy.
+
+## Core Theory
+
+### Definition
+
+$$X\% = \frac{X}{100}$$
+
+That is the entire definition. Everything else is a consequence.
+
+**Examples.**
+
+- $50\% = \frac{50}{100} = \frac{1}{2} = 0.5$
+- $100\% = \frac{100}{100} = 1$
+- $200\% = \frac{200}{100} = 2$ (yes, a percent can be greater than 100)
+- $0.5\% = \frac{0.5}{100} = \frac{1}{200} = 0.005$
+- $-10\% = \frac{-10}{100} = -0.1$ (negative percents are valid; they denote a decrease)
+
+### Conversion Cheatsheet
+
+| Percent | Fraction (lowest terms) | Decimal |
+|---|---|---|
+| 1% | 1/100 | 0.01 |
+| 5% | 1/20 | 0.05 |
+| 10% | 1/10 | 0.1 |
+| 12.5% | 1/8 | 0.125 |
+| 20% | 1/5 | 0.2 |
+| 25% | 1/4 | 0.25 |
+| 33.3̄% | 1/3 | 0.333... |
+| 50% | 1/2 | 0.5 |
+| 66.6̄% | 2/3 | 0.666... |
+| 75% | 3/4 | 0.75 |
+| 100% | 1/1 | 1 |
+| 150% | 3/2 | 1.5 |
+| 200% | 2/1 | 2 |
+
+Memorize the common ones (the multiples of 5 up to 50, plus the eighths and thirds). Conversion is mechanical:
+
+- Percent → decimal: divide by 100 (shift decimal point 2 places left).
+- Decimal → percent: multiply by 100 (shift 2 places right).
+- Percent → fraction: write as $\frac{X}{100}$, simplify.
+- Fraction → percent: convert to decimal, then to percent.
+
+### "$X$% of $N$"
+
+The word "of" in percent problems means **multiply**.
+
+$$X\% \text{ of } N = \frac{X}{100} \cdot N$$
+
+**Examples.**
+
+- 20% of 80: $\frac{20}{100} \cdot 80 = 0.2 \cdot 80 = 16$.
+- 7% sales tax on \$45: $0.07 \cdot 45 = 3.15$. Total: $45 + 3.15 = 48.15$.
+- 15% tip on a \$32 check: $0.15 \cdot 32 = 4.80$. Round up to \$5 for cash; total \$37.
+
+### The Three Classes of Percent Problems
+
+Every percent problem fits one of three templates:
+
+**Class 1: "What is $X$% of $N$?"** (Find the part, given the percent and the whole.)
+
+Compute $\text{part} = \frac{X}{100} \cdot N$.
+
+Example: 18% of 250 = $0.18 \cdot 250 = 45$.
+
+**Class 2: "$P$ is what percent of $N$?"** (Find the percent, given the part and the whole.)
+
+Compute $\text{percent} = \frac{P}{N} \cdot 100\%$.
+
+Example: "32 is what percent of 80?" Answer: $\frac{32}{80} \cdot 100 = 40\%$.
+
+**Class 3: "$P$ is $X$% of what?"** (Find the whole, given the part and the percent.)
+
+Compute $\text{whole} = \frac{P}{X / 100} = \frac{100 \cdot P}{X}$.
+
+Example: "30 is 20% of what?" Answer: $\frac{100 \cdot 30}{20} = 150$.
+
+These three templates account for the great majority of practical percent calculations. If you can recognize which template a word problem fits, you can solve it.
+
+### Percent Change
+
+**Definition.** The percent change from old value $A$ to new value $B$ is:
+
+$$\text{change \%} = \frac{B - A}{A} \cdot 100\%$$
+
+If positive, this is an **increase**; if negative, a **decrease**.
+
+**Examples.**
+
+- Stock price was \$80, now \$92. Change: $\frac{92 - 80}{80} = \frac{12}{80} = 0.15 = 15\%$ increase.
+- Battery was at 80%, now at 60%. Change: $\frac{60 - 80}{80} = -\frac{20}{80} = -0.25 = -25\%$ (a 25% decrease, not 20%).
+- Population grew from 12,000 to 15,000. Change: $\frac{15000 - 12000}{12000} = \frac{3000}{12000} = 25\%$ increase.
+
+Note that "battery from 80% to 60%" looks like a 20-*point* drop, but the *percent* change is 25% (because 20 is 25% of 80). This is the percent-vs-percentage-point distinction.
+
+### Percent-Point vs Percent
+
+When the underlying quantity is *itself* expressed as a percentage (battery %, interest rate, election poll, etc.), changes can be expressed in two different units:
+
+**Percentage points.** Absolute difference. "Interest rate rose from 5% to 7%" = a rise of *2 percentage points*.
+
+**Percent.** Relative change. "Interest rate rose from 5% to 7%" is a $\frac{7 - 5}{5} = 40\%$ *increase in the rate*.
+
+Both are valid; they answer different questions. Confusing them is responsible for endless misunderstanding in news, finance, and engineering.
+
+**Convention to remember.** A "10% rise" is ambiguous if the underlying quantity is a percentage. Be explicit: "10 percentage points" vs "10% (relatively)". When you read a sloppy headline, ask which one is meant.
+
+### Multiplicative Factors
+
+A clean way to apply a percent change:
+
+- An $r$% **increase** multiplies the value by $(1 + r/100)$.
+- An $r$% **decrease** multiplies the value by $(1 - r/100)$.
+
+**Examples.**
+
+- 20% increase: multiply by $1.20$.
+- 5% decrease: multiply by $0.95$.
+- 100% increase (doubling): multiply by $2.00$.
+
+This formulation makes consecutive changes obvious.
+
+### Consecutive Percent Changes
+
+If you apply consecutive percent changes, you **multiply the factors**, you do not **add the percents**.
+
+**Example.** Stock rises 20%, then falls 20%. After the rise: $1.20 \cdot A$. After the fall: $0.80 \cdot 1.20 \cdot A = 0.96 \cdot A$. Net change: $-4\%$, not $0\%$.
+
+This is one of the most-violated rules in elementary math. The instinct that "+20% and −20% cancel" feels right but is wrong because each change is applied to a *different base*.
+
+**Example 2.** A salary goes up 5% one year and 5% the next. Total raise: $1.05 \cdot 1.05 = 1.1025$, or $10.25\%$ — not $10\%$.
+
+**Example 3.** A drone battery loses 2% capacity every 100 charge cycles. After 1000 cycles: $0.98^{10} \approx 0.817$, or 18.3% capacity loss — not 20%.
+
+**General formula.** $n$ changes with factors $f_1, f_2, \ldots, f_n$ give net factor $\prod_i f_i$, net change $\prod_i f_i - 1$ (as a fraction of original).
+
+### Inverting a Percent Change
+
+If a value increases by $r$%, the change to *undo* it (back to the original) is *not* a decrease by $r$%. It is a decrease by $\frac{r}{1 + r/100} \cdot 100$% = $\frac{r}{100 + r} \cdot 100$%.
+
+**Example.** Up 20% to undo: down by $\frac{20}{120} \cdot 100 \approx 16.67\%$, not 20%.
+
+Same asymmetry as the consecutive-change example: the bases are different.
+
+### Percent of a Percent (Most Common Trap)
+
+"5% of 10% is 0.5%" — this is *not* 15%, not 5%, not 50%. It is $0.05 \cdot 0.10 = 0.005 = 0.5\%$.
+
+This trap appears constantly:
+
+- "Half the residents are voters and 30% of voters support measure X." How many residents support X? $0.50 \cdot 0.30 = 0.15 = 15\%$ of residents.
+- "10% of items are defective. 5% of defective items are critical. What fraction of all items are critically defective?" $0.10 \cdot 0.05 = 0.005 = 0.5\%$.
+
+Percent of percent is multiplication of fractions, not addition. Always.
+
+### Tolerance and Error Bands
+
+A component with $\pm r$% tolerance has actual value in the range $[N(1 - r/100), N(1 + r/100)]$.
+
+**Example.** A "10 kΩ ±5%" resistor is in the range $[9.5 \text{ kΩ}, 10.5 \text{ kΩ}]$.
+
+**Cascading tolerance.** If you put a 10 kΩ ±5% in series with a 4.7 kΩ ±5%, the total nominal is 14.7 kΩ with worst-case ±5% combined (because both could swing the same direction). For tighter analysis you use **root-sum-square** (RSS) combination, which is the topic of error-propagation in lab work.
+
+### Compound Growth
+
+A value grows by $r$% per period, compounded over $n$ periods, ends at:
+
+$$\text{final} = \text{initial} \cdot (1 + r/100)^n$$
+
+**Example.** \$1000 invested at 5% annual interest, compounded annually, after 10 years: $1000 \cdot 1.05^{10} \approx 1000 \cdot 1.6289 \approx 1628.89$, or \$1,628.89.
+
+This is the same calculation as drone battery aging, exponential population growth, or radioactive decay (with a negative growth rate). It will get its own lesson in series and sequences, but the percent algebra here is the foundation.
+
+## Visual or Mental Model
+
+### Model 1: 100-Grid
+
+Picture a 10 × 10 grid of squares — 100 cells total. Each cell is 1%. To visualize $X$%, shade $X$ cells.
+
+- 25%: shade a 5 × 5 corner.
+- 50%: shade half.
+- 75%: shade three 5×5 corners or 3 columns of 25.
+- 1%: shade a single cell.
+
+This is excellent for teaching kids and remains useful for sanity-checking percents you don't trust.
+
+### Model 2: Multiplier Number Line
+
+Place the multiplier $1.00$ at the center. Increases push you right ($> 1$), decreases push you left ($< 1$).
+
+```
+   0.5    0.75    1.00    1.25    1.5    2.0
+   -50%   -25%    0%      +25%   +50%   +100%
+```
+
+A 10% increase = multiplier 1.10 (small step right). A 50% decrease = multiplier 0.50 (large step left). Consecutive changes compose by multiplication of multipliers — same as composing scalings.
+
+### Model 3: Bar Chart Comparison
+
+For "Class 2" problems ($P$ is what percent of $N$?), picture two side-by-side bars: $P$ tall and $N$ tall. The percent is the height ratio expressed out of 100. This is what every Excel chart shows.
+
+### Model 4: Discount Stack
+
+For consecutive percent changes, picture a stack of multipliers: $1.20$ on top, $0.80$ underneath, etc. The final value is the original times the product of the multipliers. The visual cue is "stacked discounts don't add — they multiply."
+
+## Worked Examples
+
+### Example 1 — Basic Percent of a Number
+
+What is 35% of 240?
+
+$0.35 \cdot 240 = 84$.
+
+### Example 2 — Sales Tax
+
+A laptop costs \$1,299 before tax. The local sales tax is 8.5%. What is the total?
+
+Tax: $0.085 \cdot 1299 = 110.415$. Round to \$110.42. Total: \$1,409.42.
+
+Faster: $1299 \cdot 1.085 = 1409.415$, or about \$1,409.42.
+
+### Example 3 — Percent Change
+
+A drone's flight time was 22 minutes with the old battery, 28 minutes with the new battery. Percent improvement?
+
+$\frac{28 - 22}{22} \cdot 100 = \frac{6}{22} \cdot 100 \approx 27.27\%$ improvement.
+
+### Example 4 — Percent Loss
+
+A solar panel produces 280 W in summer and 196 W in winter. Percent reduction in winter?
+
+$\frac{196 - 280}{280} \cdot 100 = -\frac{84}{280} \cdot 100 = -30\%$.
+
+A 30% reduction in winter.
+
+### Example 5 — Three Classes Combined
+
+"60 is what percent of 240?" → Class 2. $\frac{60}{240} = 0.25 = 25\%$.
+
+"60 is 25% of what?" → Class 3. $\frac{60}{0.25} = 240$.
+
+"What is 25% of 240?" → Class 1. $0.25 \cdot 240 = 60$.
+
+All three are facets of the same relationship $0.25 \cdot 240 = 60$.
+
+### Example 6 — Cascading Percent Changes
+
+A company's stock rises 10%, then 10% again, then falls 15%. Net percent change?
+
+Multipliers: $1.10, 1.10, 0.85$. Product: $1.10 \cdot 1.10 = 1.21$; $1.21 \cdot 0.85 = 1.0285$. Net change: $+2.85\%$.
+
+Not the same as the additive guess of $+10 + 10 - 15 = +5\%$.
+
+### Example 7 — Salary Raise Math
+
+You make \$50,000. You get a 5% raise. Two years later, you get an 8% raise. What is your salary?
+
+After first raise: $50000 \cdot 1.05 = 52500$. After second: $52500 \cdot 1.08 = 56700$.
+
+Total percent raise: $\frac{56700 - 50000}{50000} = 13.4\%$, not 13%.
+
+### Example 8 — Compound Interest
+
+\$10,000 at 6% annual interest, compounded annually for 20 years. Final balance?
+
+$10000 \cdot 1.06^{20}$.
+
+$1.06^{20}$: 
+$1.06^{2} = 1.1236$. $1.06^{4} = 1.2625$. $1.06^{8} = 1.5938$. $1.06^{16} = 2.5404$. $1.06^{20} = 1.06^{16} \cdot 1.06^{4} = 2.5404 \cdot 1.2625 \approx 3.2071$.
+
+Final: approximately \$32,071.
+
+(Compound interest more than triples the principal over 20 years at 6%.)
+
+### Example 9 — Battery Capacity Aging
+
+A lithium battery loses 1% capacity per 50 charge cycles. After 500 cycles, what's the capacity?
+
+Number of 50-cycle periods: 10. Capacity factor: $0.99^{10} \approx 0.9044$.
+
+So about 90.4% of original capacity remains. (Approximately 10% loss, not 1%·10 = 10% — the small base makes this close.)
+
+For 5000 cycles: $0.99^{100} \approx 0.3660$, or about 36.6% remaining. (Now very different from 100% loss that linear thinking would predict.)
+
+### Example 10 — Sensor Accuracy Spec
+
+A pressure sensor specifies "±0.25% of full scale" with full scale 200 kPa. What's the error band?
+
+$0.0025 \cdot 200 = 0.5$ kPa. So any reading is accurate to ±0.5 kPa.
+
+If the sensor reads 150 kPa, the true pressure is in $[149.5, 150.5]$ kPa.
+
+### Example 11 — Percentage Points
+
+A bank's loan rate rises from 4% to 5%. Express the change in both ways:
+
+- Percentage points: $5 - 4 = 1$ percentage point.
+- Percent (relative): $\frac{5 - 4}{4} \cdot 100 = 25\%$ increase.
+
+A news headline saying "loan rates rise 25%" is ambiguous — it could mean the same thing (relative) or could mean rates went from 4% to 29% (additive). Always check.
+
+### Example 12 — Discount Then Tax
+
+A jacket is listed at \$200, discounted 30%, then 8% sales tax is added. What is the total?
+
+After discount: $200 \cdot 0.70 = 140$. After tax: $140 \cdot 1.08 = 151.20$.
+
+Total: \$151.20.
+
+Alternative order (tax first, then discount): $200 \cdot 1.08 \cdot 0.70 = 151.20$. Same answer, because multiplication is commutative. The order of applying percent factors doesn't matter — only their product.
+
+### Example 13 — Failure Mode: "Lost and Then Recovered"
+
+A stock falls 50% then rises 50%. Naive thinking: net 0%. Correct: $0.50 \cdot 1.50 = 0.75$, a net 25% loss.
+
+To recover a 50% loss requires a $\frac{50}{50} = 100\%$ gain, not a 50% gain. (Down to 50, need to get back to 100 — that's 100% of the current value.)
+
+### Example 14 — Failure Mode: Percent vs Percentage Point
+
+A poll says "the candidate's support rose from 40% to 45%." This is *5 percentage points*, or a $\frac{5}{40} = 12.5\%$ relative gain. Saying "support rose 5%" is misleading both ways: too small (if relative is meant) and too big (if absolute is meant).
+
+### Example 15 — Failure Mode: Wrong Base
+
+Sales were \$100K last year, \$130K this year. The CFO says, "we're up 30 percent." A new analyst plans for $30\% \cdot 130\text{K} = 39\text{K}$ growth next year (using *this* year's higher base). The CFO says, "no, that's $30\% \cdot 100\text{K} = 30\text{K}$ growth in absolute terms over last year." The base matters.
+
+### Example 16 — Failure Mode: Adding Percents Across Different Bases
+
+A drone consumes 30% of battery on takeoff and 40% on hover. Naive: 70% used. But if "30% of battery" measures from full charge and "40% on hover" measures from the post-takeoff charge, the actual remaining is $1.0 \cdot 0.7 \cdot 0.6 = 0.42$, or 42% remaining, meaning 58% used. The percents combine multiplicatively *only when each refers to its current state*.
+
+To add: the percents must refer to the *same base*. If both 30% and 40% are fractions of full charge, then yes, 70% is correct usage. Read the spec carefully.
+
+## Engineering Connections
+
+### Sensor Data Sheets
+
+Every sensor data sheet has a "Accuracy" or "Total Error" specification. Examples:
+
+- Pressure sensor: ±2.5% of full scale at 25 °C.
+- Temperature IC: ±0.5 °C absolute, or ±0.1% per °C drift.
+- ADC: ±0.5 LSB integral nonlinearity, or 0.5% of range.
+
+These are real engineering numbers. A 12-bit ADC with 0.5 LSB INL has effective resolution about $12 - \log_2(0.5 \cdot 2) \approx 11$ bits, i.e., $\frac{1}{2048}$ of range or about 0.05% precision. This is what justifies which decimal places you report.
+
+### Component Tolerance Stacking
+
+A voltage divider with $R_1 = 9$ kΩ ±1% and $R_2 = 1$ kΩ ±1%:
+
+Worst-case output: numerator at max, denominator at min ratio. $V_\text{out}/V_\text{in} = \frac{R_2}{R_1 + R_2}$. Min: $R_2 = 0.99, R_1 = 9.09$, ratio $\frac{0.99}{10.08} \approx 0.0982$. Max: $R_2 = 1.01, R_1 = 8.91$, ratio $\frac{1.01}{9.92} \approx 0.1018$.
+
+So the divider ratio is $0.100 \pm 1.8\%$ — the tolerances stacked slightly worse than either alone.
+
+For careful work, use RSS (root-sum-square): combined tolerance $\approx \sqrt{(1\%)^2 + (1\%)^2} = \sqrt{2}\% \approx 1.4\%$. RSS assumes independent random tolerances; worst-case assumes the worst possible combination.
+
+### Motor Efficiency
+
+A brushless motor is "92% efficient" at its peak operating point. Input 100 W of electrical power, get 92 W of mechanical power, 8 W of heat.
+
+But efficiency varies with load: maybe 92% at peak, 75% at low load, 50% near stall. The drone flight controller's power budget must account for these variations. Quoting "92% efficient" without context is at best misleading and at worst dangerous.
+
+Battery losses: a 100 Wh battery delivering 92% effective energy is 92 Wh of usable energy. After motor losses: $92 \cdot 0.92 = 84.6$ Wh of mechanical energy. After propeller efficiency 80%: $84.6 \cdot 0.80 = 67.7$ Wh of "useful" thrust energy. The cascade of percent multipliers compounds.
+
+### Battery State-of-Charge
+
+A "30% battery" claim assumes a specific definition of 100% (typically, peak voltage at full charge) and 0% (cutoff voltage). The percent is *not* a linear function of remaining energy — discharge curves are nonlinear, especially near the endpoints.
+
+A lithium-polymer cell at 50% indicated SoC may have 60% or 40% of energy depending on the curve. Smart drones use coulomb counters and voltage curves for accurate SoC. The percent display is engineering convention, not raw fraction.
+
+### Network Reliability
+
+A "99.9% uptime" service is down 0.1% of the time = $0.001 \cdot 8760$ hours/year = 8.76 hours/year. The "three nines" designation. "Four nines" is 99.99% = 52.6 minutes/year. "Five nines" is 99.999% = 5.26 minutes/year.
+
+For SLAs, percents are unforgiving. The cost of going from 99.9% to 99.99% can be 10× the infrastructure cost, because the underlying reliability laws compound multiplicatively.
+
+### ML Model Performance
+
+A model with 95% accuracy on a balanced 1000-sample test set misses 50 samples. If you double the test set to 2000, you expect about 100 misses — *if* the test distribution is the same. Percent accuracy is a fraction, not a count.
+
+Precision, recall, F1 score, AUC are all percentages (or fractions in [0, 1]). They have specific definitions in terms of true/false positives/negatives. The conventions can be confusing; learn them by examples.
+
+### Compound Power Loss in a Drone
+
+A drone with battery efficiency 95%, ESC efficiency 95%, motor efficiency 90%, propeller efficiency 75% has overall power-to-thrust efficiency:
+
+$0.95 \cdot 0.95 \cdot 0.90 \cdot 0.75 \approx 0.609$, or 61% overall.
+
+Cascading these efficiencies is multiplication of fractions, and the cumulative loss is dramatic: nearly 40% of battery energy never becomes useful thrust.
+
+## Practice Set
+
+### Convert
+
+Convert each between percent, fraction (lowest terms), and decimal.
+
+1. 30%
+2. 12.5%
+3. 200%
+4. 0.5%
+5. $\frac{3}{8}$ as a percent
+6. $\frac{5}{6}$ as a percent
+7. 0.025 as a percent
+8. 1.5 as a percent
+9. $\frac{7}{5}$ as a percent
+10. 1% as a fraction in lowest terms
+
+### Class 1: $X$% of $N$
+
+11. 25% of 80
+12. 70% of 200
+13. 150% of 40
+14. 7% of 850
+15. 0.5% of 200,000
+16. 12.5% of 80
+
+### Class 2: $P$ is what percent of $N$?
+
+17. 15 is what percent of 60?
+18. 49 is what percent of 70?
+19. 9 is what percent of 60?
+20. 3 is what percent of 8?
+21. 220 is what percent of 200?
+22. 1 is what percent of 1,000,000?
+
+### Class 3: $P$ is $X$% of what?
+
+23. 25 is 50% of what?
+24. 18 is 30% of what?
+25. 7 is 0.1% of what?
+26. 144 is 80% of what?
+27. 50 is 200% of what?
+
+### Percent Change
+
+Compute the percent change from $A$ to $B$.
+
+28. 100 → 120
+29. 80 → 60
+30. 40 → 50
+31. 200 → 175
+32. 1 → 1.5
+33. 0.4 → 0.6
+34. 12 → 8
+
+### Consecutive Changes
+
+Compute the net multiplier and percent change.
+
+35. 10% increase, then 10% decrease.
+36. 25% decrease, then 25% increase.
+37. 50% increase three times in a row.
+38. 5% per year for 10 years (compound growth).
+39. 2% decrease per year for 5 years.
+40. 100% increase, then 50% decrease.
+
+### Tolerance
+
+41. A 1 kΩ resistor with 5% tolerance: state the range.
+42. A 100 nF capacitor with 20% tolerance: state the range.
+43. A voltage divider with 9.1 kΩ ±1% and 1 kΩ ±1%: estimate the worst-case range of the divider ratio $R_2/(R_1 + R_2)$ (use min/max numerator and denominator combinations).
+44. A 10 mF capacitor specified as "−20% to +80%": state the range.
+
+### Compound Growth
+
+45. \$1,000 at 4% annual compound, 5 years. Final?
+46. \$5,000 at 6.5% annual compound, 10 years. Final?
+47. Population doubles every 25 years (Malthus). What's the implied annual growth rate (percent)?
+48. A drone battery loses 0.5% per cycle. After 200 cycles, what fraction of original capacity remains?
+
+### Percentage Points vs Percent
+
+49. Approval rating rose from 35% to 42%. State both the percentage-point change and the relative percent change.
+50. Unemployment fell from 7.5% to 5.0%. Both expressions.
+51. A loan rate of 4% is increased "by 50%." State the new rate (relative interpretation) and the new rate (percentage-point interpretation).
+
+### Applied
+
+52. A sensor has 0.5% accuracy of full-scale 50 V. What's the error band for a reading of 30 V?
+53. A drone's motor draws 22 A at 14.8 V. The motor is 88% efficient. What's the mechanical output power?
+54. A 200 W solar panel operates at 85% efficiency on a cloudy day. How much power does it produce?
+55. A 1080 × 720 image is upscaled by 25%. New dimensions?
+56. A printer prints a page in 12 s. After a firmware update, it's 15% faster. New time?
+57. A motor runs at 6000 RPM. A 25% reduction in load increases the speed by 8%. New RPM?
+58. A pizza shop sells 100 pizzas/day. They increase prices 10% and lose 5% of customers. Daily revenue change (relative)?
+
+### Challenge
+
+59. Show that for small percent changes (small $r$), $(1 + r/100)^n \approx 1 + nr/100$ (linear approximation; valid to first order in $r$). What is the error when $r = 10$ and $n = 3$?
+60. A retailer offers "30% off, then an additional 20% off." What single discount is equivalent?
+61. A drone in flight experiences a 2% drop in battery voltage per minute. After how many minutes is the voltage at 50% of original? (Use logs if you've seen them; if not, compute by iteration.)
+62. A stock fund returns +20% in year 1, +20% in year 2, +20% in year 3. What's the compound annual growth rate (CAGR) if expressed as a single rate over 3 years? (Hint: $(1 + r)^3 = 1.2^3$.)
+63. Compute the percent error of $\sqrt{2} \approx 1.41$. (True: $\sqrt{2} = 1.41421\ldots$.)
+64. A spring constant tolerance of 5% means actual spring constant is $k \pm 0.05k$. What is the tolerance of the resonant frequency $f = \frac{1}{2\pi}\sqrt{k/m}$ for fixed $m$? (Hint: how does $f$ depend on $k$? $f \propto \sqrt{k}$, so tolerance is half.)
+
+### Error Spotting
+
+65. A student says, "the stock fell 30% and then rose 30%, so it's back to the original price." Address.
+66. A student computes "20% of 50% = 70%". Address.
+67. A student writes, "the new motor is 20% better, and the old motor was 10% efficient, so the new one is 30% efficient." Address.
+68. A student says, "tax went from 5% to 6%, so my taxes went up 1%." Address.
+69. A student says, "the drone uses 50% of its battery and then another 30%, so 80% is gone." When is this correct, and when is it wrong?
+70. A student says, "a 0.5% error in the resistor causes 0.5% error in the output." Always true?
+
+### Answers
+
+1. $\frac{3}{10} = 0.3$.
+2. $\frac{1}{8} = 0.125$.
+3. $\frac{2}{1} = 2$.
+4. $\frac{1}{200} = 0.005$.
+5. $37.5\%$.
+6. $83.\overline{3}\%$.
+7. $2.5\%$.
+8. $150\%$.
+9. $140\%$.
+10. $\frac{1}{100}$.
+
+11. 20.
+12. 140.
+13. 60.
+14. 59.5.
+15. 1,000.
+16. 10.
+
+17. 25%.
+18. 70%.
+19. 15%.
+20. 37.5%.
+21. 110%.
+22. 0.0001% (= one ten-thousandth of a percent).
+
+23. 50.
+24. 60.
+25. 7,000.
+26. 180.
+27. 25.
+
+28. +20%.
+29. -25%.
+30. +25%.
+31. -12.5%.
+32. +50%.
+33. +50%.
+34. -33.3̄%.
+
+35. $1.1 \cdot 0.9 = 0.99$, net −1%.
+36. $0.75 \cdot 1.25 = 0.9375$, net −6.25%.
+37. $1.5^3 = 3.375$, net +237.5%.
+38. $1.05^{10} \approx 1.6289$, net +62.89%.
+39. $0.98^5 \approx 0.9039$, net −9.61%.
+40. $2.0 \cdot 0.5 = 1.0$, net 0% (this is one case where it does cancel).
+
+41. [950, 1050] Ω.
+42. [80, 120] nF.
+43. Nominal ratio $\frac{1}{10.1} = 0.0990$. Worst case (numerator low, denominator high): $\frac{0.99}{9.191 + 0.99 + 1.01} = $ let's recompute. Hmm, let me redo: $R_1 = 9.1$ kΩ ±1% = $[9.009, 9.191]$, $R_2 = 1.0$ kΩ ±1% = $[0.99, 1.01]$. Ratio min: $\frac{0.99}{9.191 + 0.99} = \frac{0.99}{10.181} \approx 0.0972$. Ratio max: $\frac{1.01}{9.009 + 1.01} = \frac{1.01}{10.019} \approx 0.1008$. So [0.0972, 0.1008] around nominal 0.099. About ±2% combined tolerance.
+44. [8 mF, 18 mF]. (Wide tolerance is typical of electrolytic capacitors.)
+
+45. $1000 \cdot 1.04^5 \approx 1216.65$.
+46. $5000 \cdot 1.065^{10} \approx 5000 \cdot 1.8771 \approx 9385.7$. (Roughly 1.88x growth.)
+47. $(1 + r)^{25} = 2 \Rightarrow 1 + r = 2^{1/25} \approx 1.02811$. So $r \approx 2.81\%$ per year.
+48. $0.995^{200} \approx 0.367$, so about 36.7% remaining. (A heavy loss; real lithium degradation is more complex.)
+
+49. Percentage points: +7. Percent (relative): $\frac{7}{35} = 20\%$ increase.
+50. Percentage points: -2.5. Percent: $\frac{-2.5}{7.5} = -33.3\%$ (a one-third reduction).
+51. Relative: $4\% \cdot 1.50 = 6\%$. Percentage-point: $4\% + 50\% = 54\%$. (The latter would be predatory but the language can support either reading.)
+
+52. $0.005 \cdot 50 = 0.25$ V. So 30 V ±0.25 V.
+53. Input: $22 \cdot 14.8 = 325.6$ W. Output: $325.6 \cdot 0.88 \approx 286.5$ W.
+54. $200 \cdot 0.85 = 170$ W.
+55. Width: $1080 \cdot 1.25 = 1350$. Height: $720 \cdot 1.25 = 900$. New: 1350 × 900.
+56. $12 \cdot \frac{1}{1.15} \approx 10.43$ s.
+57. $6000 \cdot 1.08 = 6480$ RPM.
+58. Price factor 1.10, customer factor 0.95. Revenue factor $1.10 \cdot 0.95 = 1.045$, or +4.5% revenue change.
+
+59. By binomial expansion, $(1 + x)^n = 1 + nx + O(x^2)$. For $r = 10\%, n = 3$: linear $= 1.30$; exact $= 1.331$. Error $= 0.031 = 3.1\%$ underestimate. The approximation is good only when $r$ is small enough that quadratic terms are negligible.
+60. $0.70 \cdot 0.80 = 0.56$, so 44% off (not 50%).
+61. $0.98^n = 0.5 \Rightarrow n = \log(0.5)/\log(0.98) \approx 34.3$ minutes.
+62. $1.2^3 = 1.728$, so 72.8% total return over 3 years. CAGR is exactly 20% per year (the inputs *were* the CAGR).
+63. $\frac{1.41421 - 1.41}{1.41421} \approx 0.30\%$ percent error.
+64. $\frac{\Delta f}{f} = \frac{1}{2} \cdot \frac{\Delta k}{k} = \frac{5}{2}\% = 2.5\%$ tolerance.
+
+65. Wrong. $0.70 \cdot 1.30 = 0.91$, a 9% net loss. Recovering a 30% loss requires a $\frac{30}{70} \approx 42.86\%$ gain, not 30%.
+66. Multiplication of percents is fraction multiplication: $0.20 \cdot 0.50 = 0.10 = 10\%$, not 70%.
+67. "20% better" needs context: better at what? If it's 20% more efficient (relative), the new efficiency is $10\% \cdot 1.20 = 12\%$. If it's 20 percentage points more, the new is $30\%$. The phrase is ambiguous; both readings are common.
+68. Ambiguous. Percentage points: yes, 1 pp increase. Relative percent: $\frac{1}{5} = 20\%$ increase in tax rate (which is a substantial relative change, not 1%).
+69. Correct if both 50% and 30% are measured from full charge. Incorrect if 30% means "30% of what was remaining." Always clarify the base.
+70. Not always. If the output depends on $R^n$ for $n \ne 1$, a 0.5% error in $R$ becomes a $n \cdot 0.5\%$ error in the output (to first order). For example, power = $V^2/R$: a 0.5% error in $R$ gives a 0.5% error in $P$ (sign opposite). For impedance frequency response, the dependency can be nonlinear and the error magnifies or attenuates.
+
+## Build Task
+
+Write `percent_arithmetic.py` (or your language equivalent) with the following utility functions:
+
+1. `percent_to_decimal(p)` — `25` → `0.25`.
+2. `decimal_to_percent(d)` — `0.25` → `25.0`. (Float, not string.)
+3. `percent_of(p, n)` — "$p$% of $n$" → numerical value.
+4. `what_percent(part, whole)` — `part / whole * 100`, with sanity check for whole != 0.
+5. `apply_change(value, percent)` — apply a percent change; positive for increase, negative for decrease.
+6. `percent_change(old, new)` — compute the percent change as a (signed) float.
+7. `consecutive_changes(start, percents)` — apply a list of percent changes in sequence; return final value and total percent change.
+8. `compound_growth(principal, rate_percent, periods)` — $\text{principal} \cdot (1 + \text{rate}/100)^{\text{periods}}$.
+
+Tests:
+
+- `percent_of(20, 50) == 10.0`
+- `what_percent(15, 60) == 25.0`
+- `apply_change(100, 20) == 120.0`
+- `apply_change(100, -20) == 80.0`
+- `percent_change(80, 100) == 25.0`
+- `consecutive_changes(100, [10, -10]) == (99.0, -1.0)`
+- `compound_growth(1000, 5, 10) ≈ 1628.89`
+- `with pytest.raises(ZeroDivisionError): what_percent(1, 0)`
+
+Stretch goals:
+
+- Build a "tolerance calculator" that takes a nominal value and ±tolerance, then computes worst-case and RSS-combined ranges for series/parallel combinations.
+- Write a "compound discount" function: take a list of percent discounts and return the equivalent single discount.
+- Implement a "doubling time" function: given an annual growth rate, return how many years for the value to double. Verify against the "Rule of 72" approximation ($72/r \approx $ doubling time in years for small $r$).
+
+## Quiz
+
+1. Convert 12.5% to a fraction in lowest terms.
+2. Convert $\frac{7}{8}$ to a percent.
+3. What is 15% of 240?
+4. 18 is what percent of 75?
+5. 36 is 12% of what?
+6. A stock rises 25% then falls 25%. What's the net percent change?
+7. State the formula for percent change from old value $A$ to new value $B$.
+8. What's the difference between "rate rose 1 percentage point" and "rate rose 1 percent"?
+9. A 1 kΩ resistor with 5% tolerance: state the range.
+10. A drone with 92% motor efficiency and 80% propeller efficiency: state the overall efficiency.
+11. A bank pays 4% compound interest annually. \$10,000 after 5 years?
+12. A discount of 25% then 25% is equivalent to what single discount?
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Pass the inline lesson check at 100% on first attempt.
+- Convert between percent, fraction, and decimal in your head for common values.
+- Solve any percent problem (Class 1, 2, or 3) in under 30 seconds without a calculator for simple numbers.
+- Apply consecutive percent changes by multiplying factors, never by adding percents.
+- Distinguish percentage-point change from percent change without prompting.
+- Estimate compound growth rates over realistic periods (5%, 10 years; 3%, 30 years) without a calculator.
+- Run your `percent_arithmetic.py` module with all listed tests passing.
+- Spot at least three of the percent fallacies in this lesson the next time you see them in the wild.
+
+## Sources and Further Study
+
+- **Sybilla Beckmann, *Mathematics for Elementary Teachers***. Chapter on percents is unusually careful about the percentage-point distinction.
+- **Khan Academy — Percentages**. Comprehensive practice on all three classes.
+- **MIT OCW 14.01 — Microeconomics**. Uses percent-change calculations extensively in elasticity, growth, and rate analysis. Good practical training.
+- **Steven Pinker, *Rationality*** (2021). Chapter on probability and percents has a careful discussion of common percent fallacies in news and policy.
+- **John Allen Paulos, *Innumeracy***. The classic on common math errors; many sections on percent misuse.
+- **William Cleveland, *Visualizing Data***. How to display percents (and other numbers) honestly.
+
+## Next Lesson Bridge
+
+You now have percents in hand. The next lesson (number 11) is *Negative Numbers and the Number Line*, which formalizes the directional sense of arithmetic — left and right, gains and losses, north and south — across all of $\mathbb{Q}$. After that, signed numbers and order of operations (lesson 12, already deep), then integer exponents (lesson 13).
+
+The percent algebra you built here will come back constantly: percent change of an exponential quantity (lesson 13), percent uncertainty propagation (lessons 14 and 16), and probability as percent (lesson 19).
+
+You have made it through the most error-prone topic in elementary numeracy. The rest of the Math Re-entry module is easier in concept (though not in depth). Keep going.
