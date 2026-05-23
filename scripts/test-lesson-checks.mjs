@@ -327,6 +327,34 @@ assert.equal(checkAnswer(polynomialById["root-from-factor"], "-3").correct, true
 assert.equal(checkAnswer(polynomialById["turning-points"], "4").correct, true);
 assert.equal(checkAnswer(polynomialById["polynomial-or-not"], "yes").correct, false);
 
+const quadraticCheck = getLessonCheck("quadratic-functions-and-the-quadratic-formula-check");
+assert.ok(quadraticCheck, "Expected quadratic-functions-and-the-quadratic-formula-check to exist");
+
+const quadraticById = Object.fromEntries(quadraticCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(quadraticById["identify-a"], "2").correct, true);
+assert.equal(checkAnswer(quadraticById["vertex-x"], "3").correct, true);
+assert.equal(checkAnswer(quadraticById["factored-roots"], "-2").correct, true);
+assert.equal(checkAnswer(quadraticById["discriminant-kind"], "no real roots").correct, true);
+assert.equal(checkAnswer(quadraticById["quadratic-formula-root"], "-2").correct, true);
+assert.equal(checkAnswer(quadraticById["projectile-maximum-time"], "2 s").correct, true);
+assert.equal(checkAnswer(quadraticById["opening-direction"], "down").correct, true);
+assert.equal(checkAnswer(quadraticById["opening-direction"], "up").correct, false);
+
+const factoringCheck = getLessonCheck("polynomial-factoring-techniques-check");
+assert.ok(factoringCheck, "Expected polynomial-factoring-techniques-check to exist");
+
+const factoringById = Object.fromEntries(factoringCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(factoringById["gcf-factor"], "4x(3x-2)").correct, true);
+assert.equal(checkAnswer(factoringById["simple-trinomial"], "(x-3)(x-4)").correct, true);
+assert.equal(checkAnswer(factoringById["difference-squares"], "(x-3)(x+3)").correct, true);
+assert.equal(checkAnswer(factoringById["perfect-square"], "(x+3)^2").correct, true);
+assert.equal(checkAnswer(factoringById["zero-product-root"], "-5").correct, true);
+assert.equal(checkAnswer(factoringById["lost-root"], "0").correct, true);
+assert.equal(checkAnswer(factoringById["projectile-factor"], "4 s").correct, true);
+assert.equal(checkAnswer(factoringById["difference-squares"], "(x-9)(x+9)").correct, false);
+
 const signedCheck = getLessonCheck("signed-numbers-core-check");
 assert.ok(signedCheck, "Expected signed-numbers-core-check to exist");
 

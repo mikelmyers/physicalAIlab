@@ -1,0 +1,534 @@
+# Quadratic Functions and the Quadratic Formula
+
+## Re-entry Promise
+
+This lesson assumes you can evaluate functions, multiply binomials, and read a graph. It does not assume you remember completing the square or the quadratic formula.
+
+A quadratic is a degree-2 polynomial. It is the first function family where curvature becomes unavoidable. Lines have constant slope. Quadratics bend. That bending is why quadratics show up in projectile motion, area optimization, braking distance, energy wells, parabolic reflectors, and local approximations to complicated systems.
+
+By the end, a quadratic should feel like an object you can inspect from several angles: standard form, vertex form, factored form, graph, roots, axis of symmetry, and discriminant.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Recognize quadratic functions in standard form $ax^2+bx+c$.
+- Identify $a$, $b$, and $c$.
+- Explain why $a\ne0$.
+- Find the vertex using $x=-b/(2a)$.
+- Interpret the axis of symmetry.
+- Convert simple quadratics between standard, factored, and vertex form.
+- Solve quadratics by factoring when possible.
+- Complete the square for a quadratic.
+- Use the quadratic formula.
+- Interpret the discriminant.
+- Connect quadratics to projectile motion, braking distance, area, and energy.
+
+## Plain-Language Intuition
+
+A quadratic is a smooth U-shape or upside-down U-shape called a parabola.
+
+If the coefficient of $x^2$ is positive, the parabola opens up. If it is negative, it opens down. The lowest or highest point is the vertex. The vertical line through the vertex is the axis of symmetry.
+
+The roots are where the graph hits the $x$-axis. Some quadratics hit twice, some touch once, and some never hit the real $x$-axis.
+
+The quadratic formula is a universal root-finder for degree 2. It is not magic. It comes from completing the square.
+
+## Why This Idea Exists
+
+Quadratics are the first serious nonlinear model:
+
+- Constant acceleration motion gives position functions like $s(t)=s_0+v_0t+\frac12at^2$.
+- Braking distance grows roughly with speed squared.
+- Rectangular area with fixed perimeter is quadratic.
+- Springs and small oscillations are modeled by quadratic energy near equilibrium.
+- Reflectors use parabolic geometry to focus rays.
+- Optimization often begins with a quadratic approximation.
+
+If you can read quadratics well, calculus will feel less alien because many derivative and optimization examples start here.
+
+## Core Theory
+
+### Standard Form
+
+A quadratic function has standard form:
+
+$$
+f(x)=ax^2+bx+c
+$$
+
+where $a$, $b$, and $c$ are constants and $a\ne0$.
+
+If $a=0$, the $x^2$ term disappears and the function is linear, not quadratic.
+
+### Opening Direction
+
+- If $a>0$, the parabola opens upward.
+- If $a<0$, the parabola opens downward.
+- Larger $|a|$ makes the parabola narrower.
+- Smaller $|a|$ makes it wider.
+
+### Vertex And Axis
+
+The vertex $x$-coordinate is:
+
+$$
+x_v=-\frac{b}{2a}
+$$
+
+Then:
+
+$$
+y_v=f(x_v)
+$$
+
+The axis of symmetry is:
+
+$$
+x=x_v
+$$
+
+### Factored Form
+
+If a quadratic has roots $r_1$ and $r_2$, it can be written:
+
+$$
+f(x)=a(x-r_1)(x-r_2)
+$$
+
+This form makes roots visible.
+
+Example:
+
+$$
+f(x)=2(x-3)(x+1)
+$$
+
+Roots: $x=3$ and $x=-1$.
+
+### Vertex Form
+
+Vertex form is:
+
+$$
+f(x)=a(x-h)^2+k
+$$
+
+The vertex is:
+
+$$
+(h,k)
+$$
+
+This form makes the graph's turning point visible.
+
+### Completing The Square
+
+Completing the square rewrites a quadratic so a squared binomial appears.
+
+Example:
+
+$$
+x^2+6x+5
+$$
+
+Take half of 6, square it:
+
+$$
+(6/2)^2=9
+$$
+
+Add and subtract 9:
+
+$$
+x^2+6x+9-9+5=(x+3)^2-4
+$$
+
+Vertex: $(-3,-4)$.
+
+### Quadratic Formula
+
+For:
+
+$$
+ax^2+bx+c=0
+$$
+
+the solutions are:
+
+$$
+x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}
+$$
+
+The expression under the square root is the discriminant:
+
+$$
+\Delta=b^2-4ac
+$$
+
+### Discriminant Meaning
+
+- $\Delta>0$: two distinct real roots.
+- $\Delta=0$: one repeated real root.
+- $\Delta<0$: no real roots; two complex roots.
+
+The discriminant tells you what kind of intersection the parabola has with the $x$-axis.
+
+## Visual Or Mental Model
+
+Picture a parabola as a thrown ball's height over time, or as a bowl.
+
+- Upward opening: bowl, minimum, stable energy shape.
+- Downward opening: projectile arc, maximum height.
+- Roots: ground hits or zero-crossings.
+- Vertex: best/worst point.
+- Axis: mirror line through the vertex.
+
+## Worked Examples
+
+### Example 1: Identify Coefficients
+
+For:
+
+$$
+f(x)=3x^2-5x+2
+$$
+
+$a=3$, $b=-5$, $c=2$.
+
+### Example 2: Vertex
+
+Find the vertex of:
+
+$$
+f(x)=x^2-6x+8
+$$
+
+$$
+x_v=-\frac{-6}{2(1)}=3
+$$
+
+$$
+f(3)=9-18+8=-1
+$$
+
+Vertex: $(3,-1)$.
+
+### Example 3: Factored Roots
+
+Solve:
+
+$$
+(x-4)(x+2)=0
+$$
+
+Set each factor to zero:
+
+$$
+x=4,\quad x=-2
+$$
+
+### Example 4: Quadratic Formula
+
+Solve:
+
+$$
+2x^2+3x-2=0
+$$
+
+Here $a=2$, $b=3$, $c=-2$.
+
+$$
+\Delta=3^2-4(2)(-2)=9+16=25
+$$
+
+$$
+x=\frac{-3\pm5}{4}
+$$
+
+Roots:
+
+$$
+x=\frac12,\quad x=-2
+$$
+
+### Example 5: Discriminant
+
+For:
+
+$$
+x^2+2x+5=0
+$$
+
+$$
+\Delta=2^2-4(1)(5)=4-20=-16
+$$
+
+No real roots.
+
+### Example 6: Projectile Height
+
+Height:
+
+$$
+h(t)=-5t^2+20t+1
+$$
+
+The maximum occurs at:
+
+$$
+t_v=-\frac{20}{2(-5)}=2
+$$
+
+Height:
+
+$$
+h(2)=-20+40+1=21
+$$
+
+Maximum height is 21 m at 2 s.
+
+### Example 7: Completing The Square
+
+Rewrite:
+
+$$
+x^2+8x+10
+$$
+
+Half of 8 is 4, square is 16:
+
+$$
+x^2+8x+16-16+10=(x+4)^2-6
+$$
+
+Vertex: $(-4,-6)$.
+
+### Example 8: Area Optimization
+
+A rectangle has perimeter 20, so if one side is $x$, the other is $10-x$. Area:
+
+$$
+A(x)=x(10-x)=10x-x^2
+$$
+
+This opens downward. Vertex:
+
+$$
+x=-\frac{10}{2(-1)}=5
+$$
+
+Maximum area occurs at $x=5$, a square.
+
+## Engineering Connections
+
+### Projectile Motion
+
+Vertical position under constant gravity is quadratic in time.
+
+### Braking Distance
+
+Kinetic energy depends on $v^2$, so stopping distance often scales with speed squared.
+
+### Optimization
+
+Many simple maximum/minimum problems reduce to a quadratic.
+
+### Reflectors
+
+Parabolas focus parallel rays to a point, which matters in antennas, lights, and optics.
+
+### Energy Near Equilibrium
+
+Stable systems often look quadratic near their minimum energy point.
+
+## Common Failure Modes
+
+1. Forgetting $a$ can be negative.
+2. Using $-b/2a$ without parentheses.
+3. Thinking the vertex $x$-coordinate is the root.
+4. Mixing up standard, factored, and vertex form.
+5. Forgetting the $\pm$ in the quadratic formula.
+6. Losing a sign inside the discriminant.
+7. Taking square root before computing all of $b^2-4ac$.
+8. Assuming every quadratic has two real roots.
+9. Forgetting that $\Delta=0$ means one repeated root.
+10. Treating projectile maximum as a root instead of a vertex.
+
+## Practice Problems
+
+### Basics
+
+1. Identify $a,b,c$ for $2x^2-7x+3$.
+2. Identify $a,b,c$ for $-x^2+4x+5$.
+3. Does $3x+2$ define a quadratic?
+4. Does $x^2+1$ open up or down?
+5. Does $-2x^2+3x$ open up or down?
+6. Find the axis of symmetry for $x^2-6x+8$.
+7. Find the vertex of $x^2-6x+8$.
+8. Find the vertex of $x^2+8x+10$.
+9. Find the vertex of $-x^2+10x$.
+10. What does larger $|a|$ do to the graph?
+
+### Roots And Forms
+
+11. Solve $(x-4)(x+2)=0$.
+12. Solve $x^2-5x+6=0$ by factoring.
+13. Solve $x^2+7x+12=0$ by factoring.
+14. Solve $2x^2+3x-2=0$.
+15. Write roots 3 and -1 in factored form with $a=2$.
+16. Convert $(x-3)^2-4$ to standard form.
+17. Convert $x^2+6x+5$ to vertex form.
+18. Convert $x^2+8x+10$ to vertex form.
+19. What form makes roots easiest to read?
+20. What form makes vertex easiest to read?
+
+### Formula And Discriminant
+
+21. State the quadratic formula.
+22. Compute discriminant for $x^2-6x+8=0$.
+23. How many real roots if $\Delta>0$?
+24. How many real roots if $\Delta=0$?
+25. How many real roots if $\Delta<0$?
+26. Solve $x^2+2x+1=0$.
+27. Solve $x^2+2x+5=0$ over real numbers.
+28. Solve $3x^2-12=0$.
+29. Solve $x^2-9=0$.
+30. Solve $4x^2+4x+1=0$.
+
+### Applications
+
+31. For $h(t)=-5t^2+20t+1$, find time of maximum height.
+32. Find maximum height for problem 31.
+33. For $A(x)=10x-x^2$, find the maximizing $x$.
+34. What is maximum area for problem 33?
+35. A braking model is $d(v)=0.04v^2$. Find $d(20)$.
+36. If speed doubles in that model, what happens to braking distance?
+37. A quadratic energy is $E(x)=2(x-3)^2+5$. Where is the minimum?
+38. What is the minimum energy in problem 37?
+39. Why is a downward-opening quadratic useful for projectile height?
+40. Why is an upward-opening quadratic useful for cost or energy?
+
+### Challenge And Error Spotting
+
+41. A student says $x_v=-b/2a$ means $(-b/2)a$. Correct the grouping.
+42. A student solves $x^2+2x+5=0$ and claims two real roots. Use the discriminant to correct them.
+43. A student forgets $\pm$ in the quadratic formula. What kind of answer do they lose?
+44. Explain why factored form $a(x-r_1)(x-r_2)$ has roots $r_1,r_2$.
+45. Explain why vertex form has vertex $(h,k)$.
+46. Derive the vertex $x$-coordinate by completing the square for $ax^2+bx+c$ in one paragraph.
+47. Give a quadratic with exactly one real root.
+48. Give a quadratic with no real roots.
+49. Give a quadratic with roots -2 and 5.
+50. Give one robotics or physics use of a quadratic.
+
+## Answer Key
+
+1. $a=2,b=-7,c=3$.
+2. $a=-1,b=4,c=5$.
+3. No.
+4. Up.
+5. Down.
+6. $x=3$.
+7. $(3,-1)$.
+8. $(-4,-6)$.
+9. $(5,25)$.
+10. Makes it narrower/steeper.
+11. $x=4,-2$.
+12. $x=2,3$.
+13. $x=-3,-4$.
+14. $x=1/2,-2$.
+15. $2(x-3)(x+1)$.
+16. $x^2-6x+5$.
+17. $(x+3)^2-4$.
+18. $(x+4)^2-6$.
+19. Factored form.
+20. Vertex form.
+21. $x=(-b\pm\sqrt{b^2-4ac})/(2a)$.
+22. 4.
+23. Two.
+24. One repeated real root.
+25. None over the reals.
+26. $x=-1$.
+27. No real roots.
+28. $x=\pm2$.
+29. $x=\pm3$.
+30. $x=-1/2$.
+31. 2 s.
+32. 21 m.
+33. 5.
+34. 25.
+35. 16.
+36. It quadruples.
+37. $x=3$.
+38. 5.
+39. Gravity creates a concave-down height curve with a maximum.
+40. It has a stable minimum.
+41. It means $-b/(2a)$.
+42. $\Delta=4-20=-16$, so no real roots.
+43. One of the two possible roots.
+44. Each factor becomes zero at its corresponding root, making the product zero.
+45. The squared term is minimized at $x=h$, producing output $k$.
+46. Factor out $a$, complete the square inside, and the squared term's center is $x=-b/(2a)$.
+47. $(x-1)^2$.
+48. $x^2+1$.
+49. $(x+2)(x-5)$.
+50. Projectile height, braking distance, reflector shape, quadratic cost, energy near equilibrium.
+
+## Build Task
+
+Create a "quadratic analyzer" as a script, spreadsheet, notebook, or careful worksheet.
+
+Minimum requirements:
+
+1. Accept $a,b,c$.
+2. Report opening direction.
+3. Compute vertex.
+4. Compute discriminant.
+5. Report number of real roots.
+6. Compute roots when real.
+7. Evaluate the quadratic at several inputs.
+8. Include projectile or braking-distance example with units.
+
+Stretch:
+
+- Plot the parabola.
+- Convert between standard and vertex form.
+- Add warnings for $a=0$.
+
+## Quiz
+
+1. What is standard form for a quadratic?
+2. Why must $a\ne0$?
+3. How do you find the vertex $x$-coordinate?
+4. What is the axis of symmetry?
+5. What does the discriminant tell you?
+6. What does $\Delta<0$ mean?
+7. What form makes roots visible?
+8. What form makes vertex visible?
+9. Why does projectile height form a quadratic?
+10. Why can a quadratic model optimization?
+11. What is completing the square?
+12. What is one common quadratic formula sign mistake?
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 40 practice problems, including all challenge/error-spotting problems.
+- A quadratic analyzer artifact with tests.
+- One graph or table showing a parabola's vertex and roots.
+- One applied projectile, braking, or optimization example.
+- One paragraph explaining the discriminant in plain language.
+
+## Sources And Further Study
+
+- OpenStax, *Precalculus 2e*, quadratic functions.
+- Khan Academy, quadratics and the quadratic formula.
+- MIT OCW calculus prerequisite review on quadratic functions.
+- Physics references on constant-acceleration projectile motion.
+- Robotics trajectory references on polynomial motion profiles.
+
+## Next Lesson Bridge
+
+Quadratics are the first place factoring becomes a root-finding tool. The next lesson broadens factoring: greatest common factors, grouping, trinomials, special products, and the habit of rewriting expressions so their structure is visible.
