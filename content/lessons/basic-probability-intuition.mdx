@@ -1,0 +1,912 @@
+# Basic Probability Intuition
+
+## Re-entry Promise
+
+Probability is the language we use to express uncertainty quantitatively. When a weather app says "70% chance of rain," when a medical test report says "99% sensitivity," when a self-driving car's perception module emits "0.83 confidence: pedestrian," all of them are speaking probability. So is statistical mechanics, so is quantum theory, so is every modern machine-learning system.
+
+This lesson assumes you have mastered fractions and percents (lessons 6-8), can compute basic decimal arithmetic (lessons 9-10), and have some informal experience with counting ("how many ways can I pick 2 from 5?"). It does not assume you have ever seen formal probability before. It does not require calculus. It does not require linear algebra. Everything is done with arithmetic, ratios, and careful reasoning.
+
+This is an on-ramp lesson, not a full probability course. The goal is to install a correct mental model and a working vocabulary — sample spaces, events, conditional probability, Bayes' rule, independence — that you can use immediately for everyday engineering reasoning and that scales gracefully when you take a full probability course later (MIT 6.041 or 18.05, Harvard Stat 110). When the curriculum returns to probability in depth (random variables, distributions, the central limit theorem, hypothesis testing, information theory, Bayesian inference, stochastic processes), you will already have the intuition; the formal machinery will then make sense as machinery rather than as conceptual surprise.
+
+By the end of this lesson you should be able to: write down sample spaces and events for small experiments; compute equally-likely-outcomes probabilities; apply the addition and multiplication rules correctly; reason about conditional probabilities and apply Bayes' rule to medical-test and sensor-alarm style problems; identify the most common probability fallacies (gambler's fallacy, base-rate neglect, conjunction fallacy, Monty Hall); and translate the language of probability into engineering quantities like sensor false-positive rates, ML model confidence, and component reliability.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Define the **sample space** $S$ and an **event** $A \subseteq S$ for any small probabilistic experiment.
+- Compute probabilities by the **equally-likely-outcomes** formula $P(A) = |A| / |S|$.
+- Apply the **addition rule** $P(A \cup B) = P(A) + P(B) - P(A \cap B)$ and its three-event extension (**inclusion-exclusion**).
+- Apply the **multiplication rule** $P(A \cap B) = P(A)\, P(B \mid A)$ and recognize when it simplifies to $P(A)\, P(B)$ for **independent** events.
+- Apply **conditional probability** $P(B \mid A) = P(A \cap B) / P(A)$ to update beliefs given new information.
+- Apply **Bayes' rule** at an intuitive level to invert conditional probabilities (compute $P(\text{cause} \mid \text{evidence})$ from $P(\text{evidence} \mid \text{cause})$ and the prior).
+- Apply the **law of total probability** to partition a sample space.
+- Use basic counting tools: **permutations** $nPr$ and **combinations** $nCr$.
+- Recognize the **gambler's fallacy**, **base-rate neglect**, the **conjunction fallacy**, and the **Monty Hall problem**, and explain why each is wrong.
+- Translate probabilistic statements into engineering language: **false-positive rate**, **false-negative rate**, **sensor reliability**, **ML model confidence**, **system reliability** in series and parallel.
+- Set up and run a basic **Monte Carlo simulation** to verify a probability calculation empirically.
+
+## Why It Matters
+
+Probability is the central modeling language for any system that has to act under uncertainty. A representative tour of where it shows up in engineering, ML, and physics:
+
+1. **Sensor false-positive rates.** Every sensor — radar, lidar, sonar, infrared intrusion detector, smoke alarm, medical test — has a nonzero rate at which it fires when nothing is there (false positive) and a nonzero rate at which it fails to fire when something is there (false negative). The engineering tradeoff between these two error types is governed by probability theory. A home intrusion alarm with a 5% nightly false-positive rate produces about 18 false alarms per year — by itself enough to make the homeowner ignore the alarm completely.
+
+2. **Medical-test interpretation.** A test with 99% sensitivity and 95% specificity, applied to a population where the disease prevalence is 1%, gives a positive result whose probability of indicating actual disease is only about **17%**. Most positives are false positives. This is the canonical example of base-rate neglect, and we will compute it explicitly later in the lesson. Doctors who do not understand this make catastrophic recommendation errors.
+
+3. **ML model confidence and Bayesian reasoning about classifier outputs.** When a softmax layer of a neural network emits "0.83 probability: cat," what does the 0.83 mean? If the model is **calibrated**, then over many such inputs with output 0.83, 83% should actually be cats. If it is poorly calibrated (as raw deep nets tend to be), the 0.83 might mean essentially nothing about true frequency. Probability theory gives the language for calibration, for posterior estimation, for Bayesian neural networks, and for the entire active-learning / uncertainty-quantification subfield.
+
+4. **System reliability.** A drone with 4 motors fails if even one motor fails. If each motor has reliability $0.99$, the probability all four work is $0.99^4 \approx 0.961$ — about a 4% failure probability per flight. Adding a 5th redundant motor (so the drone is "fault tolerant" up to one failure) drops the failure probability to under 0.1%. Probability is the language of redundancy, fault tolerance, and Mean Time Between Failures (MTBF).
+
+5. **Communication channels and error-correcting codes.** Every bit transmitted over a noisy channel has a probability of being flipped. Shannon's 1948 information theory uses probability to characterize the channel capacity and to design codes (Hamming, Reed-Solomon, LDPC, turbo, polar) that drive the post-decoding error rate as low as needed. Your phone's 5G modem applies an LDPC code that pushes a raw bit error rate of $\sim 10^{-2}$ down to $\sim 10^{-12}$.
+
+6. **Cryptographic key entropy.** A 256-bit key has $2^{256} \approx 10^{77}$ possible values. The probability of guessing it correctly on a single try is $\sim 10^{-77}$. This is the foundation of all modern symmetric cryptography. Hashing functions exploit the **birthday paradox** (which we will compute) to characterize collision resistance.
+
+7. **A/B testing and product analytics.** A new website button gets 105 clicks in 1000 views; the old gets 95 in 1000. Is the new button really better? Probability theory (specifically, hypothesis testing) gives the answer: with these numbers, the difference is well within ordinary random variation, and you cannot yet conclude one is better than the other.
+
+8. **Quantum mechanics is intrinsically probabilistic.** The wave function $\psi$ does not predict where a particle will be; it predicts the *probability* $|\psi|^2$ that the particle will be measured at a given position. Probability is not an artifact of incomplete knowledge in quantum mechanics — it appears to be a fundamental feature of physical reality.
+
+9. **Lottery and gambling.** The probability of winning a Powerball jackpot is about $1$ in $292{,}000{,}000$. You are more likely to be hit by lightning. Casinos engineer game probabilities so that the house has a 1-5% expected-value edge per bet, and that small per-bet edge compounds over millions of bets into reliable casino profit. Most people's intuition about these probabilities is dramatically wrong — which is why both lotteries and casinos make money.
+
+10. **Drone collision-avoidance and probabilistic mission planning.** A delivery drone navigating in urban airspace must reason about the probability that another aircraft, a bird, or a sudden wind gust will intersect its planned path. Mission planners use **probabilistic roadmaps** (PRM) and **rapidly-exploring random trees** (RRT) to plan motion in cluttered environments. The whole subfield of stochastic optimal control is built on probability.
+
+11. **Bayesian filters in robotics.** The **Kalman filter** and its extensions (extended KF, unscented KF, particle filter) are probabilistic state estimators: they fuse noisy sensor measurements with a noisy dynamics model to produce a best-estimate posterior over the robot's state (position, velocity, orientation). Every self-driving car, every drone autopilot, every spacecraft navigation system runs on Bayesian filtering.
+
+12. **Risk-conscious decision-making.** Whether you are deciding to invest in a startup, ship a product, schedule a surgery, or launch a rocket, the rational framework is **expected utility under uncertainty** — and that requires probabilities. NASA's mission-risk analyses, FDA drug approvals, and insurance underwriting all use probability theory.
+
+Probability does not give you certainty; it gives you a principled way to handle the absence of certainty. Mastering it is non-negotiable for serious engineering and research work.
+
+## Why This Idea Exists
+
+Probability theory has a sharply defined birthday: it was created by mathematicians who wanted to win at dice.
+
+**Gerolamo Cardano (1501-1576)**, a Renaissance polymath and reportedly an obsessive gambler, wrote *Liber de Ludo Aleae* ("Book on Games of Chance") around 1564. It was the first systematic treatment of dice probabilities — recognizing, for instance, that the sample space for two dice has 36 equally likely outcomes rather than 11 (the sums 2 through 12). Cardano did not publish his book in his lifetime; it appeared in 1663.
+
+**The Pascal-Fermat correspondence (1654)** is generally cited as the formal birth of probability theory. The gambler **Antoine Gombaud, Chevalier de Méré**, posed two puzzles to **Blaise Pascal**: the "problem of points" (how should the stake be divided if a game is interrupted before completion?) and a question about expected wins in repeated betting. Pascal exchanged letters with **Pierre de Fermat**; together they worked out the modern concepts of expected value and combinatorial probability. Probability theory had emerged from gambling questions, and it had emerged in the form that we still recognize today.
+
+**Christiaan Huygens** read the Pascal-Fermat correspondence and in 1657 published *De Ratiociniis in Ludo Aleae* ("On Reckoning in Games of Chance"), the first probability textbook. It introduced the concept of expectation in a clean modern form.
+
+**Jakob Bernoulli's *Ars Conjectandi*** (posthumous, 1713) proved the first **law of large numbers**: the empirical frequency of an event over many trials converges to its true probability. This is the formal justification for saying "in the long run, a fair coin lands heads 50% of the time." Bernoulli's theorem made probability theory more than just a gambler's tool; it made it a theory of mass phenomena.
+
+**Thomas Bayes (1701-1761)**, an English Presbyterian minister, wrote a paper on what is now called **Bayes' rule** — the formula for updating probabilities given new evidence. His paper, *An Essay towards solving a Problem in the Doctrine of Chances*, was published posthumously in 1763 by his friend Richard Price. Bayes himself does not seem to have attached great importance to the result; it took **Laplace** to recognize the broader significance.
+
+**Pierre-Simon Laplace's *Théorie Analytique des Probabilités*** (1812) gave the modern formalization. Laplace developed Bayes' theorem independently and pushed it as the foundation of all rational inference under uncertainty. He famously declared that "probability theory is nothing but common sense reduced to calculation."
+
+**Andrey Kolmogorov (1903-1987)** in 1933 axiomatized probability theory as a special case of **measure theory** — the modern mathematical foundation. Kolmogorov's three axioms (non-negativity, normalization, countable additivity) remain the foundation of probability theory today. Every probability textbook starts with the Kolmogorov axioms.
+
+The 20th century also saw the philosophical split between **frequentists** (probability = long-run frequency of an event in repeated trials) and **subjective Bayesians** (probability = a rational agent's degree of belief). Both camps use the same Kolmogorov axioms; they disagree about what probability *means* and how it should be applied. In practice, frequentist methods dominate classical statistics, while Bayesian methods dominate machine learning, signal processing, and modern decision theory. A working engineer should be fluent in both.
+
+Why did engineering need probability? Initially, it was the **telegraph and telephone** in the late 19th century — Edison, Bell, and their successors needed to characterize line noise to design reliable communication systems. Then **radar** (Watson-Watt, 1935) and the WWII signal-detection problem drove the development of detection theory (probability of detection PD, probability of false alarm PFA). Then **nuclear physics** in the 1940s drove the development of Monte Carlo simulation (named for the casino, developed by von Neumann, Ulam, and Metropolis for neutron-diffusion calculations). Then **information theory** (Shannon, 1948) gave probability a central role in all communication and storage systems. Then **control theory** (Kalman, 1960) made probability the language of state estimation. Today, **machine learning** has made probability the central modeling language of engineering, period.
+
+## Plain-Language Intuition
+
+### What Probability Is
+
+A **probability** is a number between 0 and 1 that expresses how likely an event is. $P = 0$ means impossible; $P = 1$ means certain; $P = 0.5$ means equally likely as not; $P = 0.001$ means very unlikely; $P = 0.99$ means very likely.
+
+You can equivalently express probability as a percent ($0\%$ to $100\%$), as odds ("3 to 1 against" = $P = 1/4$), or as a fraction. They are all the same idea.
+
+### Two Interpretations
+
+**Frequentist view.** The probability of an event is the long-run frequency with which it occurs in repeated independent trials. The probability of heads on a fair coin is $1/2$ because, if you flip the coin a million times, you will get heads about 500,000 times. The frequency *is* the probability, in the limit.
+
+**Bayesian (subjective) view.** The probability of an event is a rational agent's degree of belief in that event, given the information the agent has. The probability that it will rain tomorrow is $0.7$ because, on the basis of the weather data, a rational agent should be 70% confident that it will rain.
+
+For many problems (coin flips, dice rolls, lottery), both views give the same answer. For some problems (probability that a particular candidate will win an election, probability that the universe is finite), only the Bayesian interpretation makes sense — there is no "long run of repeated trials" to take the frequency of.
+
+For the purposes of this lesson, both interpretations work. We will mostly use the frequentist intuition for the worked examples and the Bayesian intuition for Bayes' rule.
+
+### The Equally-Likely-Outcomes Shortcut
+
+For experiments where every basic outcome is equally likely (rolling a fair die, drawing one card from a well-shuffled deck), probability is just counting:
+
+$$P(\text{event}) = \frac{\text{number of outcomes in the event}}{\text{total number of outcomes}}$$
+
+For a fair six-sided die: $P(\text{even}) = 3/6 = 1/2$. The three even outcomes (2, 4, 6) out of six total.
+
+For a standard 52-card deck: $P(\text{ace}) = 4/52 = 1/13$. There are 4 aces out of 52 cards.
+
+This formula is the foundation. Most introductory probability problems reduce to careful counting.
+
+### Why Independence Matters
+
+Two events are **independent** if knowing that one occurred does not change the probability of the other. Successive flips of a fair coin are independent: getting heads on flip 1 tells you nothing about flip 2.
+
+Independence justifies multiplication: if $A$ and $B$ are independent, $P(A \text{ and } B) = P(A) \cdot P(B)$. The probability of two heads in a row is $1/2 \cdot 1/2 = 1/4$.
+
+The independence assumption is everywhere in engineering, and it is almost always at least slightly wrong. Two motors on the same drone share a battery, share airflow, share manufacturer defects — they are not truly independent. Two communication channels share atmospheric conditions. Two redundant computers share a power supply. Engineering humility about independence is one of the most important lessons of probability.
+
+## Core Theory
+
+### The Sample Space
+
+The **sample space** $S$ is the set of all possible outcomes of an experiment.
+
+For one flip of a coin: $S = \{H, T\}$ (with $|S| = 2$).
+
+For one roll of a six-sided die: $S = \{1, 2, 3, 4, 5, 6\}$ (with $|S| = 6$).
+
+For two flips of a coin: $S = \{HH, HT, TH, TT\}$ (with $|S| = 4$).
+
+For one draw from a 52-card deck: $S$ is the set of all 52 cards, $|S| = 52$.
+
+The sample space must be **exhaustive** (every possible outcome is in it) and **mutually exclusive** (no two outcomes can both occur on the same trial).
+
+### Events
+
+An **event** $A$ is a subset of the sample space: $A \subseteq S$. We say "event $A$ occurred" if the actual outcome is an element of $A$.
+
+For one die roll, let $A$ = "even number." Then $A = \{2, 4, 6\}$ and $|A| = 3$.
+
+For two coin flips, let $B$ = "at least one head." Then $B = \{HH, HT, TH\}$ and $|B| = 3$.
+
+The **empty event** $\emptyset$ is impossible; the **full event** $S$ is certain.
+
+### Set Operations on Events
+
+Since events are sets, we use set operations:
+
+- **Union** $A \cup B$ = "$A$ or $B$ or both" — the set of outcomes in either event.
+- **Intersection** $A \cap B$ = "$A$ and $B$" — the set of outcomes in both events.
+- **Complement** $A^c$ = "not $A$" — the set of outcomes not in $A$. So $A^c = S \setminus A$.
+- **Disjoint** events: $A \cap B = \emptyset$ — cannot both occur.
+
+### The Kolmogorov Axioms
+
+A **probability** $P$ is a function that assigns a number to each event, satisfying:
+
+1. **Non-negativity:** $P(A) \ge 0$ for every event $A$.
+2. **Normalization:** $P(S) = 1$.
+3. **Additivity:** For disjoint events $A$ and $B$ (i.e., $A \cap B = \emptyset$), $P(A \cup B) = P(A) + P(B)$.
+
+All of probability theory is built on these three axioms. The full version (for infinite sample spaces) requires countable additivity over any disjoint sequence, but for our purposes the finite version suffices.
+
+### Immediate Consequences
+
+From the axioms:
+
+- $P(\emptyset) = 0$. (The impossible event has probability zero.)
+- $P(A^c) = 1 - P(A)$. (Complement rule.)
+- $0 \le P(A) \le 1$ for every event $A$.
+- If $A \subseteq B$, then $P(A) \le P(B)$. (Monotonicity.)
+
+### The Equally-Likely-Outcomes Formula
+
+If $S$ is a finite sample space in which every outcome has equal probability, then for any event $A$:
+
+$$P(A) = \frac{|A|}{|S|}$$
+
+where $|A|$ and $|S|$ are the sizes of the sets.
+
+This is just counting. Most introductory problems reduce to this formula together with some careful enumeration.
+
+### The Addition Rule (with Inclusion-Exclusion)
+
+For any two events $A$ and $B$:
+
+$$P(A \cup B) = P(A) + P(B) - P(A \cap B)$$
+
+The $-P(A \cap B)$ term corrects for double-counting outcomes that are in both $A$ and $B$.
+
+If $A$ and $B$ are disjoint, then $P(A \cap B) = 0$ and the formula reduces to $P(A \cup B) = P(A) + P(B)$.
+
+For three events:
+
+$$P(A \cup B \cup C) = P(A) + P(B) + P(C) - P(A \cap B) - P(A \cap C) - P(B \cap C) + P(A \cap B \cap C)$$
+
+(The full **inclusion-exclusion principle**.) The pattern: add singles, subtract pairs, add triples, subtract quadruples, and so on.
+
+### Independence
+
+Events $A$ and $B$ are **independent** if:
+
+$$P(A \cap B) = P(A) \cdot P(B)$$
+
+Equivalently (when $P(A) > 0$): $P(B \mid A) = P(B)$ — knowing $A$ occurred does not change the probability of $B$.
+
+Independence is an **assumption**, not a default. You must justify it. Two coin flips of the same fair coin are independent. Two motors on the same drone are not.
+
+### The Multiplication Rule
+
+For any two events $A$ and $B$ with $P(A) > 0$:
+
+$$P(A \cap B) = P(A) \cdot P(B \mid A)$$
+
+This is the general rule. It does not require independence. If $A$ and $B$ are independent, $P(B \mid A) = P(B)$ and the rule reduces to $P(A \cap B) = P(A) \cdot P(B)$.
+
+For three events:
+
+$$P(A \cap B \cap C) = P(A) \cdot P(B \mid A) \cdot P(C \mid A \cap B)$$
+
+Sequentially, in the order $A$ then $B$ then $C$.
+
+### Conditional Probability
+
+The **conditional probability** of $B$ given $A$, for $P(A) > 0$, is:
+
+$$P(B \mid A) = \frac{P(A \cap B)}{P(A)}$$
+
+This is the probability of $B$ in the "restricted universe" where $A$ has occurred. We zoom in on the slice of the sample space where $A$ holds, and ask what fraction of that slice is also in $B$.
+
+Conditional probability is how we update beliefs given evidence. The unconditional $P(B)$ is the "prior"; the conditional $P(B \mid A)$ is the "posterior given $A$."
+
+### Bayes' Rule
+
+By symmetry of intersection ($A \cap B = B \cap A$):
+
+$$P(A) \cdot P(B \mid A) = P(B) \cdot P(A \mid B)$$
+
+Solving for $P(A \mid B)$:
+
+$$P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)}$$
+
+This is **Bayes' rule**. It inverts a conditional: given $P(B \mid A)$ and the marginal $P(A)$ and $P(B)$, we get $P(A \mid B)$.
+
+In words: posterior = (likelihood × prior) / evidence.
+
+Bayes' rule is the single most important formula in this lesson. It is what lets you reason from observation back to cause. "Given a positive test result, what is the probability the patient has the disease?" — that is Bayes' rule.
+
+### The Law of Total Probability
+
+If events $A_1, A_2, \ldots, A_n$ form a **partition** of the sample space (mutually exclusive and exhaustive), then for any event $B$:
+
+$$P(B) = \sum_{i=1}^{n} P(B \mid A_i) \cdot P(A_i)$$
+
+This expresses $P(B)$ as a weighted sum over the partition. It is often used to compute the denominator in Bayes' rule.
+
+Most common case: a binary partition $\{A, A^c\}$:
+
+$$P(B) = P(B \mid A) \cdot P(A) + P(B \mid A^c) \cdot P(A^c)$$
+
+### Quick Counting Tools: Permutations and Combinations
+
+Many probability problems reduce to counting. Two combinatorial formulas appear constantly:
+
+**Permutations** $nPr$ = the number of ordered arrangements of $r$ items chosen from $n$:
+
+$$nPr = \frac{n!}{(n-r)!}$$
+
+For $n = 5, r = 3$: $5P3 = 5 \cdot 4 \cdot 3 = 60$.
+
+**Combinations** $nCr$ = the number of unordered selections of $r$ items chosen from $n$:
+
+$$nCr = \binom{n}{r} = \frac{n!}{r!(n-r)!}$$
+
+For $n = 5, r = 3$: $\binom{5}{3} = \frac{120}{6 \cdot 2} = 10$.
+
+The distinction: order matters for permutations, not for combinations.
+
+For probability problems involving "5-card poker hands," use combinations: order does not matter. For "the 100-meter dash gold-silver-bronze," use permutations: order matters.
+
+### A Brief Look Ahead: Random Variables and Expectation
+
+A **random variable** is a function that assigns a numerical value to each outcome in the sample space. For example, $X$ = "number of heads in 3 coin flips" is a random variable taking values $0, 1, 2, 3$ with probabilities $1/8, 3/8, 3/8, 1/8$.
+
+The **expectation** (or expected value) of $X$ is the weighted average:
+
+$$E[X] = \sum_x x \cdot P(X = x)$$
+
+For our 3-flip example: $E[X] = 0 \cdot \frac{1}{8} + 1 \cdot \frac{3}{8} + 2 \cdot \frac{3}{8} + 3 \cdot \frac{1}{8} = \frac{12}{8} = 1.5$.
+
+The **variance** measures spread: $\text{Var}(X) = E[(X - E[X])^2]$.
+
+We will defer the full treatment of random variables, distributions, expectation, and variance to a later lesson. Just be aware that these exist; they are the next layer of probability theory on top of the foundation we are building here.
+
+## Visual or Mental Model
+
+### Model 1: Venn Diagrams
+
+Draw the sample space $S$ as a rectangle. Draw each event as a region inside the rectangle. The area of a region (relative to the area of $S$) represents its probability.
+
+For two events $A$ and $B$:
+
+```
++-----------------------------+
+|   S                         |
+|     +-------+ +-------+     |
+|     |       | |       |     |
+|     |  A    |X|   B   |     |
+|     |       |X|       |     |
+|     +-------+ +-------+     |
+|                             |
++-----------------------------+
+```
+
+The X region is $A \cap B$. The union $A \cup B$ is everything inside either circle. The complement $A^c$ is everything outside $A$. The inclusion-exclusion formula falls out by area: adding the two circle areas counts the X region twice, so we subtract it once.
+
+### Model 2: Tree of Outcomes
+
+For sequential experiments, draw a tree. Each branch is labeled with the probability of taking that branch.
+
+Two coin flips:
+
+```
+        start
+       /     \
+      H(1/2)  T(1/2)
+     /  \    /  \
+    H    T  H    T
+   (1/2)(1/2)(1/2)(1/2)
+```
+
+The probability of any leaf is the product of probabilities along the path to it: each leaf has probability $1/2 \cdot 1/2 = 1/4$. Sum of all leaf probabilities = 1 (it must).
+
+For experiments with dependence (drawing cards without replacement), the branch probabilities at the second level depend on what happened at the first.
+
+### Model 3: Rectangle Picture for Joint Probability
+
+Draw a unit square. One axis represents $A$ vs $A^c$ (split at $x = P(A)$). The other axis represents $B$ vs $B^c$ (split, possibly differently in each column, by conditional probabilities).
+
+```
+            B           B^c
+        +-------+-------------+
+   A    |       |             |
+        | P(A∩B)|  P(A∩B^c)   |
+        +-------+-------------+
+   A^c  | P(A^c∩B) | P(A^c∩B^c) |
+        +-------+-------------+
+```
+
+The total area is 1. The area of the upper-left rectangle is $P(A \cap B)$. The total left-column area is $P(B)$. Bayes' rule pops out geometrically:
+
+$$P(A \mid B) = \frac{P(A \cap B)}{P(B)} = \frac{\text{upper-left area}}{\text{left column area}}$$
+
+When you compute Bayes' rule, you are computing: "of the slice of probability where $B$ occurred, what fraction also has $A$?" The rectangle picture makes this concrete.
+
+### Model 4: Natural Frequencies
+
+Many probability problems become dramatically easier if you express them in **natural frequencies** instead of percents. Instead of "1% prevalence, 99% sensitivity, 5% false-positive rate," say:
+
+"Imagine 1000 people. About 10 have the disease (1%). Of those 10, about 10 test positive (99% sensitivity). Of the 990 healthy, about 50 test positive (5% false positive). Total positives: 60. Of those, only 10 actually have the disease. So $P(\text{disease} \mid \text{positive}) = 10/60 \approx 17\%$."
+
+The percent version requires Bayes' rule. The natural-frequency version requires only counting. Both give the same answer. The natural-frequency approach is far easier to communicate and far less error-prone in practice. Cognitive psychologists (Gerd Gigerenzer and colleagues) have shown that even doctors and lawyers get medical-test problems right far more often when the numbers are framed as natural frequencies.
+
+## Worked Examples
+
+### Example 1 — Probability of At Least One Head in 3 Coin Flips
+
+Sample space: 3 flips of a fair coin, so $|S| = 2^3 = 8$. Event $A$ = "at least one head."
+
+**Direct approach.** Enumerate: HHH, HHT, HTH, HTT, THH, THT, TTH, TTT. The only outcome with no heads is TTT. So $|A| = 7$, and $P(A) = 7/8 = 0.875$.
+
+**Complement approach.** Event $A^c$ = "no heads" = "all tails." $|A^c| = 1$, $P(A^c) = 1/8$. So $P(A) = 1 - 1/8 = 7/8$.
+
+The complement approach generalizes cleanly. For $n$ flips, probability of at least one head = $1 - (1/2)^n$. For 10 flips: $1 - 1/1024 \approx 0.999$. For 20 flips: $\approx 1 - 10^{-6}$.
+
+Whenever you see "at least one," try the complement first. It is almost always easier than enumerating all the "at least one" cases.
+
+### Example 2 — Drawing 2 Aces from a Shuffled Deck (Without Replacement)
+
+Draw 2 cards in sequence, without replacement. Probability both are aces?
+
+Event $A$ = "first card is an ace." $P(A) = 4/52 = 1/13$.
+
+Event $B$ = "second card is an ace." Given $A$ has occurred, there are 3 aces left out of 51 cards, so $P(B \mid A) = 3/51 = 1/17$.
+
+By the multiplication rule:
+
+$$P(A \cap B) = P(A) \cdot P(B \mid A) = \frac{1}{13} \cdot \frac{1}{17} = \frac{1}{221} \approx 0.0045$$
+
+About 0.45%. Note that these draws are *not* independent — drawing one ace reduces the probability of the next being an ace. The multiplication rule still applies; we just have to use the conditional probability.
+
+If instead we drew with replacement (shuffle, draw, replace, shuffle, draw), the draws would be independent and the probability would be $(4/52)^2 = 1/169 \approx 0.0059$.
+
+### Example 3 — The Birthday Paradox
+
+In a room of 23 people, what is the probability that at least two share a birthday? (Ignore leap years and assume birthdays are uniformly distributed over 365 days.)
+
+Use the complement: probability that *all 23 birthdays are distinct*.
+
+Person 1: birthday is anything, probability $365/365 = 1$.
+Person 2: must differ from person 1, probability $364/365$.
+Person 3: must differ from both, probability $363/365$.
+...
+Person 23: must differ from all previous, probability $343/365$.
+
+So:
+
+$$P(\text{all distinct}) = \frac{365}{365} \cdot \frac{364}{365} \cdot \frac{363}{365} \cdots \frac{343}{365} = \prod_{k=0}^{22} \frac{365 - k}{365}$$
+
+Computing this product: approximately $0.4927$.
+
+So $P(\text{at least two share}) = 1 - 0.4927 \approx 0.5073$ — just over 50%.
+
+This is wildly counterintuitive. Most people expect 23 to be a tiny fraction of 365, so the probability of any collision must be small. The trick: 23 people give $\binom{23}{2} = 253$ pairs, each of which has a $1/365$ chance of being a match. The expected number of matches is $253/365 \approx 0.69$, comparable to 1. So a collision is roughly 50/50.
+
+This same combinatorial structure underlies the **birthday attack** on cryptographic hash functions: to find a collision in an $n$-bit hash, you only need to try $\sim 2^{n/2}$ random inputs, not $2^n$. A 128-bit hash provides only 64 bits of collision security.
+
+### Example 4 — Medical Test (Base-Rate Neglect)
+
+A diagnostic test has:
+
+- **Sensitivity** $P(\text{positive} \mid \text{disease}) = 0.99$. (99% of sick people test positive.)
+- **Specificity** $P(\text{negative} \mid \text{healthy}) = 0.95$. (95% of healthy people test negative.)
+- **Prevalence** $P(\text{disease}) = 0.01$. (1% of the population has the disease.)
+
+A randomly tested person gets a positive result. What is the probability they actually have the disease?
+
+Apply Bayes' rule:
+
+$$P(\text{disease} \mid \text{positive}) = \frac{P(\text{positive} \mid \text{disease}) \cdot P(\text{disease})}{P(\text{positive})}$$
+
+The denominator, by the law of total probability:
+
+$$P(\text{positive}) = P(\text{positive} \mid \text{disease}) \cdot P(\text{disease}) + P(\text{positive} \mid \text{healthy}) \cdot P(\text{healthy})$$
+
+The false-positive rate is $1 - \text{specificity} = 0.05$. So:
+
+$$P(\text{positive}) = 0.99 \cdot 0.01 + 0.05 \cdot 0.99 = 0.0099 + 0.0495 = 0.0594$$
+
+Bayes' rule:
+
+$$P(\text{disease} \mid \text{positive}) = \frac{0.99 \cdot 0.01}{0.0594} = \frac{0.0099}{0.0594} \approx 0.1667$$
+
+About **17%**. Even with a highly accurate test (99% sensitive, 95% specific), a positive result in a population with 1% prevalence indicates actual disease only about 17% of the time. The other 83% of positives are **false positives**, driven by the much larger healthy population.
+
+**Natural-frequency check.** Imagine 10,000 people. About 100 have the disease (1%). Of those, 99 test positive (99% sensitivity). Of the 9,900 healthy, $0.05 \cdot 9900 = 495$ test positive (5% false-positive rate). Total positives: $99 + 495 = 594$. Of those, only 99 actually sick: $99/594 \approx 16.7\%$. Same answer.
+
+**The lesson.** When the disease is rare, even an accurate test produces mostly false positives. This is **base-rate neglect**: the human intuition that "99% accurate" means "99% chance the positive is real." It does not. The prior matters as much as the likelihood.
+
+This generalizes far beyond medical tests: spam filters, intrusion detectors, fraud-detection systems, anomaly-detection ML models, screening for rare events of any kind. Always ask: what is the base rate?
+
+### Example 5 — The Monty Hall Problem
+
+You are on a game show. There are three doors. Behind one is a car; behind each of the other two is a goat. You pick door 1. The host (Monty), who knows where the car is, opens door 3, revealing a goat. He then offers you the choice: stick with door 1, or switch to door 2.
+
+Should you switch?
+
+**Answer: yes, switching wins the car with probability $2/3$, while sticking wins with probability $1/3$.**
+
+This is wildly counterintuitive. The "intuitive" answer is that, with two doors remaining, the car is equally likely behind either, so it doesn't matter. That is wrong.
+
+**Why switching wins.** Initially, the car is behind each door with probability $1/3$:
+
+- Door 1 (your pick): $1/3$.
+- Door 2: $1/3$.
+- Door 3: $1/3$.
+
+Monty opens a goat door from among the two you did not pick. Monty *always* shows a goat (he knows where the car is and would never open the car door). His action does not change the probability that the car is behind your original pick: still $1/3$.
+
+But it *does* concentrate the other $2/3$ probability onto the single remaining unopened door. So:
+
+- Door 1 (your pick): still $1/3$.
+- Door 2 (the unopened door Monty did not open): $2/3$.
+- Door 3 (opened by Monty): $0$.
+
+Switching to door 2 gives you a $2/3$ chance of winning the car.
+
+**Decision-tree verification.** Imagine the car is equally likely behind each door. Always pick door 1 initially.
+
+- Car behind door 1 ($1/3$): Monty opens 2 or 3 (either goat). Switching loses.
+- Car behind door 2 ($1/3$): Monty must open door 3 (the only remaining goat). Switching to door 2 wins.
+- Car behind door 3 ($1/3$): Monty must open door 2. Switching to door 3 wins.
+
+Switch-wins in 2 of 3 cases: probability $2/3$.
+
+**The intuitive trap.** The "50/50" instinct comes from thinking that, with two doors left, the situation is symmetric. It is not: Monty's choice was constrained by where the car is, and that constraint is informative. The asymmetry between "the door you picked" and "the door Monty didn't open" is the whole trick.
+
+**Generalization.** With $n$ doors, you pick one ($1/n$). Monty opens $n-2$ goat doors. Switching to the remaining unopened door wins with probability $(n-1)/n$. For $n = 100$: switching wins 99% of the time.
+
+The Monty Hall problem famously fooled even professional mathematicians when it appeared in Parade magazine in 1990 (the "Ask Marilyn" column). Many wrote angry letters insisting Marilyn vos Savant was wrong. She was right.
+
+### Example 6 — Sensor False Positive (Intrusion Detector)
+
+An intrusion-detection system has:
+
+- $P(\text{alarm} \mid \text{intruder}) = 0.99$ (sensitivity).
+- $P(\text{alarm} \mid \text{no intruder}) = 0.05$ (false-positive rate).
+- $P(\text{intruder per night}) = 0.001$ (base rate).
+
+The alarm goes off tonight. What is the probability there is actually an intruder?
+
+By Bayes:
+
+$$P(\text{intruder} \mid \text{alarm}) = \frac{P(\text{alarm} \mid \text{intruder}) \cdot P(\text{intruder})}{P(\text{alarm})}$$
+
+Denominator:
+
+$$P(\text{alarm}) = 0.99 \cdot 0.001 + 0.05 \cdot 0.999 = 0.00099 + 0.04995 = 0.05094$$
+
+Posterior:
+
+$$P(\text{intruder} \mid \text{alarm}) = \frac{0.00099}{0.05094} \approx 0.0194$$
+
+About **2%**. The alarm goes off and there is a 98% chance it is a false alarm. Over a year of nightly operation, this system fires $\sim 0.05 \cdot 365 \approx 18$ times, of which $\sim 0.4$ are real intrusions. The homeowner stops responding within weeks. The system is useless without a complementary mechanism (camera verification, multiple-sensor agreement, etc.) to drive the false-positive rate down.
+
+This is exactly the issue with consumer home-security systems and is why most have moved to camera-verified alarms.
+
+### Example 7 — System Reliability: Series vs Parallel
+
+Suppose a system has 3 components, each with reliability $r = 0.99$ (probability of working over the mission). Assume independence (a heroic assumption — see Example 8).
+
+**Series configuration.** All 3 must work for the system to work.
+
+$$P(\text{system works}) = r^3 = 0.99^3 = 0.970299 \approx 0.97$$
+
+Failure probability: $\approx 0.03$ (3%). Three sequential components turn a 1% individual failure rate into a 3% system failure rate.
+
+**Parallel configuration.** At least 1 must work for the system to work.
+
+$$P(\text{system fails}) = (1-r)^3 = 0.01^3 = 10^{-6}$$
+
+$$P(\text{system works}) = 1 - 10^{-6} \approx 0.999999$$
+
+Failure probability $10^{-6}$: a millionfold improvement over a single component. Parallel redundancy is enormously powerful — as long as the assumption of independence holds.
+
+**Mixed configurations.** Real systems combine series and parallel. For instance, two redundant flight computers (parallel), each connected to a series of sensors. Compute the overall reliability by working bottom-up: collapse each parallel block into an effective single component, then multiply through the series.
+
+**Mean Time Between Failures (MTBF).** For a component with constant failure rate $\lambda$, the MTBF is $1/\lambda$. For a system in series with components of MTBFs $T_1, T_2, T_3$, the system MTBF is $1/(\sum 1/T_i)$ — always less than the smallest individual MTBF. For parallel redundancy, MTBF grows.
+
+### Example 8 — The Independence Trap
+
+A safety engineer designs a fault-tolerant system with two redundant power supplies. The engineer reasons: each supply has 99.9% reliability per year, so the probability *both* fail in the same year is $(10^{-3})^2 = 10^{-6}$ — a million times safer than a single supply.
+
+The reality: both supplies share a power cord that runs into a single wall outlet. A lightning strike, a building power failure, or an HVAC water leak that shorts the outlet takes out both supplies simultaneously. The "independence" assumption is violated by the **common-mode failure** of the shared dependency.
+
+After the common-mode contribution, the realistic failure probability of the "redundant" system might be $\sim 10^{-4}$ — *ten thousand times worse* than the naive calculation predicted.
+
+**The general lesson.** Two failures are independent only if there is no common cause. Real systems have many shared dependencies: power, cooling, software, manufacturing batches, operator error, environmental conditions. NASA's mission-design analyses spend enormous effort hunting down hidden common-mode failures (the Challenger O-ring failure was a common-mode failure: both primary and secondary seals failed at low temperature).
+
+When you multiply probabilities under "independence," ask: *what could make them correlated?* The answer is usually nontrivial, and your real-world failure probability will be larger — sometimes much larger — than the independent-assumption calculation predicts.
+
+The Fukushima nuclear disaster, the 2003 Northeast blackout, the 737 MAX MCAS failures, and many financial crises all share a structural pattern: nominally independent failures turned out to be correlated through hidden common causes. Engineering humility about independence is one of the most important practical applications of probability theory.
+
+## Engineering Connections
+
+### Bayes' Rule as the Foundation of Bayesian Inference
+
+The Kalman filter, used in every aircraft autopilot, every GPS receiver, and every robotic navigation system, is fundamentally a recursive application of Bayes' rule. At each time step:
+
+1. Predict the next state given the dynamics model (the "prior" for the next step).
+2. Observe the measurement.
+3. Update via Bayes' rule to get the posterior over the state.
+4. Repeat.
+
+The math is more involved (Gaussian distributions, linear dynamics) but the structure is pure Bayes. The same structure underlies particle filters, hidden Markov models, and Bayesian neural networks.
+
+### ML Classifier Outputs: Softmax as Probability
+
+A neural network's softmax output is, formally, a probability distribution over classes. For an image classifier with 1000 classes, softmax emits a 1000-vector of non-negative numbers summing to 1. The interpretation: $P(\text{class} = c \mid \text{image})$.
+
+**But:** is this really a probability? Only if the model is **calibrated**. A model whose "0.9 confidence" predictions are correct 90% of the time is calibrated. Many deep nets are *not* calibrated — they are overconfident, with raw softmax outputs of 0.99 corresponding to true accuracies of only 0.85 or so. Calibration techniques (temperature scaling, Platt scaling, isotonic regression) are applied post-hoc to fix this.
+
+In safety-critical applications, calibration is essential. A self-driving car's "95% confident: pedestrian" must really mean a 5% chance of error, not a 30% chance.
+
+### False Alarm Rates in Radar (PD and PFA)
+
+In radar signal processing, **PD** = probability of detection (sensitivity), **PFA** = probability of false alarm (false-positive rate). These are tied together by the detector design: pushing PD up necessarily pushes PFA up too, in a relationship characterized by the **receiver operating characteristic** (ROC) curve.
+
+For an air-traffic radar, PFA must be extraordinarily low ($\sim 10^{-6}$) because the cost of a false alarm (scrambling fighter jets) is high. For a fire detector in a kitchen, PFA can be much higher because cooking smoke produces real positives.
+
+The same ROC trade-off applies to medical tests, fraud detection, intrusion detection, content moderation, and any binary classification system.
+
+### Cryptography: Birthday Attacks on Hash Functions
+
+A cryptographic hash function (SHA-256, BLAKE3) maps arbitrary input to a fixed-size output. "Collision resistance" requires that two distinct inputs have the same hash with negligible probability. By the birthday-paradox argument: to find a collision in an $n$-bit hash, an adversary needs only $\sim 2^{n/2}$ trials. A 128-bit hash provides only 64 bits of collision security. This is why SHA-256 is preferred over MD5 (128-bit) or SHA-1 (160-bit) for collision-critical applications.
+
+### Aviation: NASA Mission Risk Analysis
+
+NASA's mission risk analyses use **Probabilistic Risk Assessment (PRA)** — a quantitative framework for combining many sources of failure (hardware, software, environment, human operator) into an overall mission failure probability. Bayes' rule and the law of total probability are the workhorses. PRA was developed in the wake of the Challenger disaster (1986), when it became clear that NASA's pre-Challenger risk estimates ("$10^{-5}$ failure per flight") were wildly optimistic; engineers' bottom-up PRA estimates were closer to $10^{-2}$ — and that turned out to be roughly correct over the Shuttle program's history.
+
+### Motion Planning: PRM and RRT
+
+Probabilistic roadmaps (PRM) and rapidly-exploring random trees (RRT) are motion-planning algorithms that sample the configuration space randomly. They find paths in cluttered environments that exact planners cannot handle. The "probabilistic" in their names refers to the random sampling — the algorithms are guaranteed to find a path *with probability approaching 1* as the sample count grows.
+
+Most modern robot manipulators (industrial arms, humanoids, surgical robots) use PRM or RRT under the hood. The mathematical guarantee — convergence in probability — is exactly the law of large numbers applied to path-planning.
+
+### Communications: Shannon Limits and LDPC
+
+Claude Shannon's 1948 *A Mathematical Theory of Communication* used probability to characterize the capacity of a noisy channel. Modern error-correcting codes (LDPC, polar codes) drive transmission error rates from $\sim 10^{-2}$ (raw radio) down to $\sim 10^{-12}$ (decoded data). Your 5G phone uses LDPC; spacecraft (Curiosity, Voyager) use related codes. Probability theory is the foundation of the entire field.
+
+### Probabilistic Programming: Stan, PyMC, Pyro
+
+The modern Bayesian inference toolchain (Stan, PyMC, Pyro, Edward, Turing) lets you specify a probability model and a posterior query in code, and uses Markov-chain Monte Carlo or variational inference to compute the answer. These libraries are increasingly used in everything from drug-trial analysis to election forecasting to particle physics.
+
+## Practice Set
+
+### Warm-ups: Dice and Coins
+
+1. A fair six-sided die is rolled. What is the probability of rolling a 6?
+2. A fair six-sided die is rolled. What is the probability of rolling an even number?
+3. Two fair coins are flipped. What is the probability of exactly one head?
+4. Three fair coins are flipped. What is the probability of exactly two heads?
+5. Two fair dice are rolled. What is the probability of the sum being 7?
+6. Two fair dice are rolled. What is the probability of the sum being 11?
+
+### Cards
+
+7. A card is drawn from a standard 52-card deck. What is the probability it is a heart?
+8. A card is drawn. What is the probability it is a face card (jack, queen, king)?
+9. Two cards are drawn in sequence without replacement. What is the probability both are hearts?
+10. Two cards are drawn without replacement. What is the probability at least one is a heart? (Hint: use the complement.)
+
+### Conditional Probability
+
+11. A family has two children. Given that at least one is a boy (assume boys and girls are equally likely), what is the probability both are boys? (Answer is *not* $1/2$.)
+12. A box has 3 red and 7 blue balls. Two balls are drawn without replacement. Given the first is red, what is the probability the second is also red?
+
+### Inclusion-Exclusion (3 sets)
+
+13. In a class of 30 students, 18 take math, 15 take physics, 12 take chemistry; 10 take both math and physics, 7 take math and chemistry, 6 take physics and chemistry; 4 take all three. How many take at least one? How many take none?
+
+### Bayes' Rule
+
+14. A factory has two machines, A and B. Machine A makes 60% of the parts; machine B makes 40%. Machine A's defect rate is 2%; machine B's is 5%. A randomly selected part is defective. What is the probability it came from machine A?
+15. A blood test has 95% sensitivity and 98% specificity for a disease with 0.5% prevalence. What is $P(\text{disease} \mid \text{positive})$?
+16. Same scenario, but the disease prevalence is 20% (e.g., screening a high-risk subpopulation). Now what is $P(\text{disease} \mid \text{positive})$? Compare to question 15.
+
+### System Reliability
+
+17. A drone has 4 motors in parallel-redundant configuration (any 3 of 4 can sustain flight). Each motor has reliability $0.99$ per flight. What is the probability the drone completes the flight? (Hint: drone fails if 2 or more motors fail.)
+18. A satellite has 3 redundant computers in a "2 of 3" voting arrangement. Each computer has reliability $0.95$. What is the system reliability (probability at least 2 work)?
+
+### Monty Hall Variant
+
+19. The Monty Hall problem with 4 doors: you pick door 1; Monty opens 2 of the remaining 3 doors, both goats; you may stick with door 1 or switch to the 4th door. What is the probability of winning if you switch?
+
+### Conjunction Fallacy
+
+20. "Linda is 31 years old, single, outspoken, and very bright. She majored in philosophy. As a student, she was deeply concerned with issues of discrimination and social justice." Which is more probable: (a) Linda is a bank teller, or (b) Linda is a bank teller and is active in the feminist movement? Explain why most people answer wrong.
+
+### Birthday Paradox
+
+21. In a room of 40 people, estimate the probability that at least two share a birthday. (Approximate using the formula or natural intuition; full computation OK.)
+
+### Challenge: Information and Independence
+
+22. Two events $A$ and $B$ are independent. Prove that $A$ and $B^c$ are also independent.
+23. You roll two dice. Are the events "first die is 4" and "sum is 7" independent? Verify by computing $P(A)$, $P(B)$, and $P(A \cap B)$.
+
+### Error-Spotting
+
+24. A student computes: "the probability of rolling at least one 6 in 6 rolls of a die is $6 \cdot (1/6) = 1$." What is wrong?
+25. A student computes the probability of two events $A$ and $B$ both occurring as $P(A) + P(B)$. What is wrong, and what should it be?
+26. A student writes "Since the coin has just landed on heads 5 times in a row, the next flip is more likely to be tails to balance things out." Name the fallacy.
+
+### Answers
+
+1. $1/6 \approx 0.167$.
+2. $3/6 = 1/2$.
+3. 2 of the 4 outcomes (HT, TH) have one head: $2/4 = 1/2$.
+4. 3 of the 8 outcomes have exactly two heads (HHT, HTH, THH): $3/8 = 0.375$.
+5. 6 of the 36 outcomes sum to 7 ($(1,6), (2,5), (3,4), (4,3), (5,2), (6,1)$): $6/36 = 1/6$.
+6. 2 of the 36 outcomes sum to 11 ($(5,6), (6,5)$): $2/36 = 1/18 \approx 0.056$.
+
+7. $13/52 = 1/4$.
+8. $12/52 = 3/13 \approx 0.231$.
+9. $(13/52) \cdot (12/51) = 156/2652 = 1/17 \approx 0.0588$.
+10. Complement: probability *neither* is a heart = $(39/52)(38/51) = 1482/2652 \approx 0.559$. So probability at least one is a heart $\approx 0.441$.
+
+11. Sample space: $\{BB, BG, GB, GG\}$, equally likely. Given at least one boy, remaining outcomes: $\{BB, BG, GB\}$. Of these, only $BB$ has both boys: $1/3$.
+12. After drawing a red, 2 red and 7 blue remain (9 total). $P(\text{red second} \mid \text{red first}) = 2/9 \approx 0.222$.
+
+13. Inclusion-exclusion: $|M \cup P \cup C| = 18 + 15 + 12 - 10 - 7 - 6 + 4 = 26$. So 26 take at least one; $30 - 26 = 4$ take none.
+
+14. $P(\text{defect}) = 0.6 \cdot 0.02 + 0.4 \cdot 0.05 = 0.012 + 0.020 = 0.032$. $P(A \mid \text{defect}) = (0.012)/(0.032) = 0.375$.
+
+15. Denominator: $0.95 \cdot 0.005 + 0.02 \cdot 0.995 = 0.00475 + 0.01990 = 0.02465$. Posterior: $0.00475 / 0.02465 \approx 0.193$. So $\sim 19\%$.
+
+16. Denominator: $0.95 \cdot 0.20 + 0.02 \cdot 0.80 = 0.190 + 0.016 = 0.206$. Posterior: $0.190 / 0.206 \approx 0.922$. So $\sim 92\%$. The base rate matters enormously: same test, very different posterior.
+
+17. Drone fails if 2, 3, or 4 motors fail. Let $p = 0.01$ (single-motor failure prob). $P(\text{exactly } k \text{ fail}) = \binom{4}{k} p^k (1-p)^{4-k}$. Failures: $\binom{4}{2}(0.01)^2(0.99)^2 + \binom{4}{3}(0.01)^3(0.99) + (0.01)^4 \approx 6 \cdot 0.0001 \cdot 0.9801 + \text{negligible} \approx 5.88 \times 10^{-4}$. So $P(\text{success}) \approx 0.99941$.
+
+18. $P(\text{at least 2 of 3 work})$ with $r = 0.95$: $\binom{3}{2} r^2 (1-r) + r^3 = 3 \cdot 0.9025 \cdot 0.05 + 0.857375 = 0.135375 + 0.857375 = 0.99275$. So $\sim 99.3\%$.
+
+19. Initially, car is behind your door with probability $1/4$, behind the "rest" group with probability $3/4$. Monty opens 2 goat doors from the 3 you didn't pick, concentrating the $3/4$ onto the remaining door. So switching wins with probability $3/4$.
+
+20. **Answer: (a)** is more probable. (b) is the *conjunction* of "bank teller" and "feminist," which by the conjunction rule has probability $P(\text{bank teller} \cap \text{feminist}) \le P(\text{bank teller})$. Most people rank (b) higher because the description "matches" the feminist activist stereotype — a representativeness heuristic that ignores the conjunction rule. Tversky and Kahneman's famous experiment showed that >80% of subjects, including experienced statisticians, get this wrong.
+
+21. Use the formula: $P(\text{all distinct}) = \prod_{k=0}^{39} (365-k)/365 \approx 0.109$. So $P(\text{collision}) \approx 0.891$. About 89%. Nearly certain.
+
+22. $P(A \cap B^c) = P(A) - P(A \cap B) = P(A) - P(A)P(B)$ (by independence) $= P(A)(1 - P(B)) = P(A) P(B^c)$. So $A$ and $B^c$ are independent. $\square$
+
+23. $P(\text{first die is 4}) = 6/36 = 1/6$. $P(\text{sum is 7}) = 6/36 = 1/6$. $P(\text{both}) = P((4, 3)) = 1/36$. Check: $(1/6)(1/6) = 1/36$. So **yes, independent**. (Mildly surprising — the sum constraint and the first-die constraint are independent because, for any value of the first die, exactly one value of the second die gives sum 7.)
+
+24. The probabilities don't add like that. Use the complement: $P(\text{no 6 in 6 rolls}) = (5/6)^6 \approx 0.335$. So $P(\text{at least one 6}) \approx 0.665$, not 1. (Or check: by the addition rule with inclusion-exclusion you'd have to subtract overlaps; the naive sum overcounts.)
+
+25. $P(A) + P(B)$ would be correct only for *disjoint* (mutually exclusive) events, and even then it represents the *union*, not the intersection. For "both occur," use $P(A \cap B) = P(A) P(B \mid A)$, which reduces to $P(A) P(B)$ if independent.
+
+26. **Gambler's fallacy.** Independent coin flips have no memory. $P(\text{tails on flip 6}) = 1/2$ regardless of the previous 5 flips. The coin does not "owe" the universe a tails.
+
+## Build Task
+
+Write a Python Monte Carlo simulator `probability_simulations.py`.
+
+The file should contain four simulation functions, each running at least 10,000 trials, and produce convergence plots demonstrating the law of large numbers.
+
+```python
+import random
+import math
+import matplotlib.pyplot as plt
+
+
+def simulate_birthday_paradox(num_people=23, num_trials=100_000):
+    """
+    Empirically estimate the probability that, in a room of
+    `num_people` people, at least two share a birthday.
+    Returns the empirical probability.
+    """
+    collisions = 0
+    for _ in range(num_trials):
+        birthdays = [random.randint(1, 365) for _ in range(num_people)]
+        if len(set(birthdays)) < num_people:
+            collisions += 1
+    return collisions / num_trials
+
+
+def simulate_monty_hall(num_trials=100_000):
+    """
+    Simulate the Monty Hall problem with both `stay` and `switch`
+    strategies. Returns a tuple (P_win_stay, P_win_switch).
+    """
+    stay_wins = 0
+    switch_wins = 0
+    for _ in range(num_trials):
+        car = random.randint(1, 3)
+        pick = random.randint(1, 3)
+
+        # Monty opens a goat door that is not the player's pick.
+        possible_openings = [d for d in [1, 2, 3] if d != pick and d != car]
+        monty_opens = random.choice(possible_openings)
+
+        # The remaining unopened, unpicked door.
+        switch_door = [d for d in [1, 2, 3] if d != pick and d != monty_opens][0]
+
+        if pick == car:
+            stay_wins += 1
+        if switch_door == car:
+            switch_wins += 1
+
+    return stay_wins / num_trials, switch_wins / num_trials
+
+
+def simulate_medical_test(
+    prevalence=0.01,
+    sensitivity=0.99,
+    specificity=0.95,
+    num_trials=1_000_000,
+):
+    """
+    Simulate the medical-test scenario. Returns P(disease | positive)
+    empirically.
+    """
+    sick_and_positive = 0
+    positive = 0
+    for _ in range(num_trials):
+        is_sick = random.random() < prevalence
+        if is_sick:
+            tests_positive = random.random() < sensitivity
+        else:
+            tests_positive = random.random() < (1 - specificity)
+        if tests_positive:
+            positive += 1
+            if is_sick:
+                sick_and_positive += 1
+    if positive == 0:
+        return 0.0
+    return sick_and_positive / positive
+
+
+def plot_law_of_large_numbers(num_trials=10_000):
+    """
+    Flip a fair coin `num_trials` times. Plot the running empirical
+    frequency of heads, showing convergence to 0.5.
+    """
+    heads = 0
+    frequencies = []
+    for i in range(1, num_trials + 1):
+        if random.random() < 0.5:
+            heads += 1
+        frequencies.append(heads / i)
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(range(1, num_trials + 1), frequencies, label="Empirical frequency")
+    plt.axhline(y=0.5, color="red", linestyle="--", label="True probability")
+    plt.xscale("log")
+    plt.xlabel("Number of trials (log scale)")
+    plt.ylabel("Empirical frequency of heads")
+    plt.title("Convergence of empirical frequency to true probability")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.savefig("law_of_large_numbers.png", dpi=100)
+    plt.close()
+
+
+if __name__ == "__main__":
+    print("Birthday paradox (n=23):")
+    p = simulate_birthday_paradox(23, 100_000)
+    print(f"  Empirical: {p:.4f}   Theoretical: ~0.5073")
+
+    print("\nMonty Hall:")
+    p_stay, p_switch = simulate_monty_hall(100_000)
+    print(f"  Stay: {p_stay:.4f}   Theoretical: ~0.3333")
+    print(f"  Switch: {p_switch:.4f}   Theoretical: ~0.6667")
+
+    print("\nMedical test (1% prevalence):")
+    p = simulate_medical_test(0.01, 0.99, 0.95, 1_000_000)
+    print(f"  P(disease | positive) = {p:.4f}   Theoretical: ~0.1667")
+
+    print("\nGenerating law-of-large-numbers convergence plot...")
+    plot_law_of_large_numbers(10_000)
+    print("  Saved as law_of_large_numbers.png")
+```
+
+**Run it.** With 100,000 trials per scenario, your empirical results should agree with the theoretical answers to within $\pm 0.005$ or so. If they do not agree, something is wrong with either the simulation or your understanding of the problem — debug.
+
+**Stretch goals.**
+
+- Add a simulation of the **birthday attack** on a 16-bit toy hash: how many random inputs do you need to find a collision? Compare to the theoretical $\sim 2^{8} = 256$ from the birthday-paradox formula.
+- Add a simulation of **system reliability** with both series and parallel configurations. Verify that the empirical failure rate matches the theoretical formulas.
+- Add a simulation of the **gambler's ruin** problem: starting with \$100, betting \$1 per round on a fair coin, what is the probability of going bust before doubling your money? (Spoiler: $1/2$, by symmetry.)
+
+## Quiz
+
+1. Define the sample space $S$ and event $A$ for the experiment of rolling two fair six-sided dice and considering the event "sum is 7."
+
+2. A fair coin is flipped 5 times. Compute the probability of getting exactly 3 heads. (Hint: use combinations.)
+
+3. State the addition rule for two events $A$ and $B$. When does it simplify to $P(A) + P(B)$?
+
+4. Two events $A$ and $B$ have $P(A) = 0.4, P(B) = 0.3, P(A \cap B) = 0.1$. Are they independent? Justify.
+
+5. Why does conditioning on $A$ change the probability of $B$ (unless they are independent)? Explain in plain words.
+
+6. State Bayes' rule and explain each term: posterior, likelihood, prior, evidence.
+
+7. In the Monty Hall problem, why does "always switch" win with probability $2/3$ rather than $1/2$? What is the role of Monty's knowledge?
+
+8. Why is independence an *assumption* and not a default? Give an engineering example where the independence assumption is wrong and the consequences are severe.
+
+### Quiz Answers
+
+1. $S = \{(i, j) : i, j \in \{1,2,3,4,5,6\}\}$ with $|S| = 36$. $A = \{(1,6), (2,5), (3,4), (4,3), (5,2), (6,1)\}$ with $|A| = 6$. $P(A) = 6/36 = 1/6$.
+
+2. $P(\text{exactly 3 heads}) = \binom{5}{3} (1/2)^5 = 10/32 = 5/16 = 0.3125$.
+
+3. $P(A \cup B) = P(A) + P(B) - P(A \cap B)$. It simplifies to $P(A) + P(B)$ when $A$ and $B$ are **disjoint** (mutually exclusive): $P(A \cap B) = 0$.
+
+4. Independence requires $P(A \cap B) = P(A) P(B) = 0.4 \cdot 0.3 = 0.12$. Actual: $0.10$. So **not independent**. (Slightly negatively correlated.)
+
+5. Conditioning restricts the sample space to the slice where $A$ has occurred. If $B$'s relative frequency in that slice differs from its overall frequency, then $A$ provides information about $B$. Only when $B$'s frequency in the $A$-slice equals its overall frequency are $A$ and $B$ independent.
+
+6. $P(A \mid B) = \frac{P(B \mid A) P(A)}{P(B)}$. The **posterior** $P(A \mid B)$ is the updated probability of $A$ given that $B$ was observed. The **likelihood** $P(B \mid A)$ is the probability of observing $B$ if $A$ is true. The **prior** $P(A)$ is the probability of $A$ before observing $B$. The **evidence** $P(B)$ is the total probability of the observation, often computed via the law of total probability.
+
+7. Monty's choice of which door to open is constrained by where the car is — he always reveals a goat. This means his action provides information. Your original pick has prior probability $1/3$ of being the car; Monty's action does not change that. But his action does eliminate one of the other two doors as a possibility, so the remaining unopened door inherits the full $2/3$ that was distributed across the two doors you did not pick. If Monty did not know where the car was and just opened a random door (which happened to be a goat), the symmetry is different and switching gives $1/2$.
+
+8. Independence requires no common cause. In engineering, "redundant" systems often share power supplies, cooling, software, manufacturing batches, or environmental conditions, creating correlated failures. **Example:** the Fukushima nuclear plant had multiple redundant backup generators, but they were all in the same basement and all were flooded by the tsunami — a single common-mode failure took out the redundancy. Assuming independence without checking gives a failure-probability estimate that may be orders of magnitude too optimistic.
+
+## Proof of Completion
+
+You have finished this lesson when you can:
+
+- Pass the inline lesson check at 100% on first attempt.
+- Set up sample spaces and events for any small probability problem.
+- Compute conditional probabilities and apply Bayes' rule without consulting the formula sheet.
+- Recognize and explain each of the major fallacies (gambler's, conjunction, base-rate neglect, Monty Hall).
+- Reason fluently about series vs parallel system reliability and the assumption of independence.
+- Run `probability_simulations.py` and verify each of the four classical results (birthday, Monty Hall, medical test, law of large numbers) empirically with at least 10,000 trials each.
+- Commit `probability_simulations.py` and the generated `law_of_large_numbers.png` to your repo as evidence.
+
+## Sources and Further Study
+
+- **Grinstead and Snell, *Introduction to Probability*** (AMS, 1997; free PDF). The canonical undergraduate textbook. Beautifully written, with hundreds of worked examples. Available legally and freely from the AMS website.
+- **Blitzstein and Hwang, *Introduction to Probability*** (CRC Press, 2014; also free PDF from the author). The textbook for Harvard's Stat 110 course; widely regarded as the best modern undergraduate probability text. Companion lectures are on YouTube.
+- **Henk Tijms, *Understanding Probability*** (Cambridge, 2012). A more applied complement to Blitzstein; lots of real-world examples.
+- **Bertsekas and Tsitsiklis, *Introduction to Probability*** (MIT, 2008). The textbook for MIT 6.041 and 6.431 (*Probabilistic Systems Analysis and Applied Probability*). The engineering perspective: probability for engineers, with applications to signal processing, queueing, and reliability throughout.
+- **MIT OCW 6.041 / 18.05**. Free video lectures and problem sets. 6.041 is the engineering version; 18.05 is the introductory math version.
+- **E. T. Jaynes, *Probability Theory: The Logic of Science*** (Cambridge, 2003). The Bayesian's bible. Difficult but transformative; argues that probability theory is the only consistent extension of logic to handle uncertainty. Read after a first probability course; the polemic against frequentism is fun.
+- **Gerd Gigerenzer, *Calculated Risks*** (2003). A popular-level treatment of how doctors, lawyers, and ordinary people misinterpret probabilities, and how natural-frequency framing fixes most of the confusion. Required reading for anyone communicating probabilistic information to non-experts.
+- **3blue1brown's probability videos on YouTube**. Beautifully animated. The Bayes' theorem video and the binomial-distribution video are especially good.
+- **Kahneman, *Thinking, Fast and Slow*** (2011). The behavioral-economics perspective on probability fallacies — the conjunction fallacy, base-rate neglect, the gambler's fallacy, the representativeness heuristic, anchoring. Essential for understanding why probability intuition is so often wrong.
+
+## Next Lesson Bridge
+
+You now have the working vocabulary of probability: sample spaces, events, the Kolmogorov axioms, the addition and multiplication rules, independence, conditional probability, Bayes' rule, and the law of total probability. You have seen how these tools apply to medical tests, sensor false-positive rates, system reliability, the Monty Hall problem, and the birthday paradox. You have built a Monte Carlo simulator to verify your reasoning empirically.
+
+Lesson 20 — *Basic Statistics: Mean, Median, Mode* — turns the page from probability (the model for randomness) to statistics (the way we estimate model parameters from data). If probability lets you predict "given the model, what will the data look like?", statistics lets you ask the inverse question: "given the data, what is the model?" The two are tightly coupled — most of statistical inference is just Bayes' rule applied to data — but the change in perspective is important.
+
+The Math Re-entry module closes with lesson 20. After that, the curriculum opens into pre-calculus, calculus, and linear algebra, then into the upper-division math sequence (real analysis, complex analysis, abstract algebra, optimization, statistics, information theory) that prepares you to read frontier papers in Physical AI.
+
+Probability will be everywhere in what comes next. Information theory (Shannon entropy is $-\sum p_i \log p_i$, a probabilistic quantity). Statistical learning theory (PAC bounds, VC dimension — all probabilistic). Reinforcement learning (Markov decision processes, Q-learning, policy gradients — all probability). Bayesian deep learning (posteriors over neural-net weights). Quantum mechanics (the wave function is a probability amplitude). Statistical mechanics (the Boltzmann distribution is a probability distribution over microstates).
+
+The intuitions you build here will serve you for the rest of your engineering and research life. Master them well.

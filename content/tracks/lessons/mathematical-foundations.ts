@@ -174,40 +174,45 @@ const mathReentryToolkit: Lesson[] = [
     "Writing very large and very small numbers compactly, doing arithmetic in scientific notation, and the order-of-magnitude habit.",
     { estimatedMinutes: 95, checkId: "scientific-notation-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     16,
     "significant-figures-and-uncertainty",
     "Significant Figures and Measurement Uncertainty",
     "Counting significant figures, rules for arithmetic with measured quantities, and tracking uncertainty through a calculation.",
+    { estimatedMinutes: 100, checkId: "significant-figures-and-uncertainty-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     17,
     "engineering-estimation-and-fermi-problems",
     "Engineering Estimation and Fermi Problems",
     "Order-of-magnitude reasoning, breaking unknown quantities into knowable pieces, and the Fermi estimation method for sanity-checking.",
+    { estimatedMinutes: 95, checkId: "engineering-estimation-and-fermi-problems-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     18,
     "reading-data-tables-and-charts",
     "Reading Data Tables and Charts",
     "Reading bar charts, line plots, scatterplots, and data tables; spotting misleading axes, scales, and aggregation choices.",
+    { estimatedMinutes: 80, checkId: "reading-data-tables-and-charts-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     19,
     "basic-probability-intuition",
     "Basic Probability Intuition",
     "What probability is, simple counting arguments, and using probabilities to reason about reliability and risk.",
+    { estimatedMinutes: 110, checkId: "basic-probability-intuition-check" },
   ),
-  future(
+  available(
     "math-reentry-toolkit",
     20,
     "basic-statistics-mean-median-mode",
     "Basic Statistics: Mean, Median, Mode, and Spread",
     "Mean, median, and mode; standard deviation as a measure of spread; and choosing the right summary statistic for engineering data.",
+    { estimatedMinutes: 100, checkId: "basic-statistics-mean-median-mode-check" },
   ),
 ];
 
