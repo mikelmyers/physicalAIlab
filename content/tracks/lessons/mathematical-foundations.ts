@@ -582,21 +582,29 @@ const geometryTrigVectors: Lesson[] = [
       checkId: "vector-arithmetic-and-scaling-check",
     },
   ),
-  future(
+  available(
     "geometry-trig-and-vectors",
     15,
     "dot-product-and-projections",
     "Dot Product and Projections",
     "The dot product as a measure of alignment, the geometric formula |a||b|cos(theta), and using it to project one vector onto another.",
-    { prerequisites: ["vectors-from-zero"] },
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["vector-arithmetic-and-scaling"],
+      checkId: "dot-product-and-projections-check",
+    },
   ),
-  future(
+  available(
     "geometry-trig-and-vectors",
     16,
     "cross-product-and-right-hand-rule",
     "The Cross Product and the Right-Hand Rule",
     "The cross product in 3D, the right-hand rule for orientation, magnitude as parallelogram area, and applications to torque and angular momentum.",
-    { prerequisites: ["vectors-from-zero"] },
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["dot-product-and-projections"],
+      checkId: "cross-product-and-right-hand-rule-check",
+    },
   ),
 ];
 

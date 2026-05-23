@@ -1,0 +1,508 @@
+# Dot Product and Projections
+
+## Re-entry Promise
+
+This lesson assumes you can read a vector like $(3,4)$, compute magnitude, add and scale vectors, and use cosine for angles. It does not assume you already know why "multiplying" two vectors should mean anything.
+
+Ordinary multiplication takes two numbers and returns one number. Vector multiplication is different because vectors carry direction. There are several useful products. The dot product is the one that answers this question:
+
+> How much of one vector points in the direction of another?
+
+That question appears everywhere in physical AI: forward speed along a path, force doing work, a camera ray aligned with a surface normal, a robot's error along a constraint, and a drone's wind component along its route.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Compute the dot product from components in 2D and 3D.
+- Explain why the result is a scalar, not a vector.
+- Use the geometric formula $\vec{a}\cdot\vec{b}=|\vec{a}||\vec{b}|\cos\theta$.
+- Detect whether two nonzero vectors point mostly together, mostly opposite, or perpendicular.
+- Use the dot product to compute the angle between vectors.
+- Project one vector onto another vector.
+- Distinguish scalar projection from vector projection.
+- Interpret projections in engineering contexts: work, wind, navigation, sensor alignment, and control error.
+- Spot common mistakes, especially projecting onto a non-unit vector incorrectly.
+- Build a small projection calculator and verify it against worked examples.
+
+## Plain-Language Intuition
+
+Imagine shining a flashlight straight down onto the floor. Your hand casts a shadow. The shadow is not the full hand; it is the part of the hand that lies in the floor direction.
+
+A projection is a vector shadow.
+
+If a drone velocity points partly east and partly north, its eastward projection is "how much of that velocity is east." If a force pushes partly along a rail and partly sideways into the rail, the projection along the rail is the part that actually moves the cart. If a robot arm position error points partly along a joint's allowed motion and partly into a hard stop, the projection tells the controller which component can be corrected by that joint.
+
+The dot product is the arithmetic tool that measures that shadow.
+
+## Why This Idea Exists
+
+Engineers needed a compact way to measure alignment. Magnitude alone cannot do it. Two 10 N forces can point in the same direction, opposite directions, or at right angles, and those cases have completely different physical effects.
+
+The dot product solves this by combining size and angle into one scalar:
+
+$$
+\vec{a}\cdot\vec{b}=|\vec{a}||\vec{b}|\cos\theta
+$$
+
+If the angle is small, $\cos\theta$ is positive and large, so the dot product is positive. If the vectors are perpendicular, $\cos 90^\circ=0$, so the dot product is zero. If they point more than 90 degrees apart, $\cos\theta$ is negative, so the dot product is negative.
+
+That sign is not decoration. It tells you whether one vector helps, does nothing, or works against another.
+
+## Core Theory
+
+### Component Definition
+
+For 2D vectors:
+
+$$
+\vec{a}=(a_x,a_y), \quad \vec{b}=(b_x,b_y)
+$$
+
+the dot product is:
+
+$$
+\vec{a}\cdot\vec{b}=a_xb_x+a_yb_y
+$$
+
+For 3D vectors:
+
+$$
+\vec{a}\cdot\vec{b}=a_xb_x+a_yb_y+a_zb_z
+$$
+
+In any dimension, multiply matching components and add the products.
+
+### Geometric Definition
+
+The same operation also equals:
+
+$$
+\vec{a}\cdot\vec{b}=|\vec{a}||\vec{b}|\cos\theta
+$$
+
+where $\theta$ is the angle between the vectors, always taken from 0 degrees to 180 degrees.
+
+This formula is the meaning. The component formula is the fast computation.
+
+### Sign Meaning
+
+For nonzero vectors:
+
+- $\vec{a}\cdot\vec{b}>0$: angle is less than 90 degrees; the vectors mostly point the same way.
+- $\vec{a}\cdot\vec{b}=0$: angle is 90 degrees; the vectors are perpendicular.
+- $\vec{a}\cdot\vec{b}<0$: angle is greater than 90 degrees; the vectors mostly point opposite ways.
+
+### Why Perpendicular Gives Zero
+
+If two vectors are perpendicular, one has no shadow on the other. A force pushing sideways on a sliding cart does no work along the direction of motion. A drone flying north has zero eastward velocity. The dot product records that absence with a zero.
+
+### Magnitude From Dot Product
+
+A vector dotted with itself gives squared magnitude:
+
+$$
+\vec{v}\cdot\vec{v}=v_x^2+v_y^2+v_z^2=|\vec{v}|^2
+$$
+
+So:
+
+$$
+|\vec{v}|=\sqrt{\vec{v}\cdot\vec{v}}
+$$
+
+This is one reason the dot product becomes central in linear algebra.
+
+### Angle Between Vectors
+
+Rearrange the geometric formula:
+
+$$
+\cos\theta=\frac{\vec{a}\cdot\vec{b}}{|\vec{a}||\vec{b}|}
+$$
+
+Then:
+
+$$
+\theta=\cos^{-1}\left(\frac{\vec{a}\cdot\vec{b}}{|\vec{a}||\vec{b}|}\right)
+$$
+
+This only works when both vectors are nonzero. The zero vector has no direction, so it cannot have an angle with another vector.
+
+### Scalar Projection
+
+The scalar projection of $\vec{a}$ onto $\vec{b}$ is the signed length of $\vec{a}$ in the direction of $\vec{b}$:
+
+$$
+\operatorname{comp}_{\vec{b}}\vec{a}=\frac{\vec{a}\cdot\vec{b}}{|\vec{b}|}
+$$
+
+It is a number. It can be positive, zero, or negative.
+
+### Vector Projection
+
+The vector projection of $\vec{a}$ onto $\vec{b}$ is the actual vector shadow of $\vec{a}$ along $\vec{b}$:
+
+$$
+\operatorname{proj}_{\vec{b}}\vec{a}
+=\left(\frac{\vec{a}\cdot\vec{b}}{\vec{b}\cdot\vec{b}}\right)\vec{b}
+$$
+
+This version works even when $\vec{b}$ is not a unit vector, as long as $\vec{b}\ne\vec{0}$.
+
+If $\hat{b}$ is a unit vector, then:
+
+$$
+\operatorname{proj}_{\hat{b}}\vec{a}=(\vec{a}\cdot\hat{b})\hat{b}
+$$
+
+The unit-vector form is beautiful, but it only applies after normalization.
+
+## Visual Or Mental Model
+
+Draw $\vec{b}$ as a floor line. Drop a perpendicular from the head of $\vec{a}$ down to that floor line. The arrow from the tail to the dropped point is $\operatorname{proj}_{\vec{b}}\vec{a}$.
+
+Three cases matter:
+
+1. If the dropped point lands in front of the tail along $\vec{b}$, the projection is positive.
+2. If it lands exactly at the tail, the projection is zero.
+3. If it lands behind the tail, the projection is negative.
+
+This mental picture is the fastest way to avoid sign mistakes.
+
+## Worked Examples
+
+### Example 1: Component Dot Product
+
+Compute:
+
+$$
+(2,3)\cdot(4,5)
+$$
+
+Multiply matching components:
+
+$$
+2\cdot4+3\cdot5=8+15=23
+$$
+
+The dot product is 23.
+
+### Example 2: Perpendicular Test
+
+Are $(3,4)$ and $(-4,3)$ perpendicular?
+
+$$
+(3,4)\cdot(-4,3)=3(-4)+4(3)=-12+12=0
+$$
+
+Yes. The dot product is zero, so the vectors are perpendicular.
+
+### Example 3: Angle Between Vectors
+
+Find the angle between $\vec{a}=(1,0)$ and $\vec{b}=(1,1)$.
+
+$$
+\vec{a}\cdot\vec{b}=1
+$$
+
+$$
+|\vec{a}|=1,\quad |\vec{b}|=\sqrt2
+$$
+
+$$
+\cos\theta=\frac{1}{\sqrt2}
+$$
+
+So $\theta=45^\circ$.
+
+### Example 4: Scalar Projection
+
+Project $\vec{a}=(6,2)$ onto $\vec{b}=(3,0)$ as a scalar length.
+
+$$
+\vec{a}\cdot\vec{b}=18
+$$
+
+$$
+|\vec{b}|=3
+$$
+
+$$
+\operatorname{comp}_{\vec{b}}\vec{a}=18/3=6
+$$
+
+The part of $\vec{a}$ along the positive $x$ direction is 6.
+
+### Example 5: Vector Projection
+
+Project $\vec{a}=(4,3)$ onto $\vec{b}=(1,0)$.
+
+$$
+\operatorname{proj}_{\vec{b}}\vec{a}
+=\left(\frac{(4,3)\cdot(1,0)}{(1,0)\cdot(1,0)}\right)(1,0)
+=4(1,0)=(4,0)
+$$
+
+The vector shadow is $(4,0)$.
+
+### Example 6: Non-Unit Projection
+
+Project $\vec{a}=(4,3)$ onto $\vec{b}=(2,0)$.
+
+Do not use $(\vec{a}\cdot\vec{b})\vec{b}$; $\vec{b}$ is not unit length.
+
+$$
+\vec{a}\cdot\vec{b}=8,\quad \vec{b}\cdot\vec{b}=4
+$$
+
+$$
+\operatorname{proj}_{\vec{b}}\vec{a}=(8/4)(2,0)=(4,0)
+$$
+
+The projection is still $(4,0)$. The direction line is the same.
+
+### Example 7: Work Done By A Force
+
+A cart moves $\vec{d}=(5,0)$ m. A force $\vec{F}=(10,6)$ N acts on it. Work is:
+
+$$
+W=\vec{F}\cdot\vec{d}=10\cdot5+6\cdot0=50\text{ J}
+$$
+
+Only the force component along displacement contributes to work. The sideways 6 N component does no work along the cart's path.
+
+### Example 8: Wind Along A Drone Path
+
+A drone wants to fly along unit direction $\hat{p}=(0.6,0.8)$. Wind velocity is $\vec{w}=(5,0)$ m/s. The wind component along the path is:
+
+$$
+\vec{w}\cdot\hat{p}=5(0.6)+0(0.8)=3\text{ m/s}
+$$
+
+The wind gives a 3 m/s tailwind along the desired path.
+
+## Engineering Connections
+
+### Robotics Control
+
+An error vector from robot to target may contain a component along a path and a component across the path. Projecting the error onto the path tangent tells the controller how far forward or backward it is. Projecting onto the path normal tells it how far sideways it has drifted.
+
+### Computer Vision
+
+Surface normals are often unit vectors. A lighting direction dotted with a surface normal measures how strongly that surface faces the light. This is the backbone of simple shading models and appears again in 3D perception.
+
+### Physics
+
+Work is a dot product:
+
+$$
+W=\vec{F}\cdot\vec{d}
+$$
+
+No alignment means no work. Opposite alignment means negative work, like braking.
+
+### Drone Navigation
+
+Wind, velocity, and route direction are vectors. Projection tells you headwind or tailwind:
+
+$$
+\text{wind along route}=\vec{w}\cdot\hat{r}
+$$
+
+The perpendicular component tells you crosswind.
+
+### Sensor Alignment
+
+If a camera optical axis and target direction have dot product near 1 after normalization, the camera is nearly aimed at the target. If it is near 0, the target is far off-axis.
+
+## Common Failure Modes
+
+1. Treating the dot product as component-wise multiplication instead of summing the products.
+2. Forgetting the dot product is a scalar.
+3. Using the angle formula with the zero vector.
+4. Confusing scalar projection with vector projection.
+5. Projecting onto a non-unit vector as if it were unit length.
+6. Thinking dot product zero means one vector is zero. Nonzero perpendicular vectors also dot to zero.
+7. Forgetting negative dot products are meaningful.
+8. Mixing degrees and radians when computing inverse cosine in code.
+9. Using the wrong vector as the projection target.
+10. Dropping units: force dot displacement gives joules, not newtons or meters.
+
+## Practice Problems
+
+### Warmups
+
+1. Compute $(2,3)\cdot(4,5)$.
+2. Compute $(1,-2)\cdot(3,4)$.
+3. Compute $(0,7)\cdot(5,0)$.
+4. Compute $(2,3,4)\cdot(5,6,7)$.
+5. Compute $(-1,2,-3)\cdot(4,0,5)$.
+6. Compute $\vec{v}\cdot\vec{v}$ for $\vec{v}=(3,4)$.
+7. What is $|\vec{v}|$ if $\vec{v}\cdot\vec{v}=49$?
+8. Is the dot product of two vectors a scalar or vector?
+9. If two nonzero vectors are perpendicular, what is their dot product?
+10. If a dot product is negative, is the angle less than or greater than 90 degrees?
+
+### Alignment And Angles
+
+11. Are $(3,4)$ and $(-4,3)$ perpendicular?
+12. Are $(2,1)$ and $(4,2)$ pointing in the same direction?
+13. Find the angle between $(1,0)$ and $(0,1)$.
+14. Find the angle between $(1,0)$ and $(1,1)$.
+15. Find the angle between $(1,0)$ and $(-1,0)$.
+16. A pair of unit vectors has dot product $0.5$. What is the angle between them?
+17. A pair of unit vectors has dot product $-1$. What is the angle between them?
+18. A pair of unit vectors has dot product $0$. What is the angle between them?
+19. Compute the cosine of the angle between $(3,0)$ and $(3,3)$.
+20. Why must you divide by both magnitudes when finding angle?
+
+### Projections
+
+21. Find the scalar projection of $(6,2)$ onto $(3,0)$.
+22. Find the vector projection of $(4,3)$ onto $(1,0)$.
+23. Find the vector projection of $(4,3)$ onto $(0,1)$.
+24. Find the scalar projection of $(3,4)$ onto the unit vector $(1,0)$.
+25. Find the scalar projection of $(3,4)$ onto the unit vector $(0,1)$.
+26. Project $(2,2)$ onto $(1,1)$.
+27. Project $(3,0)$ onto $(1,1)$.
+28. Project $(1,2)$ onto $(2,0)$.
+29. Why is $\operatorname{proj}_{\vec{b}}\vec{a}$ undefined when $\vec{b}=\vec{0}$?
+30. What is the difference between scalar projection and vector projection?
+
+### Applications
+
+31. A cart moves $(5,0)$ m under force $(10,6)$ N. Compute work.
+32. A force $(4,3)$ N acts over displacement $(2,0)$ m. Compute work.
+33. A braking force $(-8,0)$ N acts over displacement $(3,0)$ m. Compute work.
+34. Wind $(5,0)$ m/s blows while route direction is unit vector $(0.6,0.8)$. Find wind along route.
+35. The same wind and route have what crosswind magnitude if total wind speed is 5 m/s?
+36. A camera forward unit vector is $(1,0,0)$ and target direction is $(0.8,0.6,0)$. What is their dot product?
+37. Is the target in front of the camera if the dot product of forward and target direction is positive?
+38. A robot path tangent is $(0,1)$. Error vector is $(3,-4)$. What is signed along-track error?
+39. Same error: what is the sideways component along $(1,0)$?
+40. If a surface normal and light direction have dot product 0, what does that mean for direct lighting?
+
+### Challenge And Error Spotting
+
+41. Explain why $(\vec{a}\cdot\vec{b})\vec{b}$ is not the projection formula unless $\vec{b}$ is unit length.
+42. Derive $\operatorname{proj}_{\vec{b}}\vec{a}$ using a unit vector $\hat{b}$.
+43. Show that $\vec{a}\cdot\vec{b}=\vec{b}\cdot\vec{a}$.
+44. Show that $\vec{a}\cdot(\vec{b}+\vec{c})=\vec{a}\cdot\vec{b}+\vec{a}\cdot\vec{c}$ using components.
+45. A student says $(1,2)\cdot(3,4)=(3,8)$. What operation did they do, and why is it not the dot product?
+46. A student projects $(4,3)$ onto $(2,0)$ and gets $(16,0)$. Find the mistake.
+47. A vector has negative projection onto a desired path. What does that mean physically?
+48. Why is the dot product useful for deciding if a robot has passed a waypoint?
+49. Why can a large force do zero work over a displacement?
+50. Name one situation where a projection is more useful than the full vector.
+
+## Answer Key
+
+1. 23.
+2. $3-8=-5$.
+3. 0.
+4. $10+18+28=56$.
+5. $-4+0-15=-19$.
+6. 25.
+7. 7.
+8. Scalar.
+9. 0.
+10. Greater than 90 degrees.
+11. Yes, because the dot product is 0.
+12. Yes, $(4,2)=2(2,1)$.
+13. 90 degrees.
+14. 45 degrees.
+15. 180 degrees.
+16. 60 degrees.
+17. 180 degrees.
+18. 90 degrees.
+19. $9/(3\sqrt{18})=1/\sqrt2$.
+20. Otherwise the dot product still includes vector lengths, not just angle.
+21. 6.
+22. $(4,0)$.
+23. $(0,3)$.
+24. 3.
+25. 4.
+26. $(2,2)$.
+27. $(1.5,1.5)$.
+28. $(1,0)$.
+29. The target direction has zero length and cannot define a line.
+30. Scalar projection is signed length; vector projection is the vector shadow.
+31. 50 J.
+32. 8 J.
+33. -24 J.
+34. 3 m/s.
+35. 4 m/s.
+36. 0.8.
+37. Yes, if both directions are measured in the same frame.
+38. -4.
+39. 3.
+40. The light is tangent to the surface; direct diffuse lighting is zero in the simplest model.
+41. The missing division by $\vec{b}\cdot\vec{b}$ causes the result to scale with the length of $\vec{b}$ twice.
+42. $\hat{b}=\vec{b}/|\vec{b}|$, so $(\vec{a}\cdot\hat{b})\hat{b}=(\vec{a}\cdot\vec{b}/|\vec{b}|)(\vec{b}/|\vec{b}|)=(\vec{a}\cdot\vec{b}/(\vec{b}\cdot\vec{b}))\vec{b}$.
+43. $a_xb_x+a_yb_y=b_xa_x+b_ya_y$.
+44. Expand components and group terms.
+45. They did component-wise multiplication; dot product sums those products to get 11.
+46. They used $\vec{a}\cdot\vec{b}$ as the scale directly; the correct scale is $8/4=2$, so the projection is $(4,0)$.
+47. The vector points backward relative to the path direction.
+48. The dot product with the path direction changes sign when the robot crosses a plane/line through the waypoint.
+49. If the force is perpendicular to displacement, its dot product with displacement is zero.
+50. Examples: along-track error, headwind, work, sensor alignment, or camera-facing tests.
+
+## Build Task
+
+Create a "projection and alignment workbench" as a Python script, notebook, spreadsheet, or careful hand-calculation template.
+
+Minimum requirements:
+
+1. A function for `dot(a, b)`.
+2. A function for `magnitude(v)`.
+3. A function for `angle_between(a, b)` with a zero-vector guard.
+4. A function for scalar projection.
+5. A function for vector projection.
+6. Three test cases copied from this lesson.
+7. One robotics example: split an error vector into along-track and cross-track components.
+8. One physics example: compute work from force and displacement.
+
+Stretch:
+
+- Add 3D vector support.
+- Add a visualization showing a vector and its projection.
+- Add a waypoint-passed detector using a dot product sign.
+
+## Quiz
+
+1. What question does the dot product answer in plain language?
+2. Write the component formula for a 3D dot product.
+3. Write the geometric formula for a dot product.
+4. Why is the dot product zero for perpendicular vectors?
+5. What does a negative dot product mean?
+6. How do you compute the angle between two nonzero vectors?
+7. What is the scalar projection of $\vec{a}$ onto $\vec{b}$?
+8. What is the vector projection of $\vec{a}$ onto $\vec{b}$?
+9. Why is projecting onto a non-unit vector a common source of wrong answers?
+10. Give one robotics use of projection.
+11. Give one physics use of the dot product.
+12. Why is the zero vector excluded from angle and projection target calculations?
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 40 practice problems, including all challenge/error-spotting problems.
+- Your projection workbench artifact with tests passing.
+- A diagram showing a vector, the projection target, and the dropped perpendicular.
+- One paragraph explaining the difference between scalar projection and vector projection.
+- One applied example from robotics, physics, or computer vision that uses the dot product correctly.
+
+## Sources And Further Study
+
+- MIT OCW 18.02, vectors and dot products.
+- OpenStax, *University Physics Volume 1*, vectors and work.
+- OpenStax, *Precalculus 2e*, vectors and dot products.
+- Gilbert Strang, *Introduction to Linear Algebra*, vector dot products and projections.
+- Robotics path-following references on along-track and cross-track error.
+
+## Next Lesson Bridge
+
+The dot product measures alignment and shadow length. The next vector product measures something different: oriented area and rotation tendency. That is the cross product, and it is where the right-hand rule becomes unavoidable.
