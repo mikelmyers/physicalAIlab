@@ -1,0 +1,606 @@
+# Trigonometric Identities
+
+## Re-entry Promise
+
+This lesson assumes you know right-triangle trigonometry, the unit circle, radians, and basic algebra. It does not assume you already feel comfortable simplifying trigonometric expressions.
+
+An **identity** is an equation that is true for every value where both sides are defined. Trigonometric identities are not random formulas to memorize. They are consequences of geometry, especially the unit circle.
+
+The most important identity is:
+
+$$
+\sin^2\theta+\cos^2\theta=1
+$$
+
+That is not magic. It is the Pythagorean theorem applied to the unit circle.
+
+By the end, you should be able to use Pythagorean, reciprocal, quotient, cofunction, even-odd, and angle-sum identities to simplify expressions, verify equations, and recognize the trig structure that appears in physics, robotics, waves, and signal processing.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Explain what an identity is.
+- Derive $\sin^2\theta+\cos^2\theta=1$ from the unit circle.
+- Use reciprocal identities for secant, cosecant, and cotangent.
+- Use quotient identities for tangent and cotangent.
+- Use related Pythagorean identities involving tangent/secant and cotangent/cosecant.
+- Use even-odd identities to handle negative angles.
+- Use cofunction identities for complementary angles.
+- Use angle-sum and angle-difference identities.
+- Use double-angle identities in simple cases.
+- Verify identities without making invalid algebraic moves.
+- Apply identities to components, waves, AC signals, and rotations.
+
+## Why It Matters
+
+Trig identities are compression tools. They let you rewrite one form of a relationship into another form that is easier to compute, prove, model, or interpret.
+
+1. **Physics.** Energy in simple harmonic motion often uses $\sin^2$ and $\cos^2$. The Pythagorean identity explains why total energy can remain constant while position and velocity trade off.
+
+2. **Signal processing.** Products and sums of trig functions are rewritten to analyze frequency content.
+
+3. **AC circuits.** Phase shifts and sinusoidal steady-state analysis use identities constantly.
+
+4. **Robotics.** Rotation matrices rely on sine and cosine relationships. The fact that $\cos^2\theta+\sin^2\theta=1$ preserves vector length during rotation.
+
+5. **Control systems.** Oscillation, phase, and feedback signals often become easier after trig rewriting.
+
+6. **Calculus.** Derivatives and integrals of trig functions often require identities before they become manageable.
+
+Identities are not a side quest. They are a way to keep complicated systems from turning into algebraic mud.
+
+## Why This Idea Exists
+
+The unit circle gives every angle a point:
+
+$$
+(\cos\theta,\sin\theta)
+$$
+
+Every point on the unit circle satisfies:
+
+$$
+x^2+y^2=1
+$$
+
+Substitute $x=\cos\theta$ and $y=\sin\theta$:
+
+$$
+\cos^2\theta+\sin^2\theta=1
+$$
+
+That is the foundational trig identity.
+
+Other identities come from the same kind of structure: ratios, symmetry, complementary angles, and rotation. They look like algebra, but they are geometry wearing symbols.
+
+## What An Identity Is
+
+An equation like:
+
+$$
+2x+3=11
+$$
+
+is true only for one value: $x=4$.
+
+An equation like:
+
+$$
+2(x+3)=2x+6
+$$
+
+is true for every $x$. That is an identity.
+
+A trig identity is true for every angle where the expressions are defined:
+
+$$
+\tan\theta=\frac{\sin\theta}{\cos\theta}
+$$
+
+This is true whenever $\cos\theta\ne0$.
+
+The domain phrase matters. If an expression divides by zero at some angles, the identity is not defined there.
+
+## Core Identities
+
+### Pythagorean Identity
+
+The base identity is:
+
+$$
+\sin^2\theta+\cos^2\theta=1
+$$
+
+This can be rearranged:
+
+$$
+\sin^2\theta=1-\cos^2\theta
+$$
+
+$$
+\cos^2\theta=1-\sin^2\theta
+$$
+
+Do not read $\sin^2\theta$ as $\sin(\theta^2)$. It means:
+
+$$
+(\sin\theta)^2
+$$
+
+### Quotient Identities
+
+Tangent is sine divided by cosine:
+
+$$
+\tan\theta=\frac{\sin\theta}{\cos\theta}
+$$
+
+Cotangent is cosine divided by sine:
+
+$$
+\cot\theta=\frac{\cos\theta}{\sin\theta}
+$$
+
+These are useful when an expression mixes tangent with sine and cosine.
+
+### Reciprocal Identities
+
+The reciprocal trig functions are:
+
+$$
+\sec\theta=\frac{1}{\cos\theta}
+$$
+
+$$
+\csc\theta=\frac{1}{\sin\theta}
+$$
+
+$$
+\cot\theta=\frac{1}{\tan\theta}
+$$
+
+They are less common in engineering code than sine, cosine, and tangent, but they appear frequently in algebra, calculus, and symbolic manipulation.
+
+### Tangent-Secant Identity
+
+Start with:
+
+$$
+\sin^2\theta+\cos^2\theta=1
+$$
+
+Divide every term by $\cos^2\theta$:
+
+$$
+\frac{\sin^2\theta}{\cos^2\theta}+\frac{\cos^2\theta}{\cos^2\theta}=\frac{1}{\cos^2\theta}
+$$
+
+So:
+
+$$
+\tan^2\theta+1=\sec^2\theta
+$$
+
+Usually written:
+
+$$
+1+\tan^2\theta=\sec^2\theta
+$$
+
+### Cotangent-Cosecant Identity
+
+Divide the Pythagorean identity by $\sin^2\theta$:
+
+$$
+1+\cot^2\theta=\csc^2\theta
+$$
+
+These identities become important in calculus and when manipulating slopes and reciprocal ratios.
+
+## Symmetry Identities
+
+### Even And Odd
+
+Cosine is even:
+
+$$
+\cos(-\theta)=\cos\theta
+$$
+
+Sine is odd:
+
+$$
+\sin(-\theta)=-\sin\theta
+$$
+
+Tangent is odd:
+
+$$
+\tan(-\theta)=-\tan\theta
+$$
+
+On the unit circle, negative angles reflect across the $x$ axis. The $x$ coordinate stays the same, so cosine stays the same. The $y$ coordinate changes sign, so sine changes sign.
+
+### Cofunction Identities
+
+Sine and cosine swap on complementary angles:
+
+$$
+\sin(90^\circ-\theta)=\cos\theta
+$$
+
+$$
+\cos(90^\circ-\theta)=\sin\theta
+$$
+
+In radians:
+
+$$
+\sin\left(\frac{\pi}{2}-\theta\right)=\cos\theta
+$$
+
+$$
+\cos\left(\frac{\pi}{2}-\theta\right)=\sin\theta
+$$
+
+This comes from the two acute angles in a right triangle adding to $90^\circ$.
+
+## Angle-Sum And Difference Identities
+
+These are essential for rotation, phase shifts, waves, and proving deeper facts.
+
+$$
+\sin(a+b)=\sin a\cos b+\cos a\sin b
+$$
+
+$$
+\sin(a-b)=\sin a\cos b-\cos a\sin b
+$$
+
+$$
+\cos(a+b)=\cos a\cos b-\sin a\sin b
+$$
+
+$$
+\cos(a-b)=\cos a\cos b+\sin a\sin b
+$$
+
+Notice that:
+
+$$
+\sin(a+b)\ne\sin a+\sin b
+$$
+
+That false move is extremely common.
+
+### Example: Exact Value For 75 Degrees
+
+Since:
+
+$$
+75^\circ=45^\circ+30^\circ
+$$
+
+Use:
+
+$$
+\sin(a+b)=\sin a\cos b+\cos a\sin b
+$$
+
+$$
+\sin(75^\circ)=\sin(45^\circ)\cos(30^\circ)+\cos(45^\circ)\sin(30^\circ)
+$$
+
+$$
+=\frac{\sqrt2}{2}\cdot\frac{\sqrt3}{2}+\frac{\sqrt2}{2}\cdot\frac12
+$$
+
+$$
+=\frac{\sqrt6+\sqrt2}{4}
+$$
+
+## Double-Angle Identities
+
+Double-angle identities come from setting $a=b=\theta$ in the angle-sum identities.
+
+$$
+\sin(2\theta)=2\sin\theta\cos\theta
+$$
+
+$$
+\cos(2\theta)=\cos^2\theta-\sin^2\theta
+$$
+
+Using the Pythagorean identity, cosine's double-angle identity can also be written:
+
+$$
+\cos(2\theta)=1-2\sin^2\theta
+$$
+
+or:
+
+$$
+\cos(2\theta)=2\cos^2\theta-1
+$$
+
+These forms are useful in signals and calculus because they can rewrite squared trig functions or products.
+
+## Verifying Identities
+
+To verify an identity, transform one side until it matches the other side. Usually, start with the more complicated side.
+
+Good moves:
+
+- Replace $\tan\theta$ with $\sin\theta/\cos\theta$.
+- Replace $\sec\theta$ with $1/\cos\theta$.
+- Use $\sin^2\theta+\cos^2\theta=1$.
+- Factor, combine fractions, or multiply by a useful form of 1.
+- Keep domain restrictions in mind.
+
+Risky moves:
+
+- Dividing by an expression that might be zero without noting restrictions.
+- Squaring both sides, which can introduce false solutions.
+- Moving pieces across both sides until you accidentally prove only a conditional equation.
+- Assuming the identity is true and working in circles.
+
+### Example: Verify $1-\sin^2\theta=\cos^2\theta$
+
+Start from the Pythagorean identity:
+
+$$
+\sin^2\theta+\cos^2\theta=1
+$$
+
+Subtract $\sin^2\theta$ from both sides:
+
+$$
+\cos^2\theta=1-\sin^2\theta
+$$
+
+So:
+
+$$
+1-\sin^2\theta=\cos^2\theta
+$$
+
+### Example: Simplify $\tan\theta\cos\theta$
+
+Use:
+
+$$
+\tan\theta=\frac{\sin\theta}{\cos\theta}
+$$
+
+Then:
+
+$$
+\tan\theta\cos\theta=\frac{\sin\theta}{\cos\theta}\cos\theta=\sin\theta
+$$
+
+This simplification is valid where $\cos\theta\ne0$, because tangent was not defined there anyway.
+
+## Engineering Connections
+
+### Rotation Preserves Length
+
+A 2D rotation uses:
+
+$$
+x'=x\cos\theta-y\sin\theta
+$$
+
+$$
+y'=x\sin\theta+y\cos\theta
+$$
+
+The identity $\sin^2\theta+\cos^2\theta=1$ is part of why rotation changes direction without changing length.
+
+### Phase Shifts
+
+A signal like:
+
+$$
+\sin(t+\phi)
+$$
+
+can be expanded:
+
+$$
+\sin t\cos\phi+\cos t\sin\phi
+$$
+
+That means a shifted sine wave can be represented as a combination of sine and cosine. This matters in signal processing and AC circuit analysis.
+
+### Oscillation Energy
+
+If position varies like cosine and velocity varies like sine, squared terms often add to a constant. That is the Pythagorean identity appearing as conservation structure.
+
+## Common Failure Modes
+
+1. **Thinking identities are equations to solve.** Identities are true across a domain; equations may be true only for specific values.
+2. **Writing $\sin(a+b)=\sin a+\sin b$.** This is false.
+3. **Forgetting domains.** Tangent, secant, cotangent, and cosecant are not defined everywhere.
+4. **Confusing $\sin^2\theta$ with $\sin(\theta^2)$.**
+5. **Dividing by a possibly zero expression.**
+6. **Squaring both sides carelessly.**
+7. **Memorizing without geometry.** The Pythagorean identity is unit-circle geometry.
+8. **Dropping negative signs in quadrant or even-odd identities.**
+9. **Using degree cofunction identities while working in radians without conversion.**
+10. **Trying random transformations.** Start with known identities and the more complicated side.
+
+## Practice Problems
+
+### Foundations
+
+1. What is a mathematical identity?
+2. Write the Pythagorean trig identity.
+3. Explain why $\sin^2\theta+\cos^2\theta=1$ follows from the unit circle.
+4. Rewrite $\tan\theta$ using sine and cosine.
+5. Rewrite $\sec\theta$ using cosine.
+6. Rewrite $\csc\theta$ using sine.
+7. Rewrite $\cot\theta$ using tangent.
+8. What does $\sin^2\theta$ mean?
+9. Is $\sin(a+b)=\sin a+\sin b$ true?
+10. What is a domain restriction for tangent?
+
+### Simplification
+
+11. Simplify $1-\sin^2\theta$.
+12. Simplify $1-\cos^2\theta$.
+13. Simplify $\tan\theta\cos\theta$.
+14. Simplify $\frac{\sin\theta}{\tan\theta}$.
+15. Simplify $\sec\theta\cos\theta$.
+16. Simplify $\csc\theta\sin\theta$.
+17. Simplify $1+\tan^2\theta$.
+18. Simplify $\sec^2\theta-1$.
+19. Simplify $\csc^2\theta-1$.
+20. Simplify $\sin(-\theta)$.
+
+### Angle Identities
+
+21. Write $\cos(-\theta)$.
+22. Write $\tan(-\theta)$.
+23. Write $\sin(90^\circ-\theta)$.
+24. Write $\cos(90^\circ-\theta)$.
+25. Write $\sin(a+b)$.
+26. Write $\cos(a+b)$.
+27. Write $\sin(2\theta)$.
+28. Write one form of $\cos(2\theta)$.
+29. Use angle-sum identities to write $\sin(75^\circ)$ exactly.
+30. Use angle-difference identities to write $\cos(15^\circ)$ exactly.
+
+### Verification And Application
+
+31. Verify $1+\tan^2\theta=\sec^2\theta$ by dividing the Pythagorean identity by $\cos^2\theta$.
+32. Verify $\sin^2\theta=1-\cos^2\theta$.
+33. Explain why $\tan\theta\cos\theta=\sin\theta$ has a domain restriction.
+34. Why is $\sec\theta$ undefined at $90^\circ$?
+35. Why is $\csc\theta$ undefined at $0^\circ$?
+36. A rotation formula preserves vector length. Which identity helps explain that?
+37. Expand $\sin(t+\phi)$.
+38. Expand $\cos(t+\phi)$.
+39. If $\sin\theta=3/5$ and $\theta$ is in quadrant I, find $\cos\theta$.
+40. If $\cos\theta=-4/5$ and $\theta$ is in quadrant II, find $\sin\theta$.
+
+### Challenge Problems
+
+41. Simplify $\frac{1-\cos^2\theta}{\sin\theta}$.
+42. Simplify $\frac{\sec^2\theta-1}{\tan\theta}$.
+43. Simplify $\sin\theta\sec\theta$.
+44. Prove $\cot\theta+\tan\theta=\sec\theta\csc\theta$.
+45. Explain why an identity can be valid even if it is undefined at some angles.
+46. Use $\cos(2\theta)=1-2\sin^2\theta$ to solve for $\sin^2\theta$ in terms of $\cos(2\theta)$.
+47. Use $\cos(2\theta)=2\cos^2\theta-1$ to solve for $\cos^2\theta$.
+48. Why are angle-sum identities important for phase shifts?
+49. Give one robotics use of $\sin^2\theta+\cos^2\theta=1$.
+50. Give one signal-processing use of trig identities.
+
+## Answer Key
+
+1. An equation true for every allowed input.
+2. $\sin^2\theta+\cos^2\theta=1$.
+3. A unit-circle point is $(\cos\theta,\sin\theta)$ and satisfies $x^2+y^2=1$.
+4. $\sin\theta/\cos\theta$.
+5. $1/\cos\theta$.
+6. $1/\sin\theta$.
+7. $1/\tan\theta$.
+8. $(\sin\theta)^2$.
+9. No.
+10. $\cos\theta\ne0$.
+11. $\cos^2\theta$.
+12. $\sin^2\theta$.
+13. $\sin\theta$.
+14. $\cos\theta$.
+15. 1.
+16. 1.
+17. $\sec^2\theta$.
+18. $\tan^2\theta$.
+19. $\cot^2\theta$.
+20. $-\sin\theta$.
+21. $\cos\theta$.
+22. $-\tan\theta$.
+23. $\cos\theta$.
+24. $\sin\theta$.
+25. $\sin a\cos b+\cos a\sin b$.
+26. $\cos a\cos b-\sin a\sin b$.
+27. $2\sin\theta\cos\theta$.
+28. $\cos^2\theta-\sin^2\theta$.
+29. $(\sqrt6+\sqrt2)/4$.
+30. $(\sqrt6+\sqrt2)/4$.
+31. Divide each term of $\sin^2\theta+\cos^2\theta=1$ by $\cos^2\theta$.
+32. Rearrange the Pythagorean identity.
+33. Tangent is undefined when $\cos\theta=0$.
+34. Secant is $1/\cos\theta$, and $\cos(90^\circ)=0$.
+35. Cosecant is $1/\sin\theta$, and $\sin(0^\circ)=0$.
+36. $\sin^2\theta+\cos^2\theta=1$.
+37. $\sin t\cos\phi+\cos t\sin\phi$.
+38. $\cos t\cos\phi-\sin t\sin\phi$.
+39. $4/5$.
+40. $3/5$.
+41. $\sin\theta$.
+42. $\tan\theta$.
+43. $\tan\theta$.
+44. Convert both terms to sine/cosine and combine: $\cos/\sin+\sin/\cos=(\cos^2+\sin^2)/(\sin\cos)=1/(\sin\cos)=\sec\csc$.
+45. The two expressions can agree everywhere both are defined.
+46. $\sin^2\theta=(1-\cos(2\theta))/2$.
+47. $\cos^2\theta=(1+\cos(2\theta))/2$.
+48. They rewrite shifted waves as combinations of sine and cosine.
+49. Preserving vector length under rotation.
+50. Rewriting products or phase-shifted signals for frequency analysis.
+
+## Build Task
+
+Create a "trig identity transformer" as a script, spreadsheet, notebook, or careful manual worksheet.
+
+Minimum requirements:
+
+1. List the core identities from this lesson.
+2. Accept or choose an expression involving sine, cosine, tangent, secant, cosecant, or cotangent.
+3. Rewrite it into sine and cosine form.
+4. Simplify using the Pythagorean identity where possible.
+5. Include at least five worked transformations.
+6. Include domain notes when tangent, secant, cosecant, or cotangent appear.
+7. Include one signal, rotation, or component example.
+
+Stretch:
+
+- Add angle-sum expansion.
+- Add double-angle rewrites.
+- Add a warning for the false move $\sin(a+b)=\sin a+\sin b$.
+
+## Quiz
+
+1. What is the Pythagorean trig identity?
+2. Why is it true on the unit circle?
+3. What is tangent in terms of sine and cosine?
+4. What is secant in terms of cosine?
+5. What is $1+\tan^2\theta$?
+6. What is $\sin(-\theta)$?
+7. What is $\cos(-\theta)$?
+8. Why is $\sin(a+b)=\sin a+\sin b$ false?
+9. What is $\sin(2\theta)$?
+10. Why do identities matter in signal or robotics work?
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 35 practice problems, including all challenge problems.
+- A corrected explanation for every missed problem.
+- Your trig identity transformer artifact.
+- One verified identity written step by step.
+- One engineering note explaining where a trig identity prevents unnecessary complexity.
+
+## Sources And Further Study
+
+- OpenStax, *Algebra and Trigonometry 2e*, sections on trigonometric identities.
+- Khan Academy, trigonometric identities and proofs.
+- Introductory physics texts on harmonic motion and circular motion.
+- Introductory signals references on phase shifts and sinusoidal identities.
+- Robotics and graphics references on rotation matrices and length-preserving transforms.
+
+## Next Lesson Bridge
+
+Identities rewrite trig expressions when angles are known. The next lesson reverses the question: if you know a ratio or components, what angle produced them? That is the world of inverse trig functions and `atan2`.

@@ -1,0 +1,596 @@
+# Circles: Arcs, Sectors, and Tangents
+
+## Re-entry Promise
+
+This lesson assumes you understand points, lines, angles, triangle similarity, the Pythagorean theorem, and basic perimeter and area. It assumes you can convert between degrees and radians, or at least follow the conversion formulas. It does not assume you remember circle theorems.
+
+We will treat circles as the geometry of rotation. A wheel rolling forward, a pulley turning, a robot rotating around a pivot, a drone flying a circular path, a camera sweeping a field of view, and a gear tooth moving along a pitch circle are all circle problems. The circle is not just "round shape." It is the path of a point at fixed distance from a center.
+
+By the end, you should be able to compute circumference, area, arc length, sector area, chord relationships, tangent relationships, and basic circle angles. You should also understand why radians are the clean language for circular motion.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Define center, radius, diameter, chord, secant, tangent, arc, sector, central angle, and inscribed angle.
+- Compute circumference and area from radius or diameter.
+- Compute arc length using $s=r\theta$ when $\theta$ is in radians.
+- Compute sector area using $A=\frac{1}{2}r^2\theta$ when $\theta$ is in radians.
+- Convert degree-based arc and sector problems into fractional-turn formulas.
+- Use tangent-radius perpendicularity.
+- Use the inscribed angle theorem: an inscribed angle measures half its intercepted arc.
+- Distinguish arc length from chord length.
+- Apply circle geometry to wheels, gears, pulleys, camera fields, robot turning, and circular workspaces.
+- Avoid common failures: mixing degrees and radians, using diameter as radius, confusing arc and chord, and assuming tangent lines cut through the circle.
+
+## Why It Matters
+
+Circle geometry is the geometry of rotation, curvature, and repeated motion.
+
+1. **Wheels and odometry.** A wheel with radius $r$ travels one circumference per revolution. Encoder counts become distance through circumference and arc length.
+
+2. **Pulleys and belts.** Belt length around pulleys depends on arcs and straight tangent segments. A small error in radius changes travel per revolution.
+
+3. **Gears.** Gear pitch circles, angular spacing, tooth motion, and angular velocity all depend on circle geometry.
+
+4. **Robotics.** A differential-drive robot turns along circular arcs. A robot arm joint sweeps an arc. A workspace boundary may be circular.
+
+5. **Drones and navigation.** Holding patterns, orbit shots, turn radii, sensor sweep cones, and circular exclusion zones use arcs and sectors.
+
+6. **Computer vision.** Camera fields of view often form angular sectors. Circular lenses, radial distortion, and Hough circle detection all use circle concepts.
+
+7. **Manufacturing.** Holes, fillets, rounded corners, bolt circles, arcs, and tangencies are everywhere in CAD drawings.
+
+Circle geometry is where "angle" becomes "distance traveled along a curve."
+
+## Why This Idea Exists
+
+People studied circles because the sky, wheels, pottery, calendars, gears, arches, and navigation demanded it. Ancient mathematicians measured circular arcs, approximated $\pi$, and related angles to chord lengths long before modern calculus.
+
+Euclid's *Elements*, Book III, develops circle theorems about chords, tangents, and angles. Archimedes gave deep bounds on $\pi$ and studied areas and arcs. Later, trigonometry grew from chord tables in circles. Calculus eventually made circular motion one of the central examples of rates of change.
+
+The modern reason circles matter is even broader: periodic motion, rotation matrices, sine and cosine, complex numbers, Fourier analysis, control systems, AC circuits, and wave physics all inherit circle structure.
+
+This lesson is the elementary doorway into that world.
+
+## Plain-Language Intuition
+
+A circle is all points the same distance from one center. That fixed distance is the **radius**.
+
+If you walk around a circular track, your distance from the center stays constant. Your position changes because your angle changes. The farther you are from the center, the more distance you travel for the same turn.
+
+That is the heart of arc length:
+
+$$
+s = r\theta
+$$
+
+where:
+
+- $s$ is arc length,
+- $r$ is radius,
+- $\theta$ is angle in radians.
+
+Double the radius and the same angle sweeps twice the distance. Double the angle and you sweep twice the distance. This is why radians are so useful: they make the relationship exact and simple.
+
+## Core Theory
+
+### Basic Parts Of A Circle
+
+| Term | Meaning |
+| --- | --- |
+| Center | Fixed point all circle points are measured from |
+| Radius | Segment from center to circle |
+| Diameter | Segment through center connecting two circle points |
+| Chord | Segment connecting two circle points |
+| Secant | Line crossing the circle in two points |
+| Tangent | Line touching the circle at exactly one point |
+| Arc | Connected piece of circumference |
+| Sector | Wedge-shaped region bounded by two radii and an arc |
+| Central angle | Angle with vertex at circle center |
+| Inscribed angle | Angle with vertex on circle, sides are chords |
+
+Diameter is twice radius:
+
+$$
+d=2r
+$$
+
+### Circumference And Area
+
+Circumference is boundary length:
+
+$$
+C=2\pi r
+$$
+
+Area is surface coverage:
+
+$$
+A=\pi r^2
+$$
+
+If diameter is given:
+
+$$
+C=\pi d
+$$
+
+and:
+
+$$
+A=\pi\left(\frac{d}{2}\right)^2
+$$
+
+### Arc Length In Radians
+
+If a central angle $\theta$ is measured in radians, arc length is:
+
+$$
+s=r\theta
+$$
+
+This formula is one of the main reasons radians exist. A radian is defined so that angle equals arc length divided by radius:
+
+$$
+\theta = \frac{s}{r}
+$$
+
+Rearrange:
+
+$$
+s=r\theta
+$$
+
+If $\theta$ is in degrees, convert first:
+
+$$
+\theta_{\text{rad}}=\theta_{\text{deg}}\frac{\pi}{180}
+$$
+
+### Arc Length As Fraction Of Circumference
+
+If you want to stay in degrees, use fraction of a full turn:
+
+$$
+s=\frac{\theta}{360^\circ}(2\pi r)
+$$
+
+For example, a $90^\circ$ arc is one quarter of a circle.
+
+### Sector Area
+
+If $\theta$ is in radians:
+
+$$
+A_{\text{sector}}=\frac{1}{2}r^2\theta
+$$
+
+If $\theta$ is in degrees:
+
+$$
+A_{\text{sector}}=\frac{\theta}{360^\circ}\pi r^2
+$$
+
+Sector area is the same fraction of circle area that the central angle is of a full turn.
+
+### Chords And Arcs
+
+A **chord** is straight. An **arc** is curved. They connect the same endpoints but have different lengths unless the endpoints are the same.
+
+For a central angle less than $180^\circ$, arc length is longer than chord length because the arc bends outward.
+
+The longest chord is the diameter.
+
+### Tangents
+
+A tangent line touches a circle at one point. The radius to the tangent point is perpendicular to the tangent:
+
+$$
+\text{radius} \perp \text{tangent}
+$$
+
+This matters in wheels, belts, cams, and contact geometry. At the instant a wheel contacts the ground, the radius to the contact point is perpendicular to the ground tangent.
+
+### Inscribed Angles
+
+An inscribed angle has its vertex on the circle and intercepts an arc. Its measure is half the measure of the intercepted arc.
+
+If an inscribed angle intercepts a $100^\circ$ arc, the angle is:
+
+$$
+50^\circ
+$$
+
+A special case: an angle inscribed in a semicircle is a right angle, because the intercepted arc is $180^\circ$ and half of that is $90^\circ$.
+
+## Visual Or Mental Models
+
+### Model 1: Wheel Tape
+
+Imagine wrapping tape around a wheel. The tape length around the whole wheel is circumference. A partial piece of tape along the rim is an arc.
+
+### Model 2: Pizza Slice
+
+A sector is a pizza slice: two radii and a curved crust. The crust length is arc length. The slice surface is sector area.
+
+### Model 3: Rotation Budget
+
+A full turn is $2\pi$ radians. Half turn is $\pi$. Quarter turn is $\pi/2$. Once you think this way, rotation math becomes cleaner.
+
+## Worked Examples
+
+### Example 1: Circumference
+
+A wheel has radius 0.25 m. Find circumference.
+
+$$
+C=2\pi r=2\pi(0.25)=0.5\pi
+$$
+
+So:
+
+$$
+C\approx1.57\text{ m}
+$$
+
+One full wheel revolution moves the wheel about 1.57 m, ignoring slip.
+
+### Example 2: Area
+
+A circular landing pad has diameter 10 m. Find area.
+
+Radius is:
+
+$$
+r=5\text{ m}
+$$
+
+Area:
+
+$$
+A=\pi r^2=\pi(5^2)=25\pi
+$$
+
+So:
+
+$$
+A\approx78.54\text{ m}^2
+$$
+
+### Example 3: Arc Length In Radians
+
+A robot arm link endpoint is 0.6 m from the joint. The joint rotates by 1.2 radians. How far does the endpoint travel along its arc?
+
+$$
+s=r\theta=(0.6)(1.2)=0.72
+$$
+
+Arc length:
+
+$$
+0.72\text{ m}
+$$
+
+### Example 4: Arc Length In Degrees
+
+A pulley of radius 4 cm turns through $90^\circ$. Find arc length.
+
+Use fraction of circumference:
+
+$$
+s=\frac{90}{360}(2\pi\cdot4)
+$$
+
+$$
+s=\frac{1}{4}(8\pi)=2\pi
+$$
+
+Arc length:
+
+$$
+2\pi\text{ cm}\approx6.28\text{ cm}
+$$
+
+### Example 5: Sector Area
+
+A sprinkler covers a $60^\circ$ sector with radius 12 m. Find watered area.
+
+$$
+A=\frac{60}{360}\pi(12^2)
+$$
+
+$$
+A=\frac{1}{6}\pi(144)=24\pi
+$$
+
+So:
+
+$$
+A\approx75.40\text{ m}^2
+$$
+
+### Example 6: Sector Area In Radians
+
+A lidar sector has radius 5 m and angle 0.8 radians. Find sector area.
+
+$$
+A=\frac{1}{2}r^2\theta
+$$
+
+$$
+A=\frac{1}{2}(25)(0.8)=10
+$$
+
+Area:
+
+$$
+10\text{ m}^2
+$$
+
+### Example 7: Tangent Radius
+
+A line is tangent to a circle at point $T$. The center is $O$. What is the angle between $\overline{OT}$ and the tangent line?
+
+The radius to the tangent point is perpendicular to the tangent:
+
+$$
+90^\circ
+$$
+
+### Example 8: Inscribed Angle
+
+An inscribed angle intercepts an arc of $132^\circ$. Find the angle.
+
+$$
+\text{angle}=\frac{1}{2}(132^\circ)=66^\circ
+$$
+
+### Example 9: Chord vs Arc
+
+Two points on a circle are separated by a $60^\circ$ central angle. Radius is 10 cm.
+
+Arc length:
+
+$$
+s=\frac{60}{360}(2\pi\cdot10)=\frac{10\pi}{3}\approx10.47\text{ cm}
+$$
+
+The chord is shorter. In fact, for a $60^\circ$ central angle, the chord and two radii make an equilateral triangle, so the chord is 10 cm.
+
+### Example 10: Failure Mode - Diameter As Radius
+
+A circular hole has diameter 8 mm. A student computes area as:
+
+$$
+\pi(8)^2=64\pi
+$$
+
+Wrong. The radius is 4 mm:
+
+$$
+A=\pi(4)^2=16\pi\text{ mm}^2
+$$
+
+## Engineering Connections
+
+### Wheel Odometry
+
+If wheel radius is $r$, one revolution travels $2\pi r$. If an encoder reports half a revolution, distance is $\pi r$. More generally:
+
+$$
+s=r\theta
+$$
+
+where $\theta$ is wheel rotation in radians.
+
+### Differential Drive Turns
+
+When a robot turns, each wheel may travel along a circular arc. The outside wheel travels farther than the inside wheel because its radius from the turn center is larger.
+
+### Camera Field Sectors
+
+A camera or lidar has an angular field of view. At range $r$, that field covers an arc or sector. The farther the range, the wider the covered arc for the same angle.
+
+### Gears And Pulleys
+
+Gear teeth are spaced around pitch circles. Belt contact wraps around arcs. Tangent lines between pulleys are straight belt spans. Circle geometry is the diagram behind the mechanism.
+
+### CAD Fillets
+
+A fillet is an arc tangent to two edges. The radius controls how rounded the corner is. Tangency ensures a smooth transition.
+
+## Common Failure Modes
+
+1. **Using degrees in $s=r\theta$.** That formula requires radians.
+
+2. **Using diameter as radius.** Radius is half of diameter.
+
+3. **Confusing arc length and chord length.** Arc is curved boundary; chord is straight segment.
+
+4. **Confusing sector area and arc length.** Sector area is square units; arc length is length units.
+
+5. **Forgetting tangent perpendicularity.** Radius to tangent point is $90^\circ$ to the tangent.
+
+6. **Assuming every line touching a drawing is tangent.** Tangency must be stated, marked, constructed, or proved.
+
+7. **Rounding $\pi$ too early.** Keep exact forms like $24\pi$ until the final approximation.
+
+## Practice Set
+
+### Warmups
+
+1. Define radius.
+2. Define diameter.
+3. How are radius and diameter related?
+4. Define chord.
+5. Define tangent.
+6. Define arc.
+7. Define sector.
+8. What is the circumference formula?
+9. What is the circle area formula?
+10. How many radians are in a full turn?
+
+### Core Skills
+
+11. Find circumference for radius 7.
+12. Find area for radius 7.
+13. Find circumference for diameter 12.
+14. Find area for diameter 12.
+15. Find arc length for radius 5 and angle 2 radians.
+16. Find arc length for radius 10 and angle $\pi/3$ radians.
+17. Find sector area for radius 4 and angle 2 radians.
+18. Find sector area for radius 6 and angle $90^\circ$.
+19. Find arc length for radius 8 and angle $45^\circ$.
+20. An inscribed angle intercepts a $110^\circ$ arc. Find the angle.
+
+### Applied Problems
+
+21. A wheel radius is 0.3 m. How far does it roll in one revolution?
+22. The same wheel turns 4 radians. How far does the rim travel?
+23. A robot arm endpoint radius is 0.75 m and rotates 0.5 radians. Find arc distance.
+24. A sprinkler covers $120^\circ$ with radius 9 m. Find sector area.
+25. A camera has $80^\circ$ horizontal field of view. At 10 m range, approximate covered arc length.
+26. A pulley radius is 3 cm and belt contact angle is $180^\circ$. Find contact arc length.
+27. A circular exclusion zone has radius 25 m. Find area.
+28. A bolt circle has radius 50 mm. What is circumference of the bolt circle?
+29. A tangent touches a circle at T. What angle does it make with radius OT?
+30. A semicircle has radius 6. Find arc length of the curved part.
+
+### Mixed Review
+
+31. Convert $60^\circ$ to radians.
+32. Convert $\pi/2$ radians to degrees.
+33. Find sector area for radius 10 and angle $\pi/2$.
+34. Find arc length for radius 10 and angle $\pi/2$.
+35. A circle has area $36\pi$. Find radius.
+36. A circle has circumference $18\pi$. Find radius.
+37. An inscribed angle is $35^\circ$. What is its intercepted arc?
+38. A central angle is $72^\circ$. What fraction of the circle is the arc?
+39. A $72^\circ$ sector has radius 5. Find exact sector area.
+40. A $72^\circ$ arc has radius 5. Find exact arc length.
+
+### Challenge Problems
+
+41. Explain why $s=r\theta$ only works when $\theta$ is in radians.
+42. A wheel encoder measures 2048 counts per revolution. Wheel radius is 0.05 m. How much distance per count?
+43. A robot turns around a point. Its inside wheel follows radius 0.4 m and outside wheel follows radius 0.7 m for an angle of 1.5 radians. How much farther does the outside wheel travel?
+44. A sector has area 18 m² and radius 6 m. Find angle in radians.
+45. A circle has a tangent from external point P touching at T. If OP = 13 and OT = 5, find PT.
+
+### Error Spotting
+
+46. A student uses $s=r\theta$ with $\theta=90$. What is wrong?
+47. A student computes area of diameter 10 circle as $100\pi$. What is wrong?
+48. A student says a chord and arc between the same endpoints have the same length. What is wrong?
+49. A student gives sector area in meters instead of square meters. What is wrong?
+50. A student assumes a line is tangent because it looks like it touches the circle. What is wrong?
+
+## Answer Key
+
+1. Segment from center to circle.
+2. Segment through center connecting two circle points.
+3. $d=2r$.
+4. Segment connecting two circle points.
+5. Line touching the circle at one point.
+6. Curved piece of circumference.
+7. Region bounded by two radii and an arc.
+8. $C=2\pi r$.
+9. $A=\pi r^2$.
+10. $2\pi$.
+11. $14\pi$.
+12. $49\pi$.
+13. $12\pi$.
+14. $36\pi$.
+15. 10.
+16. $10\pi/3$.
+17. 16.
+18. $9\pi$.
+19. $2\pi$.
+20. $55^\circ$.
+21. $0.6\pi$ m.
+22. 1.2 m.
+23. 0.375 m.
+24. $27\pi$ m².
+25. $10(80\pi/180)=40\pi/9\approx13.96$ m.
+26. $3\pi$ cm.
+27. $625\pi$ m².
+28. $100\pi$ mm.
+29. $90^\circ$.
+30. $6\pi$.
+31. $\pi/3$.
+32. $90^\circ$.
+33. $25\pi$.
+34. $5\pi$.
+35. 6.
+36. 9.
+37. $70^\circ$.
+38. $1/5$.
+39. $5\pi$.
+40. $2\pi$.
+41. Radians are defined by $\theta=s/r$, so rearranging gives $s=r\theta$. Degrees are scaled differently and must be converted.
+42. Distance per count is $(2\pi \cdot 0.05)/2048 \approx 0.000153$ m.
+43. Outside arc minus inside arc is $(0.7-0.4)(1.5)=0.45$ m.
+44. $18=\frac{1}{2}(36)\theta$, so $\theta=1$ radian.
+45. Radius to tangent is perpendicular, so $PT=\sqrt{13^2-5^2}=12$.
+46. $90$ degrees must be converted to $\pi/2$ radians first.
+47. Radius is 5, so area is $25\pi$.
+48. The arc is curved and generally longer than the chord.
+49. Area uses square units.
+50. Tangency must be given, marked, constructed, or proved.
+
+## Build Task
+
+Create a "circle motion calculator" as a script, spreadsheet, notebook, or careful manual worksheet.
+
+Minimum requirements:
+
+1. Input radius.
+2. Compute circumference and area.
+3. Input an angle in degrees and radians.
+4. Compute arc length.
+5. Compute sector area.
+6. Include a wheel-distance mode: radius and revolutions to linear distance.
+7. Test with radius 5 and $90^\circ$, radius 6 and $\pi/2$, and wheel radius 0.3 m for one revolution.
+
+Stretch:
+
+- Add encoder counts per revolution and distance per count.
+- Add tangent length from an external point using the Pythagorean theorem.
+- Add a camera field-of-view arc-width estimator.
+
+## Quiz
+
+1. What is the difference between radius and diameter?
+2. What is the difference between chord and arc?
+3. Why does $s=r\theta$ require radians?
+4. What is the formula for sector area in radians?
+5. What is tangent-radius perpendicularity?
+6. What is an inscribed angle?
+7. How does an inscribed angle relate to its intercepted arc?
+8. Give one robotics use of arc length.
+9. Give one manufacturing use of tangency.
+10. Why should you keep $\pi$ exact until the end?
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 35 practice problems, including all challenge problems.
+- A corrected explanation for every missed problem.
+- Your circle motion calculator artifact.
+- A measured circular object with radius, diameter, circumference estimate, and area estimate.
+- A short note explaining radians using arc length and radius.
+
+## Sources And Further Study
+
+- Euclid, *Elements*, Book III, for classical circle theorems.
+- Archimedes, *Measurement of a Circle*, for historical bounds on $\pi$.
+- OpenStax, *Algebra and Trigonometry 2e*, sections on radians, arc length, and sector area.
+- Khan Academy, circle theorems, radians, arcs, and sectors units.
+- Introductory robotics texts on differential-drive kinematics and wheel odometry.
+- Introductory CAD references on fillets, tangency constraints, and bolt circles.
+
+## Next Lesson Bridge
+
+Circles give us curved motion and angular measurement. The next lesson moves from flat figures into solids: surface area and volume. Many solids are built from circles and plane figures, so the formulas here become the base for cylinders, cones, spheres, tanks, housings, wheels, pipes, and containers.

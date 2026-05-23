@@ -1,0 +1,545 @@
+# Surface Area and Volume of Solids
+
+## Re-entry Promise
+
+This lesson assumes you know perimeter, area, circles, the Pythagorean theorem, and basic algebra. It does not assume you remember three-dimensional formulas. We will rebuild them from the ideas of **skin**, **capacity**, **cross-section**, and **stacking**.
+
+A solid object has two different kinds of measurement: **surface area**, which measures the exposed outside skin, and **volume**, which measures the three-dimensional space the object occupies. A tank may need enough volume to hold fluid, but enough surface area to estimate metal sheet, coating, heat loss, or insulation. A robot enclosure may need interior volume for batteries and electronics, while its surface area affects weight, cost, cooling, sealing, and manufacturing time.
+
+By the end, you should be able to compute and reason about surface area and volume for prisms, cylinders, pyramids, cones, and spheres. More importantly, you should know what each formula is doing, so you can adapt formulas instead of freezing when a diagram is not exactly like the textbook.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Distinguish length, area, and volume by unit dimension.
+- Explain surface area as exposed outer skin.
+- Explain volume as stacked cross-sectional area.
+- Compute volume of prisms and cylinders using $V=Bh$.
+- Compute surface area of rectangular prisms and cylinders using nets.
+- Compute volume of pyramids and cones using the one-third relationship.
+- Use slant height to compute lateral area of cones and pyramids.
+- Compute sphere surface area and volume.
+- Convert between geometric volume, capacity, mass, and material cost.
+- Identify common mistakes: using diameter as radius, mixing square and cubic units, using height instead of slant height, and counting hidden faces as exposed area.
+
+## Why It Matters
+
+Three-dimensional geometry is how plans become physical.
+
+1. **Containers and tanks.** If a tank is too small, it cannot hold enough fluid. If its surface area is underestimated, material cost and heat loss are wrong.
+
+2. **Robotics enclosures.** A chassis must fit electronics, batteries, fasteners, cable bends, airflow, and access panels. Volume is interior capacity. Surface area is material, coating, sealing, and heat-transfer exposure.
+
+3. **3D printing and machining.** Volume estimates material mass and print time. Surface area affects finish, support material, heat transfer, and coating.
+
+4. **Thermal design.** A small object with large surface area cools quickly. A large dense object with relatively low surface area holds heat longer.
+
+5. **Packaging and shipping.** Boxes, tubes, and inserts are surface-area and volume problems with cost attached.
+
+6. **Civil and mechanical design.** Pipes, ducts, pressure vessels, hoppers, silos, domes, columns, beams, and tanks all use these formulas before advanced analysis begins.
+
+The formulas are not decorative. They are the first accounting system for matter in space.
+
+## Why This Idea Exists
+
+Ancient builders needed to measure grain bins, stone blocks, ramps, columns, roofs, wells, and storage vessels. Geometry became practical because land, labor, food, and material were expensive. If a cylinder holds grain, you need volume. If a roof needs tile, you need surface area. If a column must be carved, transported, or painted, you need both.
+
+Euclid organized much of classical geometry. Archimedes pushed three-dimensional geometry much further, especially for spheres and cylinders. His work showed that solid geometry is not just a list of shapes; it is a way to compare continuous objects.
+
+Modern engineering uses more advanced tools, including CAD, finite element analysis, computational geometry, and calculus. But the base intuition is still elementary:
+
+> Volume is accumulated area. Surface area is accumulated boundary.
+
+That sentence is the whole lesson in compressed form.
+
+## Plain-Language Intuition
+
+Imagine painting an object. The amount of paint depends on **surface area**. You do not paint the inside of a solid block unless it is exposed. You paint the outside skin.
+
+Now imagine filling an object with water, resin, air, foam, sand, or electronics. The amount it can contain depends on **volume**.
+
+These are different measurements:
+
+- A line has length: meters, centimeters, inches.
+- A flat region has area: square meters, square centimeters, square inches.
+- A solid region has volume: cubic meters, cubic centimeters, cubic inches.
+
+If you multiply two lengths, you get square units. If you multiply three lengths, you get cubic units. That unit discipline is not bookkeeping trivia. It catches bad reasoning. A result of $48$ cm cannot be a volume. A result of $48$ cm^2 cannot be a tank capacity. A result of $48$ cm^3 cannot be surface area.
+
+## Core Theory
+
+### Prisms: Same Cross-Section Stacked Through Height
+
+A **prism** has the same cross-section all the way through its height. A rectangular box is a rectangular prism. A triangular prism has a triangle cross-section stretched through space.
+
+The volume formula is:
+
+$$
+V=Bh
+$$
+
+where $B$ is the area of the base and $h$ is the height or length through which the base is stacked.
+
+This works because volume is area times depth. If every layer has area $B$, and there are $h$ units of height, the total volume is $Bh$.
+
+For a rectangular prism:
+
+$$
+V=lwh
+$$
+
+because the base area is $lw$, and the height is $h$.
+
+Surface area of a rectangular prism comes from its six faces:
+
+$$
+SA = 2lw + 2lh + 2wh = 2(lw+lh+wh)
+$$
+
+Each pair of opposite faces has equal area.
+
+### Nets: Flattening The Skin
+
+A **net** is what you get if you cut a solid's surface and lay it flat.
+
+For surface area, nets are often safer than memorized formulas. Ask:
+
+1. What faces are exposed?
+2. What is the area of each exposed face?
+3. How many copies of each face exist?
+4. Are any faces hidden, open, missing, or joined to another part?
+
+A closed box has six exposed faces. An open-top box has five. A pipe has outside curved area, maybe inside curved area, and maybe two ring-shaped ends. A tank with a removable lid might have different material requirements for body, floor, and lid.
+
+Surface area is a design accounting problem, not only a formula problem.
+
+### Cylinders: Circular Prisms
+
+A **cylinder** is like a circular prism: the same circular base is stacked through height.
+
+Volume:
+
+$$
+V=\pi r^2h
+$$
+
+This is just $V=Bh$ with $B=\pi r^2$.
+
+The curved side of a cylinder can be unwrapped into a rectangle. One side of that rectangle is the height $h$. The other side is the circumference of the base, $2\pi r$.
+
+So lateral area is:
+
+$$
+LA=2\pi rh
+$$
+
+Total surface area of a closed cylinder is:
+
+$$
+SA=2\pi r^2+2\pi rh
+$$
+
+The first term is the two circular ends. The second term is the curved side. If a cylinder is open at the top, remove one $\pi r^2$. If it is a pipe with thickness, the problem is no longer a simple solid cylinder; you need inner and outer radii.
+
+### Pyramids: Tapered Prisms
+
+A **pyramid** has a polygon base and triangular faces that meet at an apex.
+
+Its volume is:
+
+$$
+V=\frac{1}{3}Bh
+$$
+
+where $B$ is base area and $h$ is perpendicular height from base to apex. The factor $\frac{1}{3}$ is the big idea. A pyramid with the same base and height as a prism occupies one-third the volume. This can be shown by dissection for some shapes and by calculus more generally.
+
+Surface area depends on triangular faces. For a regular pyramid, where all side faces match, lateral area is:
+
+$$
+LA=\frac{1}{2}pl
+$$
+
+where $p$ is base perimeter and $l$ is slant height. Slant height is measured along a triangular face. It is not the same as vertical height.
+
+### Cones: Tapered Cylinders
+
+A **cone** is the circular version of a pyramid.
+
+Volume:
+
+$$
+V=\frac{1}{3}\pi r^2h
+$$
+
+Again, it is one-third of the corresponding cylinder with the same base and height.
+
+The curved side of a cone depends on **slant height** $l$:
+
+$$
+LA=\pi rl
+$$
+
+Total surface area of a closed cone:
+
+$$
+SA=\pi r^2+\pi rl
+$$
+
+For a right cone, slant height can be found using the Pythagorean theorem:
+
+$$
+l=\sqrt{r^2+h^2}
+$$
+
+This is one of the most common failure points. Cone volume uses vertical height. Cone lateral area uses slant height.
+
+### Spheres: All Points At Fixed Distance In 3D
+
+A **sphere** is all points in space at a fixed distance $r$ from a center. The surface is the shell. The ball is the filled-in volume.
+
+Surface area:
+
+$$
+SA=4\pi r^2
+$$
+
+Volume:
+
+$$
+V=\frac{4}{3}\pi r^3
+$$
+
+Sphere formulas are less obvious than prism and cylinder formulas. A useful intuition is that sphere surface area equals the curved side area of the cylinder that wraps around it: a cylinder with radius $r$ and height $2r$ has lateral area:
+
+$$
+2\pi r(2r)=4\pi r^2
+$$
+
+That relationship is one of Archimedes' famous discoveries.
+
+For volume, the $r^3$ tells you scale. Double the radius and volume becomes $2^3=8$ times larger. Surface area becomes $2^2=4$ times larger. This is why scale changes thermal behavior, mass, packaging, strength, and cost so dramatically.
+
+## Worked Examples
+
+### Example 1: Rectangular Electronics Box
+
+A small electronics enclosure is 12 cm long, 8 cm wide, and 5 cm tall.
+
+Volume:
+
+$$
+V=lwh=12\cdot8\cdot5=480
+$$
+
+So the interior bounding volume is $480$ cm^3 before wall thickness, standoffs, connectors, and clearances.
+
+Surface area:
+
+$$
+SA=2(lw+lh+wh)
+$$
+
+$$
+SA=2(12\cdot8+12\cdot5+8\cdot5)=2(96+60+40)=392
+$$
+
+So a closed rectangular shell has $392$ cm^2 of outside face area.
+
+### Example 2: Cylindrical Tank
+
+A closed cylindrical tank has radius 0.6 m and height 1.5 m.
+
+Volume:
+
+$$
+V=\pi r^2h=\pi(0.6)^2(1.5)=0.54\pi
+$$
+
+That is about $1.70$ m^3.
+
+Surface area:
+
+$$
+SA=2\pi r^2+2\pi rh
+$$
+
+$$
+SA=2\pi(0.6)^2+2\pi(0.6)(1.5)=0.72\pi+1.8\pi=2.52\pi
+$$
+
+That is about $7.92$ m^2 of exterior skin.
+
+### Example 3: Cone With Slant Height
+
+A cone has radius 3 cm and vertical height 4 cm.
+
+Volume:
+
+$$
+V=\frac{1}{3}\pi r^2h=\frac{1}{3}\pi(9)(4)=12\pi
+$$
+
+Slant height:
+
+$$
+l=\sqrt{3^2+4^2}=5
+$$
+
+Lateral area:
+
+$$
+LA=\pi rl=\pi(3)(5)=15\pi
+$$
+
+Closed surface area:
+
+$$
+SA=\pi r^2+\pi rl=9\pi+15\pi=24\pi
+$$
+
+Volume used vertical height. Surface area used slant height.
+
+### Example 4: Sphere Scaling
+
+A sensor dome radius increases from 4 cm to 8 cm.
+
+Surface area multiplies by:
+
+$$
+\left(\frac{8}{4}\right)^2=4
+$$
+
+Volume multiplies by:
+
+$$
+\left(\frac{8}{4}\right)^3=8
+$$
+
+The larger dome does not merely use "twice as much stuff." Surface-related quantities quadruple. Volume-related quantities multiply by eight.
+
+## Engineering Connections
+
+### Material Cost
+
+If sheet material costs dollars per square meter, use surface area. If resin costs dollars per cubic centimeter, use volume. If paint covers square meters per liter, use surface area. If a part is solid metal and you need mass, use volume times density.
+
+### Mass From Density
+
+Density connects volume to mass:
+
+$$
+m=\rho V
+$$
+
+If aluminum has density about $2.7$ g/cm^3 and a part has volume $40$ cm^3, the mass is:
+
+$$
+m=2.7\cdot40=108
+$$
+
+So the part is about $108$ g, before holes, fasteners, coatings, and tolerances.
+
+### Heat Transfer
+
+Surface area affects heat exchange with the environment. Volume often relates to stored heat. The ratio:
+
+$$
+\frac{SA}{V}
+$$
+
+is important. Small objects usually have higher surface-area-to-volume ratio than large objects, which is one reason small parts cool faster.
+
+### Clearance And Real Solids
+
+Textbook solids often ignore wall thickness, fillets, threads, vents, bosses, ribs, and fasteners. Real engineering geometry often starts with simple formulas and then subtracts holes, adds ribs, offsets surfaces, or uses CAD measurement.
+
+The simple formulas are still valuable because they give the sanity check. If CAD says a small 10 cm box has volume 9 m^3, something is wrong.
+
+## Common Failure Modes
+
+1. **Using square units for volume.** Volume must use cubic units.
+2. **Using cubic units for surface area.** Surface area must use square units.
+3. **Using diameter as radius.** Circle-based formulas use radius unless stated otherwise.
+4. **Using slant height for cone volume.** Cone volume uses vertical height.
+5. **Using vertical height for cone lateral area.** Cone side area uses slant height.
+6. **Counting hidden faces.** If two blocks are glued together, the joined faces are not exposed exterior surface.
+7. **Forgetting open tops.** An open cylinder, tray, or box may not include every face.
+8. **Rounding too early.** Keep $\pi$ exact as long as possible.
+9. **Ignoring wall thickness.** A tank's outside dimensions and inside capacity are different when walls have thickness.
+10. **Treating all volume as usable.** Electronics, baffles, welds, handles, fasteners, and clearances reduce usable space.
+
+## Practice Problems
+
+### Foundations
+
+1. A rectangular prism is 4 cm by 3 cm by 2 cm. Find its volume.
+2. Find its surface area.
+3. A cube has side length 5 m. Find its volume.
+4. Find the cube's surface area.
+5. A triangular prism has triangular base area 18 cm^2 and length 10 cm. Find its volume.
+6. A cylinder has radius 3 cm and height 10 cm. Find its volume exactly.
+7. A cylinder has radius 2 m and height 5 m. Find its lateral area exactly.
+8. Find the total surface area of that closed cylinder.
+9. A cone has radius 3 cm and height 4 cm. Find its volume exactly.
+10. Find the cone's slant height.
+
+### Pyramids, Cones, And Spheres
+
+11. A square pyramid has base side 6 m and height 9 m. Find its volume.
+12. A pyramid has base area 40 cm^2 and height 12 cm. Find its volume.
+13. A cone has radius 5 cm and height 12 cm. Find its slant height.
+14. Find that cone's lateral area exactly.
+15. Find that cone's total surface area exactly.
+16. A sphere has radius 2 cm. Find its surface area exactly.
+17. Find its volume exactly.
+18. A sphere has radius 6 m. Find its surface area exactly.
+19. Find its volume exactly.
+20. If a sphere's radius triples, what happens to its surface area?
+21. If a sphere's radius triples, what happens to its volume?
+
+### Units And Interpretation
+
+22. Should volume based on meter lengths use m, m^2, or m^3?
+23. Should surface area based on centimeter lengths use cm, cm^2, or cm^3?
+24. A box has volume 1200 cm^3. Convert this to liters, using 1000 cm^3 = 1 L.
+25. A part has volume 80 cm^3 and density 2.7 g/cm^3. Find its mass in grams.
+26. Paint covers 8 m^2 per liter. How many liters are needed for 20 m^2?
+27. A cube side doubles. What happens to its surface area?
+28. A cube side doubles. What happens to its volume?
+
+### Design Problems
+
+29. An open-top rectangular tray is 20 cm by 12 cm by 4 cm. Find its material area, ignoring thickness.
+30. A closed cylinder radius 4 cm and height 9 cm is made from thin sheet metal. Find its surface area exactly.
+31. A cylindrical pipe has outer radius 5 cm, inner radius 4 cm, and length 30 cm. Find the volume of material exactly.
+32. A water tank is a cylinder radius 1 m and height 2 m. How many cubic meters can it hold?
+33. If 1 m^3 is 1000 L, how many liters is that?
+34. A solid plastic sphere radius 3 cm has density 1.2 g/cm^3. Find its mass in exact form.
+35. A rectangular package must hold a 10 cm by 8 cm board with 2 cm clearance on each side and 3 cm height. What minimum internal volume is needed?
+
+### Challenge Problems
+
+36. A cone has radius 6 and slant height 10. Find its vertical height.
+37. Find its volume exactly.
+38. A cylinder and cone have the same radius and height. How many cones of material fit into the cylinder?
+39. A sphere radius 5 is placed inside the smallest possible cube. What is the cube's volume?
+40. What fraction of that cube is occupied by the sphere? Leave exact.
+41. A closed rectangular enclosure has dimensions 30 cm by 20 cm by 10 cm. A circular hole radius 3 cm is cut in the top. What is the exterior surface area after the cut, ignoring wall thickness?
+42. A thin cylindrical shell has radius 0.5 m and height 1.2 m, open at both ends. What area of sheet is needed?
+43. A robot body is approximated as a rectangular prism 40 cm by 25 cm by 12 cm. Estimate its bounding volume.
+44. If only 60 percent of that volume is usable after components and supports, estimate usable volume.
+45. A heat sink has the same volume as a block but much more surface area. Why does that help cooling?
+46. A tank's outside radius is 0.55 m and inside radius is 0.50 m. Which radius should be used for fluid capacity?
+47. A cone volume problem gives slant height but not vertical height. What must you do before using the volume formula?
+48. A cylinder surface-area problem says "no lid." Which term disappears?
+49. Why is $SA/V$ usually larger for smaller similar objects?
+50. Why is a formula answer with units often more trustworthy than a number alone?
+
+## Answer Key
+
+1. 24 cm^3.
+2. 52 cm^2.
+3. 125 m^3.
+4. 150 m^2.
+5. 180 cm^3.
+6. $90\pi$ cm^3.
+7. $20\pi$ m^2.
+8. $28\pi$ m^2.
+9. $12\pi$ cm^3.
+10. 5 cm.
+11. 108 m^3.
+12. 160 cm^3.
+13. 13 cm.
+14. $65\pi$ cm^2.
+15. $90\pi$ cm^2.
+16. $16\pi$ cm^2.
+17. $\frac{32}{3}\pi$ cm^3.
+18. $144\pi$ m^2.
+19. $288\pi$ m^3.
+20. Surface area becomes 9 times as large.
+21. Volume becomes 27 times as large.
+22. m^3.
+23. cm^2.
+24. 1.2 L.
+25. 216 g.
+26. 2.5 L.
+27. It becomes 4 times as large.
+28. It becomes 8 times as large.
+29. $20\cdot12+2(20\cdot4)+2(12\cdot4)=496$ cm^2.
+30. $2\pi(4)^2+2\pi(4)(9)=104\pi$ cm^2.
+31. $\pi(5^2-4^2)(30)=270\pi$ cm^3.
+32. $2\pi$ m^3.
+33. $2000\pi\approx6283$ L.
+34. $1.2\cdot36\pi=43.2\pi$ g.
+35. $(10+4)(8+4)(3)=504$ cm^3.
+36. 8.
+37. $96\pi$.
+38. 3 cones.
+39. 1000.
+40. $\frac{(4/3)\pi(125)}{1000}=\frac{\pi}{6}$.
+41. Original surface area is 2200 cm^2. Remove $9\pi$ cm^2, so $2200-9\pi$ cm^2.
+42. $2\pi rh=1.2\pi$ m^2.
+43. 12000 cm^3.
+44. 7200 cm^3.
+45. More exposed area gives more contact for heat transfer to air.
+46. Inside radius.
+47. Use the Pythagorean theorem to find vertical height.
+48. One circular end area, $\pi r^2$.
+49. Surface area scales with length squared while volume scales with length cubed.
+50. Units reveal whether the measurement is length, area, volume, mass, or something else.
+
+## Build Task
+
+Create a "solid geometry estimator" as a script, spreadsheet, notebook, or careful manual worksheet.
+
+Minimum requirements:
+
+1. Input a rectangular prism's dimensions and return volume and surface area.
+2. Input a cylinder's radius and height and return volume, lateral area, and total surface area.
+3. Input a cone's radius and height and return volume, slant height, lateral area, and total surface area.
+4. Input a sphere's radius and return surface area and volume.
+5. Include unit labels for every output.
+6. Include at least one material-cost estimate using surface area.
+7. Include at least one mass estimate using density and volume.
+
+Stretch:
+
+- Add open-top box and open-top cylinder options.
+- Add pipe material volume using outer and inner radius.
+- Add a warning when a user enters diameter into a radius field.
+
+## Quiz
+
+1. What is the difference between surface area and volume?
+2. Why does volume use cubic units?
+3. What does $V=Bh$ mean in plain language?
+4. Why is a cylinder a circular prism?
+5. What is lateral area?
+6. Why does a cone's lateral area use slant height?
+7. Why does a cone's volume use vertical height?
+8. What happens to volume when all dimensions double?
+9. What happens to surface area when all dimensions double?
+10. Give one engineering situation where surface area matters more than volume.
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 35 practice problems, including all challenge problems.
+- A corrected explanation for every missed problem.
+- Your solid geometry estimator artifact.
+- One real object approximated by a box, cylinder, cone, or sphere, with estimated surface area and volume.
+- A short note explaining why square units and cubic units cannot be swapped.
+
+## Sources And Further Study
+
+- Euclid, *Elements*, Books XI-XIII, for classical solid geometry.
+- Archimedes, *On the Sphere and Cylinder*, for sphere and cylinder relationships.
+- OpenStax, *Prealgebra 2e* and *Algebra and Trigonometry 2e*, sections on surface area, volume, and modeling.
+- Khan Academy, surface area and volume units.
+- Introductory CAD and engineering drawing references for nets, shells, wall thickness, and material estimates.
+
+## Next Lesson Bridge
+
+Surface area and volume complete the first pass through shape measurement. The next lesson turns back to triangles, but with a new purpose: using right triangles to convert angles into distances. That is the doorway into trigonometry, components, slopes, bearings, camera tilt, drone altitude, and robot navigation.

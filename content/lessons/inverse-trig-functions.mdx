@@ -1,0 +1,603 @@
+# Inverse Trigonometric Functions
+
+## Re-entry Promise
+
+This lesson assumes you know right-triangle trigonometry, the unit circle, and basic function notation. It does not assume you already understand why inverse sine and inverse cosine have restricted outputs, or why `atan2` is different from ordinary arctangent.
+
+Regular trig answers:
+
+> Given an angle, what ratio or coordinate do I get?
+
+Inverse trig answers:
+
+> Given a ratio or components, what angle could have produced it?
+
+That sounds simple until you remember that sine, cosine, and tangent repeat. Many angles can have the same sine. Many angles can have the same cosine. Tangent repeats every $180^\circ$. To make inverse trig functions behave like functions, we must choose principal output ranges.
+
+By the end, you should be able to use arcsin, arccos, arctan, and `atan2` correctly in triangles, vectors, robotics, drones, sensors, and code.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Explain inverse trig as recovering an angle from a trig value.
+- Distinguish $\sin^{-1}x$ from $1/\sin x$.
+- State the principal output ranges for arcsin, arccos, and arctan.
+- Choose arcsin, arccos, or arctan based on known sides or components.
+- Explain why inverse trig needs restricted ranges.
+- Use `atan2(y, x)` to recover a quadrant-correct heading.
+- Identify domain restrictions for arcsin and arccos.
+- Convert inverse trig outputs between radians and degrees.
+- Apply inverse trig to slopes, ramps, sensor tilt, robot headings, and drone geometry.
+
+## Why It Matters
+
+Inverse trig is how measurements become angles.
+
+1. **Robot heading.** Given desired displacement components, compute the heading angle.
+
+2. **Drone line of sight.** Given altitude and horizontal distance, compute camera depression angle.
+
+3. **Ramp design.** Given rise and run, compute slope angle.
+
+4. **Sensor mounting.** Given height and target distance, compute tilt angle.
+
+5. **Vector reconstruction.** Given $x$ and $y$ components, compute magnitude and direction.
+
+6. **Controls.** Controllers often need angular error from component error.
+
+7. **Computer graphics.** Camera orientation, object rotation, and aiming all need angle recovery.
+
+The forward trig functions project angles into ratios. Inverse trig reconstructs angles from those projections.
+
+## Why Inverse Trig Is Subtle
+
+Consider sine.
+
+$$
+\sin(30^\circ)=1/2
+$$
+
+But:
+
+$$
+\sin(150^\circ)=1/2
+$$
+
+If you ask:
+
+$$
+\sin^{-1}(1/2)=?
+$$
+
+there are multiple possible angles. A function must give one output for one input. So inverse sine chooses a principal angle:
+
+$$
+\sin^{-1}(1/2)=30^\circ
+$$
+
+The other possible angles are still real solutions in equation-solving contexts, but they are not the principal output of arcsin.
+
+This is the core idea: inverse trig functions return a chosen angle, not every possible angle.
+
+## Notation Warning
+
+The notation $\sin^{-1}(x)$ usually means arcsine:
+
+$$
+\sin^{-1}(x)=\arcsin(x)
+$$
+
+It does **not** mean:
+
+$$
+\frac{1}{\sin(x)}
+$$
+
+That reciprocal is cosecant:
+
+$$
+\csc(x)=\frac{1}{\sin(x)}
+$$
+
+This notation is unfortunate, but common. In programming, inverse sine is usually named something like `asin`.
+
+## Principal Ranges
+
+To make inverse trig functions work as functions, each one has a restricted output range.
+
+### Arcsine
+
+$$
+y=\arcsin(x)
+$$
+
+means:
+
+$$
+\sin(y)=x
+$$
+
+with:
+
+$$
+-\frac{\pi}{2}\le y\le\frac{\pi}{2}
+$$
+
+In degrees:
+
+$$
+-90^\circ\le y\le90^\circ
+$$
+
+Input domain:
+
+$$
+-1\le x\le1
+$$
+
+### Arccosine
+
+$$
+y=\arccos(x)
+$$
+
+means:
+
+$$
+\cos(y)=x
+$$
+
+with:
+
+$$
+0\le y\le\pi
+$$
+
+In degrees:
+
+$$
+0^\circ\le y\le180^\circ
+$$
+
+Input domain:
+
+$$
+-1\le x\le1
+$$
+
+### Arctangent
+
+$$
+y=\arctan(x)
+$$
+
+means:
+
+$$
+\tan(y)=x
+$$
+
+with:
+
+$$
+-\frac{\pi}{2}<y<\frac{\pi}{2}
+$$
+
+In degrees:
+
+$$
+-90^\circ<y<90^\circ
+$$
+
+Input domain: all real numbers.
+
+Arctangent has no problem accepting large inputs, because tangent can produce any real number. But ordinary arctangent cannot distinguish quadrant I from quadrant III using a ratio alone.
+
+## Choosing The Right Inverse Function
+
+Use arcsin when you know:
+
+$$
+\frac{\text{opposite}}{\text{hypotenuse}}
+$$
+
+Use arccos when you know:
+
+$$
+\frac{\text{adjacent}}{\text{hypotenuse}}
+$$
+
+Use arctan when you know:
+
+$$
+\frac{\text{opposite}}{\text{adjacent}}
+$$
+
+Use `atan2(y, x)` when you know signed components and need the quadrant-correct direction.
+
+## Worked Examples
+
+### Example 1: Ramp Angle
+
+A ramp rises 0.8 m over a horizontal run of 6 m.
+
+Use tangent:
+
+$$
+\tan\theta=\frac{0.8}{6}
+$$
+
+So:
+
+$$
+\theta=\arctan(0.8/6)\approx7.59^\circ
+$$
+
+The ramp angle is about $7.59^\circ$.
+
+### Example 2: Drone Elevation Angle
+
+A drone is 40 m high and 100 m horizontally from a marker. What is the angle of elevation from the marker?
+
+Opposite is 40. Adjacent is 100.
+
+$$
+\theta=\arctan(40/100)\approx21.80^\circ
+$$
+
+### Example 3: Angle From Sine
+
+A cable has length 13 m and vertical rise 5 m. What angle does it make with the horizontal?
+
+Opposite is 5. Hypotenuse is 13.
+
+$$
+\theta=\arcsin(5/13)\approx22.62^\circ
+$$
+
+Because this is a physical right-triangle angle, the principal arcsin output is the angle we want.
+
+### Example 4: Heading From Components
+
+A robot displacement is:
+
+$$
+x=-3,\quad y=4
+$$
+
+Magnitude:
+
+$$
+r=\sqrt{(-3)^2+4^2}=5
+$$
+
+The vector is in quadrant II. Ordinary:
+
+$$
+\arctan(y/x)=\arctan(-4/3)
+$$
+
+returns a negative principal angle, which points the wrong way for the vector.
+
+Use:
+
+```js
+Math.atan2(y, x)
+```
+
+Conceptually:
+
+$$
+\theta=\operatorname{atan2}(4,-3)\approx126.87^\circ
+$$
+
+That is the correct quadrant II heading.
+
+## `atan2` In Plain Language
+
+Ordinary arctangent sees only a slope:
+
+$$
+\frac{y}{x}
+$$
+
+But slopes repeat across opposite quadrants. A vector with $(x,y)=(3,4)$ and one with $(-3,-4)$ have the same ratio $y/x=4/3$, but they point in opposite directions.
+
+`atan2(y, x)` sees both signs separately:
+
+- $x>0$, $y>0$: quadrant I.
+- $x<0$, $y>0$: quadrant II.
+- $x<0$, $y<0$: quadrant III.
+- $x>0$, $y<0$: quadrant IV.
+
+That is why robotics, graphics, navigation, and control code usually prefer `atan2` for heading reconstruction.
+
+## Domain And Range Checks
+
+Arcsin and arccos only accept values from -1 to 1. That is because sine and cosine outputs are never outside that range.
+
+If you calculate:
+
+$$
+\arccos(1.2)
+$$
+
+something upstream is wrong, or floating-point error pushed a value slightly outside range.
+
+Practical code sometimes clamps tiny numerical drift:
+
+```js
+const clamped = Math.max(-1, Math.min(1, value));
+```
+
+But do not blindly clamp large errors. If a ratio is 1.2, the geometry may be impossible.
+
+## Degrees, Radians, And Code
+
+Programming inverse trig functions usually return radians.
+
+In JavaScript:
+
+```js
+const angleRadians = Math.atan2(y, x);
+const angleDegrees = angleRadians * 180 / Math.PI;
+```
+
+In Python:
+
+```py
+angle_radians = math.atan2(y, x)
+angle_degrees = math.degrees(angle_radians)
+```
+
+Always label the output. A result of `0.785` is radians. A result of `45` is degrees.
+
+## Solving Equations Versus Principal Values
+
+There is a difference between:
+
+$$
+\arcsin(1/2)
+$$
+
+and:
+
+$$
+\sin\theta=1/2
+$$
+
+The first asks for the principal arcsin output:
+
+$$
+30^\circ
+$$
+
+The second asks for all angles that satisfy the equation:
+
+$$
+30^\circ,\ 150^\circ,\ 390^\circ,\ 510^\circ,\ ...
+$$
+
+For right-triangle engineering problems, the principal angle is often enough. For wave, rotation, and periodic equations, it is not.
+
+## Engineering Connections
+
+### Slope To Angle
+
+If a ramp grade is 0.12, then:
+
+$$
+\theta=\arctan(0.12)\approx6.84^\circ
+$$
+
+This converts a design slope into an angle.
+
+### Angle Error In Control
+
+If a robot is offset by components $(x,y)$ from a target, `atan2(y,x)` gives the target bearing. Subtract the robot's current heading to get angular error.
+
+### Sensor Tilt
+
+If a camera is height $h$ and must hit the floor distance $d$ ahead:
+
+$$
+\theta=\arctan(h/d)
+$$
+
+This gives the required downward tilt angle.
+
+### Dot Product Preview
+
+Later, the angle between vectors can be recovered using:
+
+$$
+\theta=\arccos\left(\frac{a\cdot b}{|a||b|}\right)
+$$
+
+That is an arccos problem because the dot product measures the cosine of the angle between vectors.
+
+## Common Failure Modes
+
+1. **Reading $\sin^{-1}x$ as reciprocal sine.** It usually means arcsin.
+2. **Expecting arcsin to return every possible angle.** It returns a principal value.
+3. **Using arctan instead of `atan2` for signed components.**
+4. **Forgetting radians from code output.**
+5. **Feeding arcsin or arccos values outside -1 to 1.**
+6. **Choosing arcsin when the known ratio is adjacent/hypotenuse.**
+7. **Choosing arccos when the known ratio is opposite/adjacent.**
+8. **Ignoring quadrant.**
+9. **Treating inverse functions as undoing periodic trig globally.** They only undo on restricted ranges.
+10. **Not checking physical plausibility.** If a cable's vertical rise exceeds its length, the ratio is impossible.
+
+## Practice Problems
+
+### Foundations
+
+1. What question does inverse trig answer?
+2. What does $\arcsin(x)$ mean?
+3. What does $\arccos(x)$ mean?
+4. What does $\arctan(x)$ mean?
+5. Does $\sin^{-1}(x)$ usually mean $1/\sin(x)$?
+6. What is the input domain of arcsin?
+7. What is the input domain of arccos?
+8. What is the input domain of arctan?
+9. What is the principal range of arcsin in degrees?
+10. What is the principal range of arccos in degrees?
+
+### Right Triangles
+
+11. Find $\arcsin(1/2)$ in degrees.
+12. Find $\arccos(1/2)$ in degrees.
+13. Find $\arctan(1)$ in degrees.
+14. A right triangle has opposite 3 and adjacent 4. Find the angle.
+15. A right triangle has opposite 5 and hypotenuse 13. Find the angle.
+16. A right triangle has adjacent 12 and hypotenuse 13. Find the angle.
+17. A ramp rises 0.5 m over 5 m run. Find its angle.
+18. A cable has length 10 m and vertical rise 6 m. Find its angle above horizontal.
+19. A drone is 30 m high and 80 m away horizontally. Find angle of elevation.
+20. A camera is 1.5 m high and should hit the floor 3 m ahead. Find tilt angle.
+
+### Components And `atan2`
+
+21. A vector has $x=3$, $y=4$. Find magnitude.
+22. Find its heading using arctangent.
+23. A vector has $x=-3$, $y=4$. What quadrant is it in?
+24. Why is `atan2` better than arctangent alone for that vector?
+25. Estimate the heading of $x=-3$, $y=4$.
+26. A vector has $x=-3$, $y=-4$. What quadrant is it in?
+27. A vector has $x=3$, $y=-4$. What quadrant is it in?
+28. What function should code use for a heading from signed components?
+29. If `Math.atan2(1, 1)` returns radians, what is the angle in degrees?
+30. What is wrong if an arcsin input is 1.3?
+
+### Challenge Problems
+
+31. Explain why $\arcsin(\sin(150^\circ))$ returns $30^\circ$, not $150^\circ$.
+32. Explain why $\arccos(\cos(150^\circ))$ returns $150^\circ$.
+33. A robot target is 2 m left and 5 m forward. Describe what you need to know before computing a heading.
+34. A grade is 12 percent. Find the angle.
+35. A sensor at height 2.2 m must hit a target 7 m ahead. Find tilt angle.
+36. A line of sight has slant range 100 m and altitude difference 20 m. Find depression angle.
+37. A dot product calculation gives $\cos\theta=0.8$. Find $\theta$.
+38. A dot product calculation gives $\cos\theta=-0.5$. Find $\theta$.
+39. Why might code clamp a value like 1.0000000002 before arccos?
+40. Why should code not blindly clamp a value like 1.4?
+41. Write the JavaScript expression to convert radians to degrees.
+42. Write the JavaScript expression to convert degrees to radians.
+43. Why does tangent's inverse range exclude $90^\circ$ and $-90^\circ$?
+44. If $\theta=\arctan(-1)$, what principal angle is returned?
+45. Give another angle with tangent equal to -1.
+46. Why is inverse trig especially important for sensor calibration?
+47. Why is the phrase "principal value" important?
+48. What is the difference between solving $\sin\theta=1/2$ and evaluating $\arcsin(1/2)$?
+49. In navigation, why might a heading angle need normalization after `atan2`?
+50. Give one robotics or drone situation where `atan2` is the correct tool.
+
+## Answer Key
+
+1. What angle produced a given trig value or ratio.
+2. The principal angle whose sine is $x$.
+3. The principal angle whose cosine is $x$.
+4. The principal angle whose tangent is $x$.
+5. No. It usually means arcsin.
+6. $[-1,1]$.
+7. $[-1,1]$.
+8. All real numbers.
+9. $[-90^\circ,90^\circ]$.
+10. $[0^\circ,180^\circ]$.
+11. $30^\circ$.
+12. $60^\circ$.
+13. $45^\circ$.
+14. $\arctan(3/4)\approx36.87^\circ$.
+15. $\arcsin(5/13)\approx22.62^\circ$.
+16. $\arccos(12/13)\approx22.62^\circ$.
+17. $\arctan(0.5/5)\approx5.71^\circ$.
+18. $\arcsin(6/10)\approx36.87^\circ$.
+19. $\arctan(30/80)\approx20.56^\circ$.
+20. $\arctan(1.5/3)\approx26.57^\circ$.
+21. 5.
+22. $\arctan(4/3)\approx53.13^\circ$.
+23. Quadrant II.
+24. It uses the signs of both components to preserve quadrant.
+25. About $126.87^\circ$.
+26. Quadrant III.
+27. Quadrant IV.
+28. `atan2(y, x)`.
+29. $45^\circ$.
+30. The ratio is impossible for sine, or there is a serious measurement/calculation error.
+31. Arcsin's principal range is $[-90^\circ,90^\circ]$, and both 30 and 150 have sine 1/2.
+32. Arccos's principal range is $[0^\circ,180^\circ]$, which includes $150^\circ$.
+33. Coordinate convention: which axis is forward, sign direction, and angle zero.
+34. $\arctan(0.12)\approx6.84^\circ$.
+35. $\arctan(2.2/7)\approx17.44^\circ$.
+36. $\arcsin(20/100)\approx11.54^\circ$.
+37. $\arccos(0.8)\approx36.87^\circ$.
+38. $\arccos(-0.5)=120^\circ$.
+39. Floating-point roundoff can push a valid value slightly outside the legal range.
+40. It likely indicates impossible geometry or a major bug.
+41. `radians * 180 / Math.PI`.
+42. `degrees * Math.PI / 180`.
+43. Tangent has vertical asymptotes there and never takes finite values at those angles.
+44. $-45^\circ$.
+45. $135^\circ$.
+46. Calibration often estimates angles from measured ratios, offsets, or components.
+47. It reminds you inverse trig returns one chosen output, not all possible angles.
+48. The equation has multiple periodic solutions; arcsin returns the principal one.
+49. `atan2` may return negative angles, while navigation may want $0^\circ$ to $360^\circ$.
+50. Recovering target bearing from signed displacement components.
+
+## Build Task
+
+Create an "inverse trig angle resolver" as a script, spreadsheet, notebook, or careful manual worksheet.
+
+Minimum requirements:
+
+1. Input a ratio and choose arcsin, arccos, or arctan.
+2. Validate arcsin/arccos inputs are between -1 and 1.
+3. Output angle in radians and degrees.
+4. Input signed $x,y$ components and compute magnitude plus heading using `atan2` logic.
+5. Include at least five worked test cases.
+6. Include one case where ordinary arctangent gives the wrong quadrant.
+7. Include one warning explaining principal values.
+
+Stretch:
+
+- Normalize headings into $0^\circ$ to $360^\circ$.
+- Add slope-to-angle and camera-tilt modes.
+- Add a small note about floating-point clamping near -1 and 1.
+
+## Quiz
+
+1. What does arcsin return?
+2. What does arccos return?
+3. What does arctan return?
+4. Why do arcsin and arccos only accept inputs from -1 to 1?
+5. Why does inverse trig need principal ranges?
+6. Why is `atan2` better for headings than arctangent alone?
+7. What is the difference between $\sin^{-1}x$ and $\csc x$?
+8. What unit do most programming inverse trig functions return?
+9. What is one physical sign that an inverse trig input is impossible?
+10. Give one engineering use of inverse trig.
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 35 practice problems, including all challenge problems.
+- A corrected explanation for every missed problem.
+- Your inverse trig angle resolver artifact.
+- A diagram showing why `atan2` preserves quadrant.
+- A short note explaining principal values versus all equation solutions.
+
+## Sources And Further Study
+
+- OpenStax, *Algebra and Trigonometry 2e*, inverse trigonometric functions.
+- Khan Academy, inverse trig functions and solving trig equations.
+- JavaScript `Math.asin`, `Math.acos`, `Math.atan`, and `Math.atan2` documentation.
+- Python `math.asin`, `math.acos`, `math.atan`, and `math.atan2` documentation.
+- Robotics references on heading, bearing, and coordinate-frame conventions.
+
+## Next Lesson Bridge
+
+Inverse trig lets us recover angles from ratios and components. The next lesson returns to radians and arc length, now with a deeper purpose: radians are not only a conversion unit, but the natural language of circular motion, angular velocity, and calculus.

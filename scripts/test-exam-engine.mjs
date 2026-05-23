@@ -41,6 +41,10 @@ assert.equal(
   true,
 );
 assert.equal(
+  isResponseCorrect({ kind: "numeric", value: 0.5, unit: "h", tolerance: 0.001 }, "0.5"),
+  true,
+);
+assert.equal(
   isResponseCorrect({ kind: "numeric", value: 0.5, unit: "h", tolerance: 0.001 }, "30 min"),
   false,
 );

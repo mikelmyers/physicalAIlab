@@ -1,0 +1,455 @@
+# Radians and Arc Length
+
+## Re-entry Promise
+
+This lesson assumes you know circles, the unit circle, basic trig, and unit conversion. It does not assume that radians feel natural yet.
+
+Degrees are familiar because people divided a circle into 360 pieces long ago. Radians are different. A radian is not an arbitrary slice of a circle. A radian connects angle directly to distance traveled along an arc.
+
+The definition is:
+
+$$
+\theta=\frac{s}{r}
+$$
+
+where:
+
+- $\theta$ is angle in radians,
+- $s$ is arc length,
+- $r$ is radius.
+
+That one equation is why radians dominate calculus, physics, robotics, controls, circular motion, motor rotation, encoder math, and simulation.
+
+By the end, you should be able to convert degrees and radians, compute arc length and sector area, connect angular velocity to linear velocity, and explain why radians are the natural unit for rotation.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Define one radian using arc length and radius.
+- Convert between degrees and radians.
+- Compute arc length using $s=r\theta$.
+- Compute sector area using $A=\frac{1}{2}r^2\theta$.
+- Explain why radians are dimensionless but not meaningless.
+- Use angular velocity to compute linear speed.
+- Interpret revolutions, radians, and encoder counts.
+- Avoid common errors: using degrees in radian formulas, forgetting the half-angle in sectors, using diameter instead of radius, and rounding $\pi$ too early.
+
+## Why It Matters
+
+Radians are the language of rotation in real systems.
+
+1. **Wheel odometry.** A wheel's angular rotation becomes linear travel by arc length.
+
+2. **Motors and encoders.** Encoder counts measure fractions of a revolution. Control code often converts those counts into radians.
+
+3. **Robot arms.** Joint angles are usually represented in radians in robotics software.
+
+4. **Drones and IMUs.** Angular velocity, yaw rate, roll rate, and pitch rate are commonly measured in radians per second.
+
+5. **Physics.** Circular motion, torque, angular momentum, waves, oscillation, and calculus use radians because the formulas become clean.
+
+6. **Signal processing.** Frequency and phase are commonly written in radians.
+
+Radians are not "hard degrees." They are angle measured in the unit that preserves geometry.
+
+## Why This Idea Exists
+
+On any circle, the same central angle sweeps a longer arc when the radius is larger. If the radius doubles, the arc length doubles. So the ratio:
+
+$$
+\frac{s}{r}
+$$
+
+removes the size of the circle and leaves only angle.
+
+That ratio is the radian measure.
+
+If $s=r$, then:
+
+$$
+\theta=\frac{r}{r}=1
+$$
+
+The angle is one radian.
+
+So one radian is the central angle that cuts off an arc length equal to the radius.
+
+## Full Rotation
+
+A full circle has circumference:
+
+$$
+C=2\pi r
+$$
+
+Using $\theta=s/r$, the angle for a full rotation is:
+
+$$
+\theta=\frac{2\pi r}{r}=2\pi
+$$
+
+So:
+
+$$
+360^\circ=2\pi \text{ radians}
+$$
+
+That gives the conversion anchors:
+
+$$
+180^\circ=\pi \text{ radians}
+$$
+
+$$
+90^\circ=\frac{\pi}{2} \text{ radians}
+$$
+
+$$
+1 \text{ revolution}=2\pi \text{ radians}
+$$
+
+## Conversion Formulas
+
+Degrees to radians:
+
+$$
+\text{radians}=\text{degrees}\cdot\frac{\pi}{180}
+$$
+
+Radians to degrees:
+
+$$
+\text{degrees}=\text{radians}\cdot\frac{180}{\pi}
+$$
+
+Examples:
+
+$$
+30^\circ=30\cdot\frac{\pi}{180}=\frac{\pi}{6}
+$$
+
+$$
+45^\circ=\frac{\pi}{4}
+$$
+
+$$
+60^\circ=\frac{\pi}{3}
+$$
+
+$$
+\frac{3\pi}{2}\text{ radians}=270^\circ
+$$
+
+## Arc Length
+
+The radian definition:
+
+$$
+\theta=\frac{s}{r}
+$$
+
+rearranges to:
+
+$$
+s=r\theta
+$$
+
+This formula requires $\theta$ in radians.
+
+If $\theta$ is in degrees, convert first.
+
+### Example: Arc Length
+
+A robot arm of length 0.8 m rotates through $30^\circ$. How far does the gripper travel along its circular path?
+
+Convert:
+
+$$
+30^\circ=\frac{\pi}{6}
+$$
+
+Then:
+
+$$
+s=r\theta=0.8\cdot\frac{\pi}{6}\approx0.419
+$$
+
+The gripper travels about 0.419 m along the arc.
+
+## Sector Area
+
+A sector is a slice of a circle.
+
+The full circle area is:
+
+$$
+\pi r^2
+$$
+
+A full rotation is:
+
+$$
+2\pi
+$$
+
+So a sector with angle $\theta$ radians is the fraction:
+
+$$
+\frac{\theta}{2\pi}
+$$
+
+of the full circle.
+
+Sector area:
+
+$$
+A=\frac{\theta}{2\pi}\cdot\pi r^2=\frac{1}{2}r^2\theta
+$$
+
+Again, $\theta$ must be in radians.
+
+### Example: Sector Area
+
+A sensor covers a circular sector of radius 5 m and angle 0.8 radians.
+
+$$
+A=\frac12 r^2\theta=\frac12(25)(0.8)=10
+$$
+
+The coverage area is 10 m^2.
+
+## Angular Velocity And Linear Speed
+
+Angular velocity measures how fast an angle changes:
+
+$$
+\omega=\frac{d\theta}{dt}
+$$
+
+Its unit is usually radians per second.
+
+Linear speed along a circular path is:
+
+$$
+v=r\omega
+$$
+
+This is the rate version of:
+
+$$
+s=r\theta
+$$
+
+### Example: Wheel Speed
+
+A wheel has radius 0.3 m and spins at 10 rad/s.
+
+$$
+v=r\omega=0.3(10)=3
+$$
+
+The edge of the wheel moves at 3 m/s. If the wheel rolls without slipping, the vehicle moves at 3 m/s.
+
+## Revolutions, RPM, And Encoders
+
+One revolution is $2\pi$ radians.
+
+If a motor turns at 120 RPM, that is:
+
+$$
+120 \frac{\text{rev}}{\text{min}}\cdot\frac{2\pi \text{ rad}}{1\text{ rev}}\cdot\frac{1\text{ min}}{60\text{ s}}=4\pi \text{ rad/s}
+$$
+
+Encoder counts work the same way. If an encoder has 2048 counts per revolution, then one count is:
+
+$$
+\frac{2\pi}{2048}\text{ rad}
+$$
+
+For a wheel radius $r$, distance per count is:
+
+$$
+r\cdot\frac{2\pi}{2048}
+$$
+
+This is why radians sit directly underneath robot odometry.
+
+## Why Radians Are Dimensionless
+
+Radians are defined as:
+
+$$
+\theta=\frac{s}{r}
+$$
+
+Both $s$ and $r$ are lengths. Meters divided by meters cancels units, so radians are technically dimensionless.
+
+But dimensionless does not mean meaningless. A radian records a geometric ratio: arc length per radius.
+
+In formulas, radians often disappear from unit analysis, but the angle interpretation remains essential.
+
+## Common Failure Modes
+
+1. **Using degrees in $s=r\theta$.** Convert degrees to radians first.
+2. **Using diameter instead of radius.**
+3. **Forgetting sector area has $\frac12$.**
+4. **Treating radians as arbitrary.** They come from arc length divided by radius.
+5. **Rounding $\pi$ too early.**
+6. **Confusing angular speed with linear speed.** $\omega$ is rad/s; $v$ is m/s.
+7. **Forgetting one revolution is $2\pi$, not $\pi$.**
+8. **Ignoring wheel slip.** Odometry formulas assume rolling without slipping.
+9. **Confusing RPM and rad/s.**
+10. **Thinking dimensionless means unit-free in practice.** You still need to know the quantity is an angle.
+
+## Practice Problems
+
+### Definitions And Conversion
+
+1. Define one radian in words.
+2. How many radians are in one full rotation?
+3. How many radians are in $180^\circ$?
+4. Convert $90^\circ$ to radians.
+5. Convert $60^\circ$ to radians.
+6. Convert $45^\circ$ to radians.
+7. Convert $30^\circ$ to radians.
+8. Convert $\pi/6$ to degrees.
+9. Convert $2\pi/3$ to degrees.
+10. Convert $5\pi/4$ to degrees.
+
+### Arc Length And Sector Area
+
+11. A circle has radius 4 m and angle 2 radians. Find arc length.
+12. A circle has radius 5 m and angle 0.8 radians. Find sector area.
+13. A wheel radius is 0.3 m. How far does the edge move in one full revolution?
+14. A robot arm length is 0.5 m and rotates through $\pi/2$. Find arc length.
+15. A circular camera sweep has radius 10 m and angle $\pi/3$. Find arc length.
+16. Find the sector area for radius 10 m and angle $\pi/3$.
+17. A pulley radius is 0.1 m and turns through 5 radians. How much belt length moves?
+18. A shaft rotates $270^\circ$. Convert to radians.
+19. A radius 6 cm circle has a $45^\circ$ sector. Find arc length exactly.
+20. Find the sector area exactly.
+
+### Angular Velocity And Encoders
+
+21. A wheel radius 0.3 m spins at 10 rad/s. Find linear speed.
+22. A wheel radius 0.2 m spins at 15 rad/s. Find linear speed.
+23. Convert 60 RPM to rad/s.
+24. Convert 120 RPM to rad/s.
+25. An encoder has 2048 counts per revolution. How many radians per count?
+26. A wheel radius 0.05 m has 2048 encoder counts per revolution. Find distance per count.
+27. A robot wheel turns 1000 counts. Approximately how far does it roll, using the previous wheel?
+28. Why does wheel slip break the odometry estimate?
+
+### Challenge Problems
+
+29. Derive $s=r\theta$ from the definition of radians.
+30. Derive sector area $A=\frac12r^2\theta$ from a fraction of full circle area.
+31. A robot spins in place by $90^\circ$. What angle is that in radians?
+32. A lidar sweeps $270^\circ$ with range 8 m. What sector area is covered?
+33. A motor runs at 300 RPM. Convert to rad/s.
+34. A wheel radius is 0.1 m. At 300 RPM, what is ideal linear speed?
+35. A joint rotates at 2 rad/s for 3 seconds. Through what angle does it rotate?
+36. Convert that angle to degrees.
+37. If a point is 0.7 m from the joint, how far does it travel?
+38. Why are radians preferred in calculus?
+39. Why is $v=r\omega$ the rate version of $s=r\theta$?
+40. Give one robotics example where radians matter.
+
+## Answer Key
+
+1. The angle that subtends an arc length equal to the radius.
+2. $2\pi$.
+3. $\pi$.
+4. $\pi/2$.
+5. $\pi/3$.
+6. $\pi/4$.
+7. $\pi/6$.
+8. $30^\circ$.
+9. $120^\circ$.
+10. $225^\circ$.
+11. 8 m.
+12. 10 m^2.
+13. $0.6\pi$ m.
+14. $\pi/4$ m.
+15. $10\pi/3$ m.
+16. $50\pi/3$ m^2.
+17. 0.5 m.
+18. $3\pi/2$.
+19. $6\cdot\pi/4=3\pi/2$ cm.
+20. $\frac12(36)(\pi/4)=9\pi/2$ cm^2.
+21. 3 m/s.
+22. 3 m/s.
+23. $2\pi$ rad/s.
+24. $4\pi$ rad/s.
+25. $2\pi/2048$ rad/count.
+26. $0.05(2\pi/2048)\approx0.000153$ m/count.
+27. About 0.153 m.
+28. Counts no longer equal ground distance when the wheel slides.
+29. $\theta=s/r$, so multiply by $r$.
+30. Sector fraction is $\theta/(2\pi)$ of $\pi r^2$, giving $\frac12r^2\theta$.
+31. $\pi/2$.
+32. $\frac12(64)(3\pi/2)=48\pi$ m^2.
+33. $10\pi$ rad/s.
+34. $\pi$ m/s.
+35. 6 radians.
+36. About $343.8^\circ$.
+37. 4.2 m.
+38. The derivative formulas for sine and cosine are clean only when angles use radians.
+39. It differentiates distance along the arc with respect to time.
+40. Examples: wheel odometry, joint angles, IMU rates, motor control, lidar scanning.
+
+## Build Task
+
+Create a "rotation unit calculator" as a script, spreadsheet, notebook, or careful manual worksheet.
+
+Minimum requirements:
+
+1. Convert degrees to radians.
+2. Convert radians to degrees.
+3. Convert revolutions to radians.
+4. Compute arc length from radius and angle.
+5. Compute sector area from radius and angle.
+6. Convert RPM to rad/s.
+7. Compute linear speed from wheel radius and angular velocity.
+
+Stretch:
+
+- Add encoder counts per revolution and distance per count.
+- Add a warning when an angle is entered in degrees for a radian formula.
+- Add a wheel-slip note for odometry estimates.
+
+## Quiz
+
+1. What is the radian definition?
+2. Why is one full rotation $2\pi$ radians?
+3. What formula gives arc length?
+4. What formula gives sector area?
+5. What unit does angular velocity usually use?
+6. What is the relationship between angular velocity and linear speed?
+7. Why are radians technically dimensionless?
+8. Why are radians still meaningful?
+9. Why do code trig functions usually use radians?
+10. Give one encoder-related use of radians.
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 30 practice problems, including all challenge problems.
+- A corrected explanation for every missed problem.
+- Your rotation unit calculator artifact.
+- One real wheel, pulley, or rotating arm calculation.
+- A short note explaining why $s=r\theta$ requires radians.
+
+## Sources And Further Study
+
+- OpenStax, *Algebra and Trigonometry 2e*, sections on radian measure, arc length, and sector area.
+- Khan Academy, radians, arc length, and sector area.
+- Introductory physics references on angular velocity and circular motion.
+- Robotics references on wheel odometry, encoders, and joint angle units.
+- Programming language math-library documentation for radian-based trig functions.
+
+## Next Lesson Bridge
+
+Radians connect rotation to distance. The next vector lessons connect distance and direction to components, motion, forces, and geometry in space.

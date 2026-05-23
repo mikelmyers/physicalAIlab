@@ -1,0 +1,649 @@
+# Points, Lines, Planes, and Angles
+
+## Re-entry Promise
+
+This lesson assumes you can do arithmetic, solve basic equations, read coordinates, and keep track of units. It does not assume you remember school geometry. We start at the level of "what is a point?" and build toward the language used in CAD sketches, robot coordinate frames, camera rays, drone bearings, map lines, mechanical drawings, and proofs.
+
+This is not a memorization lesson. Geometry is the discipline of making space precise. A physical AI system does not merely "move around." It occupies positions, follows lines, rotates through angles, senses planes, and estimates where objects are. If those words are vague, the machine is vague. If those words are precise, the rest of robotics, trigonometry, vectors, kinematics, computer vision, and physics can begin.
+
+By the end, you should be able to name the primitive geometric objects, classify basic angle relationships, convert between degrees and radians, use a protractor-style coordinate convention, and translate simple physical layout problems into geometric statements.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Distinguish points, lines, line segments, rays, planes, and angles.
+- Explain why geometry begins with undefined primitives instead of definitions for everything.
+- Use notation such as $\overline{AB}$, $\overrightarrow{AB}$, $\overleftrightarrow{AB}$, $\angle ABC$, and $m\angle ABC$.
+- Recognize collinear points, coplanar points, intersecting lines, parallel lines, perpendicular lines, and skew lines.
+- Classify angles as acute, right, obtuse, straight, reflex, complementary, supplementary, vertical, adjacent, and linear pairs.
+- Convert between degrees and radians using $180^\circ = \pi$ radians.
+- Use the angle-addition postulate to solve layout problems.
+- Explain why radians become the natural angle unit in calculus, robotics, and physics.
+- Spot common geometry failures: naming the wrong vertex, confusing a ray with a segment, mixing degrees and radians, and treating a drawing as proof.
+
+## Why It Matters
+
+Geometry is not decoration. It is the first formal language for physical arrangement.
+
+1. **CAD and mechanical drawings.** A part sketch is made from points, lines, arcs, constraints, dimensions, and angles. If you cannot say which lines are parallel, which are perpendicular, and which angle is being dimensioned, you cannot read the drawing correctly.
+
+2. **Robotics.** A robot arm is a chain of line segments rotating through joint angles. A mobile robot estimates position in a plane. A camera sees rays. A lidar scan is a fan of angles and distances. These are geometry objects before they become code.
+
+3. **Drones and navigation.** Bearings, headings, field-of-view cones, flight paths, and map grids are angle-and-line problems. A 15 degree camera tilt is not a vibe; it is an angle in a plane relative to a reference direction.
+
+4. **Computer vision.** A camera image comes from projective geometry: light rays from 3D points intersect an image plane. The words point, ray, line, plane, and angle are not optional. They are the vocabulary of the model.
+
+5. **Physics.** Force vectors make angles. Reflection and refraction depend on angles with a normal line. Torque depends on the perpendicular distance from a pivot. Work uses the angle between force and displacement.
+
+6. **Manufacturing.** Drill holes have center points. Edges define lines. Faces lie in planes. Chamfers and bevels are angular cuts. Tolerances often specify whether a surface is flat, parallel, perpendicular, or at a prescribed angle.
+
+7. **Proof and debugging.** Geometry teaches the habit of saying exactly what follows from what. In engineering, that habit becomes "what assumption did this calculation actually use?"
+
+If algebra let us represent unknown quantities, geometry lets us represent physical relationships. Physical AI needs both.
+
+## Why This Idea Exists
+
+Geometry began as practical measurement. The Greek word *geometria* means earth measurement. Long before formal proofs, people needed to divide land, rebuild boundaries after floods, align buildings, measure fields, navigate, and construct tools. The Egyptians and Babylonians had practical geometric rules. The Greeks turned those rules into a deductive system.
+
+The most influential source is Euclid's *Elements* (around 300 BCE). Euclid did something radical: he began with a small set of primitive objects, definitions, postulates, and common notions, then built theorem after theorem from them. Some of Euclid's definitions do not match modern rigor, but the deeper idea survived: geometry is not just a bag of formulas. It is a system.
+
+Modern geometry changed the foundations. Mathematicians eventually realized that terms like point, line, and plane cannot all be defined without circularity. If you define a line as "a set of points," then what is a point? If you define a point as "an exact location on a line," then what is a line? Every formal system needs primitives: basic objects whose behavior is described by axioms instead of definitions.
+
+This is not a weakness. It is how technical language works. In mechanics, mass and force are primitive until laws connect them. In programming, a bit is primitive until hardware and logic give it behavior. In geometry, point, line, and plane are the seed objects. The payoff is enormous: once the primitives and rules are stable, we can build triangles, circles, coordinate systems, vectors, transformations, trigonometry, and eventually the geometry of curved spacetime.
+
+## Plain-Language Intuition
+
+Imagine you are trying to describe a table in an empty room to someone over the phone.
+
+- A **point** is an exact location: "the front-left corner of the tabletop."
+- A **line segment** is a finite straight piece: "the front edge of the table from left corner to right corner."
+- A **line** is the infinite straight path that would continue past that edge forever.
+- A **ray** starts at one point and continues forever in one direction: "start at the left corner and look along the front edge to the right."
+- A **plane** is a perfectly flat infinite surface: "the tabletop if it extended forever in every direction."
+- An **angle** measures a turn between two rays that share a starting point.
+
+The physical table is not perfect. Its edges have thickness. Its top has roughness. But geometry gives us ideal objects that are clean enough to reason with. Engineering constantly uses idealizations: point masses, rigid bodies, frictionless pulleys, straight beams, flat reference planes. The real world is messy; the model is intentionally sharp.
+
+The danger is forgetting that the model is an idealization. A drawing can look like two lines are perpendicular, but unless the problem states it, labels it, or gives enough information to prove it, you do not know it. Geometry trains you to separate what is shown from what is known.
+
+## Core Theory
+
+### Undefined Primitives
+
+In elementary Euclidean geometry, the primitive objects are usually:
+
+- **Point**: an exact location with no size.
+- **Line**: a straight one-dimensional object extending forever in both directions.
+- **Plane**: a flat two-dimensional object extending forever in all directions.
+
+We do not define these in terms of simpler geometry objects. Instead, we learn how they behave:
+
+- Through any two distinct points, there is exactly one line.
+- A line contains infinitely many points.
+- If two distinct lines intersect, they intersect at exactly one point.
+- Through any three non-collinear points, there is exactly one plane.
+- If two distinct planes intersect, their intersection is a line.
+
+These statements are part of the working grammar of Euclidean geometry.
+
+### Built Objects
+
+Once points and lines exist, we can build more objects.
+
+| Object | Meaning | Notation |
+| --- | --- | --- |
+| Line through A and B | Infinite straight path through both points | $\overleftrightarrow{AB}$ |
+| Segment from A to B | Finite straight piece with endpoints A and B | $\overline{AB}$ |
+| Ray from A through B | Starts at A, passes through B, continues forever | $\overrightarrow{AB}$ |
+| Length of segment AB | Distance between A and B | $AB$ |
+| Angle ABC | Turn from ray BA to ray BC, vertex at B | $\angle ABC$ |
+| Measure of angle ABC | Size of the turn | $m\angle ABC$ |
+
+Notice the angle notation: in $\angle ABC$, the middle letter is the vertex. This matters. $\angle ABC$ has vertex $B$, not $A$.
+
+### Collinear And Coplanar
+
+- Points are **collinear** if they lie on the same line.
+- Points are **coplanar** if they lie in the same plane.
+
+Any two points are always collinear because one line passes through them. Any three points are always coplanar, but three non-collinear points determine a unique plane. Four points may or may not be coplanar.
+
+In robotics and CAD, this distinction matters. Three non-collinear mounting holes define a plane. If a fourth mounting point does not lie in that plane, the part rocks, bends, or needs a shim. A flatness problem is often a coplanarity problem wearing work boots.
+
+### Line Relationships
+
+Two lines in the same plane can be:
+
+- **Intersecting**: they cross at one point.
+- **Parallel**: they never meet and remain the same distance apart.
+- **Perpendicular**: they intersect at a right angle, $90^\circ$.
+
+In three-dimensional space, two lines can also be:
+
+- **Skew**: not parallel, not intersecting, and not in the same plane.
+
+Skew lines are easy to miss because paper drawings flatten 3D space. Think of one pipe running north-south along the ceiling and another pipe running east-west near the floor. Their projected lines may cross on a drawing, but the physical pipes do not touch.
+
+### Angles
+
+An **angle** is formed by two rays with a common endpoint. The common endpoint is the **vertex**. The rays are the **sides** of the angle.
+
+Angles measure rotation. If you start facing along one ray and turn until you face along the other ray, the size of that turn is the angle measure.
+
+Common classifications:
+
+| Type | Measure |
+| --- | --- |
+| Acute | Between $0^\circ$ and $90^\circ$ |
+| Right | Exactly $90^\circ$ |
+| Obtuse | Between $90^\circ$ and $180^\circ$ |
+| Straight | Exactly $180^\circ$ |
+| Reflex | Between $180^\circ$ and $360^\circ$ |
+| Full turn | Exactly $360^\circ$ |
+
+Do not confuse the physical size of the drawing with the angle measure. A tiny printed angle and a huge wall-mounted angle can both be $45^\circ$. Angle is turn, not length.
+
+### Degrees
+
+A full turn is divided into $360^\circ$. That convention probably comes from ancient astronomy and calendar arithmetic: 360 has many factors, so it divides nicely into halves, thirds, fourths, fifths, sixths, eighths, ninths, tenths, twelfths, and so on.
+
+Degrees are convenient for human measurement:
+
+- $90^\circ$ is a quarter turn.
+- $180^\circ$ is a half turn.
+- $360^\circ$ is a full turn.
+- A compass bearing of $0^\circ$ or $360^\circ$ points north.
+- A bearing of $90^\circ$ points east.
+
+### Radians
+
+Radians measure angle using arc length on a circle.
+
+For a circle with radius $r$, an angle $\theta$ in radians cuts off an arc length $s$:
+
+$$
+\theta = \frac{s}{r}
+$$
+
+One radian is the angle where the arc length equals the radius. If $s = r$, then $\theta = 1$ radian.
+
+The full circumference of a circle is $2\pi r$, so a full turn is:
+
+$$
+\theta = \frac{2\pi r}{r} = 2\pi
+$$
+
+Therefore:
+
+$$
+360^\circ = 2\pi \text{ rad}
+$$
+
+and:
+
+$$
+180^\circ = \pi \text{ rad}
+$$
+
+Conversion formulas:
+
+$$
+\text{radians} = \text{degrees} \cdot \frac{\pi}{180}
+$$
+
+$$
+\text{degrees} = \text{radians} \cdot \frac{180}{\pi}
+$$
+
+Radians look less friendly at first, but they become the natural unit in calculus, physics, control systems, and robotics because formulas simplify. For example, arc length becomes $s = r\theta$ only when $\theta$ is in radians.
+
+### Angle Addition
+
+If ray $BD$ lies inside $\angle ABC$, then:
+
+$$
+m\angle ABC = m\angle ABD + m\angle DBC
+$$
+
+This is the angle-addition postulate. It is obvious once you see it, but it is one of the workhorse tools of geometry: whole angle equals sum of parts.
+
+Example: if a camera has a $70^\circ$ field of view, and the centerline splits it evenly, each side is $35^\circ$ from center.
+
+### Special Angle Pairs
+
+Many geometry problems are about angle relationships rather than isolated angles.
+
+| Relationship | Meaning |
+| --- | --- |
+| Complementary | Two angles whose measures add to $90^\circ$ |
+| Supplementary | Two angles whose measures add to $180^\circ$ |
+| Adjacent | Two angles sharing a vertex and a side, with no overlap inside |
+| Linear pair | Adjacent angles whose non-shared sides form a straight line |
+| Vertical angles | Opposite angles made by two intersecting lines |
+
+Facts:
+
+- Linear pairs are supplementary.
+- Vertical angles are equal.
+- If two lines are perpendicular, all four angles at the intersection are $90^\circ$.
+
+Vertical angles are equal because each is supplementary to the same neighboring angle. If angle 1 and angle 2 form a line, $m\angle 1 + m\angle 2 = 180^\circ$. If angle 2 and angle 3 also form a line, $m\angle 2 + m\angle 3 = 180^\circ$. Subtract $m\angle 2$ from both equations and you get $m\angle 1 = m\angle 3$.
+
+That tiny proof is a pattern: geometry often turns visual facts into algebra.
+
+## Visual Or Mental Models
+
+### Model 1: Geometry As A Constraint System
+
+Think of a CAD sketch. At first, the points and lines can slide around. Then you add constraints:
+
+- This line is horizontal.
+- These two lines are parallel.
+- This corner is $90^\circ$.
+- This segment is 40 mm long.
+- This point lies on that line.
+
+Enough constraints make the sketch fully determined. Geometry is the language of those constraints.
+
+### Model 2: Angles As Turns
+
+Instead of picturing angles as wedges, picture yourself as a robot on a floor.
+
+- Turn $90^\circ$: face a perpendicular direction.
+- Turn $180^\circ$: face the opposite direction.
+- Turn $360^\circ$: return to the original direction.
+- Turn $-90^\circ$: rotate the other way.
+
+This mental model prepares you for orientation, bearings, yaw, pitch, roll, and angular velocity.
+
+### Model 3: Plane As Work Surface
+
+A plane is an ideal work surface. A tabletop is an imperfect physical plane. A CAD sketch plane is a mathematical plane. A camera image sensor is modeled as a plane. A drone map is often treated as a local tangent plane to Earth. Many advanced systems begin by deciding which plane they are working in.
+
+## Worked Examples
+
+### Example 1: Naming Objects Correctly
+
+Suppose points $A$, $B$, and $C$ lie on a straight edge, in that order.
+
+- $\overline{AB}$ is the segment from $A$ to $B$.
+- $\overline{AC}$ is the longer segment from $A$ to $C$.
+- $\overrightarrow{AB}$ starts at $A$, passes through $B$, and continues past $B$.
+- $\overrightarrow{BA}$ starts at $B$, passes through $A$, and continues past $A$.
+- $\overleftrightarrow{AB}$ is the entire infinite line through $A$ and $B$.
+
+The ray notation is directional. $\overrightarrow{AB}$ and $\overrightarrow{BA}$ are not the same ray unless $A = B$, which would collapse the object.
+
+### Example 2: Angle Vertex Discipline
+
+If you see $\angle ABC$, the vertex is $B$.
+
+Why? The angle is formed by rays $\overrightarrow{BA}$ and $\overrightarrow{BC}$. Both start at $B$. Therefore $B$ is the turning point.
+
+Failure mode: A learner sees $\angle ABC$ and thinks the angle is "at A" because A is written first. That error breaks almost every diagram problem. The middle letter is the vertex.
+
+### Example 3: Complementary Angles In A Sensor Mount
+
+A sensor bracket has two internal angles that must add to a right angle. One angle is $37^\circ$. Find the other.
+
+Complementary angles add to $90^\circ$:
+
+$$
+x + 37^\circ = 90^\circ
+$$
+
+Subtract:
+
+$$
+x = 53^\circ
+$$
+
+The other angle is $53^\circ$.
+
+Check: $37^\circ + 53^\circ = 90^\circ$. Correct.
+
+### Example 4: Supplementary Angles On A Straight Rail
+
+A cable exits a straight rail at an angle of $128^\circ$ from one side. What is the adjacent angle on the other side of the straight line?
+
+Adjacent angles forming a straight line are a linear pair, so they are supplementary:
+
+$$
+x + 128^\circ = 180^\circ
+$$
+
+$$
+x = 52^\circ
+$$
+
+The adjacent angle is $52^\circ$.
+
+### Example 5: Vertical Angles In A Linkage
+
+Two linkage bars cross at a pivot. One angle is measured as $64^\circ$. What is the opposite angle?
+
+Opposite angles formed by intersecting lines are vertical angles. Vertical angles are equal.
+
+So the opposite angle is:
+
+$$
+64^\circ
+$$
+
+The adjacent angles are supplementary:
+
+$$
+180^\circ - 64^\circ = 116^\circ
+$$
+
+At the crossing there are two $64^\circ$ angles and two $116^\circ$ angles.
+
+### Example 6: Degrees To Radians
+
+Convert $45^\circ$ to radians.
+
+Use:
+
+$$
+\text{radians} = \text{degrees} \cdot \frac{\pi}{180}
+$$
+
+Then:
+
+$$
+45^\circ \cdot \frac{\pi}{180} = \frac{45\pi}{180} = \frac{\pi}{4}
+$$
+
+So:
+
+$$
+45^\circ = \frac{\pi}{4} \text{ rad}
+$$
+
+### Example 7: Radians To Degrees
+
+Convert $\frac{2\pi}{3}$ radians to degrees.
+
+Use:
+
+$$
+\text{degrees} = \text{radians} \cdot \frac{180}{\pi}
+$$
+
+Then:
+
+$$
+\frac{2\pi}{3} \cdot \frac{180}{\pi} = \frac{2 \cdot 180}{3} = 120^\circ
+$$
+
+So:
+
+$$
+\frac{2\pi}{3} \text{ rad} = 120^\circ
+$$
+
+### Example 8: Camera Field Of View
+
+A camera has a horizontal field of view of $86^\circ$. The optical centerline splits that angle evenly. What angle is each edge ray away from the centerline?
+
+Use angle addition:
+
+$$
+x + x = 86^\circ
+$$
+
+$$
+2x = 86^\circ
+$$
+
+$$
+x = 43^\circ
+$$
+
+Each edge ray is $43^\circ$ from the centerline.
+
+This matters in computer vision because a pixel near the image edge corresponds to a ray far away from the optical axis. Geometry is how the camera turns pixels into directions.
+
+### Example 9: Robot Turn Command
+
+A robot currently faces east. It turns $135^\circ$ counterclockwise. What kind of angle is that turn?
+
+$135^\circ$ is greater than $90^\circ$ and less than $180^\circ$, so it is obtuse.
+
+It is also:
+
+$$
+135^\circ \cdot \frac{\pi}{180} = \frac{3\pi}{4}
+$$
+
+So the same turn can be written as $135^\circ$ or $\frac{3\pi}{4}$ radians.
+
+### Example 10: Failure Mode - Drawing Looks Perpendicular
+
+A diagram shows two lines crossing and the angle looks like a right angle. There is no little square marker, no statement that the lines are perpendicular, and no angle measure.
+
+Can you assume the lines are perpendicular?
+
+No.
+
+In geometry, drawings are aids, not evidence. You can use a diagram to see what might be true, but proof comes from given statements, markings, definitions, postulates, or earlier results. In engineering drawings this is even more serious: if a dimension or tolerance is not specified, the manufacturer cannot be expected to infer it from the picture.
+
+## Engineering Connections
+
+### CAD Sketches
+
+Every CAD sketch is made from geometric objects and constraints. A rectangular bracket is not "rectangle-ish." It is four line segments with perpendicular adjacent edges and parallel opposite edges. A circular bolt pattern is a set of points lying on a circle at specified angular intervals. The software can solve the sketch only because the geometry is formal.
+
+### Robot Coordinate Frames
+
+A robot's local frame has axes that are usually perpendicular. A joint angle is a rotation from one link direction to another. A path planner turns a series of waypoints into line segments and arcs. The words in this lesson become state variables in robotics code.
+
+### Computer Vision Rays
+
+A camera maps a 3D ray to a 2D image point. The ray starts at the camera center, passes through a point on the image plane, and continues into the scene. That sentence uses point, ray, and plane exactly.
+
+### Drone Bearings
+
+Drone headings are angles measured from a reference direction. On many maps, $0^\circ$ is north and $90^\circ$ is east. In math coordinates, $0^\circ$ often points along the positive x-axis and positive angles turn counterclockwise. Confusing these conventions causes wrong flight directions.
+
+### Manufacturing Inspection
+
+Flatness asks whether a surface stays close to an ideal plane. Perpendicularity asks whether a feature is at $90^\circ$ to a reference. Parallelism asks whether two features remain the same distance apart. These are geometry words turned into inspection requirements.
+
+## Common Failure Modes
+
+1. **Treating a line segment like a line.** A segment has endpoints and finite length. A line extends forever.
+
+2. **Reversing a ray.** $\overrightarrow{AB}$ starts at $A$. $\overrightarrow{BA}$ starts at $B$. Direction matters.
+
+3. **Naming the wrong angle.** In $\angle ABC$, the vertex is $B$.
+
+4. **Assuming from the drawing.** If it looks perpendicular but is not marked or stated, you do not know it.
+
+5. **Mixing degrees and radians.** Calculators and code often require you to choose one. A sine function expecting radians will not treat $90$ as $90^\circ$; it treats it as 90 radians.
+
+6. **Forgetting that angle is a turn.** Angle does not depend on how long the rays are drawn.
+
+7. **Confusing complementary and supplementary.** Complementary adds to $90^\circ$. Supplementary adds to $180^\circ$.
+
+8. **Missing the plane.** In 3D, lines that appear to cross in a drawing may be skew in space.
+
+## Practice Set
+
+### Warmups
+
+1. In $\angle DEF$, which point is the vertex?
+2. Is $\overline{AB}$ a line, ray, or segment?
+3. Is $\overrightarrow{AB}$ the same object as $\overrightarrow{BA}$?
+4. What is the measure of a straight angle?
+5. What is the measure of a right angle?
+6. Classify $38^\circ$ as acute, right, obtuse, straight, or reflex.
+7. Classify $117^\circ$.
+8. Classify $225^\circ$.
+9. If two angles are complementary and one is $22^\circ$, find the other.
+10. If two angles are supplementary and one is $143^\circ$, find the other.
+
+### Core Skills
+
+11. Convert $30^\circ$ to radians.
+12. Convert $60^\circ$ to radians.
+13. Convert $90^\circ$ to radians.
+14. Convert $120^\circ$ to radians.
+15. Convert $\pi/6$ radians to degrees.
+16. Convert $\pi/3$ radians to degrees.
+17. Convert $5\pi/6$ radians to degrees.
+18. Two lines intersect. One angle is $71^\circ$. List the measures of the other three angles.
+19. A field-of-view angle is $74^\circ$ and is split evenly by the centerline. What is each half-angle?
+20. A ray inside an angle divides it into $28^\circ$ and $46^\circ$. What is the whole angle?
+
+### Applied Problems
+
+21. A robot turns from heading $20^\circ$ to heading $110^\circ$. How many degrees did it turn counterclockwise?
+22. A drone camera tilts down $35^\circ$ from horizontal. What is the complementary angle to vertical?
+23. A bracket has adjacent angles on a straight edge. One is $63^\circ$. Find the other.
+24. A lidar scans from $-45^\circ$ to $45^\circ$ relative to center. What is its total angular sweep?
+25. A four-way crossing has one angle of $82^\circ$. What are the four angle measures around the crossing?
+26. A turntable rotates by $\pi/2$ radians. How many degrees is that?
+27. A robot command says "rotate 1 radian." Is that closer to $45^\circ$, $57^\circ$, or $90^\circ$?
+28. Three non-collinear mounting holes define what geometric object?
+29. Two pipes in 3D do not intersect and are not parallel. What kind of lines are their centerlines?
+30. A camera has a $70^\circ$ horizontal field of view and $50^\circ$ vertical field of view. What are the horizontal and vertical half-angles?
+
+### Mixed Review
+
+31. Solve for $x$: $x + 41^\circ = 90^\circ$.
+32. Solve for $x$: $x + 118^\circ = 180^\circ$.
+33. Solve for $x$: $2x = 96^\circ$.
+34. Solve for $x$: $3x + 15^\circ = 180^\circ$.
+35. Convert $135^\circ$ to radians.
+36. Convert $3\pi/4$ radians to degrees.
+37. If $\angle ABC$ and $\angle CBD$ are adjacent and measure $32^\circ$ and $58^\circ$, what is $m\angle ABD$?
+38. If two vertical angles are labeled $4x^\circ$ and $76^\circ$, find $x$.
+39. If a linear pair is labeled $2x^\circ$ and $70^\circ$, find $x$.
+40. If a full rotation is $2\pi$ radians, what fraction of a full rotation is $\pi/3$ radians?
+
+### Challenge Problems
+
+41. Explain why vertical angles are equal using supplementary angles.
+42. A robot's yaw angle is stored in radians. The UI displays degrees. Write the conversion from stored angle $\theta$ to displayed angle $d$.
+43. A CAD sketch has four points. Three are non-collinear and define a plane. The fourth point is not in that plane. What physical issue could this represent for a mounting plate?
+44. A security camera covers $96^\circ$ horizontally. Two cameras are mounted so their centerlines differ by $72^\circ$. If their fields are symmetric, how much horizontal overlap do their fields have?
+45. A drawing shows two crossing beams. The measured acute angle is $36^\circ$. You need a brace along the obtuse angle. What angle must the brace fit?
+
+### Error Spotting
+
+46. A student says $\angle PQR$ has vertex $P$. What is wrong?
+47. A student says $90^\circ = \pi$ radians. What is wrong?
+48. A student assumes two lines are perpendicular because the drawing looks square. What is wrong?
+49. A student says complementary angles add to $180^\circ$. What is wrong?
+50. A student says two non-parallel lines in 3D must intersect. What is wrong?
+
+## Answer Key
+
+1. $E$.
+2. Segment.
+3. No.
+4. $180^\circ$.
+5. $90^\circ$.
+6. Acute.
+7. Obtuse.
+8. Reflex.
+9. $68^\circ$.
+10. $37^\circ$.
+11. $\pi/6$.
+12. $\pi/3$.
+13. $\pi/2$.
+14. $2\pi/3$.
+15. $30^\circ$.
+16. $60^\circ$.
+17. $150^\circ$.
+18. $109^\circ$, $71^\circ$, $109^\circ$.
+19. $37^\circ$.
+20. $74^\circ$.
+21. $90^\circ$.
+22. $55^\circ$.
+23. $117^\circ$.
+24. $90^\circ$.
+25. $82^\circ$, $98^\circ$, $82^\circ$, $98^\circ$.
+26. $90^\circ$.
+27. $57^\circ$.
+28. A plane.
+29. Skew lines.
+30. $35^\circ$ horizontal and $25^\circ$ vertical.
+31. $49^\circ$.
+32. $62^\circ$.
+33. $48^\circ$.
+34. $55^\circ$.
+35. $3\pi/4$.
+36. $135^\circ$.
+37. $90^\circ$.
+38. $19$.
+39. $55$.
+40. One sixth.
+41. If two lines intersect, each vertical angle is supplementary to the same adjacent angle. Since both sums equal $180^\circ$, subtracting the shared adjacent angle leaves equal vertical angles.
+42. $d = \theta \cdot 180/\pi$.
+43. The plate may not sit flat; the fourth point may need a shim, bend, tolerance change, or redesign.
+44. Each camera half-angle is $48^\circ$. Combined reach from the two centerlines is $48^\circ + 48^\circ = 96^\circ$. Centerlines are $72^\circ$ apart, so overlap is $96^\circ - 72^\circ = 24^\circ$.
+45. $180^\circ - 36^\circ = 144^\circ$.
+46. The vertex is the middle letter, $Q$.
+47. $180^\circ = \pi$ radians, so $90^\circ = \pi/2$ radians.
+48. A drawing is not proof. Perpendicularity must be stated, marked, measured, or derived.
+49. Complementary angles add to $90^\circ$; supplementary angles add to $180^\circ$.
+50. In 3D, non-parallel lines can be skew: not parallel, not intersecting, and not coplanar.
+
+## Build Task
+
+Create a small "angle inspector" notebook or script. It can be Python, TypeScript, spreadsheet formulas, or a handwritten lab sheet.
+
+Minimum requirements:
+
+1. Accept an angle in degrees.
+2. Convert it to radians.
+3. Classify it as acute, right, obtuse, straight, reflex, or full-turn.
+4. If the angle is less than $90^\circ$, compute its complement.
+5. If the angle is less than $180^\circ$, compute its supplement.
+6. Test it on: $30^\circ$, $90^\circ$, $135^\circ$, $225^\circ$, and $360^\circ$.
+
+Stretch:
+
+- Add an option to input radians and convert to degrees.
+- Add a function that takes a camera field-of-view angle and returns the half-angle.
+- Add a function that takes one angle at a line intersection and returns all four angles around the crossing.
+
+## Quiz
+
+1. Why are point, line, and plane treated as primitive objects?
+2. What is the difference between $\overline{AB}$ and $\overrightarrow{AB}$?
+3. In $\angle XYZ$, where is the vertex?
+4. What is the difference between complementary and supplementary angles?
+5. Why are radians useful even though degrees feel more familiar?
+6. If two lines intersect and one angle is $40^\circ$, what are the other three angles?
+7. Convert $150^\circ$ to radians.
+8. Convert $\pi/4$ radians to degrees.
+9. What is wrong with assuming a diagram is drawn to scale?
+10. Give one robotics or computer-vision example where a ray is a useful model.
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Your worked answers for at least 35 practice problems, including all challenge problems.
+- A corrected answer for every problem you initially missed.
+- Your angle inspector artifact from the build task.
+- A one-page note explaining point, line, plane, ray, segment, and angle in your own words.
+- A short paragraph explaining why radians are not just "another unit," but the natural unit behind arc length.
+
+## Sources And Further Study
+
+- Euclid, *Elements*, Book I. The historical root of axiomatic geometry.
+- David Hilbert, *Foundations of Geometry*. A more rigorous modern axiomatization of Euclidean geometry.
+- OpenStax, *Prealgebra 2e*, geometry sections on lines, angles, and angle relationships.
+- OpenStax, *Algebra and Trigonometry 2e*, trigonometry introduction and radian measure.
+- Khan Academy, Basic geometry and angles units, useful for visual practice.
+- MIT OpenCourseWare 18.02, Lecture 1, for the later transition from geometry into vectors.
+- ISO GPS standards such as ISO 1101 for geometric product specifications; not beginner reading, but the manufacturing endpoint of this vocabulary.
+
+## Next Lesson Bridge
+
+This lesson gives you the grammar of geometry: points, lines, planes, and angles. The next lesson uses that grammar to study triangles. Triangles matter because they are the simplest rigid shapes, the engine behind trigonometry, and the structure that lets us infer unknown distances and angles from known ones. Once you can reason about triangles, you can solve for heights, ranges, bearings, force components, camera geometry, and robot-link positions.

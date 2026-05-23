@@ -414,54 +414,89 @@ const engineeringAlgebraGeometry: Lesson[] = [
 ];
 
 const geometryTrigVectors: Lesson[] = [
-  future(
+  available(
     "geometry-trig-and-vectors",
     1,
     "points-lines-planes-angles",
     "Points, Lines, Planes, and Angles",
     "The primitive objects of geometry, angle measurement in degrees and radians, and angle relationships (vertical, supplementary, complementary).",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["algebra-for-engineering-systems"],
+      checkId: "points-lines-planes-angles-check",
+    },
   ),
-  future(
+  available(
     "geometry-trig-and-vectors",
     2,
     "triangle-congruence-and-similarity",
     "Triangle Congruence and Similarity",
     "SSS, SAS, ASA, AAS, and HL congruence rules; AA similarity; and using these to deduce missing lengths and angles in engineering layouts.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["points-lines-planes-angles"],
+      checkId: "triangle-congruence-and-similarity-check",
+    },
   ),
-  future(
+  available(
     "geometry-trig-and-vectors",
     3,
     "pythagorean-theorem-and-applications",
     "The Pythagorean Theorem and Applications",
     "Statement and proof of the Pythagorean theorem, its converse, common Pythagorean triples, and applications to distance and structural design.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["triangle-congruence-and-similarity"],
+      checkId: "pythagorean-theorem-and-applications-check",
+    },
   ),
-  future(
+  available(
     "geometry-trig-and-vectors",
     4,
     "perimeter-area-of-plane-figures",
     "Perimeter and Area of Plane Figures",
     "Perimeter and area formulas for triangles, parallelograms, trapezoids, and circles; and where they come from rather than just memorizing them.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["pythagorean-theorem-and-applications"],
+      checkId: "perimeter-area-of-plane-figures-check",
+    },
   ),
-  future(
+  available(
     "geometry-trig-and-vectors",
     5,
     "circles-arcs-sectors",
     "Circles: Arcs, Sectors, and Tangents",
     "Circumference and area, arc length, sector area, inscribed and central angles, and tangent properties of circles.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["perimeter-area-of-plane-figures"],
+      checkId: "circles-arcs-sectors-check",
+    },
   ),
-  future(
+  available(
     "geometry-trig-and-vectors",
     6,
     "surface-area-and-volume-of-solids",
     "Surface Area and Volume of Solids",
     "Surface area and volume formulas for prisms, cylinders, cones, spheres, and pyramids; deriving these formulas with integration intuition.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["circles-arcs-sectors"],
+      checkId: "surface-area-and-volume-of-solids-check",
+    },
   ),
-  future(
+  available(
     "geometry-trig-and-vectors",
     7,
     "right-triangle-trigonometry",
     "Right-Triangle Trigonometry",
     "Sine, cosine, and tangent as side-length ratios, SOH-CAH-TOA, and solving right triangles given partial information.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["surface-area-and-volume-of-solids"],
+      checkId: "right-triangle-trigonometry-check",
+    },
   ),
   available(
     "geometry-trig-and-vectors",
@@ -470,37 +505,58 @@ const geometryTrigVectors: Lesson[] = [
     "Trigonometry for Drones and Robotics",
     "Convert angles and distances into components, heights, bearings, and field measurements.",
     {
-      estimatedMinutes: 40,
-      prerequisites: ["algebra-for-engineering-systems"],
+      estimatedMinutes: 120,
+      prerequisites: ["right-triangle-trigonometry"],
+      checkId: "trigonometry-for-drones-and-robotics-check",
     },
   ),
-  future(
+  available(
     "geometry-trig-and-vectors",
     9,
     "the-unit-circle",
     "The Unit Circle",
     "Trigonometric functions defined on the unit circle, the unit-circle values for special angles, and trigonometric functions for any angle including negatives.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["trigonometry-for-drones-and-robotics"],
+      checkId: "the-unit-circle-check",
+    },
   ),
-  future(
+  available(
     "geometry-trig-and-vectors",
     10,
     "trigonometric-identities",
     "Trigonometric Identities",
     "Pythagorean, reciprocal, quotient, and angle-sum identities; using identities to simplify expressions in physics and signal processing.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["the-unit-circle"],
+      checkId: "trigonometric-identities-check",
+    },
   ),
-  future(
+  available(
     "geometry-trig-and-vectors",
     11,
     "inverse-trig-functions",
     "Inverse Trigonometric Functions",
     "Arcsin, arccos, arctan, and atan2; their domain restrictions; and which one to pick when reconstructing an angle from components.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["trigonometric-identities"],
+      checkId: "inverse-trig-functions-check",
+    },
   ),
-  future(
+  available(
     "geometry-trig-and-vectors",
     12,
     "radians-and-arc-length",
     "Radians and Arc Length",
     "Radians as natural angle units, converting between radians and degrees, and computing arc length and sector area in radians.",
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["inverse-trig-functions"],
+      checkId: "radians-and-arc-length-check",
+    },
   ),
   available(
     "geometry-trig-and-vectors",
@@ -509,17 +565,22 @@ const geometryTrigVectors: Lesson[] = [
     "Vectors from Zero",
     "Understand vectors as quantities with size and direction, then use components for motion and force.",
     {
-      estimatedMinutes: 60,
-      prerequisites: ["algebra-for-engineering-systems"],
+      estimatedMinutes: 120,
+      prerequisites: ["radians-and-arc-length"],
+      checkId: "vectors-from-zero-check",
     },
   ),
-  future(
+  available(
     "geometry-trig-and-vectors",
     14,
     "vector-arithmetic-and-scaling",
     "Vector Arithmetic and Scaling",
     "Component-wise addition and subtraction, scalar multiplication, distance between points, and using vectors to express displacements and forces.",
-    { prerequisites: ["vectors-from-zero"] },
+    {
+      estimatedMinutes: 120,
+      prerequisites: ["vectors-from-zero"],
+      checkId: "vector-arithmetic-and-scaling-check",
+    },
   ),
   future(
     "geometry-trig-and-vectors",
