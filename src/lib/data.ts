@@ -32,7 +32,7 @@ export const roadmap: RoadmapPhase[] = [
     title: "Public Lab",
     status: "next",
     items: [
-      "Public/private build logs backed by Supabase.",
+      "Public/private build logs backed by Neon Postgres.",
       "GitHub integration for project evidence.",
       "Certificate-style progress summaries and portfolio exports.",
     ],

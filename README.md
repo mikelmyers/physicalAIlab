@@ -126,7 +126,7 @@ Build-log drafts are stored under:
 physical-ai-lab:build-logs
 ```
 
-This is intentional for the MVP. Supabase/Postgres/Auth can be added later without changing the content model.
+This is intentional for the local-first version. Vercel deployment, Neon Postgres, and auth can be added later without changing the content model.
 
 ## Current Roadmap
 
@@ -134,7 +134,7 @@ This is intentional for the MVP. Supabase/Postgres/Auth can be added later witho
 - Full lessons for math, programming, circuits, mechatronics, robotics, drones, computer vision, telemetry, and physics
 - Content integrity checks for broken references and missing prerequisites
 - Quiz grading and richer problem-set attempts
-- Supabase-backed public/private build logs
+- Neon-backed public/private build logs
 - Spaced repetition
 - Simulation notebooks
 - GitHub integration

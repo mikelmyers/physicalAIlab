@@ -1,0 +1,497 @@
+# Vector Arithmetic and Scaling
+
+## Re-entry Promise
+
+This lesson assumes you know what a vector is, how to read components, and how to compute magnitude. It does not assume vector arithmetic is automatic yet.
+
+The previous vector lesson built the idea: a vector is a quantity with size and direction. This lesson makes vectors operational. We will add them, subtract them, scale them, compare graphical and component methods, and connect the operations to displacement, velocity, force, and robot commands.
+
+By the end, you should be able to treat vectors as physical instructions: move this far, push this way, cancel that error, reverse this direction, and scale that command without changing its direction.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Add vectors component-by-component.
+- Add vectors geometrically using tip-to-tail reasoning.
+- Subtract vectors as adding the opposite.
+- Interpret subtraction as "from one point to another."
+- Multiply a vector by a scalar.
+- Explain how positive, negative, and fractional scalars affect magnitude and direction.
+- Compute net displacement from multiple moves.
+- Compute resultant force from component forces.
+- Distinguish position vectors from displacement vectors.
+- Use vector arithmetic in robot navigation and force balance.
+
+## Why It Matters
+
+Vector arithmetic is the accounting system for directed quantities.
+
+1. **Navigation.** A robot's final displacement is the sum of its movement vectors.
+
+2. **Forces.** Multiple forces combine into one resultant force.
+
+3. **Motion planning.** A correction command can be a scaled error vector.
+
+4. **Computer vision.** Pixel motion vectors add, subtract, and average during tracking and flow estimation.
+
+5. **Controls.** Error vectors are scaled by gains to produce control actions.
+
+6. **Physics.** Velocity, acceleration, electric fields, magnetic fields, and momentum obey vector arithmetic.
+
+If you add only magnitudes, you throw away direction. Vector arithmetic keeps the direction in the calculation.
+
+## Component Addition
+
+If:
+
+$$
+\vec{a}=(a_x,a_y)
+$$
+
+and:
+
+$$
+\vec{b}=(b_x,b_y)
+$$
+
+then:
+
+$$
+\vec{a}+\vec{b}=(a_x+b_x,\ a_y+b_y)
+$$
+
+In 3D:
+
+$$
+(a_x,a_y,a_z)+(b_x,b_y,b_z)=(a_x+b_x,\ a_y+b_y,\ a_z+b_z)
+$$
+
+The rule is simple because each component represents motion along one independent axis.
+
+### Example: Robot Moves
+
+A robot moves:
+
+$$
+\vec{a}=(3,4)
+$$
+
+then:
+
+$$
+\vec{b}=(-1,2)
+$$
+
+Net displacement:
+
+$$
+\vec{a}+\vec{b}=(3+(-1),4+2)=(2,6)
+$$
+
+The final displacement from the starting point is 2 units in $x$ and 6 units in $y$.
+
+## Geometric Addition
+
+To add vectors geometrically, place the tail of the second vector at the head of the first. The result is the arrow from the original tail to the final head.
+
+This is called **tip-to-tail** addition.
+
+The component rule and the geometric rule agree. Components are the arithmetic version of the same picture.
+
+### Why Magnitudes Do Not Usually Add
+
+If you walk 3 m east and then 4 m north, your path length is 7 m, but your displacement magnitude is 5 m.
+
+The displacement vector is:
+
+$$
+(3,4)
+$$
+
+Its magnitude is:
+
+$$
+\sqrt{3^2+4^2}=5
+$$
+
+Vector addition tracks where you end up, not how much path you walked.
+
+## Vector Negatives
+
+The negative of a vector points in the opposite direction with the same magnitude.
+
+If:
+
+$$
+\vec{v}=(3,-5)
+$$
+
+then:
+
+$$
+-\vec{v}=(-3,5)
+$$
+
+Geometrically, the arrow flips around.
+
+Adding a vector and its negative gives the zero vector:
+
+$$
+\vec{v}+(-\vec{v})=\vec{0}
+$$
+
+## Subtraction
+
+Vector subtraction means adding the opposite:
+
+$$
+\vec{a}-\vec{b}=\vec{a}+(-\vec{b})
+$$
+
+Component-wise:
+
+$$
+\vec{a}-\vec{b}=(a_x-b_x,\ a_y-b_y)
+$$
+
+### Displacement Between Points
+
+If point $P=(2,3)$ and point $Q=(8,7)$, the vector from $P$ to $Q$ is:
+
+$$
+\vec{PQ}=Q-P=(8-2,\ 7-3)=(6,4)
+$$
+
+This is one of the most important uses of subtraction:
+
+> destination minus start gives displacement.
+
+Reverse the order and you reverse the direction:
+
+$$
+\vec{QP}=P-Q=(-6,-4)
+$$
+
+## Scalar Multiplication
+
+A scalar is an ordinary number. Multiplying a vector by a scalar scales its components:
+
+$$
+k\vec{v}=k(v_x,v_y)=(kv_x,kv_y)
+$$
+
+If:
+
+$$
+\vec{v}=(2,-3)
+$$
+
+then:
+
+$$
+4\vec{v}=(8,-12)
+$$
+
+### What Scalars Do
+
+- If $k>1$, the vector gets longer.
+- If $0<k<1$, the vector gets shorter.
+- If $k=0$, the result is the zero vector.
+- If $k<0$, the vector reverses direction and scales by $|k|$.
+
+For example:
+
+$$
+-2(3,4)=(-6,-8)
+$$
+
+The magnitude doubles and direction reverses.
+
+## Unit Vectors And Scaling
+
+A unit vector has magnitude 1.
+
+To create a unit vector in the direction of $\vec{v}$:
+
+$$
+\hat{v}=\frac{\vec{v}}{|\vec{v}|}
+$$
+
+If $\vec{v}=(3,4)$, then $|\vec{v}|=5$, so:
+
+$$
+\hat{v}=(3/5,4/5)
+$$
+
+To make a vector of magnitude 10 in that direction:
+
+$$
+10\hat{v}=(6,8)
+$$
+
+This pattern appears constantly in robotics: compute a direction, normalize it, then scale it by desired speed.
+
+## Weighted Sums And Control
+
+A weighted sum is a sum of scaled vectors:
+
+$$
+k_1\vec{a}+k_2\vec{b}
+$$
+
+This is how many control and planning systems combine goals:
+
+- move toward target,
+- avoid obstacle,
+- stay near path,
+- slow down near goal.
+
+A simple command might be:
+
+$$
+\vec{u}=0.8\vec{e}-0.3\vec{o}
+$$
+
+where $\vec{e}$ points toward the target and $\vec{o}$ points toward an obstacle. The subtraction means "move away from the obstacle direction."
+
+## Worked Examples
+
+### Example 1: Net Displacement
+
+A drone moves:
+
+$$
+(4,1),\quad (-2,3),\quad (0,-5)
+$$
+
+Sum:
+
+$$
+(4-2+0,\ 1+3-5)=(2,-1)
+$$
+
+Net displacement is $(2,-1)$.
+
+Magnitude:
+
+$$
+\sqrt{2^2+(-1)^2}=\sqrt5
+$$
+
+### Example 2: Force Resultant
+
+Three forces act on a small robot bracket:
+
+$$
+\vec{F}_1=(10,0)\text{ N}
+$$
+
+$$
+\vec{F}_2=(-4,3)\text{ N}
+$$
+
+$$
+\vec{F}_3=(0,-2)\text{ N}
+$$
+
+Resultant:
+
+$$
+\vec{F}=(10-4+0,\ 0+3-2)=(6,1)\text{ N}
+$$
+
+The net force points mostly in the positive $x$ direction.
+
+### Example 3: Error Vector
+
+A robot is at:
+
+$$
+P=(2,5)
+$$
+
+Target is:
+
+$$
+T=(9,1)
+$$
+
+Error vector from robot to target:
+
+$$
+\vec{e}=T-P=(9-2,\ 1-5)=(7,-4)
+$$
+
+A proportional controller might command:
+
+$$
+\vec{u}=0.2\vec{e}=(1.4,-0.8)
+$$
+
+The command points toward the target but is scaled down.
+
+## Common Failure Modes
+
+1. **Adding magnitudes instead of components.**
+2. **Subtracting in the wrong order.** Destination minus start gives displacement.
+3. **Confusing position with displacement.** A point is a location; a displacement is a change.
+4. **Forgetting negative scalar reverses direction.**
+5. **Normalizing the zero vector.** The zero vector has no direction.
+6. **Dropping units.** Force components stay in newtons; displacement components stay in meters.
+7. **Thinking tip-to-tail changes the vector.** Sliding a vector without rotating or stretching it does not change it.
+8. **Assuming path length equals displacement magnitude.**
+9. **Scaling only one component accidentally.**
+10. **Using component addition across mismatched coordinate frames.** All vectors must be expressed in the same frame.
+
+## Practice Problems
+
+### Addition And Subtraction
+
+1. Add $(2,3)+(4,5)$.
+2. Add $(7,-2)+(-3,6)$.
+3. Add $(1,2,3)+(4,-1,5)$.
+4. Subtract $(8,5)-(3,9)$.
+5. Subtract $(-2,7)-(4,-1)$.
+6. Find the negative of $(6,-4)$.
+7. A robot moves $(3,4)$ then $(-1,2)$. Find net displacement.
+8. A drone moves $(4,1)$, $(-2,3)$, and $(0,-5)$. Find net displacement.
+9. Point $P=(2,3)$ and $Q=(8,7)$. Find $\vec{PQ}$.
+10. Find $\vec{QP}$.
+
+### Scaling
+
+11. Compute $3(2,-5)$.
+12. Compute $0.5(8,6)$.
+13. Compute $-2(3,4)$.
+14. Compute $0(5,-9)$.
+15. If $\vec{v}=(3,4)$, find $|\vec{v}|$.
+16. Find the unit vector in the direction of $(3,4)$.
+17. Scale that unit vector to magnitude 10.
+18. If $\vec{v}=(-5,12)$, find $|\vec{v}|$.
+19. Find the unit vector in that direction.
+20. What happens when a vector is multiplied by a negative scalar?
+
+### Applications
+
+21. Forces $(10,0)$ N, $(-4,3)$ N, and $(0,-2)$ N act together. Find resultant.
+22. A robot at $(2,5)$ targets $(9,1)$. Find the error vector.
+23. Scale that error vector by 0.2.
+24. A vehicle velocity is $(6,8)$ m/s. Find speed.
+25. A wind vector is $(-2,1)$ m/s and airspeed command is $(8,0)$ m/s. Find ground velocity.
+26. A path has moves $(1,0)$, $(1,0)$, $(0,1)$, and $(-1,0)$. Find net displacement.
+27. What is the path length?
+28. What is the displacement magnitude?
+
+### Challenge Problems
+
+29. Explain why vector addition is component-wise.
+30. Explain why displacement from $A$ to $B$ is $B-A$.
+31. A controller command is $\vec{u}=0.5(6,2)-0.25(4,-8)$. Compute $\vec{u}$.
+32. A robot is at $(10,-3)$ and wants to move 2 m toward target $(13,1)$. Find the 2 m displacement command.
+33. A drone has current velocity $(3,4)$ m/s and must cancel it. What acceleration direction should it command?
+34. A force pair $(5,0)$ N and $(-5,0)$ N acts at the same point. What is net force?
+35. Why might equal and opposite forces at different points still matter for rotation?
+36. Two vectors have magnitudes 5 and 7. Is the magnitude of their sum always 12?
+37. What is the largest possible magnitude of their sum?
+38. What is the smallest possible magnitude of their sum?
+39. Why must vectors be expressed in the same coordinate frame before addition?
+40. Give one robotics example of a weighted sum of vectors.
+
+## Answer Key
+
+1. $(6,8)$.
+2. $(4,4)$.
+3. $(5,1,8)$.
+4. $(5,-4)$.
+5. $(-6,8)$.
+6. $(-6,4)$.
+7. $(2,6)$.
+8. $(2,-1)$.
+9. $(6,4)$.
+10. $(-6,-4)$.
+11. $(6,-15)$.
+12. $(4,3)$.
+13. $(-6,-8)$.
+14. $(0,0)$.
+15. 5.
+16. $(3/5,4/5)$.
+17. $(6,8)$.
+18. 13.
+19. $(-5/13,12/13)$.
+20. It reverses direction and scales magnitude by the absolute value.
+21. $(6,1)$ N.
+22. $(7,-4)$.
+23. $(1.4,-0.8)$.
+24. 10 m/s.
+25. $(6,1)$ m/s.
+26. $(1,1)$.
+27. 4.
+28. $\sqrt2$.
+29. Each component is independent motion along its axis.
+30. It is final position minus initial position.
+31. $(3,1)-(1,-2)=(2,3)$.
+32. Target displacement is $(3,4)$ with magnitude 5; unit direction is $(3/5,4/5)$; 2 m command is $(1.2,1.6)$.
+33. Opposite current velocity, direction $(-3,-4)$.
+34. $(0,0)$ N.
+35. They can create a torque even when net force is zero.
+36. No.
+37. 12, if same direction.
+38. 2, if opposite directions.
+39. Components only mean the same thing when axes and signs match.
+40. Combining target-seeking, obstacle-avoidance, and path-following vectors.
+
+## Build Task
+
+Create a "vector arithmetic workbench" as a script, spreadsheet, notebook, or careful manual worksheet.
+
+Minimum requirements:
+
+1. Add two 2D vectors.
+2. Subtract two 2D vectors.
+3. Scale a vector by a scalar.
+4. Compute magnitude.
+5. Compute a unit vector, with a zero-vector warning.
+6. Compute displacement from start point to target point.
+7. Combine at least three movement vectors into a net displacement.
+
+Stretch:
+
+- Add 3D vector support.
+- Add force resultant mode.
+- Add a simple proportional controller command from an error vector.
+
+## Quiz
+
+1. How do you add vectors by components?
+2. How do you subtract vectors?
+3. What is the vector from point $A$ to point $B$?
+4. What does scalar multiplication do?
+5. What does a negative scalar do?
+6. Why do path length and displacement magnitude differ?
+7. Why is the zero vector impossible to normalize?
+8. Why must all vectors use the same coordinate frame?
+9. Give one force example of vector addition.
+10. Give one robot navigation example of vector scaling.
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 30 practice problems, including all challenge problems.
+- A corrected explanation for every missed problem.
+- Your vector arithmetic workbench artifact.
+- One diagram showing tip-to-tail addition.
+- One note explaining why destination minus start gives displacement.
+
+## Sources And Further Study
+
+- OpenStax, *University Physics Volume 1*, vector addition and components.
+- OpenStax, *Precalculus 2e*, vector operations.
+- Khan Academy, vector addition and scalar multiplication.
+- Introductory robotics references on velocity commands and coordinate frames.
+- Introductory physics references on force resultants and displacement.
+
+## Next Lesson Bridge
+
+Vector arithmetic lets us combine directed quantities. The next lesson asks a different question: how much do two vectors point in the same direction? That is the dot product and projection.

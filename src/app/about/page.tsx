@@ -15,8 +15,8 @@ export default function AboutPage() {
         </p>
         <p className="mt-5">
           The first version uses local files and browser storage so it stays open-source friendly and easy to run. Later
-          versions can add accounts, Supabase, quiz grading, spaced repetition, simulation notebooks, AI tutoring, and
-          public/private build logs without changing the basic content model.
+          versions can add Vercel deployment, Neon-backed accounts and build logs, quiz grading, spaced repetition,
+          simulation notebooks, and AI tutoring without changing the basic content model.
         </p>
       </section>
     </>

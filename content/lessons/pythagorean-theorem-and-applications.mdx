@@ -1,0 +1,721 @@
+# The Pythagorean Theorem and Applications
+
+## Re-entry Promise
+
+This lesson assumes you know what points, lines, segments, angles, triangles, congruence, and similarity mean. It assumes you can square numbers, take square roots, solve simple equations, and work with units. It does not assume you remember the Pythagorean theorem beyond maybe seeing $a^2 + b^2 = c^2$ somewhere in school.
+
+We will rebuild the theorem from physical intuition: right angles create independent directions. If one motion goes east and another goes north, the diagonal distance is not the sum of the distances. It is the square-root combination. That fact becomes one of the main tools for measuring distance in geometry, navigation, robotics, CAD, computer vision, game physics, structural layout, and coordinate systems.
+
+By the end, you should not merely recite the formula. You should know when it applies, why it applies, how to use the converse, how to recognize common triples, how the distance formula comes from it, and how to catch wrong uses.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Identify the legs and hypotenuse of a right triangle.
+- State the Pythagorean theorem: $a^2 + b^2 = c^2$ for right triangles.
+- Explain why the hypotenuse must be the longest side.
+- Solve for a missing leg or hypotenuse.
+- Use the converse: if $a^2 + b^2 = c^2$, then the triangle is right.
+- Use Pythagorean triples such as $3$-$4$-$5$, $5$-$12$-$13$, $8$-$15$-$17$, and scaled versions.
+- Derive and use the coordinate distance formula.
+- Apply the theorem to diagonals, ramps, robot displacement, map distances, sensor range, bracing, and clearance checks.
+- Recognize when the theorem does not apply.
+- Explain how the theorem bridges geometry into trigonometry and vectors.
+
+## Why It Matters
+
+The Pythagorean theorem is the first major distance engine in the curriculum. It turns perpendicular components into a diagonal magnitude.
+
+1. **Robotics displacement.** If a robot moves $3$ m east and $4$ m north, its net displacement from the start is $5$ m. The path length may be $7$ m, but the straight-line displacement is $5$ m.
+
+2. **CAD and mechanical layout.** A rectangular plate with width $w$ and height $h$ has diagonal $\sqrt{w^2+h^2}$. That diagonal matters for packaging, clearances, bracing, and material cuts.
+
+3. **Drones and maps.** Horizontal offset and altitude form a right triangle. So do north/east coordinate differences on a local map plane.
+
+4. **Structural bracing.** Diagonal braces in rectangular frames are sized with the Pythagorean theorem when the corner is square.
+
+5. **Computer vision and graphics.** Pixel distances, vector lengths, camera rays, and 3D geometry all use square-root distance formulas descended from this theorem.
+
+6. **Electronics and signals.** Orthogonal components show up in AC circuits, phasors, and signal processing. Magnitudes are often computed with the same square-root-of-squares structure.
+
+7. **Physics.** Resultant forces, velocities, and displacements with perpendicular components use the same idea. In vector language, this becomes magnitude.
+
+The theorem is not just about triangles. It is about measuring combined independent directions.
+
+## Why This Idea Exists
+
+The relationship between the sides of a right triangle was known long before Pythagoras. Babylonian tablets such as Plimpton 322 show sophisticated knowledge of integer right-triangle triples. Indian, Chinese, Greek, and other mathematical traditions all developed versions of the result.
+
+Euclid's *Elements*, Book I Proposition 47, gives the famous geometric proof: in a right triangle, the square on the hypotenuse has area equal to the sum of the squares on the legs. Proposition 48 gives the converse: if the square on one side equals the sum of the squares on the other two, the angle opposite the longest side is right.
+
+The theorem became central because it gives a universal measurement rule. Whenever directions are perpendicular, their squared lengths add. Later mathematics generalized this idea far beyond triangles: the distance formula in coordinates, vector magnitudes, dot products, Euclidean norm, least-squares error, and even Hilbert spaces all carry the Pythagorean pattern.
+
+This is why the theorem appears simple and keeps returning. It is a seed crystal for a lot of serious math.
+
+## Plain-Language Intuition
+
+Imagine walking in a city laid out like a grid.
+
+You walk 3 blocks east and 4 blocks north. You did not walk 5 blocks; you walked 7 blocks along the street path. But if a drone flew straight from your start to your end, it would fly 5 blocks.
+
+The east movement and north movement are perpendicular. They do not overlap. The diagonal combines them, but not by ordinary addition. The diagonal is longer than either component but shorter than their sum.
+
+That is the emotional shape of the theorem:
+
+$$
+\text{diagonal}^2 = \text{east}^2 + \text{north}^2
+$$
+
+The squares are not decorative. They are area-like measures of how much each perpendicular direction contributes.
+
+## Core Theory
+
+### Right Triangles
+
+A **right triangle** is a triangle with one angle measuring $90^\circ$.
+
+The two sides forming the right angle are called the **legs**. The side opposite the right angle is the **hypotenuse**.
+
+The hypotenuse is always the longest side because it is opposite the largest angle.
+
+Notation usually uses:
+
+$$
+a^2 + b^2 = c^2
+$$
+
+where $a$ and $b$ are legs, and $c$ is the hypotenuse.
+
+The label $c$ must be the hypotenuse. If you put a leg in the $c$ position, the calculation will be wrong.
+
+### The Theorem
+
+For any right triangle with legs $a$ and $b$ and hypotenuse $c$:
+
+$$
+a^2 + b^2 = c^2
+$$
+
+To find the hypotenuse:
+
+$$
+c = \sqrt{a^2 + b^2}
+$$
+
+To find a missing leg:
+
+$$
+a = \sqrt{c^2 - b^2}
+$$
+
+or:
+
+$$
+b = \sqrt{c^2 - a^2}
+$$
+
+Notice the subtraction when finding a leg. This is a common place for mistakes.
+
+### Area Proof Intuition
+
+One classic proof uses four copies of the same right triangle arranged inside a square.
+
+Each small triangle has legs $a$ and $b$, hypotenuse $c$, and area:
+
+$$
+\frac{1}{2}ab
+$$
+
+Arrange four of them so their hypotenuses form a tilted inner square. The large outer square has side length $a+b$, so its area is:
+
+$$
+(a+b)^2
+$$
+
+The same area is also four triangle areas plus the inner square:
+
+$$
+4\left(\frac{1}{2}ab\right) + c^2
+$$
+
+Set them equal:
+
+$$
+(a+b)^2 = 2ab + c^2
+$$
+
+Expand:
+
+$$
+a^2 + 2ab + b^2 = 2ab + c^2
+$$
+
+Subtract $2ab$:
+
+$$
+a^2 + b^2 = c^2
+$$
+
+This proof matters because it shows the theorem is about area relationships, not arbitrary symbol manipulation.
+
+### The Converse
+
+The converse says:
+
+If a triangle has side lengths $a$, $b$, and $c$, where $c$ is the longest side, and:
+
+$$
+a^2 + b^2 = c^2
+$$
+
+then the triangle is a right triangle.
+
+This is useful for checking whether a corner is square. Ancient builders could use a rope marked in lengths $3$, $4$, and $5$. If those lengths formed a triangle, the angle between the $3$ and $4$ sides was a right angle.
+
+### Acute And Obtuse Tests
+
+For a triangle with side lengths $a \le b \le c$:
+
+- If $a^2 + b^2 = c^2$, the triangle is right.
+- If $a^2 + b^2 > c^2$, the triangle is acute.
+- If $a^2 + b^2 < c^2$, the triangle is obtuse.
+
+This lets you classify a triangle from side lengths alone.
+
+### Pythagorean Triples
+
+A **Pythagorean triple** is a set of positive integers that satisfy:
+
+$$
+a^2 + b^2 = c^2
+$$
+
+Common triples:
+
+| Legs | Hypotenuse |
+| --- | --- |
+| $3$, $4$ | $5$ |
+| $5$, $12$ | $13$ |
+| $8$, $15$ | $17$ |
+| $7$, $24$ | $25$ |
+| $9$, $40$ | $41$ |
+
+Scaled triples also work:
+
+- $6$-$8$-$10$ is $2$ times $3$-$4$-$5$.
+- $15$-$20$-$25$ is $5$ times $3$-$4$-$5$.
+- $10$-$24$-$26$ is $2$ times $5$-$12$-$13$.
+
+Recognizing triples saves time and reduces arithmetic errors.
+
+### Coordinate Distance Formula
+
+Suppose two points in the plane are:
+
+$$
+P_1 = (x_1, y_1)
+$$
+
+and:
+
+$$
+P_2 = (x_2, y_2)
+$$
+
+The horizontal change is:
+
+$$
+\Delta x = x_2 - x_1
+$$
+
+The vertical change is:
+
+$$
+\Delta y = y_2 - y_1
+$$
+
+These form the legs of a right triangle. The straight-line distance is:
+
+$$
+d = \sqrt{(\Delta x)^2 + (\Delta y)^2}
+$$
+
+So:
+
+$$
+d = \sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}
+$$
+
+In 3D, the same idea extends:
+
+$$
+d = \sqrt{(x_2-x_1)^2 + (y_2-y_1)^2 + (z_2-z_1)^2}
+$$
+
+That is the Pythagorean theorem applied twice.
+
+## Visual Or Mental Models
+
+### Model 1: Components To Magnitude
+
+Think of perpendicular directions as independent channels. East does not contain north. North does not contain east. The total straight-line displacement combines them by square root of squared components.
+
+This is the mental model behind vector magnitude:
+
+$$
+\lVert v \rVert = \sqrt{v_x^2 + v_y^2}
+$$
+
+### Model 2: Diagonal Brace
+
+A rectangle with width $w$ and height $h$ has diagonal:
+
+$$
+\sqrt{w^2+h^2}
+$$
+
+If you cut a brace too short, it will not reach. If you cut it too long, it will not fit. The theorem turns a right-angle layout into a cut length.
+
+### Model 3: Distance Is Not Path Length
+
+Walking 3 m east and 4 m north is a 7 m path but a 5 m displacement. The theorem gives straight-line separation, not total distance traveled along a broken path.
+
+## Worked Examples
+
+### Example 1: Find The Hypotenuse
+
+A right triangle has legs $6$ cm and $8$ cm. Find the hypotenuse.
+
+$$
+c = \sqrt{6^2 + 8^2}
+$$
+
+$$
+c = \sqrt{36 + 64}
+$$
+
+$$
+c = \sqrt{100} = 10
+$$
+
+The hypotenuse is $10$ cm.
+
+### Example 2: Find A Missing Leg
+
+A right triangle has hypotenuse $13$ m and one leg $5$ m. Find the other leg.
+
+$$
+a^2 + 5^2 = 13^2
+$$
+
+$$
+a^2 + 25 = 169
+$$
+
+$$
+a^2 = 144
+$$
+
+$$
+a = 12
+$$
+
+The missing leg is $12$ m.
+
+### Example 3: Check A Right Angle
+
+A triangular frame has sides $9$ cm, $12$ cm, and $15$ cm. Is it right?
+
+Longest side is $15$.
+
+Check:
+
+$$
+9^2 + 12^2 = 81 + 144 = 225
+$$
+
+$$
+15^2 = 225
+$$
+
+Since they match, the triangle is right.
+
+### Example 4: Rectangle Diagonal
+
+A rectangular electronics panel is $40$ cm wide and $30$ cm tall. What is its diagonal?
+
+$$
+d = \sqrt{40^2 + 30^2}
+$$
+
+$$
+d = \sqrt{1600 + 900}
+$$
+
+$$
+d = \sqrt{2500} = 50
+$$
+
+The diagonal is $50$ cm. This is a scaled $3$-$4$-$5$ triangle.
+
+### Example 5: Robot Displacement
+
+A robot moves $2.4$ m east and $3.2$ m north. How far is it from its start?
+
+$$
+d = \sqrt{2.4^2 + 3.2^2}
+$$
+
+$$
+d = \sqrt{5.76 + 10.24}
+$$
+
+$$
+d = \sqrt{16} = 4
+$$
+
+The robot is $4$ m from its start.
+
+Its path length was $2.4 + 3.2 = 5.6$ m if it drove in two straight segments. Displacement is different.
+
+### Example 6: Coordinate Distance
+
+Find the distance between:
+
+$$
+A = (2, -1)
+$$
+
+and:
+
+$$
+B = (8, 7)
+$$
+
+Compute changes:
+
+$$
+\Delta x = 8 - 2 = 6
+$$
+
+$$
+\Delta y = 7 - (-1) = 8
+$$
+
+Distance:
+
+$$
+d = \sqrt{6^2 + 8^2} = \sqrt{100} = 10
+$$
+
+The points are $10$ units apart.
+
+### Example 7: Drone Slant Range
+
+A drone is horizontally $120$ m from a ground marker and $50$ m above the ground. What is the slant range from marker to drone?
+
+$$
+r = \sqrt{120^2 + 50^2}
+$$
+
+$$
+r = \sqrt{14400 + 2500}
+$$
+
+$$
+r = \sqrt{16900} = 130
+$$
+
+The slant range is $130$ m. This is a scaled $5$-$12$-$13$ triangle.
+
+### Example 8: Classify A Triangle
+
+Classify the triangle with side lengths $6$, $7$, and $10$.
+
+Longest side is $10$.
+
+$$
+6^2 + 7^2 = 36 + 49 = 85
+$$
+
+$$
+10^2 = 100
+$$
+
+Since $85 < 100$, the triangle is obtuse.
+
+### Example 9: Brace Length With Units
+
+A rectangular frame is $1.2$ m wide and $0.9$ m tall. Find the diagonal brace length.
+
+$$
+d = \sqrt{1.2^2 + 0.9^2}
+$$
+
+$$
+d = \sqrt{1.44 + 0.81}
+$$
+
+$$
+d = \sqrt{2.25} = 1.5
+$$
+
+The brace length is $1.5$ m, ignoring hardware allowances.
+
+### Example 10: Failure Mode - Wrong Side As Hypotenuse
+
+A student sees side lengths $7$, $24$, and $25$, but writes:
+
+$$
+7^2 + 25^2 = 24^2
+$$
+
+This is wrong because $25$ is the longest side, so it must be the hypotenuse candidate.
+
+Correct check:
+
+$$
+7^2 + 24^2 = 25^2
+$$
+
+$$
+49 + 576 = 625
+$$
+
+$$
+625 = 625
+$$
+
+The triangle is right.
+
+## Engineering Connections
+
+### CAD And Packaging
+
+A diagonal dimension determines whether a board fits through an enclosure opening, whether a panel can rotate into place, or whether a brace can span two corners. Rectangular dimensions alone are often not enough.
+
+### Robot Odometry
+
+Robots often track position as x and y coordinates. The straight-line error from a target is:
+
+$$
+\sqrt{e_x^2 + e_y^2}
+$$
+
+That is the Pythagorean theorem in controller clothing.
+
+### Drone And Rangefinding
+
+Horizontal distance, altitude, and slant range form right triangles. A rangefinder pointed at the ground, a camera tilted from horizontal, or a drone offset from a marker all produce right-triangle calculations.
+
+### Structural Layout
+
+The $3$-$4$-$5$ method is a practical right-angle check. Mark 3 units along one side, 4 units along another, and adjust until the diagonal between marks is 5 units. The corner is square.
+
+### Computer Vision And Pixel Distance
+
+A pixel displacement of $\Delta x$ and $\Delta y$ has magnitude:
+
+$$
+\sqrt{\Delta x^2 + \Delta y^2}
+$$
+
+Feature tracking, optical flow, image residuals, and calibration errors all use this shape of calculation.
+
+## Common Failure Modes
+
+1. **Using the theorem on non-right triangles.** The theorem applies to right triangles. Use the converse to test if needed.
+
+2. **Putting a leg in the hypotenuse position.** The hypotenuse is the longest side and is opposite the right angle.
+
+3. **Adding sides instead of squares.** $3 + 4 = 7$, but the diagonal is $5$.
+
+4. **Forgetting the square root.** If $c^2 = 100$, then $c = 10$, not $100$.
+
+5. **Subtracting incorrectly for a missing leg.** If $c$ is known, use $c^2 - b^2$, not $b^2 - c^2$.
+
+6. **Confusing path length with displacement.** A two-leg path is longer than the straight-line displacement.
+
+7. **Dropping units.** If legs are in meters, the resulting length is in meters. The squares temporarily carry square meters, then the square root returns meters.
+
+8. **Using flat distance on curved Earth too casually.** For small local distances, a plane approximation is fine. For long geodesic distances, Earth curvature matters.
+
+## Practice Set
+
+### Warmups
+
+1. In a right triangle, what is the side opposite the right angle called?
+2. Which side is longest in a right triangle?
+3. State the Pythagorean theorem.
+4. Find the hypotenuse if legs are $3$ and $4$.
+5. Find the hypotenuse if legs are $5$ and $12$.
+6. Find the missing leg if hypotenuse is $10$ and one leg is $6$.
+7. Find the missing leg if hypotenuse is $17$ and one leg is $8$.
+8. Is $6$-$8$-$10$ a right triangle?
+9. Is $2$-$3$-$4$ a right triangle?
+10. What is a Pythagorean triple?
+
+### Core Skills
+
+11. Find the diagonal of a $9$ by $12$ rectangle.
+12. Find the diagonal of a $20$ by $21$ rectangle.
+13. A ladder reaches 12 ft up a wall and its base is 5 ft from the wall. How long is the ladder?
+14. A ramp is 10 m long and rises 6 m. What is the horizontal run?
+15. A drone is 80 m horizontally from a marker and 60 m high. Find slant range.
+16. Distance from $(0,0)$ to $(7,24)$.
+17. Distance from $(1,2)$ to $(4,6)$.
+18. Distance from $(-3,5)$ to $(9,0)$.
+19. Classify sides $4$, $5$, $6$ as acute, right, or obtuse.
+20. Classify sides $5$, $12$, $14$ as acute, right, or obtuse.
+
+### Applied Problems
+
+21. A rectangular robot chassis is 0.6 m by 0.8 m. Find the diagonal.
+22. A camera sensor has pixel error $\Delta x=6$ px and $\Delta y=8$ px. Find total pixel error.
+23. A rectangular field is 300 m by 400 m. Find the diagonal.
+24. A support brace spans a 1.5 m width and 2.0 m height. Find brace length.
+25. A robot target error is $e_x=-0.9$ m and $e_y=1.2$ m. Find error magnitude.
+26. A cable runs across a rectangular tray 24 cm by 32 cm. Find minimum cable length across the diagonal.
+27. A rectangular solar panel is 1.0 m by 1.6 m. Estimate its diagonal to two decimals.
+28. A mast guy wire anchors 9 m from the base and attaches 12 m high. Find wire length.
+29. A drone moves 30 m north, then 40 m east. What is displacement from start?
+30. What is the path length in problem 29?
+
+### Mixed Review
+
+31. Solve $a^2 + 15^2 = 17^2$.
+32. Solve $10^2 + b^2 = 26^2$.
+33. Solve $x^2 + x^2 = 8^2$ to two decimals.
+34. A square has side length 10. Find its diagonal.
+35. A square has diagonal 20. Find its side length to two decimals.
+36. Does $7^2 + 24^2 = 25^2$?
+37. Does $9^2 + 40^2 = 41^2$?
+38. A triangle has sides 10, 10, 12. Is it right?
+39. A triangle has sides 8, 15, 17. Is it right?
+40. Find the 3D distance from $(0,0,0)$ to $(2,3,6)$.
+
+### Challenge Problems
+
+41. Derive the coordinate distance formula from the Pythagorean theorem.
+42. Explain why the theorem is a statement about right triangles, not all triangles.
+43. A rectangular frame is out of square if its two diagonals are unequal. Explain why.
+44. A robot drove 5 m east, 12 m north, then 5 m west. What is its final displacement from start?
+45. A point is 13 units from the origin and has x-coordinate 5. What possible y-coordinates can it have?
+
+### Error Spotting
+
+46. A student finds $c^2=169$ and says $c=169$. What is wrong?
+47. A student applies $a^2+b^2=c^2$ to a triangle with no right angle given or proved. What is wrong?
+48. A student checks sides 8, 15, 17 by writing $8^2+17^2=15^2$. What is wrong?
+49. A student says a robot moving 3 m east and 4 m north traveled 5 m. What is missing?
+50. A student computes a rectangle diagonal from centimeters and meters without converting units. What is wrong?
+
+## Answer Key
+
+1. Hypotenuse.
+2. Hypotenuse.
+3. $a^2+b^2=c^2$ for a right triangle.
+4. $5$.
+5. $13$.
+6. $8$.
+7. $15$.
+8. Yes.
+9. No.
+10. Integer side lengths satisfying $a^2+b^2=c^2$.
+11. $15$.
+12. $29$.
+13. $13$ ft.
+14. $8$ m.
+15. $100$ m.
+16. $25$.
+17. $5$.
+18. $13$.
+19. Acute because $4^2+5^2=41>36=6^2$.
+20. Obtuse because $5^2+12^2=169<196=14^2$.
+21. $1.0$ m.
+22. $10$ px.
+23. $500$ m.
+24. $2.5$ m.
+25. $1.5$ m.
+26. $40$ cm.
+27. $\sqrt{3.56}\approx 1.89$ m.
+28. $15$ m.
+29. $50$ m.
+30. $70$ m.
+31. $a=8$.
+32. $b=24$.
+33. $x=\sqrt{32}\approx 5.66$.
+34. $10\sqrt{2}\approx 14.14$.
+35. $20/\sqrt{2}\approx 14.14$.
+36. Yes.
+37. Yes.
+38. No.
+39. Yes.
+40. $7$.
+41. Horizontal and vertical coordinate differences form legs: $\Delta x=x_2-x_1$, $\Delta y=y_2-y_1$, so $d=\sqrt{(\Delta x)^2+(\Delta y)^2}$.
+42. The equality depends on the angle between legs being $90^\circ$; non-right triangles need other tools.
+43. Equal diagonals are expected for a rectangle; unequal diagonals indicate the corners or side positions are distorted.
+44. It ends 12 m north of start, so displacement is 12 m.
+45. $y=\pm 12$.
+46. They forgot the square root: $c=\sqrt{169}=13$.
+47. The theorem requires a right triangle; the right angle must be given, constructed, or proved.
+48. The longest side, 17, must be the hypotenuse candidate.
+49. It traveled 7 m of path length but ended 5 m from start.
+50. Lengths must use the same unit before applying the theorem.
+
+## Build Task
+
+Create a "right-triangle and distance toolkit" as a script, notebook, spreadsheet, or careful manual worksheet.
+
+Minimum requirements:
+
+1. A function or table that takes two legs and returns the hypotenuse.
+2. A function or table that takes a hypotenuse and one leg and returns the missing leg.
+3. A right-triangle checker using the converse.
+4. A 2D distance calculator for two coordinate points.
+5. A rectangle diagonal calculator.
+6. Test cases for $3$-$4$-$5$, $5$-$12$-$13$, $8$-$15$-$17$, $(1,2)$ to $(4,6)$, and a $0.6$ m by $0.8$ m chassis.
+
+Stretch:
+
+- Add 3D distance.
+- Add acute/right/obtuse classification from side lengths.
+- Add a warning when units do not match.
+- Add a small plot or drawing showing the right triangle used in one real measurement.
+
+## Quiz
+
+1. What are the legs of a right triangle?
+2. What is the hypotenuse?
+3. Why must the hypotenuse be the side represented by $c$ in $a^2+b^2=c^2$?
+4. How do you solve for a missing leg?
+5. What does the converse of the Pythagorean theorem say?
+6. Name two Pythagorean triples.
+7. Derive the 2D distance formula in one sentence.
+8. Why is displacement different from path length?
+9. Give one engineering use of a rectangle diagonal.
+10. What makes this theorem a bridge into vectors?
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 35 practice problems, including all challenge problems.
+- A corrected explanation for every missed problem.
+- Your right-triangle and distance toolkit.
+- A one-page note explaining when the theorem applies and when it does not.
+- One real measurement example from your environment: diagonal of a screen, table, panel, room, frame, or box.
+
+## Sources And Further Study
+
+- Euclid, *Elements*, Book I, Propositions 47 and 48.
+- OpenStax, *Prealgebra 2e*, sections on square roots and the Pythagorean theorem.
+- OpenStax, *Algebra and Trigonometry 2e*, right-triangle and coordinate-distance sections.
+- Khan Academy, Pythagorean theorem and distance formula units, useful for repetitive practice.
+- MIT OpenCourseWare 18.02, early vector geometry lectures, for the transition from distance to vector magnitude.
+- Any introductory statics or mechanics text section on components and resultants.
+
+## Next Lesson Bridge
+
+The Pythagorean theorem computes distances in right triangles. The next lesson, perimeter and area of plane figures, shifts from distance to measure: how much boundary a shape has and how much surface it covers. The theorem will keep appearing there too, because diagonals, heights, and decompositions often turn area problems into right-triangle problems.

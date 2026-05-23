@@ -1,0 +1,503 @@
+# Right-Triangle Trigonometry
+
+## Re-entry Promise
+
+This lesson assumes you know right triangles, similar triangles, the Pythagorean theorem, ratios, and basic algebra. It does not assume you already understand sine, cosine, tangent, or inverse trigonometric functions.
+
+We will build trigonometry from a simple physical question:
+
+> If I know an angle, how much rise, run, or diagonal distance does that angle create?
+
+Right-triangle trigonometry is the bridge between geometry and measurement in the real world. A drone looks down at an angle. A robot climbs a ramp. A camera has a tilt. A sensor sees a target at a bearing. A force is broken into horizontal and vertical components. A ladder leans against a wall. A cable pulls at an angle.
+
+Those are all right-triangle problems.
+
+By the end, you should be able to use sine, cosine, tangent, and inverse trig to solve right triangles and interpret the result with units, calculator mode, and physical meaning intact.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Label the hypotenuse, opposite side, and adjacent side relative to a chosen acute angle.
+- Define sine, cosine, and tangent as side-length ratios.
+- Explain why these ratios depend on angle, not triangle size.
+- Use SOH-CAH-TOA without treating it as magic.
+- Solve for missing side lengths in right triangles.
+- Solve for missing angles using inverse sine, inverse cosine, and inverse tangent.
+- Distinguish degree mode from radian mode.
+- Use trig in height, distance, slope, component, and navigation problems.
+- Identify common failures: labeling sides from the wrong angle, using degrees in radian mode, using tangent when sine is needed, and rounding too early.
+
+## Why It Matters
+
+Trigonometry is what lets geometry speak the language of measurement and control.
+
+1. **Drones.** Camera tilt, altitude, horizontal distance, field-of-view footprint, and approach angle use right triangles.
+
+2. **Robotics.** Robot arms, ramps, wheel climbs, sensor angles, path planning, and coordinate components use sine, cosine, and tangent constantly.
+
+3. **Forces and motion.** A force at an angle has horizontal and vertical components. Velocity, acceleration, and displacement vectors are split the same way.
+
+4. **Cameras and sensors.** A range measurement plus an angle can become a height, offset, or target coordinate.
+
+5. **Construction and fabrication.** Slopes, braces, ladders, roof pitch, gussets, and diagonal members are right-triangle problems.
+
+6. **Navigation.** Bearings, headings, cross-track error, elevation angle, and line-of-sight distance all use trigonometry.
+
+Without trig, an angle is just a drawing. With trig, an angle becomes a calculator for real distances.
+
+## Why This Idea Exists
+
+Trigonometry grew from astronomy, surveying, navigation, and geometry. Ancient astronomers could not touch the stars, but they could measure angles. Surveyors could not always measure a direct distance, but they could measure baselines and angles. Sailors needed direction, altitude, and distance from observations.
+
+The oldest forms of trigonometry used chords in circles. Later mathematics shifted to sine, cosine, and tangent as functions. Modern physics, engineering, signal processing, robotics, graphics, and control theory all rely on these functions.
+
+Right-triangle trigonometry is the entry point. It is the piece you can see with a ladder, a ramp, a tape measure, and a protractor.
+
+## Plain-Language Intuition
+
+Take any acute angle, say $30^\circ$. Draw a right triangle that contains that angle. Now draw a larger right triangle with the same angle. The side lengths are bigger, but the shape is similar.
+
+Because similar triangles have proportional sides, certain ratios stay the same:
+
+- opposite divided by hypotenuse,
+- adjacent divided by hypotenuse,
+- opposite divided by adjacent.
+
+Those stable ratios are the trig functions:
+
+$$
+\sin(\theta)=\frac{\text{opposite}}{\text{hypotenuse}}
+$$
+
+$$
+\cos(\theta)=\frac{\text{adjacent}}{\text{hypotenuse}}
+$$
+
+$$
+\tan(\theta)=\frac{\text{opposite}}{\text{adjacent}}
+$$
+
+The triangle can be small or large. The angle determines the ratios.
+
+## Core Theory
+
+### The Three Side Names
+
+In a right triangle:
+
+- The **hypotenuse** is opposite the right angle. It is always the longest side.
+- The **opposite** side is across from the angle you are focusing on.
+- The **adjacent** side touches the angle you are focusing on, but is not the hypotenuse.
+
+Opposite and adjacent depend on the chosen angle. If you switch from one acute angle to the other, those two labels swap. The hypotenuse does not change.
+
+### SOH-CAH-TOA
+
+SOH-CAH-TOA is a memory aid:
+
+- **SOH:** $\sin(\theta)=\frac{O}{H}$
+- **CAH:** $\cos(\theta)=\frac{A}{H}$
+- **TOA:** $\tan(\theta)=\frac{O}{A}$
+
+It is useful, but it should not replace thinking. First label the triangle. Then ask which sides you know and which side you need.
+
+### Sine
+
+Sine compares vertical-like rise to diagonal distance when the angle is measured from the horizontal.
+
+$$
+\sin(\theta)=\frac{O}{H}
+$$
+
+If a cable of length 10 m rises at $30^\circ$ above the ground, the vertical rise is:
+
+$$
+O=H\sin(\theta)=10\sin(30^\circ)=5
+$$
+
+Sine is often the "height from diagonal" function.
+
+### Cosine
+
+Cosine compares horizontal-like run to diagonal distance when the angle is measured from the horizontal.
+
+$$
+\cos(\theta)=\frac{A}{H}
+$$
+
+If a drone is 20 m from a target along line of sight at an elevation angle of $40^\circ$, the horizontal distance is:
+
+$$
+A=H\cos(40^\circ)
+$$
+
+Cosine is often the "horizontal component from diagonal" function.
+
+### Tangent
+
+Tangent compares rise to run:
+
+$$
+\tan(\theta)=\frac{O}{A}
+$$
+
+If you stand 10 m from a wall and look up at an angle of $30^\circ$, the height above your eye level is:
+
+$$
+O=A\tan(30^\circ)=10\tan(30^\circ)\approx5.77
+$$
+
+Tangent is often the "height from horizontal distance" function.
+
+### Inverse Trig
+
+Regular trig answers the question:
+
+> Given an angle, what ratio does it create?
+
+Inverse trig answers the reverse:
+
+> Given a ratio, what angle created it?
+
+If:
+
+$$
+\tan(\theta)=\frac{3}{4}
+$$
+
+then:
+
+$$
+\theta=\tan^{-1}\left(\frac{3}{4}\right)\approx36.87^\circ
+$$
+
+Use $\sin^{-1}$ when you know opposite/hypotenuse, $\cos^{-1}$ when you know adjacent/hypotenuse, and $\tan^{-1}$ when you know opposite/adjacent.
+
+### Degrees And Radians
+
+Calculators and programming languages may expect degrees or radians.
+
+This matters enormously. For example:
+
+$$
+\sin(30^\circ)=0.5
+$$
+
+But $\sin(30)$ in many programming languages means 30 radians, not 30 degrees, and gives a very different value.
+
+In engineering and software, always ask:
+
+> Is this angle in degrees or radians?
+
+Right-triangle word problems often use degrees. Calculus, physics, simulation, and programming often use radians.
+
+## Worked Examples
+
+### Example 1: Ladder Height
+
+A 10 m ladder leans against a wall at a $70^\circ$ angle with the ground. How high up the wall does it reach?
+
+The ladder is the hypotenuse. The height is opposite the $70^\circ$ angle.
+
+Use sine:
+
+$$
+\sin(70^\circ)=\frac{O}{10}
+$$
+
+$$
+O=10\sin(70^\circ)\approx9.40
+$$
+
+The ladder reaches about 9.40 m up the wall.
+
+### Example 2: Drone Horizontal Distance
+
+A drone is 60 m away from a landing marker along line of sight. The marker is seen at a $25^\circ$ depression angle from the drone's horizontal line. Estimate horizontal distance.
+
+Line of sight is hypotenuse. Horizontal distance is adjacent.
+
+$$
+\cos(25^\circ)=\frac{A}{60}
+$$
+
+$$
+A=60\cos(25^\circ)\approx54.38
+$$
+
+The horizontal distance is about 54.38 m.
+
+### Example 3: Ramp Angle
+
+A ramp rises 0.8 m over a horizontal run of 6 m. What is the ramp angle?
+
+Opposite is 0.8. Adjacent is 6.
+
+$$
+\tan(\theta)=\frac{0.8}{6}
+$$
+
+$$
+\theta=\tan^{-1}(0.8/6)\approx7.59^\circ
+$$
+
+The ramp angle is about $7.59^\circ$.
+
+### Example 4: Components Of A Pulling Force
+
+A cable pulls with force 100 N at $20^\circ$ above horizontal.
+
+Horizontal component:
+
+$$
+F_x=100\cos(20^\circ)\approx93.97
+$$
+
+Vertical component:
+
+$$
+F_y=100\sin(20^\circ)\approx34.20
+$$
+
+The full force is diagonal. Cosine and sine split it into rectangular components.
+
+## Engineering Connections
+
+### Components
+
+Any vector with magnitude $M$ at angle $\theta$ from the positive horizontal axis can be split as:
+
+$$
+x=M\cos(\theta)
+$$
+
+$$
+y=M\sin(\theta)
+$$
+
+That pattern appears in velocity, force, acceleration, displacement, camera rays, and robot movement.
+
+### Slope, Grade, And Angle
+
+Slope is rise over run:
+
+$$
+\text{slope}=\frac{\text{rise}}{\text{run}}
+$$
+
+That is tangent:
+
+$$
+\tan(\theta)=\frac{\text{rise}}{\text{run}}
+$$
+
+So:
+
+$$
+\theta=\tan^{-1}(\text{slope})
+$$
+
+A 10 percent grade means slope $0.10$. Its angle is:
+
+$$
+\tan^{-1}(0.10)\approx5.71^\circ
+$$
+
+### Sensor Geometry
+
+If a sensor is mounted at height $h$ and tilted downward by angle $\theta$, the horizontal distance to the ground target is often:
+
+$$
+d=\frac{h}{\tan(\theta)}
+$$
+
+This assumes a flat ground plane and a simple right triangle. Real systems add lens distortion, mounting offsets, calibration error, and uneven terrain, but this estimate is the first sanity check.
+
+## Common Failure Modes
+
+1. **Labeling from the wrong angle.** Opposite and adjacent are relative to the chosen angle.
+2. **Calling the hypotenuse adjacent.** The adjacent leg touches the angle, but the hypotenuse is never the adjacent side in SOH-CAH-TOA.
+3. **Using tangent when the hypotenuse is given.** Tangent uses opposite and adjacent, not hypotenuse.
+4. **Using sine when adjacent is needed.** Sine gives opposite over hypotenuse. Cosine gives adjacent over hypotenuse.
+5. **Forgetting inverse trig for angles.** If the unknown is an angle, use inverse trig.
+6. **Degree/radian mode errors.** A correct setup can produce nonsense if the calculator mode is wrong.
+7. **Rounding too early.** Keep extra digits until the final answer.
+8. **Ignoring eye height or sensor height.** Angle-of-elevation problems often measure height above the observer, not above the ground.
+9. **Treating depression angle as negative confusion.** The angle of depression from a horizontal line often equals the angle of elevation from the target by parallel-line geometry.
+10. **Using trig on non-right triangles without creating a right triangle.** SOH-CAH-TOA is right-triangle trig.
+
+## Practice Problems
+
+### Foundations
+
+1. In a right triangle, which side is always opposite the right angle?
+2. Relative to a chosen angle, define the opposite side.
+3. Relative to a chosen angle, define the adjacent side.
+4. Write the sine ratio.
+5. Write the cosine ratio.
+6. Write the tangent ratio.
+7. In a 3-4-5 right triangle, for the angle opposite the side of length 3, find sine.
+8. For the same angle, find cosine.
+9. For the same angle, find tangent.
+10. If $\sin(\theta)=5/13$, what are possible opposite and hypotenuse lengths?
+
+### Missing Sides
+
+11. A right triangle has hypotenuse 10 and angle $30^\circ$. Find the opposite side.
+12. A right triangle has hypotenuse 10 and angle $30^\circ$. Find the adjacent side.
+13. A right triangle has adjacent side 8 and angle $25^\circ$. Find the opposite side.
+14. A right triangle has opposite side 6 and angle $40^\circ$. Find the hypotenuse.
+15. A ramp is 12 m long and makes a $10^\circ$ angle with the ground. How much does it rise?
+16. A cable is 30 m long at $60^\circ$ above horizontal. Find its horizontal component.
+17. Find its vertical component.
+18. A sensor beam is 15 m long at $20^\circ$ below horizontal. Find horizontal distance.
+19. Find vertical drop.
+20. A ladder is 8 m long at $75^\circ$ to the ground. Find wall height.
+
+### Missing Angles
+
+21. A right triangle has opposite 3 and adjacent 4. Find the angle.
+22. A right triangle has opposite 5 and hypotenuse 13. Find the angle.
+23. A right triangle has adjacent 12 and hypotenuse 13. Find the angle.
+24. A ramp rises 1 m over 10 m horizontal. Find its angle.
+25. A camera is 2 m high and sees a ground target 6 m away. Find the downward tilt angle.
+26. A drone is 40 m high and 100 m horizontally from a marker. Find angle of elevation from marker to drone.
+27. A force has components $F_x=80$ N and $F_y=60$ N. Find its angle above horizontal.
+28. What is the magnitude of that force?
+
+### Applications
+
+29. A robot drives 5 m at heading $30^\circ$ north of east. Find east component.
+30. Find north component.
+31. A 100 N force acts at $45^\circ$. Find horizontal and vertical components.
+32. A 10 percent grade means rise/run = 0.10. Find the angle.
+33. A ramp angle is $6^\circ$ and horizontal run is 5 m. Find rise.
+34. A drone camera has a line-of-sight distance 50 m and depression angle $35^\circ$. Find horizontal distance.
+35. Find vertical drop.
+36. A wall is 4 m high. From 9 m away, what angle of elevation reaches the top, ignoring eye height?
+37. A sensor is mounted 1.2 m high and tilted down $15^\circ$. Estimate ground hit distance.
+
+### Challenge Problems
+
+38. A support cable runs from ground to the top of a 12 m pole. It is anchored 5 m from the pole. Find cable length.
+39. Find the angle the cable makes with the ground.
+40. A robot arm segment is 0.7 m long at $35^\circ$ above horizontal. Find endpoint x and y offsets.
+41. A camera sees a target at range 20 m and bearing $12^\circ$ to the right of forward. Find forward and right components.
+42. A ramp has maximum allowed angle $8^\circ$ and must rise 0.5 m. What horizontal run is required?
+43. A drone descends along a path at $6^\circ$ below horizontal for 80 m. How much altitude does it lose?
+44. A wheel climbs a triangular wedge. The wedge rises 3 cm over 20 cm horizontal. Find wedge angle.
+45. Why can two different-size right triangles have the same sine for a given angle?
+46. Why is $\tan^{-1}(O/A)$ not the same as $1/\tan(O/A)$?
+47. Why might a JavaScript program give the wrong result for `Math.sin(30)`?
+48. When should you use cosine instead of sine for a component problem?
+49. Why should a diagram mark the chosen angle clearly before labeling opposite and adjacent?
+50. Why is checking whether the answer is physically plausible part of trig?
+
+## Answer Key
+
+1. Hypotenuse.
+2. The side across from the chosen angle.
+3. The leg touching the chosen angle that is not the hypotenuse.
+4. $\sin(\theta)=O/H$.
+5. $\cos(\theta)=A/H$.
+6. $\tan(\theta)=O/A$.
+7. $3/5$.
+8. $4/5$.
+9. $3/4$.
+10. Opposite 5 and hypotenuse 13, or any proportional pair.
+11. 5.
+12. $5\sqrt{3}\approx8.66$.
+13. $8\tan(25^\circ)\approx3.73$.
+14. $6/\sin(40^\circ)\approx9.33$.
+15. $12\sin(10^\circ)\approx2.08$ m.
+16. $30\cos(60^\circ)=15$ m.
+17. $30\sin(60^\circ)\approx25.98$ m.
+18. $15\cos(20^\circ)\approx14.10$ m.
+19. $15\sin(20^\circ)\approx5.13$ m.
+20. $8\sin(75^\circ)\approx7.73$ m.
+21. $\tan^{-1}(3/4)\approx36.87^\circ$.
+22. $\sin^{-1}(5/13)\approx22.62^\circ$.
+23. $\cos^{-1}(12/13)\approx22.62^\circ$.
+24. $\tan^{-1}(1/10)\approx5.71^\circ$.
+25. $\tan^{-1}(2/6)\approx18.43^\circ$.
+26. $\tan^{-1}(40/100)\approx21.80^\circ$.
+27. $\tan^{-1}(60/80)\approx36.87^\circ$.
+28. 100 N.
+29. $5\cos(30^\circ)\approx4.33$ m east.
+30. $5\sin(30^\circ)=2.5$ m north.
+31. About 70.71 N each.
+32. $\tan^{-1}(0.10)\approx5.71^\circ$.
+33. $5\tan(6^\circ)\approx0.53$ m.
+34. $50\cos(35^\circ)\approx40.96$ m.
+35. $50\sin(35^\circ)\approx28.68$ m.
+36. $\tan^{-1}(4/9)\approx23.96^\circ$.
+37. $1.2/\tan(15^\circ)\approx4.48$ m.
+38. $\sqrt{12^2+5^2}=13$ m.
+39. $\tan^{-1}(12/5)\approx67.38^\circ$.
+40. $x=0.7\cos(35^\circ)\approx0.57$ m, $y=0.7\sin(35^\circ)\approx0.40$ m.
+41. Forward $20\cos(12^\circ)\approx19.56$ m, right $20\sin(12^\circ)\approx4.16$ m.
+42. $0.5/\tan(8^\circ)\approx3.56$ m.
+43. $80\sin(6^\circ)\approx8.36$ m.
+44. $\tan^{-1}(3/20)\approx8.53^\circ$.
+45. Similar triangles have proportional sides, so ratios match.
+46. $\tan^{-1}$ means inverse function, not reciprocal.
+47. JavaScript trig functions use radians, so 30 means 30 radians.
+48. Use cosine when you need the side adjacent to the angle relative to the hypotenuse.
+49. Opposite and adjacent depend on the chosen angle.
+50. Trig errors often create impossible distances, wrong units, or angles that do not match the drawing.
+
+## Build Task
+
+Create a "right-triangle field calculator" as a script, spreadsheet, notebook, or careful manual worksheet.
+
+Minimum requirements:
+
+1. Input one angle and one side.
+2. Select whether the known side is opposite, adjacent, or hypotenuse.
+3. Compute the other two sides.
+4. Input two sides and compute the relevant acute angle.
+5. Include a degree/radian mode note.
+6. Include a component mode: magnitude and angle to x/y components.
+7. Test with a 3-4-5 triangle, a 10 m hypotenuse at $30^\circ$, and a 10 m horizontal run at $30^\circ$.
+
+Stretch:
+
+- Add slope-to-angle conversion.
+- Add drone altitude/horizontal distance mode.
+- Add camera ground-intersection mode using mounting height and tilt angle.
+
+## Quiz
+
+1. What side is the hypotenuse?
+2. Why do opposite and adjacent depend on the chosen angle?
+3. What is sine?
+4. What is cosine?
+5. What is tangent?
+6. When do you use inverse tangent?
+7. Why is calculator mode important?
+8. What trig function often gives vertical component from a diagonal magnitude?
+9. What trig function often gives horizontal component from a diagonal magnitude?
+10. Why does SOH-CAH-TOA apply only to right triangles?
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 35 practice problems, including all challenge problems.
+- A corrected explanation for every missed problem.
+- Your right-triangle field calculator artifact.
+- One real measurement problem using angle and distance, such as ramp angle, camera tilt, ladder height, or sensor offset.
+- A short note explaining the difference between degrees and radians in calculator or code.
+
+## Sources And Further Study
+
+- OpenStax, *Algebra and Trigonometry 2e*, right-triangle trigonometry sections.
+- Khan Academy, right-triangle trigonometry, inverse trig, and angles of elevation/depression.
+- Introductory physics texts on vector components.
+- Introductory robotics and drone navigation materials on heading, range, altitude, and coordinate decomposition.
+- JavaScript `Math` documentation or Python `math` documentation for radians in programming trig functions.
+
+## Next Lesson Bridge
+
+Right-triangle trig turns angles into ratios. The next major step is the unit circle, where sine and cosine stop being only triangle ratios and become functions that describe rotation, waves, periodic motion, AC circuits, signals, and circular coordinates.

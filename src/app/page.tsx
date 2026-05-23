@@ -4,15 +4,14 @@ import { TrackCard } from "@/components/curriculum/TrackCard";
 import { moduleExams } from "../../content/exams";
 import { projects, tracks, getTrackLessons } from "@/lib/data";
 
-const signals = [
-  { label: "Tracks", value: "10" },
-  { label: "Module exams", value: `${moduleExams.length}` },
-  { label: "Pass bar", value: "95%" },
-  { label: "Daily set", value: "10 q" },
-];
-
 export default function Home() {
   const featuredTracks = tracks.slice(0, 4);
+  const signals = [
+    { label: "Tracks", value: `${tracks.length}` },
+    { label: "Module exams", value: `${moduleExams.length}` },
+    { label: "Pass bar", value: "95%" },
+    { label: "Daily set", value: "10 q" },
+  ];
 
   return (
     <>

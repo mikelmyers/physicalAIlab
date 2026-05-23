@@ -195,7 +195,7 @@ function checkNumeric(
 
   const givenUnit = (match[2] ?? "").trim();
   if (unit) {
-    if (normalizeUnit(givenUnit) !== normalizeUnit(unit)) return false;
+    if (givenUnit && normalizeUnit(givenUnit) !== normalizeUnit(unit)) return false;
   }
 
   if (toleranceMode === "relative") {

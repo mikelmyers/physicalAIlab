@@ -1,58 +1,481 @@
 # Trigonometry for Drones and Robotics
 
+## Re-entry Promise
+
+This lesson assumes you understand right-triangle trigonometry: sine, cosine, tangent, inverse tangent, hypotenuse, opposite, adjacent, and degree/radian mode. It does not assume you already know drone math, robot navigation, camera geometry, or vector components.
+
+The goal here is to move from textbook triangles to field geometry. A drone does not ask, "What is the opposite side?" A robot does not ask, "Which formula should I memorize?" Real systems ask questions like:
+
+- Where is the target relative to me?
+- How wide is the camera footprint on the ground?
+- How much of this motion is forward and how much is sideways?
+- What heading should the robot drive?
+- How far away is an object if the sensor is tilted down?
+- How does an angle become a control command?
+
+By the end, you should be able to turn angles and distances into components, heights, ground footprints, bearings, and sanity checks for simple field measurements.
+
 ## Objective
 
-Use sine, cosine, and tangent to convert between angles, distances, heights, and vector components.
+By the end of this lesson you should be able to:
+
+- Convert a magnitude and heading into $x$ and $y$ components.
+- Reconstruct magnitude and heading from components.
+- Use tangent to estimate height, horizontal distance, and camera ground intersections.
+- Estimate a drone camera footprint from altitude and field of view.
+- Distinguish heading, bearing, elevation angle, depression angle, and tilt angle.
+- Use `atan2` conceptually to choose the correct quadrant for a heading.
+- Track degree/radian conversions in code.
+- Explain why simple trig estimates need calibration in real robotics systems.
+- Build a small field calculator for motion components and drone camera footprint.
 
 ## Why It Matters
 
-Drones estimate altitude, camera footprint, bearing, and field of view with triangles. Robots decompose motion into forward, sideways, and vertical components.
+Robots and drones live in coordinate systems. Their motors, cameras, sensors, and controllers constantly convert between distance, angle, and component form.
 
-## Concept
+1. **Drone camera footprints.** Altitude plus field-of-view angle estimates how much ground the camera sees.
 
-For a right triangle:
+2. **Object localization.** A range sensor and bearing angle can locate a target relative to the robot.
 
-$$\sin(\theta) = \frac{opposite}{hypotenuse}$$
+3. **Robot motion.** A command like "move 2 meters at 30 degrees" must become horizontal and vertical components in a coordinate frame.
 
-$$\cos(\theta) = \frac{adjacent}{hypotenuse}$$
+4. **Navigation.** Headings, waypoints, cross-track error, and approach angles are trigonometry in motion.
 
-$$\tan(\theta) = \frac{opposite}{adjacent}$$
+5. **Manipulators.** Robot arms use angles and segment lengths to locate grippers, tools, and payloads.
 
-Vector components use the same relationships:
+6. **Controls.** Many controllers do not act on raw angles. They act on projected error: forward error, sideways error, altitude error, and heading error.
 
-$$x = r\cos(\theta)$$
+This is where trigonometry begins to feel less like school math and more like instrumentation.
 
-$$y = r\sin(\theta)$$
+## Why This Idea Exists
 
-## Worked Example
+Classical trigonometry grew from measuring inaccessible distances: stars, shorelines, towers, mountains, and ships. Robotics and drones inherit the same problem. A machine often cannot directly measure the quantity it needs. It observes an angle, a range, a pixel offset, an altitude, or a heading, then reconstructs geometry.
 
-A drone points a camera downward with a horizontal field-of-view half-angle of `35°`. At `50 m` altitude, the half-width of the ground footprint is:
+The modern stack may include GPS, IMUs, optical flow, lidar, stereo depth, SLAM, and sensor fusion. But the basic conversions still sit underneath:
 
-$$w = 50\tan(35^\circ)$$
+$$
+x=r\cos(\theta)
+$$
 
-$$w \approx 35.0m$$
+$$
+y=r\sin(\theta)
+$$
 
-The full footprint width is about `70 m`.
+$$
+\theta=\tan^{-1}(y/x)
+$$
 
-## Exercise
+Advanced systems add noise models and calibration. They do not remove the triangle.
 
-A robot moves `2.5 m` at a heading of `40°`. Compute the `x` and `y` components of that motion.
+## Coordinate Frames
+
+A **coordinate frame** is a chosen way to describe position and direction.
+
+For a simple 2D ground robot, we might say:
+
+- $x$ points east or forward.
+- $y$ points north or left.
+- $\theta$ is measured counterclockwise from the positive $x$ axis.
+
+For a drone, we might use:
+
+- forward,
+- right,
+- down,
+- altitude above ground,
+- yaw, pitch, and roll.
+
+The formulas depend on the frame. The math is not hard, but the naming matters. If your coordinate frame says positive $y$ is down, a positive vertical component means something different than if positive $y$ is up.
+
+In this lesson, unless stated otherwise:
+
+- $x$ means horizontal forward/east component,
+- $y$ means horizontal left/north component,
+- angles are measured from the positive $x$ direction,
+- counterclockwise angles are positive,
+- distances are in meters.
+
+## Components From Magnitude And Heading
+
+If a robot moves distance $r$ at heading $\theta$, the component form is:
+
+$$
+x=r\cos(\theta)
+$$
+
+$$
+y=r\sin(\theta)
+$$
+
+This comes directly from right-triangle trig. The movement vector is the hypotenuse. The $x$ part is adjacent to the heading angle, so it uses cosine. The $y$ part is opposite the heading angle, so it uses sine.
+
+### Example: Robot Motion
+
+A robot moves 2.5 m at a heading of $40^\circ$.
+
+$$
+x=2.5\cos(40^\circ)\approx1.92
+$$
+
+$$
+y=2.5\sin(40^\circ)\approx1.61
+$$
+
+So the robot moved about 1.92 m in the $x$ direction and 1.61 m in the $y$ direction.
+
+This is more useful for mapping than "2.5 m at 40 degrees" because a map stores coordinates.
+
+## Magnitude And Heading From Components
+
+If you know components $x$ and $y$, the total magnitude is:
+
+$$
+r=\sqrt{x^2+y^2}
+$$
+
+The heading is:
+
+$$
+\theta=\tan^{-1}(y/x)
+$$
+
+But there is a catch: ordinary inverse tangent alone cannot always determine the correct quadrant. For example, $y/x$ is positive when both $x$ and $y$ are positive, but also when both are negative. Those are opposite directions.
+
+Programming languages usually provide `atan2(y, x)`, which uses both components and returns the angle in the correct quadrant.
+
+### Example: Reconstructing A Command
+
+A robot's desired displacement is $x=3$ m and $y=4$ m.
+
+Magnitude:
+
+$$
+r=\sqrt{3^2+4^2}=5
+$$
+
+Heading:
+
+$$
+\theta=\tan^{-1}(4/3)\approx53.13^\circ
+$$
+
+So the command can be described as 5 m at about $53.13^\circ$.
+
+If $x=-3$ and $y=-4$, the magnitude is still 5, but the heading is not $53.13^\circ$. It points into the opposite quadrant. That is why `atan2` matters.
+
+## Bearings And Headings
+
+A **heading** usually describes the direction a robot or drone is facing or moving. A **bearing** usually describes the direction from one point to another.
+
+In navigation, bearings are often measured clockwise from north. In math, angles are often measured counterclockwise from the positive $x$ axis. That mismatch is a classic source of bugs.
+
+Before using sine and cosine, ask:
+
+1. What direction is zero degrees?
+2. Does the angle increase clockwise or counterclockwise?
+3. Which axis is forward, east, north, right, or down?
+4. Are we using degrees or radians?
+
+The formula is easy. The convention is the trap.
+
+## Drone Camera Footprint
+
+A downward-looking drone camera can be approximated with a cone or pyramid of view. In one dimension, use a right triangle.
+
+If altitude is $h$ and the camera field-of-view half-angle is $\alpha$, the half-width of the ground footprint is:
+
+$$
+w=h\tan(\alpha)
+$$
+
+The full width is:
+
+$$
+2w=2h\tan(\alpha)
+$$
+
+### Example: Footprint Width
+
+A drone flies at 50 m altitude. Its horizontal field of view is $70^\circ$, so the half-angle is $35^\circ$.
+
+Half-width:
+
+$$
+w=50\tan(35^\circ)\approx35.0
+$$
+
+Full width:
+
+$$
+2w\approx70.0
+$$
+
+So the image covers about 70 m across, before lens distortion, camera tilt, terrain slope, and altitude error.
+
+## Tilted Sensor Ground Intersection
+
+Suppose a range sensor or camera ray is mounted at height $h$ and tilted downward by angle $\theta$ below horizontal. If it hits flat ground, the horizontal distance $d$ is:
+
+$$
+d=\frac{h}{\tan(\theta)}
+$$
+
+This is because:
+
+$$
+\tan(\theta)=\frac{h}{d}
+$$
+
+so:
+
+$$
+d=\frac{h}{\tan(\theta)}
+$$
+
+### Example: Ground Hit Distance
+
+A camera is mounted 1.2 m above the floor and tilted down $15^\circ$.
+
+$$
+d=\frac{1.2}{\tan(15^\circ)}\approx4.48
+$$
+
+The center ray hits the floor about 4.48 m ahead.
+
+If the floor is not flat, the mount angle is wrong, or the camera has a wide lens, this simple number becomes only a first estimate.
+
+## Field Of View In Two Directions
+
+Many cameras have horizontal FOV and vertical FOV.
+
+At altitude $h$:
+
+$$
+\text{footprint width}=2h\tan(FOV_x/2)
+$$
+
+$$
+\text{footprint height}=2h\tan(FOV_y/2)
+$$
+
+If a drone at 80 m altitude has horizontal FOV $60^\circ$ and vertical FOV $45^\circ$:
+
+$$
+\text{width}=2(80)\tan(30^\circ)\approx92.4
+$$
+
+$$
+\text{height}=2(80)\tan(22.5^\circ)\approx66.3
+$$
+
+So the approximate ground footprint is 92.4 m by 66.3 m.
+
+## Degrees, Radians, And Code
+
+Most programming math libraries use radians.
+
+In JavaScript:
+
+```js
+Math.sin(30)
+```
+
+does not mean sine of 30 degrees. It means sine of 30 radians.
+
+Convert degrees to radians:
+
+```js
+const radians = degrees * Math.PI / 180;
+```
+
+Convert radians to degrees:
+
+```js
+const degrees = radians * 180 / Math.PI;
+```
+
+If your robot turns the wrong amount, your camera footprint is absurd, or your component values look random, angle units should be one of the first things you check.
+
+## Calibration Reality
+
+The formulas in this lesson are clean. Real systems are not.
+
+Drone and robotics trig estimates may be affected by:
+
+- camera lens distortion,
+- camera mount angle error,
+- sensor noise,
+- rolling shutter,
+- non-level ground,
+- drone pitch and roll,
+- wheel slip,
+- coordinate-frame mismatch,
+- GPS drift,
+- IMU bias,
+- time delay between sensor reading and motion command.
+
+This does not make the math useless. It tells you what the math is: the ideal geometry. The real system needs calibration, filtering, and validation around that geometry.
+
+## Common Failure Modes
+
+1. **Degrees in radian code.** `Math.sin(30)` is not $\sin(30^\circ)$.
+2. **Swapping sine and cosine.** For angle from the $x$ axis, $x$ uses cosine and $y$ uses sine.
+3. **Using ordinary arctangent for all headings.** Use `atan2(y, x)` conceptually when quadrant matters.
+4. **Forgetting half-angle for field of view.** A $70^\circ$ FOV has a $35^\circ$ half-angle.
+5. **Confusing altitude with slant range.** Altitude is vertical. Slant range is diagonal.
+6. **Ignoring coordinate conventions.** North-clockwise bearings are not the same as math angles.
+7. **Treating camera footprint as exact.** Lens distortion and tilt change the shape.
+8. **Forgetting units.** Component outputs keep the same distance unit as the magnitude.
+9. **Ignoring sign.** Negative components carry direction.
+10. **Skipping sanity checks.** A 50 m-high drone with a modest FOV should not see a 5 km-wide footprint.
+
+## Practice Problems
+
+### Components
+
+1. A robot moves 10 m at $0^\circ$. Find $x$ and $y$.
+2. A robot moves 10 m at $90^\circ$. Find $x$ and $y$.
+3. A robot moves 5 m at $30^\circ$. Find $x$ and $y$.
+4. A robot moves 8 m at $60^\circ$. Find $x$ and $y$.
+5. A drone drifts 12 m at $210^\circ$. Which signs should $x$ and $y$ have?
+6. A command has $x=6$ and $y=8$. Find magnitude.
+7. Find the heading for $x=6$, $y=8$.
+8. A command has $x=-6$, $y=8$. Why should `atan2` be used?
+9. A robot must move from $(2,3)$ to $(7,15)$. Find displacement components.
+10. Find the straight-line distance.
+
+### Drone Footprints And Sensors
+
+11. A drone at 50 m altitude has horizontal FOV $70^\circ$. Find footprint width.
+12. A drone at 100 m altitude has horizontal FOV $60^\circ$. Find footprint width.
+13. If altitude doubles, what happens to footprint width for the same FOV?
+14. A sensor is 1.2 m high and tilted down $15^\circ$. Find ground hit distance.
+15. A sensor is 2 m high and tilted down $30^\circ$. Find ground hit distance.
+16. A target is 20 m away horizontally and 5 m higher. Find angle of elevation.
+17. A drone is 40 m high and 80 m horizontally away. Find angle of elevation from target.
+18. A camera ray has slant range 30 m and depression angle $20^\circ$. Find vertical drop.
+19. Find horizontal distance for that ray.
+20. A camera has horizontal FOV $80^\circ$. What half-angle should be used in the footprint formula?
+
+### Code And Convention
+
+21. Convert $45^\circ$ to radians.
+22. Convert $\pi/6$ radians to degrees.
+23. Why can `Math.cos(60)` be wrong for a 60-degree problem?
+24. What JavaScript expression converts degrees to radians?
+25. What function should be used to reconstruct heading from $x$ and $y$ in code?
+26. In math convention, which component uses cosine when angle is measured from the positive $x$ axis?
+27. In math convention, which component uses sine?
+28. If a navigation bearing is measured clockwise from north, what must you check before applying math-angle formulas?
+
+### Challenge Problems
+
+29. A drone at 80 m has horizontal FOV $60^\circ$ and vertical FOV $45^\circ$. Estimate footprint width and height.
+30. A robot drives 3 m at $0^\circ$, then 4 m at $90^\circ$. Find net displacement magnitude.
+31. Find net heading.
+32. A robot drives 5 m at $30^\circ$, then 2 m at $120^\circ$. Estimate final $x,y$ displacement.
+33. A camera is mounted 1.5 m high. You want its center ray to hit the floor 3 m ahead. What downward tilt angle is needed?
+34. A drone sees a target at slant range 100 m and depression angle $25^\circ$. Estimate altitude difference.
+35. Estimate horizontal distance.
+36. A robot's measured displacement is $x=2$, $y=-2$. What quadrant is its heading in?
+37. Why would ordinary $\tan^{-1}(y/x)$ be ambiguous for $x=-2$, $y=-2$?
+38. A camera footprint calculation gives a negative width. What likely went wrong?
+39. A drone rolls sideways during image capture. Why can a simple footprint model fail?
+40. Give two real-world error sources that affect trig-based localization.
+
+## Answer Key
+
+1. $x=10$, $y=0$.
+2. $x=0$, $y=10$.
+3. $x\approx4.33$, $y=2.5$.
+4. $x=4$, $y\approx6.93$.
+5. Both negative in standard math coordinates.
+6. 10.
+7. $\tan^{-1}(8/6)\approx53.13^\circ$.
+8. The heading is in quadrant II, and ordinary arctangent can lose quadrant information.
+9. $x=5$, $y=12$.
+10. 13.
+11. About 70.0 m.
+12. About 115.5 m.
+13. It doubles.
+14. About 4.48 m.
+15. About 3.46 m.
+16. $\tan^{-1}(5/20)\approx14.04^\circ$.
+17. $\tan^{-1}(40/80)\approx26.57^\circ$.
+18. $30\sin(20^\circ)\approx10.26$ m.
+19. $30\cos(20^\circ)\approx28.19$ m.
+20. $40^\circ$.
+21. $\pi/4$.
+22. $30^\circ$.
+23. Many code libraries expect radians, so 60 means 60 radians.
+24. `degrees * Math.PI / 180`.
+25. `atan2(y, x)`.
+26. The $x$ component.
+27. The $y$ component.
+28. Where zero is, whether positive rotation is clockwise, and how to convert into the program's coordinate frame.
+29. Width about 92.4 m, height about 66.3 m.
+30. 5 m.
+31. About $53.13^\circ$.
+32. First move $(4.33,2.5)$, second move $(-1,1.73)$, final $(3.33,4.23)$.
+33. $\tan^{-1}(1.5/3)\approx26.57^\circ$.
+34. $100\sin(25^\circ)\approx42.26$ m.
+35. $100\cos(25^\circ)\approx90.63$ m.
+36. Quadrant IV.
+37. $y/x$ is positive, which also happens in quadrant I.
+38. Angle sign, coordinate convention, or formula setup is wrong.
+39. The camera is no longer pointing straight down relative to the ground plane.
+40. Examples: lens distortion, mount error, sensor noise, uneven ground, wheel slip, GPS drift, IMU bias.
 
 ## Build Task
 
-Create a function that converts a distance and heading into `x` and `y` components. Add a second function that estimates drone camera footprint width.
+Create a "drone and robot trig calculator" as a script, spreadsheet, notebook, or careful manual worksheet.
+
+Minimum requirements:
+
+1. Input magnitude and heading, then output $x$ and $y$ components.
+2. Input $x$ and $y$, then output magnitude and heading.
+3. Input altitude and horizontal FOV, then output footprint width.
+4. Input sensor height and downward tilt, then output ground hit distance.
+5. Include degree-to-radian conversion if implemented in code.
+6. Include at least three test cases: 3-4-5 components, a 50 m drone at $70^\circ$ FOV, and a 1.2 m camera tilted down $15^\circ$.
+
+Stretch:
+
+- Add separate horizontal and vertical FOV.
+- Add `atan2`-style quadrant handling.
+- Add a coordinate-convention note for math angles versus navigation bearings.
 
 ## Quiz
 
-1. Which trig function relates opposite and adjacent sides?
-2. Why are vector components useful for robot motion?
-3. What happens to the drone footprint when altitude increases?
-4. Why should degrees and radians be handled carefully in code?
+1. Why does component conversion use cosine for $x$ and sine for $y$ in standard math coordinates?
+2. What does `atan2(y, x)` fix that plain arctangent does not?
+3. Why does a camera footprint formula use half of the field-of-view angle?
+4. How does footprint width change when altitude doubles?
+5. Why is a drone camera footprint only an approximation?
+6. What is the difference between altitude and slant range?
+7. What is the degree-to-radian conversion formula?
+8. What convention question must be asked before using a bearing angle?
+9. Give one robotics use of vector components.
+10. Give one drone use of tangent.
 
-## Proof of Completion
+## Proof Of Completion
 
-Submit component calculations, code, and a short diagram or sketch of the triangle used.
+You have completed this lesson when you can show:
 
-## Next Lesson
+- Worked answers for at least 30 practice problems, including all challenge problems.
+- A corrected explanation for every missed problem.
+- Your drone and robot trig calculator artifact.
+- A short diagram for component conversion and one for camera footprint.
+- A note explaining how your calculator handles degrees, radians, and heading quadrants.
 
-Introduction to Coordinate Systems.
+## Sources And Further Study
+
+- OpenStax, *Algebra and Trigonometry 2e*, sections on right-triangle trigonometry and vectors.
+- Introductory robotics texts on coordinate frames, odometry, and planar motion.
+- Introductory drone mapping references on camera field of view, altitude, and ground sample footprint.
+- JavaScript `Math` or Python `math` documentation for radian-based trig functions and `atan2`.
+- Photogrammetry introductions on camera calibration and lens distortion.
+
+## Next Lesson Bridge
+
+Drone and robot trig uses sine and cosine as right-triangle tools. The next lesson expands them into full rotation functions on the unit circle, which lets trig describe negative angles, angles beyond $90^\circ$, periodic motion, waves, AC circuits, and rotating coordinate systems.

@@ -1,0 +1,743 @@
+# Triangle Congruence and Similarity
+
+## Re-entry Promise
+
+This lesson assumes you have just rebuilt the basic language of geometry: points, lines, segments, rays, planes, angles, perpendicular lines, parallel lines, complementary angles, supplementary angles, vertical angles, degrees, and radians. It also assumes you can solve one-step and multi-step equations.
+
+It does not assume you remember triangle proofs from school. We will build the ideas from the physical fact that triangles are special: once their side lengths are fixed, their shape is locked. That rigidity is why triangles show up in bridges, trusses, robot linkages, survey networks, camera triangulation, drone navigation, CAD constraints, and finite element meshes.
+
+By the end, you should understand the difference between **congruent** triangles and **similar** triangles, know the main shortcut tests, use corresponding parts correctly, and solve practical scale and layout problems without guessing from a drawing.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Define a triangle, vertex, side, interior angle, exterior angle, and included side or angle.
+- State and use the triangle angle-sum theorem: interior angles add to $180^\circ$.
+- Explain why triangles are rigid while many quadrilaterals are not.
+- Distinguish **congruent** triangles from **similar** triangles.
+- Use congruence criteria: SSS, SAS, ASA, AAS, and HL for right triangles.
+- Explain why SSA is not a general congruence test.
+- Use similarity criteria: AA, SAS similarity, and SSS similarity.
+- Match corresponding sides and angles in the correct order.
+- Solve missing side lengths using scale factors.
+- Use triangle similarity for shadows, maps, camera rays, and sensor geometry.
+- Recognize common failure modes: assuming from a sketch, mixing up corresponding sides, using SSA as if it were valid, and confusing equal angles with equal side lengths.
+
+## Why It Matters
+
+Triangles are the smallest useful rigid shape in Euclidean geometry. A single segment can rotate. Two connected segments can hinge. Three connected segments make a triangle, and if the side lengths are fixed, the shape cannot change without bending or breaking a side.
+
+That one fact explains a surprising amount of engineering.
+
+1. **Trusses and frames.** Roof trusses, bridges, towers, robot frames, and crane booms use triangular bracing because triangles resist shape change. Rectangles need diagonal bracing because a rectangle can shear into a parallelogram.
+
+2. **Surveying and maps.** If you know one baseline and two angles, or enough side lengths, you can locate points indirectly. This is the core of triangulation.
+
+3. **Computer vision and depth.** Stereo cameras infer depth from two camera centers and a point in the scene. That is a triangle. Structure-from-motion and SLAM use huge networks of triangles hiding inside matrices.
+
+4. **Robotics.** Linkages, support brackets, inverse kinematics, and sensor calibration frequently reduce to triangle relationships. If two robot poses form a baseline and both see a landmark, the landmark location is constrained by a triangle.
+
+5. **Drones and field measurements.** You can estimate the height of a tree, tower, or building by measuring a distance and an angle, or by comparing shadows. Similar triangles turn hard-to-reach lengths into reachable ones.
+
+6. **CAD constraints.** Sketch constraints such as equal length, equal angle, midpoint, parallel, perpendicular, and fixed distance often create congruent or similar triangles. CAD solvers use these constraints to lock geometry.
+
+7. **Proof habits.** Triangle congruence teaches a powerful reasoning pattern: prove two shapes are the same under a small set of conditions, then transfer facts from one to the other. In engineering, that becomes "these two assemblies are equivalent under this transformation."
+
+If points, lines, and angles are geometry grammar, triangles are the first real sentences.
+
+## Why This Idea Exists
+
+Triangle reasoning is ancient because indirect measurement is ancient. People needed to measure land, construct buildings, navigate, predict shadows, and align monuments long before modern algebra existed.
+
+Euclid's *Elements* made triangle congruence central. Proposition I.4 is essentially SAS congruence. Proposition I.8 is SSS congruence. Proposition I.26 covers angle-side-angle style reasoning. Euclid did not write "SAS" in modern school shorthand, but the core idea is there: under certain side-angle conditions, one triangle can be superimposed on another.
+
+Similarity became equally important because it lets you scale a known shape. A small drawing can represent a large building. A shadow can represent an object's height. A map can represent a field. A camera image can represent rays from a 3D scene. The mathematics of scale is triangle similarity.
+
+Later geometry, trigonometry, analytic geometry, and linear algebra all grew from this base. Trigonometry can be introduced as ratios in similar right triangles. Coordinate geometry can prove triangle facts with algebra. Linear transformations map triangles to triangles. Mesh methods approximate curved surfaces by breaking them into triangles. Modern graphics hardware renders almost everything as triangles.
+
+So this is not a dead school topic. It is one of the load-bearing beams under physical computation.
+
+## Plain-Language Intuition
+
+Take three sticks and pin their ends together into a triangle. If the stick lengths are fixed, the triangle cannot flex. Now take four sticks and pin them into a quadrilateral. Unless you add a diagonal brace, it can wobble.
+
+That is triangle rigidity.
+
+Congruence says: "These two triangles are the same size and shape." You could pick one up, move it, rotate it, flip it, and place it exactly on the other.
+
+Similarity says: "These two triangles are the same shape, but possibly different sizes." One is a scaled version of the other. A 3-4-5 triangle and a 6-8-10 triangle are not congruent because their side lengths differ, but they are similar because every length doubled and every angle stayed the same.
+
+The hard part is not the idea. The hard part is bookkeeping. You must know which side corresponds to which side, and which angle corresponds to which angle. Most triangle mistakes are correspondence mistakes.
+
+## Core Theory
+
+### Triangle Basics
+
+A **triangle** is a polygon with three sides and three vertices. If the vertices are $A$, $B$, and $C$, the triangle is written:
+
+$$
+\triangle ABC
+$$
+
+The sides are:
+
+- $\overline{AB}$
+- $\overline{BC}$
+- $\overline{CA}$
+
+The interior angles are:
+
+- $\angle A$
+- $\angle B$
+- $\angle C$
+
+The side opposite $\angle A$ is $\overline{BC}$. The side opposite $\angle B$ is $\overline{AC}$. The side opposite $\angle C$ is $\overline{AB}$.
+
+This opposite-side language matters later in trigonometry and in the law of sines.
+
+### Triangle Angle Sum
+
+In Euclidean geometry, the interior angles of a triangle add to:
+
+$$
+180^\circ
+$$
+
+So if:
+
+$$
+m\angle A = 48^\circ
+$$
+
+and:
+
+$$
+m\angle B = 67^\circ
+$$
+
+then:
+
+$$
+m\angle C = 180^\circ - 48^\circ - 67^\circ = 65^\circ
+$$
+
+This theorem depends on Euclidean parallel geometry. On a sphere or curved surface, triangle angle sums can differ from $180^\circ$. That is not a detail for now, but it is a glimpse of why geometry eventually becomes physics.
+
+### Exterior Angle Theorem
+
+If you extend one side of a triangle, the exterior angle equals the sum of the two remote interior angles.
+
+If exterior angle $x$ is outside vertex $C$, then:
+
+$$
+x = m\angle A + m\angle B
+$$
+
+Why? The exterior angle and the interior angle at $C$ form a linear pair, so they add to $180^\circ$. The three interior angles also add to $180^\circ$. Subtract the interior angle at $C$ from both sums and the exterior angle equals the other two interior angles.
+
+### Congruent Triangles
+
+Two triangles are **congruent** if they have the same size and shape.
+
+Symbol:
+
+$$
+\triangle ABC \cong \triangle DEF
+$$
+
+The order matters. This statement says:
+
+- $A$ corresponds to $D$
+- $B$ corresponds to $E$
+- $C$ corresponds to $F$
+
+Therefore:
+
+- $\overline{AB}$ corresponds to $\overline{DE}$
+- $\overline{BC}$ corresponds to $\overline{EF}$
+- $\overline{AC}$ corresponds to $\overline{DF}$
+- $\angle A$ corresponds to $\angle D$
+- $\angle B$ corresponds to $\angle E$
+- $\angle C$ corresponds to $\angle F$
+
+When triangles are congruent, all corresponding sides and angles are equal. This is often abbreviated as **CPCTC**: corresponding parts of congruent triangles are congruent.
+
+### Congruence Tests
+
+You do not need to check all six corresponding parts every time. Certain combinations force congruence.
+
+| Test | Meaning | Works? |
+| --- | --- | --- |
+| SSS | Three pairs of corresponding sides equal | Yes |
+| SAS | Two sides and the included angle equal | Yes |
+| ASA | Two angles and the included side equal | Yes |
+| AAS | Two angles and a non-included side equal | Yes |
+| HL | Hypotenuse and one leg equal in right triangles | Yes |
+| SSA | Two sides and a non-included angle equal | Not generally |
+| AAA | Three angles equal | Similar, not congruent |
+
+### SSS Congruence
+
+SSS means side-side-side. If all three side lengths of one triangle match all three side lengths of another triangle, the triangles are congruent.
+
+Physical intuition: three fixed sticks determine one triangle shape. You can flip it over, but you cannot make a different-size or different-shape triangle with the same three side lengths.
+
+### SAS Congruence
+
+SAS means side-angle-side. If two sides and the **included angle** between them match, the triangles are congruent.
+
+Included angle means the angle physically between the two given sides. If you know two bars and the hinge angle between them, the third side is forced.
+
+### ASA Congruence
+
+ASA means angle-side-angle. If two angles and the included side between them match, the triangles are congruent.
+
+Once two angles are known, the third angle is forced by the triangle angle sum. The included side fixes the scale.
+
+### AAS Congruence
+
+AAS means angle-angle-side. If two angles and a non-included corresponding side match, the triangles are congruent.
+
+This also works because two angles determine the third angle. Then the known side fixes the scale.
+
+### HL Congruence
+
+HL means hypotenuse-leg. It applies only to right triangles.
+
+If two right triangles have equal hypotenuses and one equal corresponding leg, then the triangles are congruent.
+
+This is a special case of the Pythagorean theorem. In a right triangle:
+
+$$
+a^2 + b^2 = c^2
+$$
+
+If $c$ and one leg are fixed, the other leg is forced.
+
+### Why SSA Fails
+
+SSA means side-side-angle where the angle is not included between the two sides. It does not generally prove congruence.
+
+Why? The known side opposite the given angle can sometimes swing into two possible positions, producing two different triangles. This is called the ambiguous case.
+
+Example idea: imagine a hinge at one point, a fixed-length swinging side, and a target line. The swinging side may hit the target line in two places. Same given SSA data, two different triangles.
+
+SSA can work in special cases, but it is not a safe general congruence test.
+
+### Similar Triangles
+
+Two triangles are **similar** if they have the same shape but not necessarily the same size.
+
+Symbol:
+
+$$
+\triangle ABC \sim \triangle DEF
+$$
+
+Again, order matters:
+
+- $A$ corresponds to $D$
+- $B$ corresponds to $E$
+- $C$ corresponds to $F$
+
+In similar triangles:
+
+- Corresponding angles are equal.
+- Corresponding side lengths are proportional.
+
+If:
+
+$$
+\triangle ABC \sim \triangle DEF
+$$
+
+then:
+
+$$
+\frac{AB}{DE} = \frac{BC}{EF} = \frac{AC}{DF}
+$$
+
+That common ratio is a scale factor.
+
+### Similarity Tests
+
+| Test | Meaning |
+| --- | --- |
+| AA similarity | Two pairs of corresponding angles equal |
+| SAS similarity | Two pairs of corresponding sides proportional and included angles equal |
+| SSS similarity | Three pairs of corresponding sides proportional |
+
+AA is the most common. Since triangle angles add to $180^\circ$, two equal angles force the third equal angle. Same angles means same shape.
+
+### Scale Factor
+
+If a small triangle has sides $3$, $4$, and $5$, and a larger similar triangle has corresponding sides $6$, $8$, and $10$, the scale factor from small to large is:
+
+$$
+k = 2
+$$
+
+Every length doubles. Angles do not double. Angles stay equal.
+
+This is a crucial distinction:
+
+- Similarity scales lengths.
+- Similarity preserves angles.
+
+Area does not scale by $k$. Area scales by $k^2$. Volume, in 3D, scales by $k^3$.
+
+## Visual Or Mental Models
+
+### Model 1: Sticks And Hinges
+
+SSS is three sticks pinned together. SAS is two sticks with the hinge angle fixed. ASA and AAS are two directions with one distance fixed. HL is a right-triangle special lock.
+
+When a congruence rule works, it means the triangle cannot wiggle into a different shape.
+
+### Model 2: Projector Scaling
+
+Similarity is like projecting an image larger on a wall. The triangle grows, but the angles remain the same. If every length doubles, it is still the same shape.
+
+### Model 3: Correspondence As Wiring
+
+Imagine labels as wires connecting one triangle to another. If $A$ corresponds to $D$, then every part touching $A$ must be matched with the part touching $D$. Most mistakes happen when those wires are crossed.
+
+## Worked Examples
+
+### Example 1: Missing Triangle Angle
+
+Triangle $ABC$ has:
+
+$$
+m\angle A = 52^\circ
+$$
+
+and:
+
+$$
+m\angle B = 61^\circ
+$$
+
+Find $m\angle C$.
+
+Use the angle sum:
+
+$$
+52^\circ + 61^\circ + m\angle C = 180^\circ
+$$
+
+$$
+113^\circ + m\angle C = 180^\circ
+$$
+
+$$
+m\angle C = 67^\circ
+$$
+
+Check: $52 + 61 + 67 = 180$.
+
+### Example 2: Exterior Angle
+
+A triangle has remote interior angles $38^\circ$ and $74^\circ$. Find the exterior angle opposite them.
+
+Exterior angle theorem:
+
+$$
+x = 38^\circ + 74^\circ = 112^\circ
+$$
+
+The exterior angle is $112^\circ$.
+
+### Example 3: SSS Congruence
+
+Triangle 1 has side lengths $7$ cm, $9$ cm, and $12$ cm. Triangle 2 has side lengths $9$ cm, $12$ cm, and $7$ cm.
+
+Are they congruent?
+
+Yes. The three side lengths match. Order in the list does not matter as long as all corresponding side lengths can be paired correctly. SSS proves congruence.
+
+### Example 4: SAS Congruence In A Bracket
+
+Two triangular brackets each have side lengths $40$ mm and $65$ mm with the included angle $50^\circ$ between those sides.
+
+Are the brackets congruent?
+
+Yes. Two sides and the included angle match, so SAS proves congruence. The third side is forced.
+
+Engineering meaning: if manufacturing holds those two lengths and the included angle, the triangular bracket shape is determined.
+
+### Example 5: ASA Congruence In A Survey Triangle
+
+Two survey teams measure a baseline of $100$ m. At the left endpoint they measure $42^\circ$ to a landmark. At the right endpoint they measure $71^\circ$ to the same landmark.
+
+If both teams have the same baseline and same endpoint angles, are their triangles congruent?
+
+Yes. The known side is the included side between the two known angles. ASA proves congruence.
+
+This is a simplified triangulation idea: a baseline plus two bearing angles can locate a point.
+
+### Example 6: AAS Congruence
+
+Two triangles have angles $40^\circ$ and $80^\circ$, and a corresponding side not between those two angles is $12$ cm in both.
+
+Are they congruent?
+
+Yes. AAS proves congruence. The third angle is:
+
+$$
+180^\circ - 40^\circ - 80^\circ = 60^\circ
+$$
+
+Now all angles match, and one corresponding side fixes the size.
+
+### Example 7: AAA Is Not Congruence
+
+Triangle 1 has angles $30^\circ$, $60^\circ$, and $90^\circ$. Triangle 2 also has angles $30^\circ$, $60^\circ$, and $90^\circ$.
+
+Are they necessarily congruent?
+
+No.
+
+They are similar, because the angles match. But one could be a tiny triangle and the other could be a large ramp. Angles alone determine shape, not size.
+
+### Example 8: Similarity Scale
+
+Triangles $ABC$ and $DEF$ are similar in the order:
+
+$$
+\triangle ABC \sim \triangle DEF
+$$
+
+Suppose:
+
+$$
+AB = 4, \quad BC = 7, \quad DE = 12
+$$
+
+Find $EF$.
+
+Because $AB$ corresponds to $DE$, the scale factor from $ABC$ to $DEF$ is:
+
+$$
+k = \frac{DE}{AB} = \frac{12}{4} = 3
+$$
+
+Since $BC$ corresponds to $EF$:
+
+$$
+EF = 3 \cdot 7 = 21
+$$
+
+### Example 9: Shadow Height
+
+A 1.8 m person casts a 2.4 m shadow. At the same time, a tower casts a 16 m shadow. Estimate the tower height.
+
+The sun angle is the same, so the triangles are similar:
+
+$$
+\frac{\text{person height}}{\text{person shadow}} = \frac{\text{tower height}}{\text{tower shadow}}
+$$
+
+$$
+\frac{1.8}{2.4} = \frac{h}{16}
+$$
+
+Solve:
+
+$$
+h = 16 \cdot \frac{1.8}{2.4} = 16 \cdot 0.75 = 12
+$$
+
+The tower is about $12$ m tall.
+
+### Example 10: Map Scale
+
+A map triangle has side lengths $3$ cm, $5$ cm, and $6$ cm. The real terrain triangle has corresponding first side $150$ m.
+
+Scale factor:
+
+$$
+k = \frac{150 \text{ m}}{3 \text{ cm}} = 50 \text{ m per cm}
+$$
+
+The other terrain sides are:
+
+$$
+5 \cdot 50 = 250 \text{ m}
+$$
+
+and:
+
+$$
+6 \cdot 50 = 300 \text{ m}
+$$
+
+The map and terrain triangles are similar if all side ratios match.
+
+### Example 11: Why Correspondence Matters
+
+Suppose:
+
+$$
+\triangle ABC \sim \triangle DEF
+$$
+
+A student writes:
+
+$$
+\frac{AB}{EF} = \frac{BC}{DE}
+$$
+
+This is not justified by the similarity statement. The correct side pairings are:
+
+$$
+AB \leftrightarrow DE
+$$
+
+$$
+BC \leftrightarrow EF
+$$
+
+$$
+AC \leftrightarrow DF
+$$
+
+So a correct proportion is:
+
+$$
+\frac{AB}{DE} = \frac{BC}{EF}
+$$
+
+### Example 12: Failure Mode - SSA
+
+A student claims two triangles are congruent because they have side lengths $10$ and $7$, plus a non-included angle of $30^\circ$.
+
+That is SSA. It is not a general congruence test.
+
+The non-included angle does not always lock the triangle. Depending on the side lengths, there may be two possible triangles. The student needs SSS, SAS, ASA, AAS, HL, or more information.
+
+## Engineering Connections
+
+### Triangular Bracing
+
+A rectangular frame can deform into a slanted parallelogram while keeping all four side lengths the same. Add a diagonal brace and you create two triangles. Now the frame is much harder to deform because the diagonal fixes the triangle side lengths.
+
+This is why trusses are full of triangles. It is not a style choice; it is geometry.
+
+### Survey Triangulation
+
+If two known points form a baseline and both measure angles to an unknown point, the unknown point is constrained by a triangle. Real surveying adds error models, repeated measurements, and coordinate transformations, but the core shape is triangle geometry.
+
+### Stereo Vision
+
+Two cameras separated by a baseline observe the same feature point. The two camera centers and the scene point form a triangle. The difference between image positions is disparity. Larger disparity usually means closer depth. The advanced math is linear algebra and projective geometry; the seed idea is similar triangles and triangulation.
+
+### Drone Field Work
+
+You can estimate inaccessible heights with shadows, rangefinders, or camera angles. Similar triangles convert a measurable baseline into an unknown height or distance.
+
+### Finite Element Meshes
+
+Complex shapes are often broken into triangles or tetrahedra. Triangles are simple, stable elements for approximating geometry and physical fields. Mesh quality depends on triangle shape; skinny triangles can cause numerical trouble.
+
+## Common Failure Modes
+
+1. **Using SSA as a congruence rule.** SSA is ambiguous and is not generally valid.
+
+2. **Thinking AAA proves congruence.** AAA proves similarity, not same size.
+
+3. **Crossing corresponding sides.** The order in $\triangle ABC \sim \triangle DEF$ tells you the matching parts.
+
+4. **Assuming from the drawing.** A side that looks equal is not equal unless marked, stated, or proved.
+
+5. **Forgetting the included angle in SAS.** SAS uses the angle between the two known sides. If the angle is not between them, you have SSA.
+
+6. **Scaling angles.** In similar triangles, lengths scale. Angles stay equal.
+
+7. **Ignoring units in scale problems.** A ratio of cm to m must be interpreted carefully.
+
+8. **Using right-triangle HL on non-right triangles.** HL only works when both triangles are right triangles.
+
+## Practice Set
+
+### Warmups
+
+1. How many degrees are in the interior angle sum of a Euclidean triangle?
+2. If two angles of a triangle are $40^\circ$ and $65^\circ$, find the third.
+3. If an exterior angle has remote interior angles $50^\circ$ and $72^\circ$, find the exterior angle.
+4. What does SSS stand for?
+5. What does SAS stand for?
+6. What does ASA stand for?
+7. What does AAS stand for?
+8. What does HL stand for?
+9. Does AAA prove congruence?
+10. Does AAA prove similarity?
+
+### Congruence
+
+11. Triangles have sides $5$, $8$, $10$ and $10$, $5$, $8$. Which congruence rule applies?
+12. Two triangles have sides $6$ and $9$ with included angle $44^\circ$. Which rule applies?
+13. Two triangles have angles $35^\circ$ and $75^\circ$ with the included side equal. Which rule applies?
+14. Two right triangles have equal hypotenuses and one equal leg. Which rule applies?
+15. Two triangles have two sides and a non-included angle equal. Is this enough in general?
+16. If $\triangle ABC \cong \triangle DEF$, which side corresponds to $\overline{BC}$?
+17. If $\triangle ABC \cong \triangle DEF$, which angle corresponds to $\angle A$?
+18. If corresponding sides are equal after congruence is proved, what abbreviation names that idea?
+19. Why is a triangle with three fixed side lengths rigid?
+20. Why can a four-sided frame flex without a diagonal brace?
+
+### Similarity
+
+21. If two triangles have angles $30^\circ$, $60^\circ$, and $90^\circ$, are they similar?
+22. If two triangles are similar with scale factor $3$, what happens to corresponding side lengths?
+23. If two triangles are similar with scale factor $3$, what happens to corresponding angles?
+24. $\triangle ABC \sim \triangle DEF$. Which side corresponds to $\overline{AC}$?
+25. $\triangle ABC \sim \triangle DEF$. If $AB = 5$ and $DE = 20$, what is the scale factor from $ABC$ to $DEF$?
+26. With the same scale factor, if $BC = 7$, find $EF$.
+27. A 2 m pole casts a 3 m shadow. A tower casts a 21 m shadow. Find the tower height.
+28. A map uses 1 cm = 40 m. A triangular path has map sides 2 cm, 3 cm, 4 cm. Find the real side lengths.
+29. Two similar triangles have corresponding sides 8 and 12. What is the scale factor from smaller to larger?
+30. If a model side is 6 cm and the full-size corresponding side is 1.5 m, what is the scale factor in meters per cm?
+
+### Mixed Problems
+
+31. A triangle has angles $x$, $2x$, and $3x$. Find all three angles.
+32. A triangle has angles $x$, $x + 20^\circ$, and $2x$. Find $x$.
+33. An exterior angle is $125^\circ$. One remote interior angle is $48^\circ$. Find the other remote interior angle.
+34. $\triangle PQR \sim \triangle XYZ$. If $PQ = 9$, $QR = 12$, $XY = 15$, find $YZ$.
+35. $\triangle LMN \cong \triangle RST$. Which vertex corresponds to $M$?
+36. Two triangles have two angles equal and one corresponding side equal. Which congruence rule might apply?
+37. Two triangles have all three sides proportional. Which similarity rule applies?
+38. Two triangles have two sides proportional and the included angle equal. Which similarity rule applies?
+39. A 1.6 m person casts a 2.0 m shadow. A tree casts a 9.5 m shadow. Estimate tree height.
+40. A camera field diagram has a small similar triangle with image-plane half-width 8 mm and focal length 12 mm. A larger triangle at distance 3 m is similar. What half-width does it cover at 3 m?
+
+### Challenge Problems
+
+41. Explain in words why SAS works but SSA fails.
+42. A triangular bracket has holes at points A, B, C. A second bracket has matching distances AB, BC, and AC. What does SSS let you conclude about the hole pattern?
+43. A drone sees a landing marker from two positions 10 m apart. Both bearing angles are measured. Which triangle information type is this closest to: SSS, SAS, ASA, or AAA?
+44. A diagonal brace splits a rectangle into two triangles. Explain why this resists shear.
+45. A scaled robot prototype is built at 1:4 scale. A triangular plate on the prototype has sides 3 cm, 5 cm, 6 cm. What are the full-size side lengths?
+
+### Error Spotting
+
+46. A student says AAA proves two triangles are congruent. What is wrong?
+47. A student says the side corresponding to $BC$ in $\triangle ABC \sim \triangle DEF$ is $DE$. What is wrong?
+48. A student uses SAS but the angle is not between the two known sides. What rule have they actually described?
+49. A student doubles every angle when scaling a triangle by 2. What is wrong?
+50. A student assumes two sides are equal because they look equal in the diagram. What is wrong?
+
+## Answer Key
+
+1. $180^\circ$.
+2. $75^\circ$.
+3. $122^\circ$.
+4. Side-side-side.
+5. Side-angle-side.
+6. Angle-side-angle.
+7. Angle-angle-side.
+8. Hypotenuse-leg.
+9. No.
+10. Yes.
+11. SSS.
+12. SAS.
+13. ASA.
+14. HL.
+15. No.
+16. $\overline{EF}$.
+17. $\angle D$.
+18. CPCTC.
+19. Three fixed side lengths leave no hinge freedom.
+20. A quadrilateral can shear while side lengths remain fixed.
+21. Yes.
+22. They multiply by 3.
+23. They stay equal.
+24. $\overline{DF}$.
+25. $4$.
+26. $28$.
+27. $14$ m.
+28. $80$ m, $120$ m, $160$ m.
+29. $12/8 = 1.5$.
+30. $1.5/6 = 0.25$ m per cm.
+31. $30^\circ$, $60^\circ$, $90^\circ$.
+32. $40^\circ$.
+33. $77^\circ$.
+34. $20$.
+35. $T$.
+36. ASA or AAS, depending on whether the side is included.
+37. SSS similarity.
+38. SAS similarity.
+39. $7.6$ m.
+40. Ratio $8/12 = w/3000$, so $w = 2000$ mm = 2 m.
+41. SAS fixes two side lengths and the hinge angle between them, so the third side is forced. SSA leaves a swinging side that can sometimes hit the target in two places.
+42. The hole pattern is congruent; the relative positions of the three holes match.
+43. ASA, because the baseline is known and the endpoint bearing angles are known.
+44. The diagonal creates triangles; fixed triangle side lengths prevent the rectangle from changing into a parallelogram.
+45. $12$ cm, $20$ cm, $24$ cm.
+46. AAA preserves shape but not size; it proves similarity.
+47. $BC$ corresponds to $EF$, because B maps to E and C maps to F.
+48. SSA, which is not generally valid.
+49. Similarity preserves angles; only lengths scale.
+50. Drawings are not proof. Equal sides must be stated, marked, measured, or proved.
+
+## Build Task
+
+Create a small "triangle verifier" artifact. It can be a Python script, TypeScript function, spreadsheet, notebook, or carefully written manual worksheet.
+
+Minimum requirements:
+
+1. Accept three side lengths and decide whether they can form a triangle using the triangle inequality.
+2. Accept two known angles and compute the third.
+3. Accept two corresponding side lengths and compute a scale factor.
+4. Given a list of side pairs, decide whether the data suggests SSS congruence, SSS similarity, or neither.
+5. Include at least five test cases:
+   - $3, 4, 5$
+   - $1, 2, 3$
+   - $5, 5, 5$
+   - sides $3, 4, 5$ compared with $6, 8, 10$
+   - sides $3, 4, 5$ compared with $6, 8, 11$
+
+Stretch:
+
+- Add a shadow-height calculator.
+- Add an ASA triangulation sketch with a known baseline and two measured angles.
+- Add warnings for SSA data: "ambiguous; not a general congruence rule."
+
+## Quiz
+
+1. What is the difference between congruent and similar triangles?
+2. Why does SSS prove congruence?
+3. What does "included angle" mean in SAS?
+4. Why does AAA not prove congruence?
+5. What does CPCTC mean?
+6. If $\triangle ABC \sim \triangle DEF$, which side corresponds to $AB$?
+7. If a scale factor is 4, what happens to side lengths?
+8. What happens to angles under similarity?
+9. Why is SSA not a safe general congruence rule?
+10. Give one engineering example where triangle rigidity matters.
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 35 practice problems, including every challenge problem.
+- A corrected explanation for every missed problem.
+- Your triangle verifier artifact.
+- A one-page note explaining the difference between congruence and similarity.
+- A short engineering example where a triangle makes a physical structure or measurement problem more reliable.
+
+## Sources And Further Study
+
+- Euclid, *Elements*, Book I, especially propositions on triangle congruence.
+- OpenStax, *Geometry*, sections on congruent triangles and similar triangles.
+- OpenStax, *Algebra and Trigonometry 2e*, sections introducing right-triangle trigonometry from similar triangles.
+- Khan Academy, Congruence and Similarity units, useful for visual drills.
+- MIT OpenCourseWare 18.02, early vector geometry lectures, for the later transition from triangles to vector methods.
+- Any introductory surveying text section on triangulation, for a practical measurement application.
+- Introductory computer vision references on stereo geometry, for the advanced endpoint of similar-triangle reasoning.
+
+## Next Lesson Bridge
+
+Triangles become powerful once we can compute missing lengths. The next lesson, the Pythagorean theorem, focuses on right triangles: triangles with one $90^\circ$ angle. That theorem turns perpendicular geometry into distance calculation. It is the bridge from "these triangles match" into "how far is that point, support, sensor, wheel, camera, or landmark?"

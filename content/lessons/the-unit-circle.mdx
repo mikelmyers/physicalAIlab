@@ -1,0 +1,596 @@
+# The Unit Circle
+
+## Re-entry Promise
+
+This lesson assumes you know right-triangle trigonometry, radians, arc length, and basic coordinate systems. It does not assume you already understand why sine and cosine work for angles larger than $90^\circ$, negative angles, or full rotations.
+
+Right-triangle trigonometry is powerful, but it has a limit: right triangles naturally use acute angles. The unit circle removes that limit.
+
+The unit circle says:
+
+> Put a point on a circle of radius 1. Rotate it by angle $\theta$. The point's coordinates are $(\cos\theta,\sin\theta)$.
+
+That single idea turns trig from triangle measurement into rotation language. It is how sine and cosine become functions for waves, motors, alternating current, signal processing, orbital motion, animation, robotics, and control systems.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Define the unit circle as the circle of radius 1 centered at the origin.
+- Explain why a point on the unit circle has coordinates $(\cos\theta,\sin\theta)$.
+- Convert common angles between degrees and radians.
+- Identify sine and cosine values for key angles.
+- Determine the signs of sine, cosine, and tangent by quadrant.
+- Explain periodicity: adding $2\pi$ returns to the same point.
+- Use reference angles to evaluate trig values outside the first quadrant.
+- Connect unit-circle motion to rotation, waves, AC signals, and robotics.
+- Avoid common failures: swapping sine/cosine, losing signs, mixing degrees/radians, and treating tangent as defined everywhere.
+
+## Why It Matters
+
+The unit circle is the moment trig becomes a system.
+
+1. **Rotating machines.** Motors, gears, wheels, pulleys, shafts, and robot joints rotate. The unit circle is the cleanest picture of rotation.
+
+2. **Signals and waves.** Sine and cosine describe periodic motion: sound, vibration, AC voltage, radio waves, seasonal cycles, and control oscillation.
+
+3. **Robotics.** Rotating a vector, projecting motion, interpreting joint angles, and building heading controllers all rely on sine and cosine as coordinate functions.
+
+4. **Computer graphics.** Animation, circular motion, camera orbits, lighting, and transforms use unit-circle thinking.
+
+5. **Physics.** Harmonic motion, circular motion, angular velocity, phase, and waves all become easier when sine and cosine are coordinates of rotation.
+
+Right triangles teach the ratios. The unit circle teaches the function.
+
+## Why This Idea Exists
+
+Historically, trig began with chords in circles because astronomers and surveyors measured angles. The unit circle is the modern streamlined version of that circular origin. Instead of building a different triangle for every scale, we set the radius to 1 and let the angle determine the point.
+
+That move is extremely powerful. A radius of 1 makes the hypotenuse disappear from the ratio:
+
+$$
+\cos(\theta)=\frac{x}{1}=x
+$$
+
+$$
+\sin(\theta)=\frac{y}{1}=y
+$$
+
+So sine and cosine become coordinates.
+
+This is why the unit circle appears everywhere after algebra: precalculus, calculus, physics, signal processing, control theory, robotics, electronics, and graphics.
+
+## The Unit Circle Definition
+
+The unit circle is:
+
+$$
+x^2+y^2=1
+$$
+
+It is centered at $(0,0)$ and has radius 1.
+
+Start at $(1,0)$ on the positive $x$ axis. Rotate counterclockwise by angle $\theta$. The point you land on is:
+
+$$
+(\cos\theta,\sin\theta)
+$$
+
+This definition works for:
+
+- acute angles,
+- obtuse angles,
+- right angles,
+- straight angles,
+- full rotations,
+- negative angles,
+- angles larger than $360^\circ$.
+
+That is the upgrade over right-triangle trig.
+
+## Why Cosine Is X And Sine Is Y
+
+For a first-quadrant angle, draw the radius from the origin to the point on the unit circle. Drop a vertical line to the $x$ axis. You get a right triangle.
+
+The hypotenuse is the radius, which is 1.
+
+The adjacent side is the $x$ coordinate:
+
+$$
+\cos(\theta)=\frac{x}{1}=x
+$$
+
+The opposite side is the $y$ coordinate:
+
+$$
+\sin(\theta)=\frac{y}{1}=y
+$$
+
+So the point is $(\cos\theta,\sin\theta)$.
+
+Outside the first quadrant, the right-triangle lengths still use a reference triangle, but the coordinates carry signs. That is why the unit circle is better than memorizing triangle ratios alone.
+
+## Radians And Full Rotation
+
+Radians measure angle by arc length over radius:
+
+$$
+\theta=\frac{s}{r}
+$$
+
+On the unit circle, $r=1$, so:
+
+$$
+\theta=s
+$$
+
+The angle in radians equals the arc length traveled around the unit circle.
+
+One full rotation has circumference:
+
+$$
+2\pi r=2\pi
+$$
+
+So:
+
+$$
+360^\circ=2\pi \text{ radians}
+$$
+
+Half rotation:
+
+$$
+180^\circ=\pi
+$$
+
+Quarter rotation:
+
+$$
+90^\circ=\frac{\pi}{2}
+$$
+
+This is why radians are natural for rotation and calculus.
+
+## Key Angles
+
+The most important angles are:
+
+| Degrees | Radians | Unit-circle point |
+| --- | --- | --- |
+| $0^\circ$ | $0$ | $(1,0)$ |
+| $30^\circ$ | $\pi/6$ | $(\sqrt{3}/2,1/2)$ |
+| $45^\circ$ | $\pi/4$ | $(\sqrt{2}/2,\sqrt{2}/2)$ |
+| $60^\circ$ | $\pi/3$ | $(1/2,\sqrt{3}/2)$ |
+| $90^\circ$ | $\pi/2$ | $(0,1)$ |
+| $180^\circ$ | $\pi$ | $(-1,0)$ |
+| $270^\circ$ | $3\pi/2$ | $(0,-1)$ |
+| $360^\circ$ | $2\pi$ | $(1,0)$ |
+
+Do not memorize these as disconnected facts. See the pattern:
+
+- $30^\circ$ has smaller $y$ and larger $x$.
+- $60^\circ$ has larger $y$ and smaller $x$.
+- $45^\circ$ splits evenly.
+- Axis angles have one coordinate equal to zero.
+
+## Quadrant Signs
+
+The signs of sine and cosine come from coordinate signs.
+
+| Quadrant | Angle range | $x=\cos\theta$ | $y=\sin\theta$ | $\tan\theta$ |
+| --- | --- | --- | --- | --- |
+| I | $0^\circ$ to $90^\circ$ | + | + | + |
+| II | $90^\circ$ to $180^\circ$ | - | + | - |
+| III | $180^\circ$ to $270^\circ$ | - | - | + |
+| IV | $270^\circ$ to $360^\circ$ | + | - | - |
+
+Tangent is:
+
+$$
+\tan\theta=\frac{\sin\theta}{\cos\theta}
+$$
+
+So tangent is undefined when cosine is zero, because division by zero is undefined. That happens at:
+
+$$
+\theta=\frac{\pi}{2}, \frac{3\pi}{2}, ...
+$$
+
+## Reference Angles
+
+A **reference angle** is the acute angle between the terminal side and the nearest $x$ axis.
+
+Example: $150^\circ$ has reference angle $30^\circ$.
+
+At $30^\circ$:
+
+$$
+\cos= \sqrt{3}/2,\quad \sin=1/2
+$$
+
+But $150^\circ$ is in quadrant II, where cosine is negative and sine is positive:
+
+$$
+\cos(150^\circ)=-\sqrt{3}/2
+$$
+
+$$
+\sin(150^\circ)=1/2
+$$
+
+The reference angle gives the size. The quadrant gives the sign.
+
+## Periodicity
+
+If you rotate by a full turn, you return to the same point:
+
+$$
+\cos(\theta+2\pi)=\cos\theta
+$$
+
+$$
+\sin(\theta+2\pi)=\sin\theta
+$$
+
+In degrees:
+
+$$
+\cos(\theta+360^\circ)=\cos\theta
+$$
+
+$$
+\sin(\theta+360^\circ)=\sin\theta
+$$
+
+This is called **periodicity**. Sine and cosine have period $2\pi$.
+
+Tangent has period $\pi$, because a half-turn brings the slope ratio back:
+
+$$
+\tan(\theta+\pi)=\tan\theta
+$$
+
+## Negative Angles
+
+Positive angles rotate counterclockwise. Negative angles rotate clockwise.
+
+For example, $-90^\circ$ lands at $(0,-1)$.
+
+So:
+
+$$
+\cos(-90^\circ)=0
+$$
+
+$$
+\sin(-90^\circ)=-1
+$$
+
+Cosine is even:
+
+$$
+\cos(-\theta)=\cos\theta
+$$
+
+Sine is odd:
+
+$$
+\sin(-\theta)=-\sin\theta
+$$
+
+You do not need those words immediately, but the symmetry matters. Left-right reflection keeps $x$ the same for cosine. Up-down reflection changes the sign of $y$ for sine.
+
+## Worked Examples
+
+### Example 1: Evaluate $120^\circ$
+
+$120^\circ$ is in quadrant II. Its reference angle is $60^\circ$.
+
+At $60^\circ$:
+
+$$
+\cos=1/2,\quad \sin=\sqrt{3}/2
+$$
+
+In quadrant II, cosine is negative and sine is positive:
+
+$$
+\cos(120^\circ)=-1/2
+$$
+
+$$
+\sin(120^\circ)=\sqrt{3}/2
+$$
+
+### Example 2: Evaluate $225^\circ$
+
+$225^\circ$ is in quadrant III. Its reference angle is $45^\circ$.
+
+At $45^\circ$:
+
+$$
+\cos=\sqrt{2}/2,\quad \sin=\sqrt{2}/2
+$$
+
+In quadrant III, both are negative:
+
+$$
+\cos(225^\circ)=-\sqrt{2}/2
+$$
+
+$$
+\sin(225^\circ)=-\sqrt{2}/2
+$$
+
+### Example 3: Convert $5\pi/6$ To Degrees
+
+Multiply by $180^\circ/\pi$:
+
+$$
+\frac{5\pi}{6}\cdot\frac{180^\circ}{\pi}=150^\circ
+$$
+
+So $5\pi/6$ is $150^\circ$.
+
+### Example 4: Rotation Components
+
+A robot vector has length 4 at angle $210^\circ$.
+
+$$
+x=4\cos(210^\circ)
+$$
+
+$$
+y=4\sin(210^\circ)
+$$
+
+$210^\circ$ is quadrant III with reference angle $30^\circ$:
+
+$$
+\cos(210^\circ)=-\sqrt{3}/2
+$$
+
+$$
+\sin(210^\circ)=-1/2
+$$
+
+So:
+
+$$
+x=-2\sqrt{3}\approx-3.46
+$$
+
+$$
+y=-2
+$$
+
+The vector points down and left in standard coordinates.
+
+## Engineering Connections
+
+### Periodic Signals
+
+A simple periodic signal can be written:
+
+$$
+y=A\sin(\omega t+\phi)
+$$
+
+The unit circle explains why this repeats. A rotating point projected onto the vertical axis creates a sine wave.
+
+### AC Circuits
+
+Alternating current and voltage are often sinusoidal. Phase differences are angle differences. The unit circle is the geometry behind phasors and sinusoidal steady-state analysis.
+
+### Robot Heading
+
+A robot heading angle can define a forward unit vector:
+
+$$
+(\cos\theta,\sin\theta)
+$$
+
+Multiplying that unit vector by speed gives velocity components.
+
+### Rotation
+
+Rotating a point or vector uses sine and cosine. Later, this becomes rotation matrices:
+
+$$
+x' = x\cos\theta - y\sin\theta
+$$
+
+$$
+y' = x\sin\theta + y\cos\theta
+$$
+
+You do not need to master matrices here, but the unit circle is where those formulas come from.
+
+## Common Failure Modes
+
+1. **Swapping sine and cosine.** On the unit circle, cosine is $x$, sine is $y$.
+2. **Forgetting signs.** Reference angles give size; quadrants give sign.
+3. **Mixing degrees and radians.** $180^\circ=\pi$, not $180\pi$.
+4. **Treating tangent as always defined.** Tangent is undefined when cosine is zero.
+5. **Memorizing points without seeing rotation.** The unit circle is motion, not just a table.
+6. **Thinking sine and cosine only work for acute angles.** The unit circle extends them to all real angles.
+7. **Forgetting periodicity.** Angles that differ by $2\pi$ land on the same point.
+8. **Confusing $\pi/6$ and $\pi/3$.** $30^\circ$ is $\pi/6$; $60^\circ$ is $\pi/3$.
+9. **Ignoring coordinate conventions.** Unit-circle math angles are counterclockwise from positive $x$.
+10. **Expecting tangent at $90^\circ$.** The point is $(0,1)$, so tangent is $1/0$, undefined.
+
+## Practice Problems
+
+### Definitions And Conversions
+
+1. What is the radius of the unit circle?
+2. What is the equation of the unit circle?
+3. What point corresponds to angle $0^\circ$?
+4. What point corresponds to angle $90^\circ$?
+5. Convert $180^\circ$ to radians.
+6. Convert $90^\circ$ to radians.
+7. Convert $30^\circ$ to radians.
+8. Convert $\pi/3$ to degrees.
+9. Convert $3\pi/2$ to degrees.
+10. Convert $5\pi/6$ to degrees.
+
+### Coordinates And Values
+
+11. What are $\cos(0)$ and $\sin(0)$?
+12. What are $\cos(\pi/2)$ and $\sin(\pi/2)$?
+13. What are $\cos(\pi)$ and $\sin(\pi)$?
+14. What are $\cos(2\pi)$ and $\sin(2\pi)$?
+15. What are $\cos(30^\circ)$ and $\sin(30^\circ)$?
+16. What are $\cos(60^\circ)$ and $\sin(60^\circ)$?
+17. What are $\cos(45^\circ)$ and $\sin(45^\circ)$?
+18. What quadrant contains $120^\circ$?
+19. What quadrant contains $225^\circ$?
+20. What quadrant contains $315^\circ$?
+
+### Signs And Reference Angles
+
+21. Find the reference angle for $150^\circ$.
+22. Evaluate $\cos(150^\circ)$.
+23. Evaluate $\sin(150^\circ)$.
+24. Find the reference angle for $210^\circ$.
+25. Evaluate $\cos(210^\circ)$.
+26. Evaluate $\sin(210^\circ)$.
+27. Find the reference angle for $300^\circ$.
+28. Evaluate $\cos(300^\circ)$.
+29. Evaluate $\sin(300^\circ)$.
+30. Is tangent positive or negative in quadrant II?
+
+### Periodicity And Applications
+
+31. What is the period of sine and cosine?
+32. What is $\sin(\theta+2\pi)$ equal to?
+33. What is $\cos(\theta+2\pi)$ equal to?
+34. What angle between $0^\circ$ and $360^\circ$ is equivalent to $420^\circ$?
+35. What angle between $0^\circ$ and $360^\circ$ is equivalent to $-90^\circ$?
+36. A vector has length 6 at $0^\circ$. Find components.
+37. A vector has length 6 at $90^\circ$. Find components.
+38. A vector has length 10 at $180^\circ$. Find components.
+39. A vector has length 4 at $210^\circ$. Find components exactly.
+40. Why is the unit circle useful for periodic signals?
+
+### Challenge Problems
+
+41. Explain why $(\cos\theta)^2+(\sin\theta)^2=1$.
+42. Find $\tan(45^\circ)$.
+43. Find $\tan(135^\circ)$.
+44. Why is $\tan(90^\circ)$ undefined?
+45. If $\cos\theta=-1/2$ and $\sin\theta=\sqrt{3}/2$, what common angle is $\theta$?
+46. If a motor shaft rotates by $7\pi/2$, where is it on the unit circle?
+47. Why do $30^\circ$ and $390^\circ$ have the same sine and cosine?
+48. Which is larger, $\sin(30^\circ)$ or $\sin(60^\circ)$?
+49. Why does cosine become negative in quadrant II?
+50. Why is the unit circle a better definition of trig functions than a right triangle alone?
+
+## Answer Key
+
+1. 1.
+2. $x^2+y^2=1$.
+3. $(1,0)$.
+4. $(0,1)$.
+5. $\pi$.
+6. $\pi/2$.
+7. $\pi/6$.
+8. $60^\circ$.
+9. $270^\circ$.
+10. $150^\circ$.
+11. $\cos(0)=1$, $\sin(0)=0$.
+12. $\cos(\pi/2)=0$, $\sin(\pi/2)=1$.
+13. $\cos(\pi)=-1$, $\sin(\pi)=0$.
+14. $\cos(2\pi)=1$, $\sin(2\pi)=0$.
+15. $\cos(30^\circ)=\sqrt{3}/2$, $\sin(30^\circ)=1/2$.
+16. $\cos(60^\circ)=1/2$, $\sin(60^\circ)=\sqrt{3}/2$.
+17. Both are $\sqrt{2}/2$.
+18. Quadrant II.
+19. Quadrant III.
+20. Quadrant IV.
+21. $30^\circ$.
+22. $-\sqrt{3}/2$.
+23. $1/2$.
+24. $30^\circ$.
+25. $-\sqrt{3}/2$.
+26. $-1/2$.
+27. $60^\circ$.
+28. $1/2$.
+29. $-\sqrt{3}/2$.
+30. Negative.
+31. $2\pi$ or $360^\circ$.
+32. $\sin\theta$.
+33. $\cos\theta$.
+34. $60^\circ$.
+35. $270^\circ$.
+36. $(6,0)$.
+37. $(0,6)$.
+38. $(-10,0)$.
+39. $(-2\sqrt{3},-2)$.
+40. A rotating point's coordinate projection repeats as a sine or cosine wave.
+41. Every unit-circle point has distance 1 from the origin, so $x^2+y^2=1$ and $x=\cos\theta$, $y=\sin\theta$.
+42. 1.
+43. -1.
+44. Tangent is sine divided by cosine, and cosine is 0 at $90^\circ$.
+45. $120^\circ$.
+46. $7\pi/2$ is equivalent to $3\pi/2$, so the point is $(0,-1)$.
+47. They differ by $360^\circ$, one full rotation.
+48. $\sin(60^\circ)$.
+49. Points in quadrant II have negative $x$ coordinates.
+50. It defines sine and cosine for all real angles, not only acute right-triangle angles.
+
+## Build Task
+
+Create a "unit circle explorer" as a script, spreadsheet, notebook, or careful manual worksheet.
+
+Minimum requirements:
+
+1. Input an angle in degrees.
+2. Convert it to radians.
+3. Reduce it to an equivalent angle between $0^\circ$ and $360^\circ$.
+4. Identify the quadrant or axis.
+5. Output approximate sine and cosine.
+6. For common angles, output exact values when known.
+7. Plot or list the point $(\cos\theta,\sin\theta)$.
+
+Stretch:
+
+- Animate a point moving around the unit circle.
+- Plot sine as the $y$ coordinate over time.
+- Add tangent and flag undefined tangent at $90^\circ$ and $270^\circ$.
+
+## Quiz
+
+1. What is the unit circle?
+2. Why is cosine the $x$ coordinate?
+3. Why is sine the $y$ coordinate?
+4. What is one full rotation in radians?
+5. What is the period of sine and cosine?
+6. Why are signs different in different quadrants?
+7. What is a reference angle?
+8. Why is tangent undefined at $90^\circ$?
+9. What is the unit-circle point at $180^\circ$?
+10. Give one engineering use of unit-circle thinking.
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 35 practice problems, including all challenge problems.
+- A corrected explanation for every missed problem.
+- Your unit circle explorer artifact.
+- A hand-drawn or digital unit circle with all key angles labeled.
+- A short note explaining why adding $2\pi$ does not change sine or cosine.
+
+## Sources And Further Study
+
+- OpenStax, *Algebra and Trigonometry 2e*, sections on the unit circle and trigonometric functions.
+- Khan Academy, unit circle and trigonometric values.
+- Introductory physics texts on circular motion and harmonic motion.
+- Introductory circuits references on sinusoidal AC signals and phase.
+- Robotics and graphics references on rotation, heading vectors, and coordinate transforms.
+
+## Next Lesson Bridge
+
+The unit circle makes trig functions global and periodic. The next lesson studies identities: equations that are always true because sine, cosine, and tangent are linked by the geometry of the circle.

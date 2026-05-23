@@ -1,0 +1,697 @@
+# Perimeter and Area of Plane Figures
+
+## Re-entry Promise
+
+This lesson assumes you can work with points, lines, angles, triangles, similarity, and the Pythagorean theorem. It assumes you can multiply, divide, square, take square roots, and carry units. It does not assume you remember geometry formulas.
+
+We will not treat perimeter and area as a formula sheet. We will build the formulas from ideas: perimeter measures boundary length; area measures surface coverage. Those are different quantities with different units, different uses, and different failure modes. A robot chassis footprint, a drone landing pad, a solar panel, a sheet-metal blank, a field map, and a camera image region all require this distinction.
+
+By the end, you should be able to compute perimeter and area for rectangles, parallelograms, triangles, trapezoids, circles, composite shapes, and coordinate-grid shapes. More importantly, you should know where the formulas come from and how to decompose unfamiliar shapes into familiar ones.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Explain the difference between perimeter and area.
+- Use correct units: length units for perimeter, square units for area.
+- Derive rectangle, parallelogram, triangle, trapezoid, and circle area formulas from simpler ideas.
+- Compute perimeter and area for common plane figures.
+- Use the Pythagorean theorem to find missing side lengths before computing perimeter or area.
+- Decompose composite shapes into rectangles, triangles, circles, and trapezoids.
+- Estimate material quantities from area and edge length from perimeter.
+- Use coordinate grids to compute polygon side lengths and areas.
+- Recognize common mistakes: using perimeter when area is needed, forgetting square units, using slanted side as height, and double-counting shared edges.
+
+## Why It Matters
+
+Perimeter and area are measurement tools. They convert geometry into material, cost, clearance, coverage, and physical feasibility.
+
+1. **Manufacturing.** Cutting a sheet-metal bracket requires area for material usage and perimeter for cut length. Laser-cut cost may depend on both.
+
+2. **Robotics.** A mobile robot footprint has area. Its bumper outline has perimeter. A coverage planner estimates area swept by a sensor or cleaning tool.
+
+3. **Drones and mapping.** Surveyed fields, landing zones, no-fly polygons, and image footprints are area problems. Fence lines and route boundaries are perimeter problems.
+
+4. **CAD and packaging.** A part must fit inside a planar envelope. Holes remove area. Slots add perimeter. Diagonal dimensions often require the Pythagorean theorem.
+
+5. **Electronics.** PCB board area affects cost. Copper pour area affects thermal and electrical behavior. Trace lengths and board outlines are perimeter-like measurements.
+
+6. **Computer vision.** Object masks have area in pixels. Contours have perimeter. Shape descriptors use both.
+
+7. **Physics.** Pressure is force per area. Heat transfer often depends on surface area. Cross-sectional area controls stress, flow, resistance, and drag.
+
+If you confuse perimeter and area, you confuse boundary with surface. That is not a small error; it changes the physical question.
+
+## Why This Idea Exists
+
+Perimeter and area came from practical measurement: how much rope to enclose a field, how much seed to cover it, how many tiles to floor a room, how much cloth to cut, how much land a boundary contains. Ancient Egyptian, Babylonian, Greek, Indian, and Chinese mathematics all developed rules for plane figures because civilization needed land measurement and construction.
+
+Euclid's *Elements* organized plane geometry into a deductive system, but practical area methods are older. The word **perimeter** comes from Greek roots meaning "measure around." **Area** traces to the idea of open space or level ground. These are not abstract decorations; they are ancient answers to "how much edge?" and "how much surface?"
+
+Modern engineering still asks the same questions with better tools. A CAD package reports area and perimeter. A GIS system computes polygon area. A robot estimates occupied footprint. A vision model counts mask pixels. The mathematics is old because the physical need is permanent.
+
+## Plain-Language Intuition
+
+Imagine painting a rectangular tabletop and also wrapping tape around its edge.
+
+- The amount of tape depends on the **perimeter**.
+- The amount of paint depends on the **area**.
+
+If the tabletop is 2 m by 1 m:
+
+- Perimeter is $2+1+2+1=6$ m.
+- Area is $2 \cdot 1 = 2$ m².
+
+The numbers are different because they answer different questions. Perimeter is one-dimensional boundary. Area is two-dimensional coverage.
+
+Units protect you:
+
+- Perimeter: m, cm, ft, pixels.
+- Area: m², cm², ft², pixels².
+
+If an answer to an area problem comes out in meters instead of square meters, something is wrong.
+
+## Core Theory
+
+### Perimeter
+
+The **perimeter** of a plane figure is the total length around its boundary.
+
+For a polygon, add all side lengths:
+
+$$
+P = s_1+s_2+\cdots+s_n
+$$
+
+For a circle, perimeter is called **circumference**:
+
+$$
+C = 2\pi r
+$$
+
+or:
+
+$$
+C = \pi d
+$$
+
+where $r$ is radius and $d$ is diameter.
+
+### Area
+
+The **area** of a plane figure is the amount of surface it covers.
+
+Area is measured in square units. A square that is 1 m by 1 m has area:
+
+$$
+1\text{ m}^2
+$$
+
+A 3 m by 4 m rectangle contains 12 square meters:
+
+$$
+A = 3 \cdot 4 = 12\text{ m}^2
+$$
+
+### Rectangle
+
+For a rectangle with length $l$ and width $w$:
+
+$$
+P = 2l + 2w
+$$
+
+$$
+A = lw
+$$
+
+Why area is $lw$: it counts rows and columns of unit squares. If the rectangle is 5 units long and 3 units wide, it contains 5 columns times 3 rows.
+
+### Square
+
+A square is a rectangle with equal sides $s$:
+
+$$
+P = 4s
+$$
+
+$$
+A = s^2
+$$
+
+The diagonal of a square comes from the Pythagorean theorem:
+
+$$
+d = s\sqrt{2}
+$$
+
+### Parallelogram
+
+A parallelogram has opposite sides parallel. Its area is:
+
+$$
+A = bh
+$$
+
+where $b$ is base and $h$ is perpendicular height.
+
+The height is not the slanted side unless the parallelogram is a rectangle. You can cut a triangular piece from one side and move it to the other side, turning the parallelogram into a rectangle with the same base and height. That is why the formula is $bh$.
+
+### Triangle
+
+A triangle is half of a parallelogram.
+
+Two congruent copies of a triangle can be arranged to make a parallelogram. Therefore:
+
+$$
+A = \frac{1}{2}bh
+$$
+
+Again, $h$ is perpendicular height to the chosen base, not necessarily a side length.
+
+### Trapezoid
+
+A trapezoid has one pair of parallel sides. If the parallel bases are $b_1$ and $b_2$, and the height is $h$, then:
+
+$$
+A = \frac{1}{2}(b_1+b_2)h
+$$
+
+Why? Think of the average of the two bases:
+
+$$
+\frac{b_1+b_2}{2}
+$$
+
+Then multiply by height. Another derivation: two congruent trapezoids can form a parallelogram with base $b_1+b_2$ and height $h$, so one trapezoid has half that area.
+
+### Circle
+
+For a circle with radius $r$:
+
+$$
+C = 2\pi r
+$$
+
+$$
+A = \pi r^2
+$$
+
+Circumference is boundary length. Area is surface coverage.
+
+Why area is $\pi r^2$: one intuition is to cut the circle into many narrow sectors and rearrange them into an almost-parallelogram. Its height is $r$, and its base approaches half the circumference:
+
+$$
+\frac{1}{2}(2\pi r)=\pi r
+$$
+
+So area approaches:
+
+$$
+\pi r \cdot r = \pi r^2
+$$
+
+### Composite Shapes
+
+A **composite shape** is built from simpler shapes. Strategy:
+
+1. Draw or identify the outer boundary.
+2. Split the figure into rectangles, triangles, trapezoids, circles, or semicircles.
+3. Compute each area.
+4. Add included pieces.
+5. Subtract holes or cutouts.
+6. For perimeter, add only the external boundary. Do not count interior shared edges.
+
+Area decomposition and perimeter boundary-tracing are different workflows. This is a major source of mistakes.
+
+### Coordinate Grid Area
+
+For axis-aligned rectangles on a coordinate grid:
+
+$$
+\text{width} = |x_2-x_1|
+$$
+
+$$
+\text{height} = |y_2-y_1|
+$$
+
+For triangles on a grid, choose a base and perpendicular height when possible.
+
+For irregular polygons, you can often enclose the shape in a rectangle, then subtract missing triangles and rectangles. Later, the shoelace formula gives a systematic coordinate method.
+
+## Visual Or Mental Models
+
+### Model 1: Fence And Carpet
+
+Perimeter is fence. Area is carpet. Fence goes around the edge. Carpet covers the surface.
+
+This model catches many mistakes. If the problem asks for paint, tile, land, material, mask size, or coverage, think area. If it asks for border, outline, cut path, wire around, gasket, or fence, think perimeter.
+
+### Model 2: Cut And Rearrange
+
+Many formulas come from cutting and rearranging:
+
+- Parallelogram to rectangle.
+- Triangle doubled into parallelogram.
+- Trapezoid doubled into parallelogram.
+- Circle sectors rearranged into a rectangle-like shape.
+
+Formula memory is weaker than seeing what shape can be rearranged into what.
+
+### Model 3: Units As Dimensional Checks
+
+Length times length gives area:
+
+$$
+\text{m} \cdot \text{m} = \text{m}^2
+$$
+
+Length plus length gives perimeter:
+
+$$
+\text{m}+\text{m}=\text{m}
+$$
+
+If you add square meters to meters, you are mixing dimensions. Units are your alarm system.
+
+## Worked Examples
+
+### Example 1: Rectangle
+
+A panel is 0.8 m by 0.5 m. Find perimeter and area.
+
+Perimeter:
+
+$$
+P = 2(0.8)+2(0.5)=1.6+1.0=2.6
+$$
+
+So:
+
+$$
+P=2.6\text{ m}
+$$
+
+Area:
+
+$$
+A=0.8\cdot 0.5=0.4
+$$
+
+So:
+
+$$
+A=0.4\text{ m}^2
+$$
+
+### Example 2: Triangle Area
+
+A triangular bracket has base 12 cm and perpendicular height 7 cm.
+
+$$
+A=\frac{1}{2}bh=\frac{1}{2}(12)(7)=42
+$$
+
+Area:
+
+$$
+42\text{ cm}^2
+$$
+
+### Example 3: Parallelogram Height
+
+A parallelogram has base 10 cm, slanted side 6 cm, and perpendicular height 4 cm. Find area.
+
+Use base times perpendicular height:
+
+$$
+A=10\cdot 4=40\text{ cm}^2
+$$
+
+Do not use $10\cdot 6$ unless the slanted side is perpendicular to the base. It is not.
+
+### Example 4: Trapezoid
+
+A trapezoid has parallel bases 8 m and 14 m, with height 5 m.
+
+$$
+A=\frac{1}{2}(8+14)(5)
+$$
+
+$$
+A=\frac{1}{2}(22)(5)=55
+$$
+
+Area:
+
+$$
+55\text{ m}^2
+$$
+
+### Example 5: Circle
+
+A circular landing pad has radius 3 m.
+
+Circumference:
+
+$$
+C=2\pi r=2\pi(3)=6\pi\approx18.85\text{ m}
+$$
+
+Area:
+
+$$
+A=\pi r^2=\pi(3^2)=9\pi\approx28.27\text{ m}^2
+$$
+
+The boundary length and surface coverage are not interchangeable.
+
+### Example 6: Composite Shape With Cutout
+
+A rectangular plate is 20 cm by 12 cm. A rectangular notch 4 cm by 3 cm is removed from one corner. Find remaining area.
+
+Outer rectangle:
+
+$$
+20\cdot 12=240\text{ cm}^2
+$$
+
+Notch:
+
+$$
+4\cdot 3=12\text{ cm}^2
+$$
+
+Remaining:
+
+$$
+240-12=228\text{ cm}^2
+$$
+
+### Example 7: Perimeter With A Notch
+
+Use the same 20 cm by 12 cm plate with a 4 cm by 3 cm corner notch.
+
+Area simply subtracts the notch. Perimeter needs boundary tracing.
+
+Original rectangle perimeter:
+
+$$
+2(20)+2(12)=64\text{ cm}
+$$
+
+Cutting a corner notch removes boundary segments of 4 cm and 3 cm, but adds new boundary segments of 4 cm and 3 cm. The perimeter stays:
+
+$$
+64\text{ cm}
+$$
+
+If the notch were cut from the middle of an edge instead of the corner, perimeter would increase. Always trace the outside boundary.
+
+### Example 8: Diagonal Needed For Area
+
+A rhombus has diagonals 10 cm and 24 cm. Its area is half the product of diagonals:
+
+$$
+A=\frac{1}{2}d_1d_2=\frac{1}{2}(10)(24)=120\text{ cm}^2
+$$
+
+If you need the side length for perimeter, the diagonals split at right angles into halves 5 and 12. Each side is:
+
+$$
+\sqrt{5^2+12^2}=13
+$$
+
+Perimeter:
+
+$$
+4(13)=52\text{ cm}
+$$
+
+### Example 9: Coordinate Rectangle
+
+A rectangle has opposite corners at $(2,3)$ and $(9,8)$, with sides parallel to the axes.
+
+Width:
+
+$$
+9-2=7
+$$
+
+Height:
+
+$$
+8-3=5
+$$
+
+Area:
+
+$$
+35
+$$
+
+Perimeter:
+
+$$
+2(7)+2(5)=24
+$$
+
+### Example 10: Failure Mode - Adding Interior Edges
+
+A composite shape is made by placing two 4 cm by 3 cm rectangles side by side. A student computes perimeter as:
+
+$$
+2(4+3)+2(4+3)=28\text{ cm}
+$$
+
+But the shared edge between rectangles is not on the outside boundary. The combined shape is an 8 cm by 3 cm rectangle, so perimeter is:
+
+$$
+2(8)+2(3)=22\text{ cm}
+$$
+
+Interior edges do not count for perimeter.
+
+## Engineering Connections
+
+### Sheet Material And Cut Time
+
+Area estimates material. Perimeter estimates cut length. A laser-cut part with the same area but a more complicated outline may cost more because the tool path is longer.
+
+### Robot Footprints
+
+A robot footprint may be approximated as a rectangle, circle, or polygon. Area matters for occupied space. Perimeter matters for bumpers, edge sensors, and protective trim.
+
+### Drone Landing Zones
+
+A circular landing zone has area for usable surface and circumference for boundary marking. If you double the radius, circumference doubles, but area quadruples.
+
+### GIS And Field Mapping
+
+A field boundary is a polygon. Perimeter estimates fence length. Area estimates acreage, coverage, seed, fertilizer, irrigation, or survey deliverables.
+
+### Computer Vision Masks
+
+An image segmentation mask has area measured in pixels. Its contour has perimeter measured in pixels or subpixel units. Shape analysis often compares both.
+
+## Common Failure Modes
+
+1. **Using perimeter when area is needed.** Border length is not surface coverage.
+
+2. **Forgetting square units.** Area must use square units.
+
+3. **Using slanted side as height.** Triangle, parallelogram, and trapezoid area require perpendicular height.
+
+4. **Double-counting shared edges.** Perimeter only follows the outside boundary.
+
+5. **Adding unlike units.** Convert all lengths to the same unit before computing.
+
+6. **Confusing radius and diameter.** Circle formulas use radius unless stated otherwise.
+
+7. **Squaring diameter instead of radius.** $A=\pi r^2$, not $\pi d^2$.
+
+8. **Rounding too early.** Keep exact expressions like $9\pi$ until the final approximation.
+
+## Practice Set
+
+### Warmups
+
+1. Define perimeter.
+2. Define area.
+3. What units should perimeter have if side lengths are in meters?
+4. What units should area have if side lengths are in meters?
+5. Find the perimeter of a 6 cm by 4 cm rectangle.
+6. Find the area of a 6 cm by 4 cm rectangle.
+7. Find the perimeter of a square with side 9 m.
+8. Find the area of a square with side 9 m.
+9. Find the area of a triangle with base 10 and height 6.
+10. Find the area of a parallelogram with base 12 and height 5.
+
+### Core Skills
+
+11. Find the area of a trapezoid with bases 7 and 13 and height 4.
+12. Find the circumference of a circle with radius 5.
+13. Find the area of a circle with radius 5.
+14. Find the circumference of a circle with diameter 18.
+15. Find the area of a circle with diameter 18.
+16. Find the diagonal of a rectangle 8 by 15.
+17. Find the area of a triangle with base 14 cm and height 9 cm.
+18. Find the area of a parallelogram with base 3.5 m and height 2 m.
+19. Find the area of a trapezoid with bases 10 m and 16 m and height 6 m.
+20. A rectangle is 0.4 m by 0.25 m. Find area in m².
+
+### Applied Problems
+
+21. A sheet-metal plate is 30 cm by 20 cm. Find area and perimeter.
+22. A rectangular robot footprint is 0.7 m by 0.5 m. Find footprint area.
+23. A circular drone landing pad has radius 2 m. Find area and circumference.
+24. A triangular gusset has base 80 mm and height 50 mm. Find area.
+25. A rectangular panel has a 5 cm by 3 cm rectangular hole. Outer panel is 20 cm by 12 cm. Find remaining area.
+26. A field is approximated as a trapezoid with bases 120 m and 160 m and height 90 m. Find area.
+27. A square board has side 40 cm. Find diagonal length.
+28. A circular hole has diameter 10 mm. Find area.
+29. A rectangular PCB is 100 mm by 60 mm. Find board area in mm².
+30. A camera mask covers 250 pixels by 120 pixels. Find rectangular pixel area.
+
+### Mixed Review
+
+31. A rectangle has area 48 cm² and width 6 cm. Find length.
+32. A triangle has area 45 m² and base 10 m. Find height.
+33. A parallelogram has area 72 cm² and base 12 cm. Find height.
+34. A trapezoid has area 60 m², bases 8 m and 12 m. Find height.
+35. A circle has circumference $20\pi$ cm. Find radius.
+36. A circle has area $49\pi$ m². Find radius.
+37. An axis-aligned rectangle has corners $(1,2)$ and $(8,6)$. Find area.
+38. Find perimeter of the rectangle in problem 37.
+39. A 3 cm by 4 cm rectangle has a diagonal. Find the diagonal.
+40. A composite shape is two 5 by 4 rectangles side by side. Find total area and outer perimeter.
+
+### Challenge Problems
+
+41. Explain why a triangle's area is half of $bh$.
+42. Explain why parallelogram area uses perpendicular height, not slanted side.
+43. A circular landing zone radius doubles from 3 m to 6 m. What happens to circumference and area?
+44. A rectangle 10 by 8 has a 2 by 3 notch cut from a corner. Find area and perimeter.
+45. A rectangle 10 by 8 has a 2 by 3 notch cut from the middle of one long side. Find area and perimeter.
+
+### Error Spotting
+
+46. A student reports area of a 5 m by 4 m rectangle as 18 m. What is wrong?
+47. A student uses a parallelogram's slanted side instead of height. What is wrong?
+48. A student finds circle area from diameter 10 by computing $\pi(10)^2$. What is wrong?
+49. A student adds two rectangles' perimeters after joining them along an edge. What is wrong?
+50. A student adds 5 cm and 2 m directly. What is wrong?
+
+## Answer Key
+
+1. Total boundary length.
+2. Surface coverage.
+3. Meters.
+4. Square meters.
+5. 20 cm.
+6. 24 cm².
+7. 36 m.
+8. 81 m².
+9. 30 square units.
+10. 60 square units.
+11. 40 square units.
+12. $10\pi$.
+13. $25\pi$.
+14. $18\pi$.
+15. $81\pi$.
+16. 17.
+17. 63 cm².
+18. 7 m².
+19. 78 m².
+20. 0.1 m².
+21. Area 600 cm²; perimeter 100 cm.
+22. 0.35 m².
+23. Area $4\pi$ m²; circumference $4\pi$ m.
+24. 2000 mm².
+25. 225 cm².
+26. 12,600 m².
+27. $40\sqrt{2}\approx56.57$ cm.
+28. $25\pi$ mm².
+29. 6000 mm².
+30. 30,000 pixels².
+31. 8 cm.
+32. 9 m.
+33. 6 cm.
+34. 6 m.
+35. 10 cm.
+36. 7 m.
+37. 28 square units.
+38. 22 units.
+39. 5 cm.
+40. Area 40 square units; perimeter 26 units.
+41. Two congruent copies of the triangle form a parallelogram of area $bh$, so one triangle has area $\frac{1}{2}bh$.
+42. Area counts perpendicular rows of unit squares. The slanted side overstates the vertical stacking unless it is perpendicular.
+43. Circumference doubles; area quadruples.
+44. Area $80-6=74$. Perimeter remains $36$ if it is a corner notch.
+45. Area $74$. Perimeter increases by $2(3)=6$, so perimeter is $42$.
+46. They gave perimeter-like arithmetic and wrong units. Area is $5\cdot4=20$ m².
+47. Area requires perpendicular height.
+48. Radius is 5, so area is $25\pi$, not $100\pi$.
+49. The shared edge becomes interior and should not count in the outside perimeter.
+50. Convert units first.
+
+## Build Task
+
+Create a "material estimator" worksheet, spreadsheet, or script.
+
+Minimum requirements:
+
+1. Rectangle area and perimeter calculator.
+2. Triangle area calculator.
+3. Circle area and circumference calculator.
+4. Composite plate calculator: outer rectangle minus rectangular hole.
+5. Unit labels on every output.
+6. Test with:
+   - 30 cm by 20 cm plate.
+   - 80 mm by 50 mm triangular gusset.
+   - circular pad radius 2 m.
+   - 20 cm by 12 cm plate with 5 cm by 3 cm hole.
+
+Stretch:
+
+- Add cost per square meter for material.
+- Add cost per meter of cut length.
+- Add a warning when mixed units are entered.
+- Add a coordinate rectangle mode using two opposite corners.
+
+## Quiz
+
+1. What physical question does perimeter answer?
+2. What physical question does area answer?
+3. Why does area use square units?
+4. Why is triangle area $\frac{1}{2}bh$?
+5. Why does parallelogram area use perpendicular height?
+6. What is the difference between circumference and area of a circle?
+7. If a circle's radius doubles, what happens to area?
+8. Why should interior shared edges not be counted in perimeter?
+9. Give one manufacturing use of area.
+10. Give one robotics or computer-vision use of perimeter or area.
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 35 practice problems, including all challenge problems.
+- A corrected explanation for every missed problem.
+- Your material estimator artifact.
+- One measured real object with perimeter and area estimates.
+- A short note explaining why units catch perimeter/area mistakes.
+
+## Sources And Further Study
+
+- Euclid, *Elements*, Books I and II, for geometric area reasoning.
+- OpenStax, *Prealgebra 2e*, sections on perimeter, area, and circles.
+- OpenStax, *Algebra and Trigonometry 2e*, geometry review sections.
+- Khan Academy, area and perimeter units for visual practice.
+- Any introductory CAD or manufacturing text on sheet-metal layout and cut length.
+- Introductory GIS documentation on polygon area and perimeter for applied mapping context.
+
+## Next Lesson Bridge
+
+This lesson covered circles enough to compute circumference and area. The next lesson goes deeper into circles, arcs, sectors, tangents, and angle relationships. That matters because wheels, pulleys, gears, turning radii, camera fields, circular paths, and rotating machines all depend on circle geometry beyond the basic area formula.

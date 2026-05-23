@@ -45,6 +45,204 @@ assert.equal(checkAnswer(ratioById["gear-ratio"], "1800 rpm").correct, false);
 assert.equal(checkAnswer(ratioById["part-whole"], "1/4").correct, true);
 assert.equal(checkAnswer(ratioById["part-whole"], "1:3").correct, false);
 
+const geometryCheck = getLessonCheck("points-lines-planes-angles-check");
+assert.ok(geometryCheck, "Expected points-lines-planes-angles-check to exist");
+
+const geometryById = Object.fromEntries(geometryCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(geometryById["angle-vertex"], "B").correct, true);
+assert.equal(checkAnswer(geometryById["segment-vs-ray"], "segment").correct, true);
+assert.equal(checkAnswer(geometryById["complement-basic"], "53 degrees").correct, true);
+assert.equal(checkAnswer(geometryById["supplement-basic"], "52 deg").correct, true);
+assert.equal(checkAnswer(geometryById["degrees-to-radians"], "pi/4").correct, true);
+assert.equal(checkAnswer(geometryById["vertical-angles"], "64 degrees").correct, true);
+assert.equal(checkAnswer(geometryById["skew-lines"], "skew lines").correct, true);
+assert.equal(checkAnswer(geometryById["skew-lines"], "parallel").correct, false);
+
+const triangleCheck = getLessonCheck("triangle-congruence-and-similarity-check");
+assert.ok(triangleCheck, "Expected triangle-congruence-and-similarity-check to exist");
+
+const triangleById = Object.fromEntries(triangleCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(triangleById["angle-sum"], "67 degrees").correct, true);
+assert.equal(checkAnswer(triangleById["sss-name"], "SSS").correct, true);
+assert.equal(checkAnswer(triangleById["ssa-invalid"], "no").correct, true);
+assert.equal(checkAnswer(triangleById["aaa-meaning"], "similarity").correct, true);
+assert.equal(checkAnswer(triangleById["scale-factor"], "3").correct, true);
+assert.equal(checkAnswer(triangleById["corresponding-side"], "EF").correct, true);
+assert.equal(checkAnswer(triangleById["shadow-height"], "12 m").correct, true);
+assert.equal(checkAnswer(triangleById["aaa-meaning"], "congruence").correct, false);
+
+const pythagoreanCheck = getLessonCheck("pythagorean-theorem-and-applications-check");
+assert.ok(pythagoreanCheck, "Expected pythagorean-theorem-and-applications-check to exist");
+
+const pythagoreanById = Object.fromEntries(pythagoreanCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(pythagoreanById["hypotenuse-6-8"], "10 cm").correct, true);
+assert.equal(checkAnswer(pythagoreanById["missing-leg-13-5"], "12 meters").correct, true);
+assert.equal(checkAnswer(pythagoreanById["converse-check"], "yes").correct, true);
+assert.equal(checkAnswer(pythagoreanById["coordinate-distance"], "10").correct, true);
+assert.equal(checkAnswer(pythagoreanById["robot-displacement"], "5 m").correct, true);
+assert.equal(checkAnswer(pythagoreanById["path-vs-displacement"], "7 meters").correct, true);
+assert.equal(checkAnswer(pythagoreanById["obtuse-classification"], "obtuse").correct, true);
+assert.equal(checkAnswer(pythagoreanById["path-vs-displacement"], "5 m").correct, false);
+
+const perimeterAreaCheck = getLessonCheck("perimeter-area-of-plane-figures-check");
+assert.ok(perimeterAreaCheck, "Expected perimeter-area-of-plane-figures-check to exist");
+
+const perimeterAreaById = Object.fromEntries(perimeterAreaCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(perimeterAreaById["rectangle-area"], "24 cm^2").correct, true);
+assert.equal(checkAnswer(perimeterAreaById["rectangle-area"], "24 cm2").correct, true);
+assert.equal(checkAnswer(perimeterAreaById["rectangle-perimeter"], "20 cm").correct, true);
+assert.equal(checkAnswer(perimeterAreaById["triangle-area"], "30 m2").correct, true);
+assert.equal(checkAnswer(perimeterAreaById["circle-area"], "25pi").correct, true);
+assert.equal(checkAnswer(perimeterAreaById["circle-circumference"], "10 pi").correct, true);
+assert.equal(checkAnswer(perimeterAreaById["composite-cutout"], "225 cm^2").correct, true);
+assert.equal(checkAnswer(perimeterAreaById["area-units"], "m^2").correct, true);
+assert.equal(checkAnswer(perimeterAreaById["rectangle-area"], "20 cm").correct, false);
+
+const circlesCheck = getLessonCheck("circles-arcs-sectors-check");
+assert.ok(circlesCheck, "Expected circles-arcs-sectors-check to exist");
+
+const circlesById = Object.fromEntries(circlesCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(circlesById["diameter-from-radius"], "12 cm").correct, true);
+assert.equal(checkAnswer(circlesById["circumference-exact"], "10pi").correct, true);
+assert.equal(checkAnswer(circlesById["arc-length-radians"], "8 m").correct, true);
+assert.equal(checkAnswer(circlesById["sector-area-radians"], "10 m2").correct, true);
+assert.equal(checkAnswer(circlesById["tangent-radius-angle"], "90 degrees").correct, true);
+assert.equal(checkAnswer(circlesById["inscribed-angle"], "66 deg").correct, true);
+assert.equal(checkAnswer(circlesById["arc-vs-chord"], "arc").correct, true);
+assert.equal(checkAnswer(circlesById["arc-vs-chord"], "chord").correct, false);
+
+const solidsCheck = getLessonCheck("surface-area-and-volume-of-solids-check");
+assert.ok(solidsCheck, "Expected surface-area-and-volume-of-solids-check to exist");
+
+const solidsById = Object.fromEntries(solidsCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(solidsById["rectangular-prism-volume"], "24 cm3").correct, true);
+assert.equal(checkAnswer(solidsById["rectangular-prism-volume"], "24 cm^3").correct, true);
+assert.equal(checkAnswer(solidsById["rectangular-prism-volume"], "24 cm2").correct, false);
+assert.equal(checkAnswer(solidsById["rectangular-prism-surface-area"], "52 cm2").correct, true);
+assert.equal(checkAnswer(solidsById["cylinder-volume-exact"], "90pi").correct, true);
+assert.equal(checkAnswer(solidsById["cylinder-lateral-area-exact"], "20 pi").correct, true);
+assert.equal(checkAnswer(solidsById["cone-volume-exact"], "12*pi").correct, true);
+assert.equal(checkAnswer(solidsById["sphere-surface-area-exact"], "16pi").correct, true);
+assert.equal(checkAnswer(solidsById["volume-units"], "m3").correct, true);
+
+const trigCheck = getLessonCheck("right-triangle-trigonometry-check");
+assert.ok(trigCheck, "Expected right-triangle-trigonometry-check to exist");
+
+const trigById = Object.fromEntries(trigCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(trigById["sine-ratio"], "opposite/hypotenuse").correct, true);
+assert.equal(checkAnswer(trigById["cosine-ratio"], "adjacent over hypotenuse").correct, true);
+assert.equal(checkAnswer(trigById["tangent-ratio"], "opposite/adjacent").correct, true);
+assert.equal(checkAnswer(trigById["three-four-five-sine"], "3/5").correct, true);
+assert.equal(checkAnswer(trigById["height-from-tangent"], "5.77 m").correct, true);
+assert.equal(checkAnswer(trigById["inverse-tangent-angle"], "36.87 degrees").correct, true);
+assert.equal(checkAnswer(trigById["calculator-mode"], "radians").correct, true);
+assert.equal(checkAnswer(trigById["calculator-mode"], "degrees").correct, false);
+
+const droneTrigCheck = getLessonCheck("trigonometry-for-drones-and-robotics-check");
+assert.ok(droneTrigCheck, "Expected trigonometry-for-drones-and-robotics-check to exist");
+
+const droneTrigById = Object.fromEntries(droneTrigCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(droneTrigById["component-x"], "5 m").correct, true);
+assert.equal(checkAnswer(droneTrigById["component-y"], "5 meters").correct, true);
+assert.equal(checkAnswer(droneTrigById["drone-footprint-width"], "70 m").correct, true);
+assert.equal(checkAnswer(droneTrigById["tilted-sensor-distance"], "4.48 m").correct, true);
+assert.equal(checkAnswer(droneTrigById["atan2-purpose"], "atan2").correct, true);
+assert.equal(checkAnswer(droneTrigById["fov-half-angle"], "40 degrees").correct, true);
+assert.equal(checkAnswer(droneTrigById["code-angle-units"], "radians").correct, true);
+assert.equal(checkAnswer(droneTrigById["code-angle-units"], "degrees").correct, false);
+
+const unitCircleCheck = getLessonCheck("the-unit-circle-check");
+assert.ok(unitCircleCheck, "Expected the-unit-circle-check to exist");
+
+const unitCircleById = Object.fromEntries(unitCircleCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(unitCircleById["unit-circle-equation"], "x^2 + y^2 = 1").correct, true);
+assert.equal(checkAnswer(unitCircleById["cosine-coordinate"], "x coordinate").correct, true);
+assert.equal(checkAnswer(unitCircleById["sine-coordinate"], "y").correct, true);
+assert.equal(checkAnswer(unitCircleById["full-rotation-radians"], "2pi").correct, true);
+assert.equal(checkAnswer(unitCircleById["cos-120"], "-1/2").correct, true);
+assert.equal(checkAnswer(unitCircleById["sin-210"], "-0.5").correct, true);
+assert.equal(checkAnswer(unitCircleById["tangent-undefined"], "division by zero").correct, true);
+assert.equal(checkAnswer(unitCircleById["cosine-coordinate"], "y").correct, false);
+
+const identitiesCheck = getLessonCheck("trigonometric-identities-check");
+assert.ok(identitiesCheck, "Expected trigonometric-identities-check to exist");
+
+const identitiesById = Object.fromEntries(identitiesCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(identitiesById["pythagorean-identity"], "1").correct, true);
+assert.equal(checkAnswer(identitiesById["tangent-quotient"], "sin(theta)/cos(theta)").correct, true);
+assert.equal(checkAnswer(identitiesById["secant-reciprocal"], "1/cos(theta)").correct, true);
+assert.equal(checkAnswer(identitiesById["one-plus-tan-squared"], "sec^2(theta)").correct, true);
+assert.equal(checkAnswer(identitiesById["sin-negative"], "-sin(theta)").correct, true);
+assert.equal(checkAnswer(identitiesById["false-sum"], "no").correct, true);
+assert.equal(checkAnswer(identitiesById["tan-times-cos"], "sin(theta)").correct, true);
+assert.equal(checkAnswer(identitiesById["false-sum"], "yes").correct, false);
+
+const inverseTrigCheck = getLessonCheck("inverse-trig-functions-check");
+assert.ok(inverseTrigCheck, "Expected inverse-trig-functions-check to exist");
+
+const inverseTrigById = Object.fromEntries(inverseTrigCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(inverseTrigById["arcsin-half"], "30 degrees").correct, true);
+assert.equal(checkAnswer(inverseTrigById["arccos-half"], "60 deg").correct, true);
+assert.equal(checkAnswer(inverseTrigById["arctan-one"], "45 degrees").correct, true);
+assert.equal(checkAnswer(inverseTrigById["asin-domain"], "no").correct, true);
+assert.equal(checkAnswer(inverseTrigById["atan2-heading"], "atan2").correct, true);
+assert.equal(checkAnswer(inverseTrigById["principal-value"], "one principal value").correct, true);
+assert.equal(checkAnswer(inverseTrigById["code-inverse-output"], "radians").correct, true);
+assert.equal(checkAnswer(inverseTrigById["asin-domain"], "yes").correct, false);
+
+const radiansCheck = getLessonCheck("radians-and-arc-length-check");
+assert.ok(radiansCheck, "Expected radians-and-arc-length-check to exist");
+
+const radiansById = Object.fromEntries(radiansCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(radiansById["full-rotation"], "2pi").correct, true);
+assert.equal(checkAnswer(radiansById["ninety-degrees"], "pi/2").correct, true);
+assert.equal(checkAnswer(radiansById["arc-length"], "8 m").correct, true);
+assert.equal(checkAnswer(radiansById["sector-area"], "10 m2").correct, true);
+assert.equal(checkAnswer(radiansById["linear-speed"], "3 m/s").correct, true);
+assert.equal(checkAnswer(radiansById["rpm-to-rad-s"], "2pi rad/s").correct, true);
+assert.equal(checkAnswer(radiansById["radian-definition"], "radius").correct, true);
+assert.equal(checkAnswer(radiansById["radian-definition"], "diameter").correct, false);
+
+const vectorsZeroCheck = getLessonCheck("vectors-from-zero-check");
+assert.ok(vectorsZeroCheck, "Expected vectors-from-zero-check to exist");
+
+const vectorsZeroById = Object.fromEntries(vectorsZeroCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(vectorsZeroById["scalar-or-vector"], "vector").correct, true);
+assert.equal(checkAnswer(vectorsZeroById["magnitude-3-4"], "5").correct, true);
+assert.equal(checkAnswer(vectorsZeroById["magnitude-3d"], "7").correct, true);
+assert.equal(checkAnswer(vectorsZeroById["unit-vector-3-4"], "(3/5, 4/5)").correct, true);
+assert.equal(checkAnswer(vectorsZeroById["zero-vector-direction"], "no").correct, true);
+assert.equal(checkAnswer(vectorsZeroById["position-vs-displacement"], "displacement").correct, true);
+assert.equal(checkAnswer(vectorsZeroById["components-meaning"], "5").correct, true);
+assert.equal(checkAnswer(vectorsZeroById["scalar-or-vector"], "scalar").correct, false);
+
+const vectorArithmeticCheck = getLessonCheck("vector-arithmetic-and-scaling-check");
+assert.ok(vectorArithmeticCheck, "Expected vector-arithmetic-and-scaling-check to exist");
+
+const vectorArithmeticById = Object.fromEntries(vectorArithmeticCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(vectorArithmeticById["add-vectors"], "(6, 8)").correct, true);
+assert.equal(checkAnswer(vectorArithmeticById["subtract-vectors"], "(5,-4)").correct, true);
+assert.equal(checkAnswer(vectorArithmeticById["scale-vector"], "(-6, -8)").correct, true);
+assert.equal(checkAnswer(vectorArithmeticById["point-displacement"], "(6,4)").correct, true);
+assert.equal(checkAnswer(vectorArithmeticById["force-resultant"], "(6, 1)").correct, true);
+assert.equal(checkAnswer(vectorArithmeticById["path-vs-displacement"], "5 m").correct, true);
+assert.equal(checkAnswer(vectorArithmeticById["negative-scalar"], "reverses direction").correct, true);
+assert.equal(checkAnswer(vectorArithmeticById["add-vectors"], "(8, 6)").correct, false);
+
 const signedCheck = getLessonCheck("signed-numbers-core-check");
 assert.ok(signedCheck, "Expected signed-numbers-core-check to exist");
 
