@@ -1,0 +1,562 @@
+# Polynomial Functions and End Behavior
+
+## Re-entry Promise
+
+This lesson assumes you can evaluate functions, understand exponents with whole-number powers, and read a coordinate graph. It does not assume you remember polynomial vocabulary from school.
+
+Polynomials are built from powers of $x$ added together. They are some of the most useful functions in engineering because they are smooth, easy to compute, and good local approximations to more complicated behavior.
+
+By the end, you should be able to identify polynomial degree, leading coefficient, roots, turning behavior, and end behavior from a formula or graph.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Define a polynomial function.
+- Identify terms, coefficients, degree, constant term, and leading coefficient.
+- Classify constant, linear, quadratic, cubic, quartic, and higher-degree polynomials.
+- Evaluate polynomial functions.
+- Explain end behavior from degree and leading coefficient.
+- Recognize roots/zeros and intercepts.
+- Understand multiplicity at an introductory level.
+- Explain why a degree-$n$ polynomial has at most $n-1$ turning points.
+- Connect polynomial models to calibration curves, trajectory approximations, and local linear/quadratic models.
+- Build a small polynomial evaluator and end-behavior classifier.
+
+## Plain-Language Intuition
+
+A polynomial is a weighted sum of powers:
+
+$$
+p(x)=a_nx^n+a_{n-1}x^{n-1}+\cdots+a_1x+a_0
+$$
+
+The powers shape the curve. The coefficients decide how much of each shape is mixed in.
+
+For small $x$, several terms may matter. For very large positive or negative $x$, the highest-power term dominates. That is why the leading term controls end behavior.
+
+If:
+
+$$
+p(x)=2x^5-100x^2+7
+$$
+
+then for huge $|x|$, $2x^5$ eventually overwhelms $-100x^2$ and 7. End behavior listens to the leading term.
+
+## Why This Idea Exists
+
+Polynomials are useful because they are algebraically simple and computationally cheap:
+
+- Lines approximate behavior near an operating point.
+- Quadratics model acceleration, parabolic reflectors, and simple energy bowls.
+- Cubics and quintics create smooth robot trajectories.
+- Polynomial calibration curves map sensor readings to physical values.
+- Taylor polynomials approximate complex functions in calculus.
+- Least-squares fitting often starts with polynomial models.
+
+Polynomials are not the whole world, but they are one of the first serious model families you must master.
+
+## Core Theory
+
+### Polynomial Definition
+
+A polynomial in $x$ has the form:
+
+$$
+p(x)=a_nx^n+a_{n-1}x^{n-1}+\cdots+a_1x+a_0
+$$
+
+where:
+
+- exponents are nonnegative integers,
+- coefficients are real numbers in this course,
+- $a_n\ne0$ for the highest-degree term.
+
+Examples:
+
+$$
+3x^4-2x^2+7
+$$
+
+$$
+-5x+9
+$$
+
+$$
+12
+$$
+
+Non-examples:
+
+$$
+x^{-1},\quad \sqrt{x},\quad 2^x
+$$
+
+These are useful functions, but not polynomials.
+
+### Vocabulary
+
+For:
+
+$$
+p(x)=4x^3-2x^2+7x-9
+$$
+
+- Terms: $4x^3$, $-2x^2$, $7x$, $-9$.
+- Coefficients: 4, -2, 7, -9.
+- Degree: 3.
+- Leading term: $4x^3$.
+- Leading coefficient: 4.
+- Constant term: -9.
+
+### Classification By Degree
+
+- Degree 0: constant.
+- Degree 1: linear.
+- Degree 2: quadratic.
+- Degree 3: cubic.
+- Degree 4: quartic.
+- Degree 5: quintic.
+
+### Evaluating A Polynomial
+
+Let:
+
+$$
+p(x)=2x^3-3x+1
+$$
+
+Then:
+
+$$
+p(2)=2(2^3)-3(2)+1=16-6+1=11
+$$
+
+### End Behavior
+
+End behavior asks what happens as $x\to\infty$ and $x\to-\infty$.
+
+Only the leading term matters.
+
+#### Even Degree, Positive Leading Coefficient
+
+Example:
+
+$$
+p(x)=x^4-3x+1
+$$
+
+Both ends go up:
+
+$$
+p(x)\to\infty \text{ as } x\to\infty
+$$
+
+$$
+p(x)\to\infty \text{ as } x\to-\infty
+$$
+
+#### Even Degree, Negative Leading Coefficient
+
+Example:
+
+$$
+p(x)=-x^4+2x
+$$
+
+Both ends go down.
+
+#### Odd Degree, Positive Leading Coefficient
+
+Example:
+
+$$
+p(x)=x^3-5x
+$$
+
+Left end down, right end up.
+
+#### Odd Degree, Negative Leading Coefficient
+
+Example:
+
+$$
+p(x)=-x^3+5x
+$$
+
+Left end up, right end down.
+
+### Roots And Zeros
+
+A root or zero is an input where:
+
+$$
+p(x)=0
+$$
+
+On the graph, real roots are $x$-intercepts.
+
+If:
+
+$$
+p(x)=(x-2)(x+3)
+$$
+
+then roots are:
+
+$$
+x=2,\quad x=-3
+$$
+
+### Multiplicity
+
+If a factor repeats, the root has multiplicity greater than 1.
+
+Example:
+
+$$
+p(x)=(x-2)^2(x+1)
+$$
+
+Root $x=2$ has multiplicity 2. Root $x=-1$ has multiplicity 1.
+
+Introductory graph rule:
+
+- Odd multiplicity roots usually cross the axis.
+- Even multiplicity roots usually touch and turn around.
+
+### Turning Points
+
+A degree-$n$ polynomial has at most $n-1$ turning points.
+
+This is not saying it always has that many. A cubic can have 0 or 2 turning points. A quartic can have up to 3.
+
+Calculus will explain this through derivatives. For now, treat it as a shape constraint.
+
+## Visual Or Mental Model
+
+Think of the leading term as the engine that controls the far left and far right. Lower-degree terms can bend the graph in the middle, shift roots, and create turns, but they lose the long-distance tug-of-war.
+
+For end behavior:
+
+1. Look only at the leading term.
+2. Ask whether degree is even or odd.
+3. Ask whether leading coefficient is positive or negative.
+4. Decide left end and right end.
+
+## Worked Examples
+
+### Example 1: Identify Degree And Leading Coefficient
+
+For:
+
+$$
+p(x)=-3x^5+2x^2-7
+$$
+
+Degree is 5. Leading coefficient is -3. Constant term is -7.
+
+### Example 2: Polynomial Or Not
+
+$$
+f(x)=4x^3-x+1
+$$
+
+is a polynomial.
+
+$$
+g(x)=x^{-2}+1
+$$
+
+is not a polynomial because exponent -2 is not a nonnegative integer.
+
+### Example 3: Evaluate
+
+Let:
+
+$$
+p(x)=x^4-2x^2+3
+$$
+
+Find $p(-2)$.
+
+$$
+p(-2)=(-2)^4-2(-2)^2+3=16-8+3=11
+$$
+
+### Example 4: End Behavior
+
+Let:
+
+$$
+p(x)=-2x^6+5x^3-1
+$$
+
+Leading term is $-2x^6$. Degree is even, leading coefficient is negative. Both ends go down.
+
+### Example 5: Odd Positive End Behavior
+
+Let:
+
+$$
+p(x)=3x^5-100x^2+1
+$$
+
+Leading term is $3x^5$. Odd degree, positive leading coefficient. Left end down, right end up.
+
+### Example 6: Roots From Factored Form
+
+Let:
+
+$$
+p(x)=2(x-4)(x+1)(x-3)
+$$
+
+Roots:
+
+$$
+x=4,\quad x=-1,\quad x=3
+$$
+
+The factor 2 changes vertical scale but not root locations.
+
+### Example 7: Multiplicity
+
+Let:
+
+$$
+p(x)=(x+2)^2(x-5)
+$$
+
+Root $x=-2$ has multiplicity 2, so the graph touches/bounces there. Root $x=5$ has multiplicity 1, so the graph crosses there.
+
+### Example 8: Calibration Curve
+
+A sensor calibration model is:
+
+$$
+d(v)=0.8v^2+1.5v+0.2
+$$
+
+where $v$ is voltage and $d$ is distance in meters.
+
+At $v=2$:
+
+$$
+d(2)=0.8(4)+1.5(2)+0.2=3.2+3+0.2=6.4
+$$
+
+The polynomial turns a voltage reading into an estimated physical distance.
+
+## Engineering Connections
+
+### Sensor Calibration
+
+Real sensors are often nonlinear. Polynomial fits can approximate voltage-to-distance, temperature-to-resistance, or pixel-to-world mappings over a limited range.
+
+### Robot Trajectories
+
+Smooth trajectories often use cubic or quintic polynomials so position, velocity, and acceleration behave well at endpoints.
+
+### Physics Approximation
+
+Near a stable point, many energy functions look quadratic. That is why springs and small oscillations show up everywhere.
+
+### Control And Optimization
+
+Quadratic cost functions penalize error smoothly and are easy to optimize. Polynomials also appear in characteristic equations.
+
+### Computer Vision
+
+Camera calibration and distortion correction can use polynomial terms to model lens effects.
+
+## Common Failure Modes
+
+1. Calling $x^{-1}$ a polynomial.
+2. Calling $\sqrt{x}$ a polynomial.
+3. Choosing degree from the first written term rather than the highest power.
+4. Forgetting that a constant nonzero polynomial has degree 0.
+5. Misreading a negative leading coefficient.
+6. Using all terms for end behavior instead of the leading term.
+7. Saying even degree always goes up; sign matters.
+8. Saying odd degree always rises right; sign matters.
+9. Confusing roots with coefficients.
+10. Assuming degree $n$ means exactly $n$ real roots.
+
+## Practice Problems
+
+### Vocabulary And Evaluation
+
+1. Is $3x^2-5x+1$ a polynomial?
+2. Is $x^{-1}+2$ a polynomial?
+3. Is $\sqrt{x}+4$ a polynomial?
+4. Identify the degree of $7x^4-2x+9$.
+5. Identify the leading coefficient of $-5x^3+2x^2+1$.
+6. Identify the constant term of $4x^5-8x+11$.
+7. Classify degree 2 by name.
+8. Classify degree 3 by name.
+9. Evaluate $p(x)=2x^3-3x+1$ at $x=2$.
+10. Evaluate $q(x)=x^4-2x^2+3$ at $x=-2$.
+
+### End Behavior
+
+11. End behavior of $x^4+2x-1$.
+12. End behavior of $-x^4+2x$.
+13. End behavior of $x^3-5x$.
+14. End behavior of $-x^3+5x$.
+15. End behavior of $2x^6-100x^5$.
+16. End behavior of $-4x^7+x^2$.
+17. Which term controls end behavior of $3x^5-100x^2+1$?
+18. Which term controls end behavior of $-2x^6+5x^3-1$?
+19. Why do lower-degree terms not control end behavior?
+20. What two pieces of information decide polynomial end behavior?
+
+### Roots And Multiplicity
+
+21. Find roots of $(x-2)(x+3)$.
+22. Find roots of $2(x-4)(x+1)(x-3)$.
+23. Find roots of $(x+2)^2(x-5)$.
+24. What is the multiplicity of $x=-2$ in problem 23?
+25. What does even multiplicity usually do at the graph?
+26. What does odd multiplicity usually do?
+27. If $p(6)=0$, what is 6 called?
+28. Are all roots visible as $x$-intercepts over the real graph?
+29. Can a degree 4 polynomial have fewer than 4 real roots?
+30. Can a degree 3 polynomial have at most how many turning points?
+
+### Applications
+
+31. A calibration model is $d(v)=0.8v^2+1.5v+0.2$. Find $d(2)$.
+32. A cost function is $C(e)=3e^2$. Find $C(-4)$.
+33. A trajectory is $s(t)=t^3-3t^2+2t$. Find $s(0)$.
+34. Same trajectory: find $s(1)$.
+35. Same trajectory: find $s(2)$.
+36. Why might a quadratic be used for an error cost?
+37. Why might a quintic be used for a robot trajectory?
+38. Why are polynomials cheap for computers to evaluate?
+39. Why are polynomial models usually trusted only over a chosen range?
+40. What does the leading coefficient do to vertical scale and end direction?
+
+### Challenge And Error Spotting
+
+41. A student says $2^x+1$ is a polynomial. Correct them.
+42. A student says $4x^2+x^5$ has degree 2 because the first term is quadratic. Correct them.
+43. A student says $-x^6$ goes up on both ends because degree is even. Correct them.
+44. A student says a degree 5 polynomial must have 5 real roots. Correct them.
+45. A student says $(x-3)^2$ crosses the axis at 3. Correct them.
+46. Explain why $x^3$ and $x^3-100x$ have the same end behavior.
+47. Give a polynomial that has both ends up.
+48. Give a polynomial that has left end up and right end down.
+49. Give a polynomial with roots -1, 2, and 5.
+50. Give one physical system that could be approximated by a polynomial over a limited range.
+
+## Answer Key
+
+1. Yes.
+2. No.
+3. No.
+4. 4.
+5. -5.
+6. 11.
+7. Quadratic.
+8. Cubic.
+9. 11.
+10. 11.
+11. Both ends up.
+12. Both ends down.
+13. Left down, right up.
+14. Left up, right down.
+15. Both ends up.
+16. Left up, right down.
+17. $3x^5$.
+18. $-2x^6$.
+19. Highest powers dominate as $|x|$ becomes large.
+20. Degree parity and leading coefficient sign.
+21. 2 and -3.
+22. 4, -1, and 3.
+23. -2 and 5.
+24. 2.
+25. Touches/bounces.
+26. Crosses.
+27. Root or zero.
+28. Real roots are visible as intercepts; complex roots are not visible on the real $x$-axis.
+29. Yes.
+30. 2.
+31. 6.4.
+32. 48.
+33. 0.
+34. 0.
+35. 0.
+36. It penalizes positive and negative error symmetrically and smoothly.
+37. Quintics can satisfy smooth endpoint constraints on position, velocity, and acceleration.
+38. They use additions and multiplications.
+39. Fits can behave badly outside the data/modeling range.
+40. It sets the dominant sign and scale for large $|x|$.
+41. The variable is in the exponent, so it is exponential, not polynomial.
+42. Degree is the highest exponent, so degree is 5.
+43. Negative leading coefficient with even degree means both ends down.
+44. It can have fewer real roots; some roots may be complex or repeated.
+45. Even multiplicity usually touches and turns rather than crossing.
+46. The leading term $x^3$ dominates for large $|x|$.
+47. $x^2$, $x^4+1$, or any even-degree positive-leading polynomial.
+48. $-x^3$ or any odd-degree negative-leading polynomial.
+49. $(x+1)(x-2)(x-5)$.
+50. Sensor calibration, local trajectory, spring energy near equilibrium, lens distortion over a small field.
+
+## Build Task
+
+Create a "polynomial explorer" as a Python script, spreadsheet, or notebook.
+
+Minimum requirements:
+
+1. Represent a polynomial by its coefficients.
+2. Evaluate it at a chosen input.
+3. Identify degree.
+4. Identify leading coefficient.
+5. Classify end behavior.
+6. Evaluate at 10 sample inputs and produce a table.
+7. Include three test polynomials: even-positive, even-negative, odd-positive or odd-negative.
+8. Include one calibration-curve example with units.
+
+Stretch:
+
+- Plot each polynomial.
+- Detect simple integer roots by testing candidate values.
+- Implement Horner's method for efficient evaluation.
+
+## Quiz
+
+1. What is a polynomial?
+2. What exponents are allowed in a polynomial?
+3. What is the degree?
+4. What is the leading coefficient?
+5. What controls end behavior?
+6. Describe end behavior for even degree with positive leading coefficient.
+7. Describe end behavior for odd degree with negative leading coefficient.
+8. What is a root?
+9. What does even multiplicity usually look like on a graph?
+10. What is the maximum number of turning points for degree $n$?
+11. Give one engineering use of polynomials.
+12. Why are polynomials important for calculus?
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 40 practice problems, including all challenge/error-spotting problems.
+- A polynomial explorer artifact with tests.
+- A table or plot showing different end behavior cases.
+- One sensor calibration example.
+- One paragraph explaining why the leading term controls end behavior.
+
+## Sources And Further Study
+
+- OpenStax, *Precalculus 2e*, polynomial functions.
+- Khan Academy, polynomial graphs and end behavior.
+- MIT OCW single-variable calculus prerequisite materials on functions and polynomials.
+- Robotics trajectory references on cubic and quintic polynomial paths.
+- Numerical methods references on polynomial interpolation and approximation.
+
+## Next Lesson Bridge
+
+Polynomial end behavior gives you the big-picture shape. The next lesson zooms into the most important degree-2 case: quadratics. Quadratics are where factoring, completing the square, the discriminant, and projectile-style models become one connected story.

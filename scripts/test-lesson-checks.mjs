@@ -299,6 +299,34 @@ assert.equal(checkAnswer(framesById["same-frame-addition"], "yes").correct, true
 assert.equal(checkAnswer(framesById["body-velocity-wind"], "(0, 3)").correct, true);
 assert.equal(checkAnswer(framesById["free-vector-translation"], "yes").correct, false);
 
+const functionsPiecewiseCheck = getLessonCheck("functions-review-and-piecewise-check");
+assert.ok(functionsPiecewiseCheck, "Expected functions-review-and-piecewise-check to exist");
+
+const functionsPiecewiseById = Object.fromEntries(functionsPiecewiseCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(functionsPiecewiseById["evaluate-linear"], "11").correct, true);
+assert.equal(checkAnswer(functionsPiecewiseById["function-one-output"], "exactly one").correct, true);
+assert.equal(checkAnswer(functionsPiecewiseById["domain-denominator"], "x = 4").correct, true);
+assert.equal(checkAnswer(functionsPiecewiseById["piecewise-branch"], "9").correct, true);
+assert.equal(checkAnswer(functionsPiecewiseById["saturation-output"], "1").correct, true);
+assert.equal(checkAnswer(functionsPiecewiseById["deadband-purpose"], "sets them to zero").correct, true);
+assert.equal(checkAnswer(functionsPiecewiseById["piecewise-real-systems"], "yes").correct, true);
+assert.equal(checkAnswer(functionsPiecewiseById["piecewise-branch"], "5").correct, false);
+
+const polynomialCheck = getLessonCheck("polynomial-functions-and-end-behavior-check");
+assert.ok(polynomialCheck, "Expected polynomial-functions-and-end-behavior-check to exist");
+
+const polynomialById = Object.fromEntries(polynomialCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(polynomialById["degree-identification"], "4").correct, true);
+assert.equal(checkAnswer(polynomialById["leading-coefficient"], "-5").correct, true);
+assert.equal(checkAnswer(polynomialById["polynomial-or-not"], "no").correct, true);
+assert.equal(checkAnswer(polynomialById["evaluate-cubic"], "11").correct, true);
+assert.equal(checkAnswer(polynomialById["end-behavior-even-negative"], "both ends go down").correct, true);
+assert.equal(checkAnswer(polynomialById["root-from-factor"], "-3").correct, true);
+assert.equal(checkAnswer(polynomialById["turning-points"], "4").correct, true);
+assert.equal(checkAnswer(polynomialById["polynomial-or-not"], "yes").correct, false);
+
 const signedCheck = getLessonCheck("signed-numbers-core-check");
 assert.ok(signedCheck, "Expected signed-numbers-core-check to exist");
 
