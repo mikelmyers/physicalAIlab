@@ -383,6 +383,34 @@ assert.equal(checkAnswer(rationalFunctionsById["one-sided-positive"], "+infinity
 assert.equal(checkAnswer(rationalFunctionsById["cancel-factors-not-terms"], "no").correct, true);
 assert.equal(checkAnswer(rationalFunctionsById["cancel-factors-not-terms"], "yes").correct, false);
 
+const exponentialCheck = getLessonCheck("exponential-functions-check");
+assert.ok(exponentialCheck, "Expected exponential-functions-check to exist");
+
+const exponentialById = Object.fromEntries(exponentialCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(exponentialById["growth-factor"], "1.09").correct, true);
+assert.equal(checkAnswer(exponentialById["decay-factor"], "0.91").correct, true);
+assert.equal(checkAnswer(exponentialById["evaluate-exponential"], "400").correct, true);
+assert.equal(checkAnswer(exponentialById["doubling-time"], "120").correct, true);
+assert.equal(checkAnswer(exponentialById["half-life"], "24").correct, true);
+assert.equal(checkAnswer(exponentialById["natural-decay"], "decay").correct, true);
+assert.equal(checkAnswer(exponentialById["variable-location"], "3^x").correct, true);
+assert.equal(checkAnswer(exponentialById["variable-location"], "x^3").correct, false);
+
+const logarithmicCheck = getLessonCheck("logarithmic-functions-check");
+assert.ok(logarithmicCheck, "Expected logarithmic-functions-check to exist");
+
+const logarithmicById = Object.fromEntries(logarithmicCheck.questions.map((question) => [question.id, question]));
+
+assert.equal(checkAnswer(logarithmicById["log-as-exponent"], "4").correct, true);
+assert.equal(checkAnswer(logarithmicById["common-log"], "3").correct, true);
+assert.equal(checkAnswer(logarithmicById["domain-positive"], "yes").correct, true);
+assert.equal(checkAnswer(logarithmicById["product-rule"], "log_b(M) + log_b(N)").correct, true);
+assert.equal(checkAnswer(logarithmicById["bad-sum-rule"], "no").correct, true);
+assert.equal(checkAnswer(logarithmicById["solve-exponential"], "5").correct, true);
+assert.equal(checkAnswer(logarithmicById["binary-log"], "10").correct, true);
+assert.equal(checkAnswer(logarithmicById["bad-sum-rule"], "yes").correct, false);
+
 const signedCheck = getLessonCheck("signed-numbers-core-check");
 assert.ok(signedCheck, "Expected signed-numbers-core-check to exist");
 
