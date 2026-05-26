@@ -68,6 +68,28 @@ $$
 
 where either $R(x)=0$ or the degree of $R$ is less than the degree of $D$.
 
+This is the polynomial version of ordinary division.
+
+For whole numbers:
+
+$$
+17=5(3)+2
+$$
+
+The remainder 2 is smaller than the divisor 5. If the remainder were 7, you could still pull out another 5, so the division would not be finished.
+
+For polynomials, "smaller" means lower degree. If the remainder still has degree at least as large as the divisor, you can keep dividing. The algorithm stops only when the leftover part is too low-degree to contain another copy of the divisor.
+
+Example:
+
+$$
+x^3+2x+1=(x+1)(x^2-x+3)-2
+$$
+
+Here the divisor has degree 1. The remainder $-2$ has degree 0, so the division is finished.
+
+The division algorithm is what makes the later theorems possible. It says every division problem has a quotient part and a remainder part, and those parts are not arbitrary.
+
 ### Long Division
 
 Divide:
@@ -104,6 +126,34 @@ Subtract to get 0. Quotient:
 
 $$
 x+3
+$$
+
+The long-division process is not about memorizing a layout. It is repeated leading-term cancellation.
+
+The leading term of the dividend is $x^2$. The leading term of the divisor is $x$. To cancel $x^2$, you need $x$ copies of the divisor:
+
+$$
+x(x+2)=x^2+2x
+$$
+
+After subtracting, the new leading term is $3x$. To cancel $3x$, you need 3 more copies:
+
+$$
+3(x+2)=3x+6
+$$
+
+So the quotient is $x+3$ because the dividend contains $x$ copies of $(x+2)$ plus 3 more copies of $(x+2)$.
+
+Check by multiplying:
+
+$$
+(x+2)(x+3)=x^2+5x+6
+$$
+
+This check matters. Division and multiplication are inverse operations, so every polynomial division result should be verified by:
+
+$$
+\text{divisor}\cdot\text{quotient}+\text{remainder}=\text{original dividend}
 $$
 
 ### Synthetic Division
@@ -150,6 +200,36 @@ $$
 P(a)
 $$
 
+Here is why.
+
+The division algorithm says:
+
+$$
+P(x)=(x-a)Q(x)+R
+$$
+
+Because the divisor $x-a$ has degree 1, the remainder must have degree less than 1. That means the remainder is just a constant, so write it as $R$.
+
+Now evaluate both sides at $x=a$:
+
+$$
+P(a)=(a-a)Q(a)+R
+$$
+
+The factor $(a-a)$ is zero:
+
+$$
+P(a)=0\cdot Q(a)+R
+$$
+
+So:
+
+$$
+P(a)=R
+$$
+
+That is the remainder theorem. Evaluation at $a$ secretly performs the final remainder check after division by $x-a$.
+
 Example:
 
 $$
@@ -171,6 +251,36 @@ P(a)=0
 $$
 
 This is the root-factor connection.
+
+This follows immediately from the remainder theorem.
+
+If $P(a)=0$, then the remainder after division by $x-a$ is zero:
+
+$$
+P(x)=(x-a)Q(x)+0
+$$
+
+So:
+
+$$
+P(x)=(x-a)Q(x)
+$$
+
+That means $x-a$ is a factor.
+
+In the other direction, if $x-a$ is already a factor, then:
+
+$$
+P(x)=(x-a)Q(x)
+$$
+
+Evaluate at $x=a$:
+
+$$
+P(a)=(a-a)Q(a)=0
+$$
+
+So a factor creates a root, and a root creates a factor. This is one of the central bridges in algebra: graph crossings, numerical evaluations, and symbolic factors are three views of the same event.
 
 ### Rational Root Theorem
 

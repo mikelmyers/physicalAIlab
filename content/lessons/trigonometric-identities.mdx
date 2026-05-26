@@ -112,6 +112,32 @@ $$
 \sin^2\theta+\cos^2\theta=1
 $$
 
+This comes directly from the unit circle. A point on the unit circle has coordinates:
+
+$$
+(\cos\theta,\sin\theta)
+$$
+
+Every point on the unit circle satisfies:
+
+$$
+x^2+y^2=1
+$$
+
+Substitute $x=\cos\theta$ and $y=\sin\theta$:
+
+$$
+(\cos\theta)^2+(\sin\theta)^2=1
+$$
+
+So:
+
+$$
+\cos^2\theta+\sin^2\theta=1
+$$
+
+The identity is the Pythagorean theorem applied to a radius-1 triangle. It is true because sine and cosine are coordinates on a circle, not because someone declared it as a rule.
+
 This can be rearranged:
 
 $$
@@ -273,6 +299,75 @@ $$
 $$
 
 That false move is extremely common.
+
+One way to see where the angle-sum formulas come from is to compose rotations.
+
+A rotation by angle $\theta$ has matrix:
+
+$$
+R(\theta)=
+\begin{bmatrix}
+\cos\theta & -\sin\theta\\
+\sin\theta & \cos\theta
+\end{bmatrix}
+$$
+
+Rotating by $b$ and then by $a$ should equal one rotation by $a+b$:
+
+$$
+R(a)R(b)=R(a+b)
+$$
+
+Multiply the matrices:
+
+$$
+\begin{bmatrix}
+\cos a & -\sin a\\
+\sin a & \cos a
+\end{bmatrix}
+\begin{bmatrix}
+\cos b & -\sin b\\
+\sin b & \cos b
+\end{bmatrix}
+$$
+
+The top-left entry is:
+
+$$
+\cos a\cos b-\sin a\sin b
+$$
+
+But the top-left entry of $R(a+b)$ is:
+
+$$
+\cos(a+b)
+$$
+
+So:
+
+$$
+\cos(a+b)=\cos a\cos b-\sin a\sin b
+$$
+
+The bottom-left entry is:
+
+$$
+\sin a\cos b+\cos a\sin b
+$$
+
+But the bottom-left entry of $R(a+b)$ is:
+
+$$
+\sin(a+b)
+$$
+
+So:
+
+$$
+\sin(a+b)=\sin a\cos b+\cos a\sin b
+$$
+
+The other formulas follow by replacing $b$ with $-b$ and using the even/odd identities. The point is that angle-sum identities are rotation-composition laws.
 
 ### Example: Exact Value For 75 Degrees
 

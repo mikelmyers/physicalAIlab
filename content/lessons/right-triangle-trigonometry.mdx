@@ -80,6 +80,22 @@ $$
 
 The triangle can be small or large. The angle determines the ratios.
 
+This is the first-principles reason trigonometry works. If two right triangles share the same acute angle, they are similar: all corresponding angles match, so all corresponding side ratios match. That means the ratio is not a property of the particular triangle you drew. It is a property of the angle itself.
+
+Example: a small right triangle with angle $\theta$ might have opposite side 3, adjacent side 4, and hypotenuse 5. A larger similar triangle might have sides 6, 8, and 10. The lengths changed, but:
+
+$$
+\frac{3}{5}=\frac{6}{10}
+$$
+
+and:
+
+$$
+\frac{4}{5}=\frac{8}{10}
+$$
+
+So $\sin\theta$ and $\cos\theta$ stay the same. Trig functions are lookup tables of these stable shape ratios.
+
 ## Core Theory
 
 ### The Three Side Names
@@ -101,6 +117,32 @@ SOH-CAH-TOA is a memory aid:
 - **TOA:** $\tan(\theta)=\frac{O}{A}$
 
 It is useful, but it should not replace thinking. First label the triangle. Then ask which sides you know and which side you need.
+
+The ratios can be rearranged like any equation. If:
+
+$$
+\sin(\theta)=\frac{O}{H}
+$$
+
+then multiplying both sides by $H$ gives:
+
+$$
+O=H\sin(\theta)
+$$
+
+That is why sine gives the opposite component when you know the hypotenuse. Similarly:
+
+$$
+A=H\cos(\theta)
+$$
+
+and:
+
+$$
+O=A\tan(\theta)
+$$
+
+These are not extra formulas. They are the same ratios solved for a missing side.
 
 ### Sine
 
@@ -185,6 +227,17 @@ $$
 $$
 
 But $\sin(30)$ in many programming languages means 30 radians, not 30 degrees, and gives a very different value.
+
+The unit is part of the input. An angle without an angle unit is like a distance without meters or feet. In physical AI work, this matters because robot APIs, IMUs, simulation engines, and plotting libraries often use radians, while field measurements and datasheets often use degrees.
+
+Before using trig in code, write down the convention:
+
+- measured angle unit,
+- expected library input unit,
+- reference direction,
+- positive rotation direction.
+
+Most navigation bugs are not caused by sine or cosine being hard. They are caused by feeding the right formula the wrong convention.
 
 In engineering and software, always ask:
 

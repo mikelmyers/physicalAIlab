@@ -124,6 +124,22 @@ Then convert the result to degrees and wrap it into $0^\circ$ to $360^\circ$.
 
 Notice the argument order: `atan2(E, N)`, not `atan2(N, E)`, because bearing is measured from North.
 
+That argument order is the whole convention in one line.
+
+For a math angle, zero points east and the usual formula is:
+
+$$
+\theta=\operatorname{atan2}(y,x)
+$$
+
+For a bearing, zero points north. If displacement is stored as $(E,N)$, the north component plays the role that $x$ normally plays in math-angle thinking, and the east component plays the role that $y$ normally plays. So:
+
+$$
+B=\operatorname{atan2}(E,N)
+$$
+
+This is not arbitrary. It is the same angle-reconstruction idea rotated so that North is zero.
+
 ### Ground Velocity With Wind
 
 Velocity vectors add:
@@ -133,6 +149,14 @@ $$
 $$
 
 If a drone points its nose at one heading, but wind blows sideways, the actual ground track changes. The heading is where the nose points; the track is where the drone actually moves over the ground.
+
+The difference matters because the airframe does not move through still air and over the ground in the same way when wind exists. The motors produce air-relative velocity. GPS measures ground-relative velocity. Wind is the vector difference between those two stories:
+
+$$
+\vec{v}_{wind}=\vec{v}_{ground}-\vec{v}_{air}
+$$
+
+If you confuse heading with track, you may command the drone correctly but interpret the motion incorrectly.
 
 ## Visual Or Mental Model
 

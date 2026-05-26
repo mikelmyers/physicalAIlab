@@ -174,6 +174,54 @@ Do not memorize these as disconnected facts. See the pattern:
 - $45^\circ$ splits evenly.
 - Axis angles have one coordinate equal to zero.
 
+### Where The Special Values Come From
+
+The unit-circle table comes from two special right triangles, not from magic.
+
+For $45^\circ$, use a $45^\circ$-$45^\circ$-$90^\circ$ triangle. The legs are equal. If each leg is 1, the hypotenuse is:
+
+$$
+\sqrt{1^2+1^2}=\sqrt2
+$$
+
+To put that triangle on the unit circle, scale the hypotenuse down to 1 by dividing every side by $\sqrt2$. Each leg becomes:
+
+$$
+\frac{1}{\sqrt2}=\frac{\sqrt2}{2}
+$$
+
+So:
+
+$$
+\cos45^\circ=\frac{\sqrt2}{2},\quad \sin45^\circ=\frac{\sqrt2}{2}
+$$
+
+For $30^\circ$ and $60^\circ$, start with an equilateral triangle of side length 2. Cut it in half. Each half is a $30^\circ$-$60^\circ$-$90^\circ$ triangle with hypotenuse 2, short leg 1, and long leg:
+
+$$
+\sqrt{2^2-1^2}=\sqrt3
+$$
+
+Scale to unit hypotenuse by dividing by 2:
+
+$$
+\text{short leg}=\frac12,\quad \text{long leg}=\frac{\sqrt3}{2}
+$$
+
+At $30^\circ$, the vertical side is the short leg:
+
+$$
+(\cos30^\circ,\sin30^\circ)=\left(\frac{\sqrt3}{2},\frac12\right)
+$$
+
+At $60^\circ$, the vertical side is the long leg:
+
+$$
+(\cos60^\circ,\sin60^\circ)=\left(\frac12,\frac{\sqrt3}{2}\right)
+$$
+
+Every other quadrant reuses these reference-triangle lengths and changes signs according to the coordinate quadrant.
+
 ## Quadrant Signs
 
 The signs of sine and cosine come from coordinate signs.
