@@ -73,6 +73,22 @@ $$
 
 The input $x$ must be positive.
 
+This definition is the whole subject. A logarithm is not a new kind of number; it is the exponent needed to produce a number from a chosen base.
+
+Example:
+
+$$
+\log_2(32)=5
+$$
+
+because 5 is the exponent that makes:
+
+$$
+2^5=32
+$$
+
+The base matters. $\log_2(32)$ asks for the power of 2. $\log_{10}(32)$ asks for the power of 10. They are different questions.
+
 ### Common Bases
 
 - $\log_{10}(x)$: common log, used for powers of 10 and many engineering scales.
@@ -117,6 +133,22 @@ $$
 
 for $x>0$.
 
+These identities are just inverse-function logic.
+
+If you start with an exponent $x$, build the power $b^x$, and then ask "what exponent made this?", you get back $x$:
+
+$$
+\log_b(b^x)=x
+$$
+
+If you start with a positive value $x$, ask what exponent creates it, and then raise $b$ to that exponent, you get back the original value:
+
+$$
+b^{\log_b(x)}=x
+$$
+
+This is the same undoing relationship as squaring and square root, except logarithms undo exponentials.
+
 ### Product Rule
 
 $$
@@ -124,6 +156,46 @@ $$
 $$
 
 Multiplication inside becomes addition outside.
+
+Here is why.
+
+Let:
+
+$$
+\log_b(M)=m
+$$
+
+and:
+
+$$
+\log_b(N)=n
+$$
+
+That means:
+
+$$
+M=b^m,\quad N=b^n
+$$
+
+Multiply:
+
+$$
+MN=b^m b^n
+$$
+
+Same-base powers multiply by adding exponents:
+
+$$
+MN=b^{m+n}
+$$
+
+So the exponent needed to produce $MN$ is $m+n$:
+
+$$
+\log_b(MN)=m+n=\log_b(M)+\log_b(N)
+$$
+
+Logs turn multiplication into addition because exponents turn multiplication of same-base powers into addition.
 
 ### Quotient Rule
 
@@ -133,6 +205,24 @@ $$
 
 Division inside becomes subtraction outside.
 
+The quotient rule comes from the same exponent law:
+
+$$
+\frac{b^m}{b^n}=b^{m-n}
+$$
+
+If $M=b^m$ and $N=b^n$, then:
+
+$$
+\frac{M}{N}=b^{m-n}
+$$
+
+so:
+
+$$
+\log_b(M/N)=m-n
+$$
+
 ### Power Rule
 
 $$
@@ -140,6 +230,26 @@ $$
 $$
 
 Exponents inside come down as multipliers.
+
+Again, let:
+
+$$
+M=b^m
+$$
+
+Then:
+
+$$
+M^p=(b^m)^p=b^{mp}
+$$
+
+So:
+
+$$
+\log_b(M^p)=mp=p\log_b(M)
+$$
+
+The log rules are not arbitrary. They are exponent rules translated through the inverse relationship between exponentials and logarithms.
 
 ### Solving Exponential Equations
 
@@ -168,6 +278,46 @@ $$
 $$
 
 is the change-of-base formula.
+
+Why does change of base work?
+
+Start with:
+
+$$
+t=\log_b(x)
+$$
+
+That means:
+
+$$
+b^t=x
+$$
+
+Take natural log of both sides:
+
+$$
+\ln(b^t)=\ln x
+$$
+
+Use the power rule:
+
+$$
+t\ln b=\ln x
+$$
+
+Solve for $t$:
+
+$$
+t=\frac{\ln x}{\ln b}
+$$
+
+Since $t=\log_b(x)$:
+
+$$
+\log_b(x)=\frac{\ln x}{\ln b}
+$$
+
+This matters because calculators and programming languages usually provide $\ln$ and $\log_{10}$, not every possible base.
 
 ## Visual Or Mental Model
 

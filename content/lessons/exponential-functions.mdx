@@ -67,6 +67,40 @@ where:
 
 If $b=1$, the function is constant.
 
+This form comes from repeated multiplication.
+
+If a quantity starts at $a$ and gets multiplied by $b$ once per step, then:
+
+$$
+f(0)=a
+$$
+
+After one step:
+
+$$
+f(1)=ab
+$$
+
+After two steps:
+
+$$
+f(2)=abb=ab^2
+$$
+
+After three steps:
+
+$$
+f(3)=abbb=ab^3
+$$
+
+So after $x$ steps:
+
+$$
+f(x)=ab^x
+$$
+
+The exponent counts how many times the multiplier has been applied. That is the core idea of every exponential model.
+
 ### Growth And Decay
 
 If:
@@ -157,6 +191,54 @@ $$
 
 That property is why $e$ becomes the default base in physics, differential equations, signal processing, and machine learning.
 
+One way to see where $e$ comes from is continuous compounding.
+
+Suppose a quantity grows by 100% over one time unit, but the growth is split into smaller and smaller pieces.
+
+If growth happens once:
+
+$$
+\left(1+\frac{1}{1}\right)^1=2
+$$
+
+If growth is split into 2 half-steps:
+
+$$
+\left(1+\frac{1}{2}\right)^2=2.25
+$$
+
+If split into 10 pieces:
+
+$$
+\left(1+\frac{1}{10}\right)^{10}\approx2.594
+$$
+
+If split into 100 pieces:
+
+$$
+\left(1+\frac{1}{100}\right)^{100}\approx2.705
+$$
+
+As the pieces become infinitely small, the value approaches:
+
+$$
+e=\lim_{n\to\infty}\left(1+\frac{1}{n}\right)^n
+$$
+
+So $e$ is not a random constant. It is the natural base for growth that is compounded continuously instead of in visible steps.
+
+The model:
+
+$$
+A(t)=A_0e^{kt}
+$$
+
+means the amount changes at a rate proportional to its current amount. The sign of $k$ tells direction:
+
+- $k>0$: proportional growth,
+- $k<0$: proportional decay,
+- larger $|k|$: faster change.
+
 ### Doubling Time
 
 If a quantity doubles every $T$ units, a model can be written:
@@ -171,6 +253,23 @@ $$
 A(t)=10\cdot2^{t/3}
 $$
 
+Why does the exponent use $t/T$?
+
+The fraction $t/T$ counts how many doubling periods have passed. If $T=3$ hours:
+
+- at $t=0$, $t/T=0$, so there have been no doublings,
+- at $t=3$, $t/T=1$, so there has been one doubling,
+- at $t=6$, $t/T=2$, so there have been two doublings,
+- at $t=1.5$, $t/T=0.5$, so the model is halfway through one continuous doubling period.
+
+That is why:
+
+$$
+A(t)=A_0 2^{t/T}
+$$
+
+The base 2 says "double." The exponent says "how many doublings."
+
 ### Half-Life
 
 If a quantity halves every $T$ units:
@@ -184,6 +283,22 @@ Example: starting at 80 and half-life 5 days:
 $$
 A(t)=80\left(\frac12\right)^{t/5}
 $$
+
+The same reasoning applies. The base $\frac12$ says "halve." The exponent $t/T$ says "how many half-life periods have passed."
+
+After one half-life:
+
+$$
+A(T)=A_0\left(\frac12\right)^1=\frac{A_0}{2}
+$$
+
+After two half-lives:
+
+$$
+A(2T)=A_0\left(\frac12\right)^2=\frac{A_0}{4}
+$$
+
+This is why radioactive decay, drug clearance, and capacitor discharge are often described by half-life-like quantities: humans understand "time to halve" more easily than an abstract decay constant.
 
 ### Exponential Versus Polynomial
 
