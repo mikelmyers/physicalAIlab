@@ -2,6 +2,10 @@
 
 Physical AI Lab lessons are not short blog posts. They are study chapters for a learner rebuilding from first principles and working toward research-grade capability.
 
+A long file is not automatically a deep lesson. Length only counts when it is doing explanatory work: deriving the idea, showing why the method exists, connecting representations, walking through failures, and giving the learner enough guided practice to reconstruct the concept later without copying a recipe.
+
+Before a lesson is considered done, ask: could a learner who has been away from school for years explain where the main formula or method came from, why it is useful, how to recognize when it applies, how it fails, and how it appears in a physical or engineering system? If not, the lesson is still a scaffold, not a finished study chapter.
+
 Every serious lesson should eventually include:
 
 ## 1. Re-entry Promise
@@ -20,6 +24,13 @@ Explain the historical, practical, or scientific need that made the concept usef
 
 Give definitions, rules, notation, assumptions, and edge cases. Do not hide the real theory, but build up to it carefully.
 
+For major formulas, do not only state the result. Include at least one of:
+
+- a derivation from earlier ideas,
+- a geometric or physical model,
+- a table or graph that makes the behavior visible,
+- an explanation of the assumptions that make the formula valid.
+
 ## 5. Visual Or Mental Model
 
 Include number lines, tables, coordinate sketches, graphs, diagrams, or clear written mental models.
@@ -27,6 +38,8 @@ Include number lines, tables, coordinate sketches, graphs, diagrams, or clear wr
 ## 6. Worked Examples
 
 Include easy, medium, practical, and failure-mode examples. Each worked example should show the reasoning, not just the answer.
+
+At least one worked example should slow down enough to reveal the structure of the idea, not only the arithmetic. For example, a quadratic lesson should not merely use the quadratic formula; it should derive it or connect it back to completing the square.
 
 ## 7. Engineering Connections
 

@@ -146,6 +146,93 @@ $$
 
 Vertex: $(-3,-4)$.
 
+Why did we take half of 6? Because a squared binomial expands like this:
+
+$$
+(x+p)^2=x^2+2px+p^2
+$$
+
+The middle coefficient is twice the number inside the binomial. If the middle term is $6x$, then:
+
+$$
+2p=6
+$$
+
+so:
+
+$$
+p=3
+$$
+
+That means the square must be:
+
+$$
+(x+3)^2=x^2+6x+9
+$$
+
+Completing the square is the act of adding the missing $9$ that turns $x^2+6x$ into a true square, then subtracting the same $9$ so the expression's value does not change.
+
+#### Geometry Of Completing The Square
+
+The algebra has a picture behind it. Think of $x^2+6x$ as an area:
+
+- $x^2$ is a square with side length $x$.
+- $6x$ can be split into two rectangles, each with area $3x$.
+- Put one $3x$ rectangle on the right side of the square and one on the top.
+- The missing corner has side length 3, so its area is $3^2=9$.
+
+After adding that missing corner, the full shape is a square with side length $x+3$:
+
+$$
+x^2+6x+9=(x+3)^2
+$$
+
+This is why completing the square feels like a trick when memorized but becomes sensible when pictured: you are literally completing a square-shaped area.
+
+#### Completing The Square With A Leading Coefficient
+
+If the coefficient of $x^2$ is not 1, factor it out of the $x^2$ and $x$ terms first.
+
+Example:
+
+$$
+2x^2+12x+7
+$$
+
+Factor 2 from the variable terms:
+
+$$
+2(x^2+6x)+7
+$$
+
+Complete the square inside the parentheses:
+
+$$
+x^2+6x=(x+3)^2-9
+$$
+
+Substitute:
+
+$$
+2((x+3)^2-9)+7
+$$
+
+Distribute:
+
+$$
+2(x+3)^2-18+7
+$$
+
+So:
+
+$$
+2x^2+12x+7=2(x+3)^2-11
+$$
+
+Vertex: $(-3,-11)$.
+
+The leading coefficient stretches the bowl, but the square-completion idea is the same.
+
 ### Quadratic Formula
 
 For:
@@ -166,6 +253,82 @@ $$
 \Delta=b^2-4ac
 $$
 
+The formula is not a separate fact from completing the square. It is what happens when completing the square is done to the general quadratic $ax^2+bx+c=0$.
+
+Start with:
+
+$$
+ax^2+bx+c=0
+$$
+
+Because $a\ne0$, divide everything by $a$:
+
+$$
+x^2+\frac{b}{a}x+\frac{c}{a}=0
+$$
+
+Move the constant to the other side:
+
+$$
+x^2+\frac{b}{a}x=-\frac{c}{a}
+$$
+
+The middle coefficient is $\frac{b}{a}$. Half of it is:
+
+$$
+\frac{b}{2a}
+$$
+
+Square that half:
+
+$$
+\left(\frac{b}{2a}\right)^2=\frac{b^2}{4a^2}
+$$
+
+Add that amount to both sides:
+
+$$
+x^2+\frac{b}{a}x+\frac{b^2}{4a^2}=-\frac{c}{a}+\frac{b^2}{4a^2}
+$$
+
+The left side is now a square:
+
+$$
+\left(x+\frac{b}{2a}\right)^2=-\frac{c}{a}+\frac{b^2}{4a^2}
+$$
+
+Put the right side over the common denominator $4a^2$:
+
+$$
+-\frac{c}{a}=-\frac{4ac}{4a^2}
+$$
+
+so:
+
+$$
+\left(x+\frac{b}{2a}\right)^2=\frac{b^2-4ac}{4a^2}
+$$
+
+Take square roots of both sides. The plus/minus appears because both a positive and a negative number can square to the same value:
+
+$$
+x+\frac{b}{2a}=\pm\frac{\sqrt{b^2-4ac}}{2a}
+$$
+
+Subtract $\frac{b}{2a}$:
+
+$$
+x=-\frac{b}{2a}\pm\frac{\sqrt{b^2-4ac}}{2a}
+$$
+
+Combine the fractions:
+
+$$
+x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}
+$$
+
+That is the quadratic formula. It is a compressed record of completing the square for every possible quadratic.
+
 ### Discriminant Meaning
 
 - $\Delta>0$: two distinct real roots.
@@ -173,6 +336,70 @@ $$
 - $\Delta<0$: no real roots; two complex roots.
 
 The discriminant tells you what kind of intersection the parabola has with the $x$-axis.
+
+You can also read the discriminant as a measurement of whether the vertex sits below, on, or above the $x$-axis relative to the parabola's opening direction.
+
+For an upward-opening parabola:
+
+- Two real roots means the bowl dips below the $x$-axis and crosses on the way down and up.
+- One repeated real root means the vertex just touches the $x$-axis.
+- No real roots means the whole bowl sits above the $x$-axis.
+
+For a downward-opening parabola, reverse "above" and "below," but the same crossing logic applies.
+
+When $\Delta<0$, the roots are complex. That does not mean the quadratic has no solutions. It means the graph does not cross the real $x$-axis. The solutions exist in the complex number system, which extends the number line with the imaginary direction.
+
+### How The Three Forms Talk To Each Other
+
+A quadratic is the same object whether you write it in standard, factored, or vertex form. Each form makes different information easy.
+
+Standard form:
+
+$$
+f(x)=ax^2+bx+c
+$$
+
+Best for reading initial coefficients and using the quadratic formula.
+
+Factored form:
+
+$$
+f(x)=a(x-r_1)(x-r_2)
+$$
+
+Best for reading roots.
+
+Vertex form:
+
+$$
+f(x)=a(x-h)^2+k
+$$
+
+Best for reading the vertex and graph shape.
+
+For example:
+
+$$
+f(x)=x^2-6x+8
+$$
+
+can be factored:
+
+$$
+f(x)=(x-2)(x-4)
+$$
+
+so the roots are $2$ and $4$.
+
+It can also be completed into vertex form:
+
+$$
+f(x)=(x-3)^2-1
+$$
+
+so the vertex is $(3,-1)$.
+
+These facts agree. The roots 2 and 4 are symmetric around 3, the axis of symmetry.
 
 ## Visual Or Mental Model
 
