@@ -1,0 +1,659 @@
+# Logarithmic Functions
+
+## Re-entry Promise
+
+This lesson assumes you understand exponential functions. It does not assume logarithms feel friendly.
+
+A logarithm answers an exponent question. If exponentials ask "what value do I get after repeated multiplication?", logarithms ask "how many multiplications did it take?"
+
+By the end, you should be able to read logarithms as inverse exponentials, evaluate simple logs, use log rules, understand log scales, and solve basic exponential equations.
+
+## Objective
+
+By the end of this lesson you should be able to:
+
+- Define a logarithm as an exponent.
+- Convert between exponential and logarithmic form.
+- Evaluate common logarithms mentally.
+- Explain domain restrictions for logarithmic functions.
+- Understand base 10, base 2, and natural logs.
+- Use product, quotient, and power rules.
+- Solve simple exponential equations.
+- Interpret logarithmic scales such as decibels, pH, and orders of magnitude.
+- Explain why logs compress large ranges.
+- Avoid common log-rule mistakes.
+
+## Plain-Language Intuition
+
+The statement:
+
+$$
+\log_2(8)=3
+$$
+
+means:
+
+> 2 raised to what power gives 8?
+
+The answer is 3 because:
+
+$$
+2^3=8
+$$
+
+Logs are not new arithmetic. They are inverse exponentials.
+
+## Why This Idea Exists
+
+Logarithms exist because exponentials hide the variable in the exponent. If:
+
+$$
+2^t=64
+$$
+
+you need a way to solve for $t$. A logarithm does that.
+
+Logs also compress scale. Engineering often deals with quantities spanning huge ranges: sound intensity, signal power, acidity, earthquake energy, algorithmic search spaces, model likelihoods. Log scales let humans compare multiplicative differences using additive distances.
+
+## Core Theory
+
+### Definition
+
+For $b>0$, $b\ne1$:
+
+$$
+\log_b(x)=y
+$$
+
+means:
+
+$$
+b^y=x
+$$
+
+The input $x$ must be positive.
+
+This definition is the whole subject. A logarithm is not a new kind of number; it is the exponent needed to produce a number from a chosen base.
+
+Example:
+
+$$
+\log_2(32)=5
+$$
+
+because 5 is the exponent that makes:
+
+$$
+2^5=32
+$$
+
+The base matters. $\log_2(32)$ asks for the power of 2. $\log_{10}(32)$ asks for the power of 10. They are different questions.
+
+### Common Bases
+
+- $\log_{10}(x)$: common log, used for powers of 10 and many engineering scales.
+- $\log_2(x)$: binary log, used in computing and information.
+- $\ln(x)=\log_e(x)$: natural log, used in calculus and continuous growth.
+
+### Domain And Range
+
+For:
+
+$$
+f(x)=\log_b(x)
+$$
+
+domain:
+
+$$
+x>0
+$$
+
+range:
+
+$$
+\text{all real numbers}
+$$
+
+Logs of zero or negative numbers are not real in this course.
+
+### Inverse Relationship
+
+Logs undo exponentials:
+
+$$
+\log_b(b^x)=x
+$$
+
+and:
+
+$$
+b^{\log_b(x)}=x
+$$
+
+for $x>0$.
+
+These identities are just inverse-function logic.
+
+If you start with an exponent $x$, build the power $b^x$, and then ask "what exponent made this?", you get back $x$:
+
+$$
+\log_b(b^x)=x
+$$
+
+If you start with a positive value $x$, ask what exponent creates it, and then raise $b$ to that exponent, you get back the original value:
+
+$$
+b^{\log_b(x)}=x
+$$
+
+This is the same undoing relationship as squaring and square root, except logarithms undo exponentials.
+
+### Product Rule
+
+$$
+\log_b(MN)=\log_b(M)+\log_b(N)
+$$
+
+Multiplication inside becomes addition outside.
+
+Here is why.
+
+Let:
+
+$$
+\log_b(M)=m
+$$
+
+and:
+
+$$
+\log_b(N)=n
+$$
+
+That means:
+
+$$
+M=b^m,\quad N=b^n
+$$
+
+Multiply:
+
+$$
+MN=b^m b^n
+$$
+
+Same-base powers multiply by adding exponents:
+
+$$
+MN=b^{m+n}
+$$
+
+So the exponent needed to produce $MN$ is $m+n$:
+
+$$
+\log_b(MN)=m+n=\log_b(M)+\log_b(N)
+$$
+
+Logs turn multiplication into addition because exponents turn multiplication of same-base powers into addition.
+
+### Quotient Rule
+
+$$
+\log_b(M/N)=\log_b(M)-\log_b(N)
+$$
+
+Division inside becomes subtraction outside.
+
+The quotient rule comes from the same exponent law:
+
+$$
+\frac{b^m}{b^n}=b^{m-n}
+$$
+
+If $M=b^m$ and $N=b^n$, then:
+
+$$
+\frac{M}{N}=b^{m-n}
+$$
+
+so:
+
+$$
+\log_b(M/N)=m-n
+$$
+
+### Power Rule
+
+$$
+\log_b(M^p)=p\log_b(M)
+$$
+
+Exponents inside come down as multipliers.
+
+Again, let:
+
+$$
+M=b^m
+$$
+
+Then:
+
+$$
+M^p=(b^m)^p=b^{mp}
+$$
+
+So:
+
+$$
+\log_b(M^p)=mp=p\log_b(M)
+$$
+
+The log rules are not arbitrary. They are exponent rules translated through the inverse relationship between exponentials and logarithms.
+
+### Solving Exponential Equations
+
+If:
+
+$$
+3^t=20
+$$
+
+then:
+
+$$
+t=\log_3(20)
+$$
+
+Using natural logs:
+
+$$
+t=\frac{\ln 20}{\ln 3}
+$$
+
+The formula:
+
+$$
+\log_b(x)=\frac{\ln x}{\ln b}
+$$
+
+is the change-of-base formula.
+
+Why does change of base work?
+
+Start with:
+
+$$
+t=\log_b(x)
+$$
+
+That means:
+
+$$
+b^t=x
+$$
+
+Take natural log of both sides:
+
+$$
+\ln(b^t)=\ln x
+$$
+
+Use the power rule:
+
+$$
+t\ln b=\ln x
+$$
+
+Solve for $t$:
+
+$$
+t=\frac{\ln x}{\ln b}
+$$
+
+Since $t=\log_b(x)$:
+
+$$
+\log_b(x)=\frac{\ln x}{\ln b}
+$$
+
+This matters because calculators and programming languages usually provide $\ln$ and $\log_{10}$, not every possible base.
+
+## Visual Or Mental Model
+
+An exponential graph grows quickly. A logarithmic graph grows slowly.
+
+A log scale turns equal multiplicative jumps into equal additive spacing.
+
+On a base-10 log scale:
+
+$$
+1,\ 10,\ 100,\ 1000
+$$
+
+are evenly spaced because their logs are:
+
+$$
+0,\ 1,\ 2,\ 3
+$$
+
+That is why logs are so useful for huge ranges.
+
+## Worked Examples
+
+### Example 1: Convert Form
+
+$$
+\log_2(32)=5
+$$
+
+means:
+
+$$
+2^5=32
+$$
+
+### Example 2: Evaluate
+
+$$
+\log_{10}(1000)=3
+$$
+
+because:
+
+$$
+10^3=1000
+$$
+
+### Example 3: Natural Log
+
+$$
+\ln(e^4)=4
+$$
+
+because $\ln$ means log base $e$.
+
+### Example 4: Product Rule
+
+$$
+\log_2(8\cdot4)=\log_2(8)+\log_2(4)=3+2=5
+$$
+
+And indeed:
+
+$$
+8\cdot4=32,\quad \log_2(32)=5
+$$
+
+### Example 5: Power Rule
+
+$$
+\log_3(9^2)=2\log_3(9)=2(2)=4
+$$
+
+### Example 6: Solve For Time
+
+A quantity doubles every 5 hours:
+
+$$
+A(t)=100\cdot2^{t/5}
+$$
+
+When does it reach 800?
+
+$$
+800=100\cdot2^{t/5}
+$$
+
+$$
+8=2^{t/5}
+$$
+
+$$
+3=t/5
+$$
+
+$$
+t=15
+$$
+
+### Example 7: Solve With Change Of Base
+
+Solve:
+
+$$
+3^t=50
+$$
+
+$$
+t=\frac{\ln50}{\ln3}\approx3.56
+$$
+
+### Example 8: Decibels
+
+Decibels use logs because power ratios span huge ranges.
+
+Power gain in dB:
+
+$$
+G_{dB}=10\log_{10}\left(\frac{P_{out}}{P_{in}}\right)
+$$
+
+If power ratio is 100:
+
+$$
+G_{dB}=10\log_{10}(100)=20\text{ dB}
+$$
+
+## Engineering Connections
+
+### Computing
+
+$\log_2(n)$ measures how many halvings or doublings are involved. Binary search on $n$ sorted items takes about $\log_2(n)$ comparisons.
+
+### Signal Processing
+
+Decibels turn multiplicative power ratios into additive values.
+
+### Chemistry And Sensors
+
+pH is a logarithmic scale for hydrogen ion concentration.
+
+### Machine Learning
+
+Log likelihood turns products of probabilities into sums, which are easier and more stable to compute.
+
+### Robotics And Telemetry
+
+Log plots reveal multiplicative improvement, decay rates, and order-of-magnitude error reduction.
+
+## Common Failure Modes
+
+1. Forgetting that logs require positive inputs.
+2. Treating $\log(a+b)$ as $\log a+\log b$.
+3. Forgetting the base.
+4. Mixing common log and natural log without noticing.
+5. Thinking logs make negative numbers in the real system.
+6. Misusing the power rule.
+7. Forgetting change of base when calculator lacks a desired base.
+8. Treating log scale distances as ordinary linear distances.
+9. Taking log of a quantity with units without forming a ratio or using a reference.
+10. Forgetting logs are inverse exponentials.
+
+## Practice Problems
+
+### Basics
+
+1. Convert $\log_2(8)=3$ to exponential form.
+2. Convert $5^2=25$ to logarithmic form.
+3. Evaluate $\log_2(16)$.
+4. Evaluate $\log_{10}(100)$.
+5. Evaluate $\log_3(27)$.
+6. Evaluate $\ln(e)$.
+7. Evaluate $\ln(e^5)$.
+8. What is the domain of $\log(x)$?
+9. Is $\log(-3)$ real in this course?
+10. Is $\log(0)$ defined?
+
+### Rules
+
+11. Expand $\log_b(MN)$.
+12. Expand $\log_b(M/N)$.
+13. Expand $\log_b(M^p)$.
+14. Simplify $\log_2(8\cdot4)$.
+15. Simplify $\log_3(27/3)$.
+16. Simplify $\log_5(25^2)$.
+17. Is $\log(a+b)=\log a+\log b$ generally true?
+18. Is $\log(ab)=\log a+\log b$ true for positive $a,b$?
+19. Write change-of-base formula for $\log_3(20)$ using natural logs.
+20. Why do logs turn products into sums?
+
+### Solving
+
+21. Solve $2^x=32$.
+22. Solve $10^x=1000$.
+23. Solve $3^x=81$.
+24. Solve $e^x=e^7$.
+25. Solve $2^{t/5}=8$.
+26. A value doubles every 4 hours. How long for 16x growth?
+27. A value halves every 3 days. How long for 1/8 remaining?
+28. Solve $3^t=50$ using logs.
+29. If $A(t)=A_0e^{kt}$, what log helps solve for $t$?
+30. Why do logs solve exponential equations?
+
+### Applications
+
+31. Compute $10\log_{10}(100)$.
+32. If a power ratio is 1000, what is gain in dB?
+33. Binary search over 1024 items takes about how many halvings?
+34. What is $\log_2(1024)$?
+35. Why is pH logarithmic?
+36. Why are decibels logarithmic?
+37. Why use log likelihood instead of multiplying many probabilities directly?
+38. What does one unit on a base-10 log scale represent?
+39. Why should logs of measured quantities use ratios/reference units?
+40. Give one robotics or telemetry use for log plots.
+
+### Challenge And Error Spotting
+
+41. A student says $\log_2(16)=8$. Correct them.
+42. A student expands $\log(x+1)$ as $\log x+\log1$. Correct them.
+43. A student tries $\ln(-5)$ in real-valued pre-calculus. Correct them.
+44. Explain why $\log_b(1)=0$.
+45. Explain why $\log_b(b)=1$.
+46. Explain why $\log_b(b^x)=x$.
+47. Which grows faster for large $x$: $\log x$ or $x$?
+48. Which grows faster for large $x$: $x$ or $2^x$?
+49. Give one example where log scale makes data easier to see.
+50. Give one example where using the wrong log base changes interpretation.
+
+## Answer Key
+
+1. $2^3=8$.
+2. $\log_5(25)=2$.
+3. 4.
+4. 2.
+5. 3.
+6. 1.
+7. 5.
+8. $x>0$.
+9. No.
+10. No.
+11. $\log_bM+\log_bN$.
+12. $\log_bM-\log_bN$.
+13. $p\log_bM$.
+14. 5.
+15. 2.
+16. 4.
+17. No.
+18. Yes.
+19. $\ln20/\ln3$.
+20. Because logs are exponents and multiplying same-base powers adds exponents.
+21. 5.
+22. 3.
+23. 4.
+24. 7.
+25. 15.
+26. 16 hours.
+27. 9 days.
+28. $t=\ln50/\ln3\approx3.56$.
+29. Natural log.
+30. They undo exponentials and bring exponents into ordinary algebra.
+31. 20 dB.
+32. 30 dB.
+33. 10.
+34. 10.
+35. Hydrogen ion concentrations span powers of ten.
+36. Sound/power ratios span huge multiplicative ranges.
+37. Products can underflow; logs turn products into sums.
+38. A factor of 10.
+39. Logs of dimensional quantities require a reference so the input is dimensionless.
+40. Error decay, latency distributions, loss curves, sensor noise over orders of magnitude.
+41. $2^4=16$, so the answer is 4.
+42. There is no sum rule for logarithms.
+43. Real logs require positive input.
+44. $b^0=1$.
+45. $b^1=b$.
+46. Log base $b$ asks for the exponent on $b$.
+47. $x$.
+48. $2^x$.
+49. Sensor noise, earthquake energy, sound intensity, model loss, population scales.
+50. Decibels use base 10; binary complexity uses base 2; natural growth uses base $e$.
+
+## Build Task
+
+Create a "logarithm solver and scale explorer" as a script, spreadsheet, or notebook.
+
+Minimum requirements:
+
+1. Convert exponential statements to log statements.
+2. Convert log statements to exponential statements.
+3. Evaluate common base-2, base-10, and natural logs.
+4. Use product, quotient, and power rules.
+5. Solve at least five exponential equations.
+6. Include a decibel or binary-search example.
+7. Include a log-scale table for values from 1 to 1,000,000.
+8. Include a warning for nonpositive log inputs.
+
+Stretch:
+
+- Plot linear, exponential, and logarithmic functions together.
+- Add change-of-base support for arbitrary base.
+- Add a log-likelihood toy example.
+
+## Quiz
+
+1. What question does a logarithm answer?
+2. What is the domain of $\log_b(x)$?
+3. What is $\ln(x)$?
+4. State the product rule.
+5. State the quotient rule.
+6. State the power rule.
+7. Why is $\log(a+b)$ not generally separable?
+8. How do logs solve exponential equations?
+9. What does a base-10 log scale do to powers of 10?
+10. Give one use of log base 2.
+11. Give one use of natural log.
+12. Give one engineering reason logs are useful.
+
+## Proof Of Completion
+
+You have completed this lesson when you can show:
+
+- Worked answers for at least 40 practice problems, including all challenge/error-spotting problems.
+- A logarithm solver/scale explorer artifact.
+- Five solved exponential equations.
+- One decibel, pH, binary-search, or log-likelihood example.
+- One paragraph explaining logs as inverse exponentials.
+
+## Sources And Further Study
+
+- OpenStax, *Precalculus 2e*, logarithmic functions.
+- Khan Academy, logarithms.
+- MIT OCW calculus prerequisite review on logarithms.
+- Signal processing references on decibels.
+- Computer science references on binary logarithms and complexity.
+
+## Next Lesson Bridge
+
+Now that exponentials and logarithms are both in place, the next lessons can use their rules to solve exponential/logarithmic equations, model growth and decay, and prepare for calculus where $e^x$ and $\ln x$ become central.
