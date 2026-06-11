@@ -120,6 +120,25 @@ $$
 
 Read that aloud: rotate the body-frame point into world orientation, then translate by the robot's world position.
 
+The order matters because rotation and translation answer different questions.
+
+First, $\vec{q}_B$ says where the point is relative to the robot's own axes. If the robot is turned, those local axes are turned relative to the room. Rotation converts the local offset into a world-facing offset.
+
+Second, $\vec{p}_{WB}$ says where the robot origin is in the world. Translation moves the rotated offset from "relative to the robot" to "absolute in the world."
+
+So:
+
+$$
+\vec{q}_W=\vec{p}_{WB}+R(\theta)\vec{q}_B
+$$
+
+means:
+
+1. rotate the local offset,
+2. place it at the robot's world position.
+
+If you translate first and rotate second, you rotate the world position around the origin too, which describes a different physical motion.
+
 ### World To Body Transform
 
 To express a world point in the robot frame:
@@ -129,6 +148,20 @@ $$
 $$
 
 Read that aloud: subtract the robot position to get a displacement from robot to target, then rotate by negative yaw to express it in robot axes.
+
+This is the inverse operation.
+
+The subtraction:
+
+$$
+\vec{q}_W-\vec{p}_{WB}
+$$
+
+turns an absolute world point into a world-frame displacement from the robot to the point.
+
+Then $R(-\theta)$ undoes the robot's yaw so that the displacement is described using the robot's forward/left axes.
+
+This is why inverse transforms reverse the order: undo translation, then undo rotation.
 
 ### Vector Transform
 
@@ -145,6 +178,13 @@ $$
 $$
 
 Velocity, acceleration, force, and direction vectors are usually transformed this way.
+
+The difference between a point and a free vector is physical:
+
+- A point has location. Moving the robot origin changes its world coordinates.
+- A free vector has direction and size. Moving the robot origin does not change a velocity, force, or ray direction.
+
+That is why points use rotation plus translation, while free vectors use rotation only.
 
 ### Same Frame Before Addition
 
@@ -167,6 +207,17 @@ $$
 $$
 
 until one vector is transformed into the other's frame.
+
+### Active Versus Passive Interpretation
+
+Frame transforms can be confusing because the same rotation matrix can be read two ways:
+
+- Active: rotate the vector itself inside a fixed frame.
+- Passive: describe the same physical vector using a different frame.
+
+In robotics, body-to-world calculations are usually passive descriptions: the physical point or velocity is the same, but its coordinates are being rewritten in another frame. The matrix still rotates components because the coordinate axes are rotated relative to each other.
+
+When debugging, ask: "Am I moving the object, or am I changing the coordinate language used to describe the object?" Many sign errors come from mixing those two interpretations.
 
 ## Visual Or Mental Model
 

@@ -109,6 +109,20 @@ $$
 
 This comes directly from right-triangle trig. The movement vector is the hypotenuse. The $x$ part is adjacent to the heading angle, so it uses cosine. The $y$ part is opposite the heading angle, so it uses sine.
 
+The formula depends on the angle convention. Here $\theta$ starts on the positive $x$ axis and turns counterclockwise. That is the usual math convention.
+
+If the heading is measured from a different zero direction, the same physical vector may need different formulas. For example, compass bearings start at North and turn clockwise, so the east and north components become:
+
+$$
+E=r\sin(B)
+$$
+
+$$
+N=r\cos(B)
+$$
+
+The trig idea is the same: decompose a diagonal motion into perpendicular components. The convention decides which component gets sine and which gets cosine.
+
 ### Example: Robot Motion
 
 A robot moves 2.5 m at a heading of $40^\circ$.
@@ -142,6 +156,14 @@ $$
 But there is a catch: ordinary inverse tangent alone cannot always determine the correct quadrant. For example, $y/x$ is positive when both $x$ and $y$ are positive, but also when both are negative. Those are opposite directions.
 
 Programming languages usually provide `atan2(y, x)`, which uses both components and returns the angle in the correct quadrant.
+
+The reason `atan2` needs two arguments is that tangent is a ratio:
+
+$$
+\tan(\theta)=\frac{y}{x}
+$$
+
+The ratio loses scale and can lose quadrant information. The pairs $(3,4)$ and $(-3,-4)$ both give $y/x=4/3$, but they point in opposite directions. `atan2(y, x)` keeps both signs, so it can distinguish northeast from southwest.
 
 ### Example: Reconstructing A Command
 
@@ -295,6 +317,19 @@ const degrees = radians * 180 / Math.PI;
 ```
 
 If your robot turns the wrong amount, your camera footprint is absurd, or your component values look random, angle units should be one of the first things you check.
+
+### Convention Checklist For Real Systems
+
+Before trusting any trig calculation in a robot, drone, or simulator, write this checklist next to the formula:
+
+1. What frame is the vector expressed in: body, world, camera, map, or sensor?
+2. What axis is zero degrees?
+3. Does positive angle turn clockwise or counterclockwise?
+4. Are angles stored in degrees or radians?
+5. Are coordinates east/north, x/y, forward/left, or forward/right?
+6. Is the formula computing where the vehicle points, where it moves, or where a sensor ray intersects?
+
+This checklist is not bureaucracy. It is how you prevent a correct triangle calculation from becoming a wrong robot command.
 
 ## Calibration Reality
 

@@ -62,6 +62,10 @@ $$
 
 where $P$ and $Q$ are polynomials and $Q(x)\ne0$.
 
+The condition $Q(x)\ne0$ is part of the definition, not a footnote. A rational function is not "the simplified expression you get after canceling." It is the original input-output rule together with the inputs where that rule is allowed to run.
+
+That distinction is why holes exist. Algebra can simplify a formula, but it cannot erase the fact that the original machine had an illegal input.
+
 ### Domain Restrictions
 
 The domain excludes values that make the denominator zero.
@@ -100,6 +104,16 @@ $$
 (2,3)
 $$
 
+The phrase "still excluded" is the important part. The original function asks you to divide by $x-2$. At $x=2$, that denominator is zero. Even though the simplified expression $x+1$ can be evaluated at 2, the original rational function cannot.
+
+So a hole means:
+
+1. the original formula is undefined at that input,
+2. nearby values behave like a simpler function,
+3. the graph is missing exactly one point.
+
+You can think of a hole as domain memory. The simplified expression remembers the shape, but the original expression remembers the forbidden input.
+
 ### Vertical Asymptotes
 
 A vertical asymptote occurs when a denominator factor remains after simplification.
@@ -115,6 +129,24 @@ Vertical asymptote:
 $$
 x=3
 $$
+
+Why does an uncanceled denominator factor create an asymptote instead of a hole?
+
+Near $x=3$, the denominator $x-3$ becomes very small. The numerator $x+1$ becomes close to 4, which is ordinary and nonzero. A nonzero number divided by a tiny number becomes huge in magnitude:
+
+$$
+\frac{\text{ordinary nonzero}}{\text{tiny}}\approx\text{huge}
+$$
+
+That is the mechanism behind a vertical asymptote. The function does not merely become undefined at one point; it grows without bound near that point.
+
+Contrast this with a hole:
+
+$$
+\frac{(x-2)(x+1)}{x-2}
+$$
+
+Near $x=2$, the numerator and denominator both contain the same tiny factor. For nearby values other than 2, those factors cancel and the output stays near 3. That is why the graph has a missing point rather than an infinite wall.
 
 ### One-Sided Behavior Near A Vertical Asymptote
 
@@ -160,6 +192,44 @@ $$
 \frac{2x^2+1}{5x^2-3}\to\frac25
 $$
 
+The degree rules come from dominant terms. Far away from zero, the highest-power term overwhelms the lower-power terms.
+
+Example:
+
+$$
+\frac{3x+1}{x^2+1}
+$$
+
+For very large $|x|$, the $3x$ term dominates the numerator and $x^2$ dominates the denominator:
+
+$$
+\frac{3x+1}{x^2+1}\approx\frac{3x}{x^2}=\frac{3}{x}
+$$
+
+As $|x|$ grows, $\frac{3}{x}$ approaches 0. That is why the horizontal asymptote is $y=0$.
+
+For equal degrees:
+
+$$
+\frac{2x^2+1}{5x^2-3}
+$$
+
+the dominant terms are:
+
+$$
+\frac{2x^2}{5x^2}
+$$
+
+The $x^2$ cancels in the far-away comparison:
+
+$$
+\frac{2x^2}{5x^2}=\frac25
+$$
+
+That is why equal-degree rational functions approach the ratio of leading coefficients.
+
+If the numerator degree is larger, the numerator grows too fast for the denominator to hold the function near a horizontal level. Then division reveals the polynomial or slant behavior that remains.
+
 ### Slant Asymptote
 
 If numerator degree is exactly one more than denominator degree, divide.
@@ -175,6 +245,34 @@ As $|x|$ grows, the fraction term approaches 0, so the slant asymptote is:
 $$
 y=x+2
 $$
+
+This is not a special graphing trick. It is the division algorithm again:
+
+$$
+\frac{P(x)}{Q(x)}=\text{quotient}+\frac{\text{remainder}}{Q(x)}
+$$
+
+If the remainder has lower degree than $Q(x)$, then:
+
+$$
+\frac{\text{remainder}}{Q(x)}\to0
+$$
+
+as $|x|$ grows. The rational function gets closer and closer to the quotient. When the quotient is a line, that line is the slant asymptote.
+
+In the example:
+
+$$
+\frac{x^2+3x+5}{x+1}=x+2+\frac{3}{x+1}
+$$
+
+The term $\frac{3}{x+1}$ becomes tiny far away, so the graph behaves like:
+
+$$
+y=x+2
+$$
+
+The asymptote is the long-range trend left after the shrinking error term disappears.
 
 ### Intercepts
 

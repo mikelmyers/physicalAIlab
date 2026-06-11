@@ -75,6 +75,51 @@ $$
 
 This formula is worth memorizing only after you understand what it is doing. It produces a vector perpendicular to both inputs.
 
+Why those three components?
+
+The cross product is designed to satisfy three requirements:
+
+1. It should be perpendicular to $\vec{a}$.
+2. It should be perpendicular to $\vec{b}$.
+3. Its magnitude should equal the area $|\vec{a}||\vec{b}|\sin\theta$ with orientation chosen by the right-hand rule.
+
+The component formula is the vector that meets those requirements.
+
+To see the perpendicular part, call:
+
+$$
+\vec{c}=\vec{a}\times\vec{b}
+$$
+
+with:
+
+$$
+\vec{c}=(a_yb_z-a_zb_y,\ a_zb_x-a_xb_z,\ a_xb_y-a_yb_x)
+$$
+
+Dot $\vec{c}$ with $\vec{a}$:
+
+$$
+\vec{a}\cdot\vec{c}
+=a_x(a_yb_z-a_zb_y)+a_y(a_zb_x-a_xb_z)+a_z(a_xb_y-a_yb_x)
+$$
+
+Every term cancels with an opposite term:
+
+$$
+a_xa_yb_z-a_xa_zb_y+a_ya_zb_x-a_xa_yb_z+a_xa_zb_y-a_ya_zb_x=0
+$$
+
+So $\vec{c}$ is perpendicular to $\vec{a}$. The same cancellation happens with $\vec{b}$. This is why the formula outputs a normal vector.
+
+The area part comes from the same base-times-height idea used in geometry. If $\vec{a}$ is the base, the height of the parallelogram in the direction perpendicular to $\vec{a}$ is $|\vec{b}|\sin\theta$, so:
+
+$$
+\text{area}=|\vec{a}||\vec{b}|\sin\theta
+$$
+
+The cross product packages that area magnitude together with the perpendicular orientation.
+
 ### Determinant Memory Aid
 
 Many textbooks write:
@@ -144,6 +189,20 @@ $$
 $$
 
 If vectors are parallel, they span no area, so the cross product is zero.
+
+### Why The Cross Product Is Special To 3D
+
+In 2D, there is no direction inside the plane that is perpendicular to two nonparallel vectors at once. The perpendicular direction points out of the page. That is why 2D orientation tests often return a signed scalar:
+
+$$
+a_xb_y-a_yb_x
+$$
+
+This scalar is the $z$ component you would get if both 2D vectors were treated as 3D vectors with $z=0$.
+
+In 3D, there is exactly one line perpendicular to the plane spanned by two nonparallel vectors. The right-hand rule chooses one of the two possible directions along that line.
+
+In higher dimensions, there is generally not a unique perpendicular direction, which is why the ordinary vector cross product does not generalize cleanly beyond 3D.
 
 ### Torque
 

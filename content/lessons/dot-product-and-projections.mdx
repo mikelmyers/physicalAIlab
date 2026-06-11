@@ -85,6 +85,40 @@ where $\theta$ is the angle between the vectors, always taken from 0 degrees to 
 
 This formula is the meaning. The component formula is the fast computation.
 
+The bridge between the component formula and the geometric formula comes from distance.
+
+For two vectors $\vec{a}$ and $\vec{b}$, the vector between their heads is $\vec{a}-\vec{b}$. Its squared length is:
+
+$$
+|\vec{a}-\vec{b}|^2=(a_x-b_x)^2+(a_y-b_y)^2
+$$
+
+Expand:
+
+$$
+|\vec{a}-\vec{b}|^2=a_x^2+a_y^2+b_x^2+b_y^2-2(a_xb_x+a_yb_y)
+$$
+
+That is:
+
+$$
+|\vec{a}-\vec{b}|^2=|\vec{a}|^2+|\vec{b}|^2-2(\vec{a}\cdot\vec{b})
+$$
+
+But the law of cosines for the triangle formed by $\vec{a}$ and $\vec{b}$ says:
+
+$$
+|\vec{a}-\vec{b}|^2=|\vec{a}|^2+|\vec{b}|^2-2|\vec{a}||\vec{b}|\cos\theta
+$$
+
+Comparing the two equations gives:
+
+$$
+\vec{a}\cdot\vec{b}=|\vec{a}||\vec{b}|\cos\theta
+$$
+
+So the component formula and the angle formula are the same fact written in two languages.
+
 ### Sign Meaning
 
 For nonzero vectors:
@@ -138,6 +172,26 @@ $$
 $$
 
 It is a number. It can be positive, zero, or negative.
+
+Think of scalar projection as shadow length. Shine a light perpendicular to $\vec{b}$ so that $\vec{a}$ casts a shadow onto the line of $\vec{b}$. The signed length of that shadow is:
+
+$$
+|\vec{a}|\cos\theta
+$$
+
+Using the dot product formula:
+
+$$
+\vec{a}\cdot\vec{b}=|\vec{a}||\vec{b}|\cos\theta
+$$
+
+Divide by $|\vec{b}|$:
+
+$$
+\frac{\vec{a}\cdot\vec{b}}{|\vec{b}|}=|\vec{a}|\cos\theta
+$$
+
+That is why the scalar projection formula works. It measures how much of $\vec{a}$ lies along $\vec{b}$, not how long $\vec{a}$ is overall.
 
 ### Vector Projection
 

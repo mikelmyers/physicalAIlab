@@ -69,6 +69,21 @@ $$
 
 The rule is simple because each component represents motion along one independent axis.
 
+The word independent matters. Moving 3 meters east does not secretly move you north. Moving 4 meters north does not secretly move you east. So the east parts can be added to east parts, and the north parts can be added to north parts.
+
+That is why:
+
+$$
+(3,4)+(-1,2)=(2,6)
+$$
+
+means:
+
+- east/west total: $3+(-1)=2$,
+- north/south total: $4+2=6$.
+
+Vector addition is bookkeeping for independent directions.
+
 ### Example: Robot Moves
 
 A robot moves:
@@ -98,6 +113,10 @@ To add vectors geometrically, place the tail of the second vector at the head of
 This is called **tip-to-tail** addition.
 
 The component rule and the geometric rule agree. Components are the arithmetic version of the same picture.
+
+You can see the agreement by walking the components. If $\vec{a}=(a_x,a_y)$ and $\vec{b}=(b_x,b_y)$, tip-to-tail motion first moves $a_x$ in $x$ and $a_y$ in $y$, then moves $b_x$ in $x$ and $b_y$ in $y$. The total $x$ motion is $a_x+b_x$, and the total $y$ motion is $a_y+b_y$.
+
+So the geometry and the arithmetic are not separate rules. They are the same displacement story told two ways.
 
 ### Why Magnitudes Do Not Usually Add
 
@@ -154,6 +173,10 @@ Component-wise:
 $$
 \vec{a}-\vec{b}=(a_x-b_x,\ a_y-b_y)
 $$
+
+Subtraction answers a direction question: "What vector takes me from the second object to the first object?"
+
+That is why order matters. The vector $\vec{a}-\vec{b}$ points from $\vec{b}$ to $\vec{a}$. The vector $\vec{b}-\vec{a}$ points the other way.
 
 ### Displacement Between Points
 
@@ -231,6 +254,22 @@ $$
 $$
 
 This pattern appears constantly in robotics: compute a direction, normalize it, then scale it by desired speed.
+
+There is one important exception: you cannot normalize the zero vector.
+
+If:
+
+$$
+\vec{v}=(0,0)
+$$
+
+then:
+
+$$
+|\vec{v}|=0
+$$
+
+and dividing by zero is undefined. Physically, the zero vector has no direction. A robot that is already exactly at its target cannot infer a direction to move from the error vector alone.
 
 ## Weighted Sums And Control
 
